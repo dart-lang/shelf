@@ -8,7 +8,6 @@ import 'package:shelf_static/shelf_static.dart';
 import 'test_util.dart';
 
 void main() {
-
   setUp(() {
     var tempDir;
     schedule(() {
@@ -32,12 +31,22 @@ void main() {
 
   test('access root file', () {
     schedule(() {
-
       var handler = getHandler(d.defaultRoot);
 
       return makeRequest(handler, '/root.txt').then((response) {
         expect(response.statusCode, HttpStatus.OK);
+        expect(response.headers[HttpHeaders.CONTENT_LENGTH], 8);
         expect(response.readAsString(), completion('root txt'));
+      });
+    });
+  });
+
+  test('file not found', () {
+    schedule(() {
+      var handler = getHandler(d.defaultRoot);
+
+      return makeRequest(handler, '/not_here.txt').then((response) {
+        expect(response.statusCode, HttpStatus.NOT_FOUND);
       });
     });
   });

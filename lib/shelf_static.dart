@@ -9,6 +9,7 @@ import 'package:shelf/shelf.dart';
 // default document
 // sym links
 // mime type handling
+// hidden files
 
 Handler getHandler(String fileSystemPath) {
   return (Request request) {
@@ -20,12 +21,23 @@ Handler getHandler(String fileSystemPath) {
     var requestedPath = p.joinAll(segs);
     var file = new File(requestedPath);
 
-    return file.resolveSymbolicLinks().then((String resolvedPath) {
-      if(!p.isWithin(rootPath, resolvedPath)) {
-        throw 'Requested path ${request.pathInfo} resolved to $resolvedPath is not under $rootPath.';
-      }
+    if (!file.existsSync()) {
+      return new Response.notFound('Not Found');
+    }
 
-      return new Response.ok(file.openRead());
-    });
+    var resolvedPath = file.resolveSymbolicLinksSync();
+
+    if (!p.isWithin(rootPath, resolvedPath)) {
+      throw 'Requested path ${request.pathInfo} resolved to $resolvedPath '
+          'is not under $rootPath.';
+    }
+
+    var stats = file.statSync();
+
+    var headers = {
+      HttpHeaders.CONTENT_LENGTH: stats.size
+    };
+
+    return new Response.ok(file.openRead(), headers: headers);
   };
 }
