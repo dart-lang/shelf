@@ -27,6 +27,7 @@ Handler getHandler(String fileSystemPath) {
 
     var resolvedPath = file.resolveSymbolicLinksSync();
 
+    // Do not serve a file outside of the original fileSystemPath
     if (!p.isWithin(rootPath, resolvedPath)) {
       throw 'Requested path ${request.pathInfo} resolved to $resolvedPath '
           'is not under $rootPath.';
