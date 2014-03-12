@@ -1,2 +1,8 @@
 name: shelf_static
-description: A pub package 
+version: 0.0.0-dev
+description: Static file server support for Shelf
+dependencies:
+  shelf: '>=0.2.0 <0.3.0'
+dev_dependencies:
+  hop: '>=0.30.2 <0.31.0'
+  scheduled_test: '>=0.10.0 <0.11.0'
