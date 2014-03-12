@@ -12,11 +12,12 @@ import 'package:shelf/shelf.dart';
 // hidden files
 
 Handler getHandler(String fileSystemPath) {
-  return (Request request) {
-    var rootDir = new Directory(fileSystemPath);
-    var rootPath = rootDir.resolveSymbolicLinksSync();
+  var rootDir = new Directory(fileSystemPath);
+  fileSystemPath = rootDir.resolveSymbolicLinksSync();
 
-    var segs = [rootPath]..addAll(request.pathSegments);
+  return (Request request) {
+
+    var segs = [fileSystemPath]..addAll(request.pathSegments);
 
     var requestedPath = p.joinAll(segs);
     var file = new File(requestedPath);
@@ -28,9 +29,9 @@ Handler getHandler(String fileSystemPath) {
     var resolvedPath = file.resolveSymbolicLinksSync();
 
     // Do not serve a file outside of the original fileSystemPath
-    if (!p.isWithin(rootPath, resolvedPath)) {
+    if (!p.isWithin(fileSystemPath, resolvedPath)) {
       throw 'Requested path ${request.pathInfo} resolved to $resolvedPath '
-          'is not under $rootPath.';
+          'is not under $fileSystemPath.';
     }
 
     var stats = file.statSync();
