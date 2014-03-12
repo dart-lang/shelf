@@ -41,6 +41,18 @@ void main() {
     });
   });
 
+  test('access file under directory', () {
+    schedule(() {
+      var handler = getHandler(d.defaultRoot);
+
+      return makeRequest(handler, '/files/test.txt').then((response) {
+        expect(response.statusCode, HttpStatus.OK);
+        expect(response.headers[HttpHeaders.CONTENT_LENGTH], 16);
+        expect(response.readAsString(), completion('test txt content'));
+      });
+    });
+  });
+
   test('file not found', () {
     schedule(() {
       var handler = getHandler(d.defaultRoot);
