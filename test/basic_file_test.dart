@@ -35,7 +35,7 @@ void main() {
 
       return makeRequest(handler, '/root.txt').then((response) {
         expect(response.statusCode, HttpStatus.OK);
-        expect(response.headers[HttpHeaders.CONTENT_LENGTH], 8);
+        expect(response.headers[HttpHeaders.CONTENT_LENGTH], '8');
         expect(response.readAsString(), completion('root txt'));
       });
     });
@@ -47,7 +47,7 @@ void main() {
 
       return makeRequest(handler, '/files/test.txt').then((response) {
         expect(response.statusCode, HttpStatus.OK);
-        expect(response.headers[HttpHeaders.CONTENT_LENGTH], 16);
+        expect(response.headers[HttpHeaders.CONTENT_LENGTH], '16');
         expect(response.readAsString(), completion('test txt content'));
       });
     });

@@ -36,8 +36,8 @@ Handler getHandler(String fileSystemPath) {
 
     var stats = file.statSync();
 
-    var headers = {
-      HttpHeaders.CONTENT_LENGTH: stats.size
+    var headers = <String, String>{
+      HttpHeaders.CONTENT_LENGTH: stats.size.toString()
     };
 
     return new Response.ok(file.openRead(), headers: headers);
