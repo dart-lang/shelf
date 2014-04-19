@@ -13,5 +13,5 @@ import 'package:shelf_static/src/util.dart';
 Future<Response> makeRequest(Handler handler, String path) =>
     syncFuture(() => handler(_fromPath(path)));
 
-Request _fromPath(String path) => new Request(path, '', 'GET', '', '1.1',
-    Uri.parse('http://localhost' + path), {});
+Request _fromPath(String path) =>
+    new Request('GET', Uri.parse('http://localhost' + path));

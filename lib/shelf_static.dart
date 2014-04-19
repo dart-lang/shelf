@@ -17,7 +17,7 @@ Handler getHandler(String fileSystemPath) {
 
   return (Request request) {
 
-    var segs = [fileSystemPath]..addAll(request.pathSegments);
+    var segs = [fileSystemPath]..addAll(request.requestedUri.pathSegments);
 
     var requestedPath = p.joinAll(segs);
     var file = new File(requestedPath);
@@ -30,7 +30,7 @@ Handler getHandler(String fileSystemPath) {
 
     // Do not serve a file outside of the original fileSystemPath
     if (!p.isWithin(fileSystemPath, resolvedPath)) {
-      throw 'Requested path ${request.pathInfo} resolved to $resolvedPath '
+      throw 'Requested path ${request.requestedUri} resolved to $resolvedPath '
           'is not under $fileSystemPath.';
     }
 
