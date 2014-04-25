@@ -19,13 +19,13 @@ void main() {
 
     d.file('root.txt', 'root txt').create();
     d.dir('files', [
-        d.file('test.txt', 'test txt content')
+        d.file('test.txt', 'test txt content'),
+        d.file('with space.txt', 'with space content')
     ]).create();
 
     currentSchedule.onComplete.schedule(() {
-      print(d.defaultRoot);
       d.defaultRoot = null;
-      //return tempDir.delete(recursive: true);
+      return tempDir.delete(recursive: true);
     });
   });
 
@@ -37,6 +37,28 @@ void main() {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.headers[HttpHeaders.CONTENT_LENGTH], '8');
         expect(response.readAsString(), completion('root txt'));
+      });
+    });
+  });
+
+  test('access root file with space', () {
+    schedule(() {
+      var handler = getHandler(d.defaultRoot);
+
+      return makeRequest(handler, '/files/with%20space.txt').then((response) {
+        expect(response.statusCode, HttpStatus.OK);
+        expect(response.headers[HttpHeaders.CONTENT_LENGTH], '18');
+        expect(response.readAsString(), completion('with space content'));
+      });
+    });
+  });
+
+  test('access root file with unencoded space', () {
+    schedule(() {
+      var handler = getHandler(d.defaultRoot);
+
+      return makeRequest(handler, '/files/with space.txt').then((response) {
+        expect(response.statusCode, HttpStatus.FORBIDDEN);
       });
     });
   });
@@ -62,9 +84,6 @@ void main() {
       });
     });
   });
-
-  // root file success, fail
-  // pathed file success, fail
 
   // evil URL fixes
 

@@ -16,6 +16,11 @@ Handler getHandler(String fileSystemPath) {
   fileSystemPath = rootDir.resolveSymbolicLinksSync();
 
   return (Request request) {
+    // TODO: expand these checks and/or follow updates to Uri class to be more
+    //       strict.
+    if (request.requestedUri.path.contains(' ')) {
+      return new Response.forbidden('The requested path is invalid.');
+    }
 
     var segs = [fileSystemPath]..addAll(request.requestedUri.pathSegments);
 
