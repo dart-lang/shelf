@@ -33,7 +33,8 @@ void main() {
     schedule(() {
       var handler = getHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/root.txt').then((response) {
+      return makeRequest(handler, '/static/root.txt', scriptName: '/static')
+          .then((response) {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.headers[HttpHeaders.CONTENT_LENGTH], '8');
         expect(response.readAsString(), completion('root txt'));
@@ -45,7 +46,8 @@ void main() {
     schedule(() {
       var handler = getHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/files/with%20space.txt').then((response) {
+      return makeRequest(handler, '/static/files/with%20space.txt',
+          scriptName: '/static').then((response) {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.headers[HttpHeaders.CONTENT_LENGTH], '18');
         expect(response.readAsString(), completion('with space content'));
@@ -57,7 +59,8 @@ void main() {
     schedule(() {
       var handler = getHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/files/with space.txt').then((response) {
+      return makeRequest(handler, '/static/files/with space.txt',
+          scriptName: '/static').then((response) {
         expect(response.statusCode, HttpStatus.FORBIDDEN);
       });
     });
@@ -67,7 +70,8 @@ void main() {
     schedule(() {
       var handler = getHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/files/test.txt').then((response) {
+      return makeRequest(handler, '/static/files/test.txt',
+          scriptName: '/static').then((response) {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.headers[HttpHeaders.CONTENT_LENGTH], '16');
         expect(response.readAsString(), completion('test txt content'));
@@ -79,17 +83,10 @@ void main() {
     schedule(() {
       var handler = getHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/not_here.txt').then((response) {
+      return makeRequest(handler, '/static/not_here.txt',
+          scriptName: '/static').then((response) {
         expect(response.statusCode, HttpStatus.NOT_FOUND);
       });
     });
   });
-
-  // getHandler for non-existant directory
-
-  // evil URL fixes
-
-  // hosted via other path: success, fail
-
-  // no sym links
 }

@@ -22,7 +22,7 @@ Handler getHandler(String fileSystemPath) {
       return new Response.forbidden('The requested path is invalid.');
     }
 
-    var segs = [fileSystemPath]..addAll(request.requestedUri.pathSegments);
+    var segs = [fileSystemPath]..addAll(request.url.pathSegments);
 
     var requestedPath = p.joinAll(segs);
     var file = new File(requestedPath);
@@ -35,7 +35,8 @@ Handler getHandler(String fileSystemPath) {
 
     // Do not serve a file outside of the original fileSystemPath
     if (!p.isWithin(fileSystemPath, resolvedPath)) {
-      throw 'Requested path ${request.requestedUri} resolved to $resolvedPath '
+      // TODO(kevmoo) throw a real error here. Perhaps a new error type?
+      throw 'Requested path ${request.url.path} resolved to $resolvedPath '
           'is not under $fileSystemPath.';
     }
 

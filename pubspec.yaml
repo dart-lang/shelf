@@ -1,5 +1,5 @@
 name: shelf_static
-version: 0.1.0
+version: 0.1.0+1
 author: Kevin Moore <github@j832.com>
 description: Static file server support for Shelf
 homepage: https://github.com/kevmoo/shelf_static.dart
@@ -8,4 +8,5 @@ environment:
 dependencies:
   shelf: '>=0.5.0 <0.6.0'
 dev_dependencies:
+  path: '>=1.1.0 <2.0.0'
   scheduled_test: '>=0.11.0 <0.12.0'
