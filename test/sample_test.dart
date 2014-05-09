@@ -16,7 +16,6 @@ void main() {
     });
 
     // Content-Type:text/html
-    // Date:Fri, 02 May 2014 22:29:02 GMT
   });
 
   group('/favicon.ico', () {
@@ -25,7 +24,6 @@ void main() {
     });
 
     // Content-Type: ???
-    // Date:Fri, 02 May 2014 22:29:02 GMT
   });
 }
 
@@ -34,10 +32,11 @@ Future _testFileContents(String filename) {
   var filePath = p.join(_samplePath, filename);
   var file = new File(filePath);
   var fileContents = file.readAsBytesSync();
-  var length = file.statSync().size;
+  var fileStat = file.statSync();
 
   return _request(new Request('GET', uri)).then((response) {
-    expect(response.contentLength, length);
+    expect(response.contentLength, fileStat.size);
+    expect(response.lastModified, fileStat.changed.toUtc());
     return _expectCompletesWithBytes(response, fileContents);
   });
 }

@@ -2,6 +2,7 @@ library shelf_static;
 
 import 'dart:io';
 
+import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
@@ -40,10 +41,11 @@ Handler getHandler(String fileSystemPath) {
           'is not under $fileSystemPath.';
     }
 
-    var stats = file.statSync();
+    var fileStat = file.statSync();
 
     var headers = <String, String>{
-      HttpHeaders.CONTENT_LENGTH: stats.size.toString()
+      HttpHeaders.CONTENT_LENGTH: fileStat.size.toString(),
+      HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
     };
 
     return new Response.ok(file.openRead(), headers: headers);

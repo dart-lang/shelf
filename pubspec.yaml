@@ -6,6 +6,7 @@ homepage: https://github.com/kevmoo/shelf_static.dart
 environment:
   sdk: '>=1.0.0 <2.0.0'
 dependencies:
+  http_parser: '>=0.0.2 <0.1.0'
   shelf: '>=0.5.0 <0.6.0'
 dev_dependencies:
   path: '>=1.1.0 <2.0.0'
