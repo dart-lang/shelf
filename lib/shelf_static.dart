@@ -2,7 +2,6 @@ library shelf_static;
 
 import 'dart:io';
 
-import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
@@ -58,8 +57,8 @@ const _WEEKDAYS = const ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const _MONTHS = const ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
     "Sep", "Oct", "Nov", "Dec"];
 
-// TODO(kevmoo) remove once https://codereview.chromium.org/278783002/ is
-// landed
+// TODO(kevmoo) remove once http_parser fix
+// https://codereview.chromium.org/278783002/ is landed
 String _formatHttpDate(DateTime date) {
   date = date.toUtc();
   var buffer = new StringBuffer()
