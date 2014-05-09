@@ -12,6 +12,8 @@ import 'package:shelf/shelf.dart';
 // mime type handling
 // hidden files
 
+// If-Modified-Since on request
+
 Handler getHandler(String fileSystemPath) {
   var rootDir = new Directory(fileSystemPath);
   fileSystemPath = rootDir.resolveSymbolicLinksSync();
