@@ -12,13 +12,7 @@ import 'package:shelf_static/src/util.dart';
 void main() {
   group('/index.html', () {
     test('body is correct', () {
-      var uri = Uri.parse('http://localhost/index.html');
-      var filePath = p.join(_samplePath, 'index.html');
-      var fileContents = new File(filePath).readAsStringSync();
-
-      return _request(new Request('GET', uri)).then((response) {
-        expect(response.readAsString(), completion(fileContents));
-      });
+      return _testFileContents('index.html');
     });
 
     // Content-Type:text/html
@@ -27,17 +21,24 @@ void main() {
 
   group('/favicon.ico', () {
     test('body is correct', () {
-      var uri = Uri.parse('http://localhost/favicon.ico');
-      var filePath = p.join(_samplePath, 'favicon.ico');
-      var fileContents = new File(filePath).readAsBytesSync();
-
-      return _request(new Request('GET', uri)).then((response) {
-        return _expectCompletesWithBytes(response, fileContents);
-      });
+      return _testFileContents('favicon.ico');
     });
 
     // Content-Type: ???
     // Date:Fri, 02 May 2014 22:29:02 GMT
+  });
+}
+
+Future _testFileContents(String filename) {
+  var uri = Uri.parse('http://localhost/$filename');
+  var filePath = p.join(_samplePath, filename);
+  var file = new File(filePath);
+  var fileContents = file.readAsBytesSync();
+  var length = file.statSync().size;
+
+  return _request(new Request('GET', uri)).then((response) {
+    expect(response.contentLength, length);
+    return _expectCompletesWithBytes(response, fileContents);
   });
 }
 
