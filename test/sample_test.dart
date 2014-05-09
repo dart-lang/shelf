@@ -1,4 +1,4 @@
-library shelf_static.basic_file_test;
+library shelf_static.sample_test;
 
 import 'dart:async';
 import 'dart:io';
@@ -55,8 +55,7 @@ Future<Response> _request(Request request) {
 }
 
 String get _samplePath {
-  var scriptDir = p.dirname(p.fromUri(Platform.script));
-  var sampleDir = p.join(scriptDir, 'sample_files');
+  var sampleDir = p.join(p.current, 'test', 'sample_files');
   assert(FileSystemEntity.isDirectorySync(sampleDir));
   return sampleDir;
 }

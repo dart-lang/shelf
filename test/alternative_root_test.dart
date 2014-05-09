@@ -1,4 +1,4 @@
-library shelf_static.basic_file_test;
+library shelf_static.alternative_root_test;
 
 import 'dart:io';
 import 'package:scheduled_test/descriptor.dart' as d;
