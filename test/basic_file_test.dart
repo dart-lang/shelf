@@ -1,6 +1,7 @@
 library shelf_static.basic_file_test;
 
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
 
@@ -81,6 +82,19 @@ void main() {
 
       return makeRequest(handler, '/not_here.txt').then((response) {
         expect(response.statusCode, HttpStatus.NOT_FOUND);
+      });
+    });
+  });
+
+  test('last modified', () {
+    schedule(() {
+      var handler = getHandler(d.defaultRoot);
+
+      var rootPath = p.join(d.defaultRoot, 'root.txt');
+      var modified = new File(rootPath).statSync().changed.toUtc();
+
+      return makeRequest(handler, '/root.txt').then((response) {
+        expect(response.lastModified, modified);
       });
     });
   });

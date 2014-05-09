@@ -47,9 +47,36 @@ Handler getHandler(String fileSystemPath) {
 
     var headers = <String, String>{
       HttpHeaders.CONTENT_LENGTH: fileStat.size.toString(),
-      HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
+      HttpHeaders.LAST_MODIFIED: _formatHttpDate(fileStat.changed)
     };
 
     return new Response.ok(file.openRead(), headers: headers);
   };
+}
+
+const _WEEKDAYS = const ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const _MONTHS = const ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+    "Sep", "Oct", "Nov", "Dec"];
+
+// TODO(kevmoo) remove once https://codereview.chromium.org/278783002/ is
+// landed
+String _formatHttpDate(DateTime date) {
+  date = date.toUtc();
+  var buffer = new StringBuffer()
+      ..write(_WEEKDAYS[date.weekday - 1])
+      ..write(", ")
+      ..write(date.day <= 9 ? "0" : "")
+      ..write(date.day.toString())
+      ..write(" ")
+      ..write(_MONTHS[date.month - 1])
+      ..write(" ")
+      ..write(date.year.toString())
+      ..write(date.hour <= 9 ? " 0" : " ")
+      ..write(date.hour.toString())
+      ..write(date.minute <= 9 ? ":0" : ":")
+      ..write(date.minute.toString())
+      ..write(date.second <= 9 ? ":0" : ":")
+      ..write(date.second.toString())
+      ..write(" GMT");
+  return buffer.toString();
 }
