@@ -102,7 +102,6 @@ void main() {
 
   group('if modified since', () {
     test('same as last modified', () {
-
       schedule(() {
         var handler = getHandler(d.defaultRoot);
 
@@ -122,7 +121,6 @@ void main() {
     });
 
     test('before last modified', () {
-
       schedule(() {
         var handler = getHandler(d.defaultRoot);
 
@@ -143,7 +141,6 @@ void main() {
     });
 
     test('after last modified', () {
-
       schedule(() {
         var handler = getHandler(d.defaultRoot);
 
