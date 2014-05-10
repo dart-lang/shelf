@@ -1,6 +1,7 @@
 library shelf_static.basic_file_test;
 
 import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
@@ -95,6 +96,70 @@ void main() {
 
       return makeRequest(handler, '/root.txt').then((response) {
         expect(response.lastModified, modified);
+      });
+    });
+  });
+
+  group('if modified since', () {
+    test('same as last modified', () {
+
+      schedule(() {
+        var handler = getHandler(d.defaultRoot);
+
+        var rootPath = p.join(d.defaultRoot, 'root.txt');
+        var modified = new File(rootPath).statSync().changed.toUtc();
+
+        var headers = {
+          HttpHeaders.IF_MODIFIED_SINCE: formatHttpDate(modified)
+        };
+
+        return makeRequest(handler, '/root.txt', headers: headers)
+            .then((response) {
+          expect(response.statusCode, HttpStatus.NOT_MODIFIED);
+          expect(response.contentLength, isNull);
+        });
+      });
+    });
+
+    test('before last modified', () {
+
+      schedule(() {
+        var handler = getHandler(d.defaultRoot);
+
+        var rootPath = p.join(d.defaultRoot, 'root.txt');
+        var modified = new File(rootPath).statSync().changed.toUtc();
+
+        var headers = {
+          HttpHeaders.IF_MODIFIED_SINCE:
+            formatHttpDate(modified.subtract(const Duration(seconds: 1)))
+        };
+
+        return makeRequest(handler, '/root.txt', headers: headers)
+            .then((response) {
+          expect(response.statusCode, HttpStatus.OK);
+          expect(response.lastModified, modified);
+        });
+      });
+    });
+
+    test('after last modified', () {
+
+      schedule(() {
+        var handler = getHandler(d.defaultRoot);
+
+        var rootPath = p.join(d.defaultRoot, 'root.txt');
+        var modified = new File(rootPath).statSync().changed.toUtc();
+
+        var headers = {
+          HttpHeaders.IF_MODIFIED_SINCE:
+            formatHttpDate(modified.add(const Duration(seconds: 1)))
+        };
+
+        return makeRequest(handler, '/root.txt', headers: headers)
+            .then((response) {
+          expect(response.statusCode, HttpStatus.NOT_MODIFIED);
+          expect(response.contentLength, isNull);
+        });
       });
     });
   });

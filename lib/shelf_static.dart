@@ -12,8 +12,6 @@ import 'package:shelf/shelf.dart';
 // mime type handling
 // hidden files
 
-// If-Modified-Since on request
-
 Handler getHandler(String fileSystemPath) {
   var rootDir = new Directory(fileSystemPath);
   fileSystemPath = rootDir.resolveSymbolicLinksSync();
@@ -44,6 +42,12 @@ Handler getHandler(String fileSystemPath) {
     }
 
     var fileStat = file.statSync();
+
+    var ifModifiedSince = request.ifModifiedSince;
+
+    if (ifModifiedSince != null && !fileStat.changed.isAfter(ifModifiedSince)) {
+      return new Response.notModified();
+    }
 
     var headers = <String, String>{
       HttpHeaders.CONTENT_LENGTH: fileStat.size.toString(),
