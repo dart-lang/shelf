@@ -55,7 +55,7 @@ Future<Response> _request(Request request) {
 }
 
 String get _samplePath {
-  var sampleDir = p.join(p.current, 'test', 'sample_files');
+  var sampleDir = p.join(p.current, 'example', 'files');
   assert(FileSystemEntity.isDirectorySync(sampleDir));
   return sampleDir;
 }
