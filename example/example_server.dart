@@ -11,7 +11,7 @@ void main() {
         'root of the project.');
   }
   var handler = const shelf.Pipeline().addMiddleware(shelf.logRequests())
-      .addHandler(getHandler('example/files'));
+      .addHandler(createStaticHandler('example/files'));
 
   io.serve(handler, 'localhost', 8080).then((server) {
     print('Serving at http://${server.address.host}:${server.port}');

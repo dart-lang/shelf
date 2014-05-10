@@ -62,7 +62,7 @@ Future _expectCompletesWithBytes(Response response, List<int> expectedBytes) {
 }
 
 Future<Response> _request(Request request) {
-  var handler = getHandler(_samplePath);
+  var handler = createStaticHandler(_samplePath);
 
   return syncFuture(() => handler(request));
 }

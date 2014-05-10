@@ -31,7 +31,7 @@ void main() {
 
   test('access root file', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/root.txt', scriptName: '/static')
           .then((response) {
@@ -44,7 +44,7 @@ void main() {
 
   test('access root file with space', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/files/with%20space.txt',
           scriptName: '/static').then((response) {
@@ -57,7 +57,7 @@ void main() {
 
   test('access root file with unencoded space', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/files/with space.txt',
           scriptName: '/static').then((response) {
@@ -68,7 +68,7 @@ void main() {
 
   test('access file under directory', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/files/test.txt',
           scriptName: '/static').then((response) {
@@ -81,7 +81,7 @@ void main() {
 
   test('file not found', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/not_here.txt',
           scriptName: '/static').then((response) {

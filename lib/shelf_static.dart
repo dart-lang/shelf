@@ -10,10 +10,13 @@ import 'package:shelf/shelf.dart';
 // directory listing
 // default document
 // sym links
-// mime type handling
 // hidden files
 
-Handler getHandler(String fileSystemPath) {
+// TODO: {bool serveFilesOutsidePath}
+
+/// Creates a Shelf [Handler] that serves files from the provided
+/// [fileSystemPath].
+Handler createStaticHandler(String fileSystemPath) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -42,9 +45,7 @@ Handler getHandler(String fileSystemPath) {
 
     // Do not serve a file outside of the original fileSystemPath
     if (!p.isWithin(fileSystemPath, resolvedPath)) {
-      // TODO(kevmoo) throw a real error here. Perhaps a new error type?
-      throw 'Requested path ${request.url.path} resolved to $resolvedPath '
-          'is not under $fileSystemPath.';
+      return new Response.notFound('Not Found');
     }
 
     var fileStat = file.statSync();
@@ -69,3 +70,8 @@ Handler getHandler(String fileSystemPath) {
     return new Response.ok(file.openRead(), headers: headers);
   };
 }
+
+/// Use [createStaticHandler] instead.
+@deprecated
+Handler getHandler(String fileSystemPath) =>
+    createStaticHandler(fileSystemPath);

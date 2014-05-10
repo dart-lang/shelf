@@ -35,7 +35,7 @@ void main() {
 
   test('access root file', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/root.txt').then((response) {
         expect(response.statusCode, HttpStatus.OK);
@@ -47,7 +47,7 @@ void main() {
 
   test('access root file with space', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/files/with%20space.txt').then((response) {
         expect(response.statusCode, HttpStatus.OK);
@@ -59,7 +59,7 @@ void main() {
 
   test('access root file with unencoded space', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/files/with space.txt').then((response) {
         expect(response.statusCode, HttpStatus.FORBIDDEN);
@@ -69,7 +69,7 @@ void main() {
 
   test('access file under directory', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/files/test.txt').then((response) {
         expect(response.statusCode, HttpStatus.OK);
@@ -81,7 +81,7 @@ void main() {
 
   test('file not found', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/not_here.txt').then((response) {
         expect(response.statusCode, HttpStatus.NOT_FOUND);
@@ -91,7 +91,7 @@ void main() {
 
   test('last modified', () {
     schedule(() {
-      var handler = getHandler(d.defaultRoot);
+      var handler = createStaticHandler(d.defaultRoot);
 
       var rootPath = p.join(d.defaultRoot, 'root.txt');
       var modified = new File(rootPath).statSync().changed.toUtc();
@@ -105,7 +105,7 @@ void main() {
   group('if modified since', () {
     test('same as last modified', () {
       schedule(() {
-        var handler = getHandler(d.defaultRoot);
+        var handler = createStaticHandler(d.defaultRoot);
 
         var rootPath = p.join(d.defaultRoot, 'root.txt');
         var modified = new File(rootPath).statSync().changed.toUtc();
@@ -124,7 +124,7 @@ void main() {
 
     test('before last modified', () {
       schedule(() {
-        var handler = getHandler(d.defaultRoot);
+        var handler = createStaticHandler(d.defaultRoot);
 
         var rootPath = p.join(d.defaultRoot, 'root.txt');
         var modified = new File(rootPath).statSync().changed.toUtc();
@@ -144,7 +144,7 @@ void main() {
 
     test('after last modified', () {
       schedule(() {
-        var handler = getHandler(d.defaultRoot);
+        var handler = createStaticHandler(d.defaultRoot);
 
         var rootPath = p.join(d.defaultRoot, 'root.txt');
         var modified = new File(rootPath).statSync().changed.toUtc();
@@ -166,7 +166,7 @@ void main() {
   group('content type', () {
     test('root.txt should be text/plain', () {
       schedule(() {
-        var handler = getHandler(d.defaultRoot);
+        var handler = createStaticHandler(d.defaultRoot);
 
         return makeRequest(handler, '/root.txt').then((response) {
           expect(response.mimeType, 'text/plain');
@@ -176,7 +176,7 @@ void main() {
 
     test('index.html should be text/html', () {
       schedule(() {
-        var handler = getHandler(d.defaultRoot);
+        var handler = createStaticHandler(d.defaultRoot);
 
         return makeRequest(handler, '/index.html').then((response) {
           expect(response.mimeType, 'text/html');
@@ -186,7 +186,7 @@ void main() {
 
     test('random.unknown should be null', () {
       schedule(() {
-        var handler = getHandler(d.defaultRoot);
+        var handler = createStaticHandler(d.defaultRoot);
 
         return makeRequest(handler, '/random.unknown').then((response) {
           expect(response.mimeType, isNull);
@@ -200,4 +200,7 @@ void main() {
   // hosted via other path: success, fail
 
   // no sym links
+
+  // sym link within provided root
+  // sym link outside provided root
 }

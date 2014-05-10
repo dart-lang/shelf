@@ -31,27 +31,27 @@ void main() {
 
   test('non-existent relative path', () {
     schedule(() {
-      expect(() => getHandler('random/relative'), throwsArgumentError);
+      expect(() => createStaticHandler('random/relative'), throwsArgumentError);
     });
   });
 
   test('existing relative path', () {
     schedule(() {
       var existingRelative = p.relative(d.defaultRoot);
-      expect(() => getHandler(existingRelative), returnsNormally);
+      expect(() => createStaticHandler(existingRelative), returnsNormally);
     });
   });
 
   test('non-existent absolute path', () {
     schedule(() {
       var nonExistingAbsolute = p.join(d.defaultRoot, 'not_here');
-      expect(() => getHandler(nonExistingAbsolute), throwsArgumentError);
+      expect(() => createStaticHandler(nonExistingAbsolute), throwsArgumentError);
     });
   });
 
   test('existing absolute path', () {
     schedule(() {
-      expect(() => getHandler(d.defaultRoot), returnsNormally);
+      expect(() => createStaticHandler(d.defaultRoot), returnsNormally);
     });
   });
 }
