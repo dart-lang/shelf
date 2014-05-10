@@ -1,3 +1,7 @@
+## 0.1.3
+
+* `createStaticHandler` added `serveFilesOutsidePath` optional parameter.
+
 ## 0.1.2
 
 * The preferred top-level method is now `createStaticHandler`. `getHandler` is deprecated.

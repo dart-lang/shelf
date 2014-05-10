@@ -16,7 +16,12 @@ import 'package:shelf/shelf.dart';
 
 /// Creates a Shelf [Handler] that serves files from the provided
 /// [fileSystemPath].
-Handler createStaticHandler(String fileSystemPath) {
+///
+/// Accessing a path containing symbolic links will succeed only if the resolved
+/// path is within [fileSystemPath]. To allow access to paths outside of
+/// [fileSystemPath], set [serveFilesOutsidePath] to `true`.
+Handler createStaticHandler(String fileSystemPath,
+    {bool serveFilesOutsidePath: false}) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -41,11 +46,13 @@ Handler createStaticHandler(String fileSystemPath) {
       return new Response.notFound('Not Found');
     }
 
-    var resolvedPath = file.resolveSymbolicLinksSync();
+    if (!serveFilesOutsidePath) {
+      var resolvedPath = file.resolveSymbolicLinksSync();
 
-    // Do not serve a file outside of the original fileSystemPath
-    if (!p.isWithin(fileSystemPath, resolvedPath)) {
-      return new Response.notFound('Not Found');
+      // Do not serve a file outside of the original fileSystemPath
+      if (!p.isWithin(fileSystemPath, resolvedPath)) {
+        return new Response.notFound('Not Found');
+      }
     }
 
     var fileStat = file.statSync();
