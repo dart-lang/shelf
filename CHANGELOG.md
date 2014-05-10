@@ -1,3 +1,7 @@
+## 0.1.2
+
+* Respond with `304-Not modified` against `IF-MODIFIED-SINCE` request header.
+
 ## 0.1.1+1
 
 * Removed work around for [issue](https://codereview.chromium.org/278783002/).
