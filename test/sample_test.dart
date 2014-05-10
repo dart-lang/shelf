@@ -15,7 +15,11 @@ void main() {
       return _testFileContents('index.html');
     });
 
-    // Content-Type:text/html
+    test('mimeType is text/html', () {
+      return _requestFile('index.html').then((response) {
+        expect(response.mimeType, 'text/html');
+      });
+    });
   });
 
   group('/favicon.ico', () {
@@ -23,18 +27,27 @@ void main() {
       return _testFileContents('favicon.ico');
     });
 
-    // Content-Type: ???
+    test('mimeType is text/html', () {
+      return _requestFile('favicon.ico').then((response) {
+        expect(response.mimeType, 'image/x-icon');
+      });
+    });
   });
 }
 
-Future _testFileContents(String filename) {
+Future<Response> _requestFile(String filename) {
   var uri = Uri.parse('http://localhost/$filename');
+
+  return _request(new Request('GET', uri));
+}
+
+Future _testFileContents(String filename) {
   var filePath = p.join(_samplePath, filename);
   var file = new File(filePath);
   var fileContents = file.readAsBytesSync();
   var fileStat = file.statSync();
 
-  return _request(new Request('GET', uri)).then((response) {
+  return _requestFile(filename).then((response) {
     expect(response.contentLength, fileStat.size);
     expect(response.lastModified, fileStat.changed.toUtc());
     return _expectCompletesWithBytes(response, fileContents);

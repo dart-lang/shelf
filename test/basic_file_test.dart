@@ -19,7 +19,9 @@ void main() {
       });
     });
 
+    d.file('index.html', '<html></html>').create();
     d.file('root.txt', 'root txt').create();
+    d.file('random.unknown', 'no clue').create();
     d.dir('files', [
         d.file('test.txt', 'test txt content'),
         d.file('with space.txt', 'with space content')
@@ -156,6 +158,38 @@ void main() {
             .then((response) {
           expect(response.statusCode, HttpStatus.NOT_MODIFIED);
           expect(response.contentLength, isNull);
+        });
+      });
+    });
+  });
+
+  group('content type', () {
+    test('root.txt should be text/plain', () {
+      schedule(() {
+        var handler = getHandler(d.defaultRoot);
+
+        return makeRequest(handler, '/root.txt').then((response) {
+          expect(response.mimeType, 'text/plain');
+        });
+      });
+    });
+
+    test('index.html should be text/html', () {
+      schedule(() {
+        var handler = getHandler(d.defaultRoot);
+
+        return makeRequest(handler, '/index.html').then((response) {
+          expect(response.mimeType, 'text/html');
+        });
+      });
+    });
+
+    test('random.unknown should be null', () {
+      schedule(() {
+        var handler = getHandler(d.defaultRoot);
+
+        return makeRequest(handler, '/random.unknown').then((response) {
+          expect(response.mimeType, isNull);
         });
       });
     });

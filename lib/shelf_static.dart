@@ -3,6 +3,7 @@ library shelf_static;
 import 'dart:io';
 
 import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart' as mime;
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
@@ -58,6 +59,12 @@ Handler getHandler(String fileSystemPath) {
       HttpHeaders.CONTENT_LENGTH: fileStat.size.toString(),
       HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
     };
+
+    var contentType = mime.lookupMimeType(requestedPath);
+
+    if (contentType != null) {
+      headers[HttpHeaders.CONTENT_TYPE] = contentType;
+    }
 
     return new Response.ok(file.openRead(), headers: headers);
   };
