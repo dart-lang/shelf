@@ -14,6 +14,11 @@ import 'package:shelf/shelf.dart';
 
 Handler getHandler(String fileSystemPath) {
   var rootDir = new Directory(fileSystemPath);
+  if (!rootDir.existsSync()) {
+    throw new ArgumentError('A directory corresponding to fileSystemPath '
+        '"$fileSystemPath" could not be found');
+  }
+
   fileSystemPath = rootDir.resolveSymbolicLinksSync();
 
   return (Request request) {

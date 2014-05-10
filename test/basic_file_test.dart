@@ -161,8 +161,6 @@ void main() {
     });
   });
 
-  // getHandler for non-existant directory
-
   // evil URL fixes
 
   // hosted via other path: success, fail
