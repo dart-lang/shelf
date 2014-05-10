@@ -1,6 +1,10 @@
 ## 0.1.2
 
+* The preferred top-level method is now `createStaticHandler`. `getHandler` is deprecated.
+* Set `content-type` header if the mime type of the requested file can be determined from the file extension.
 * Respond with `304-Not modified` against `IF-MODIFIED-SINCE` request header.
+* Better error when provided a non-existant `fileSystemPath`.
+* Added `example/example_server.dart`.
 
 ## 0.1.1+1
 
