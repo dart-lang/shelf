@@ -33,6 +33,18 @@ void main() {
       });
     });
   });
+
+  group('/dart.png', () {
+    test('body is correct', () {
+      return _testFileContents('dart.png');
+    });
+
+    test('mimeType is image/png', () {
+      return _requestFile('dart.png').then((response) {
+        expect(response.mimeType, 'image/png');
+      });
+    });
+  });
 }
 
 Future<Response> _requestFile(String filename) {
