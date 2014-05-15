@@ -1,3 +1,7 @@
+## 0.1.4
+
+* Added named (optional) `defaultDocument` argument to `createStaticHandler`.
+
 ## 0.1.3
 
 * `createStaticHandler` added `serveFilesOutsidePath` optional parameter.

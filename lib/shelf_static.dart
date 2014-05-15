@@ -8,7 +8,6 @@ import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
 // directory listing
-// default document
 // hidden files
 
 /// Creates a Shelf [Handler] that serves files from the provided
@@ -17,8 +16,12 @@ import 'package:shelf/shelf.dart';
 /// Accessing a path containing symbolic links will succeed only if the resolved
 /// path is within [fileSystemPath]. To allow access to paths outside of
 /// [fileSystemPath], set [serveFilesOutsidePath] to `true`.
+///
+/// When a existing directory is requested and a [defaultDocument] is specified
+/// the directory is checked for a file with that name. If it exists, it is
+/// served.
 Handler createStaticHandler(String fileSystemPath,
-    {bool serveFilesOutsidePath: false}) {
+    {bool serveFilesOutsidePath: false, String defaultDocument}) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -26,6 +29,12 @@ Handler createStaticHandler(String fileSystemPath,
   }
 
   fileSystemPath = rootDir.resolveSymbolicLinksSync();
+
+  if (defaultDocument != null) {
+    if (defaultDocument != p.basename(defaultDocument)) {
+      throw new ArgumentError('defaultDocument must be a file name.');
+    }
+  }
 
   return (Request request) {
     // TODO: expand these checks and/or follow updates to Uri class to be more
@@ -37,9 +46,18 @@ Handler createStaticHandler(String fileSystemPath,
     var segs = [fileSystemPath]..addAll(request.url.pathSegments);
 
     var requestedPath = p.joinAll(segs);
-    var file = new File(requestedPath);
 
-    if (!file.existsSync()) {
+    var fileType = FileSystemEntity.typeSync(requestedPath, followLinks: true);
+
+    File file = null;
+
+    if (fileType == FileSystemEntityType.FILE) {
+      file = new File(requestedPath);
+    } else if (fileType == FileSystemEntityType.DIRECTORY) {
+      file = _tryDefaultFile(requestedPath, defaultDocument);
+    }
+
+    if (file == null) {
       return new Response.notFound('Not Found');
     }
 
@@ -50,6 +68,19 @@ Handler createStaticHandler(String fileSystemPath,
       if (!p.isWithin(fileSystemPath, resolvedPath)) {
         return new Response.notFound('Not Found');
       }
+    }
+
+    if (fileType == FileSystemEntityType.DIRECTORY &&
+        !request.url.path.endsWith('/')) {
+      // when serving the default document for a directory, if the requested
+      // path doesn't end with '/', redirect to the path with a trailing '/'
+      var uri = request.requestedUri;
+      assert(!uri.path.endsWith('/'));
+      var location = new Uri(scheme: uri.scheme, userInfo: uri.userInfo,
+          host: uri.host, port: uri.port, path: uri.path + '/',
+          query: uri.query);
+
+      return new Response.movedPermanently(location.toString());
     }
 
     var fileStat = file.statSync();
@@ -73,6 +104,20 @@ Handler createStaticHandler(String fileSystemPath,
 
     return new Response.ok(file.openRead(), headers: headers);
   };
+}
+
+File _tryDefaultFile(String dirPath, String defaultFile) {
+  if (defaultFile == null) return null;
+
+  var filePath = p.join(dirPath, defaultFile);
+
+  var file = new File(filePath);
+
+  if (file.existsSync()) {
+    return file;
+  }
+
+  return null;
 }
 
 /// Use [createStaticHandler] instead.
