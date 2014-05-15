@@ -36,7 +36,7 @@ void main() {
       return makeRequest(handler, '/static/root.txt', scriptName: '/static')
           .then((response) {
         expect(response.statusCode, HttpStatus.OK);
-        expect(response.headers[HttpHeaders.CONTENT_LENGTH], '8');
+        expect(response.contentLength, 8);
         expect(response.readAsString(), completion('root txt'));
       });
     });
@@ -49,7 +49,7 @@ void main() {
       return makeRequest(handler, '/static/files/with%20space.txt',
           scriptName: '/static').then((response) {
         expect(response.statusCode, HttpStatus.OK);
-        expect(response.headers[HttpHeaders.CONTENT_LENGTH], '18');
+        expect(response.contentLength, 18);
         expect(response.readAsString(), completion('with space content'));
       });
     });
@@ -73,7 +73,7 @@ void main() {
       return makeRequest(handler, '/static/files/test.txt',
           scriptName: '/static').then((response) {
         expect(response.statusCode, HttpStatus.OK);
-        expect(response.headers[HttpHeaders.CONTENT_LENGTH], '16');
+        expect(response.contentLength, 16);
         expect(response.readAsString(), completion('test txt content'));
       });
     });
