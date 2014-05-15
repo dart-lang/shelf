@@ -9,10 +9,7 @@ import 'package:shelf/shelf.dart';
 
 // directory listing
 // default document
-// sym links
 // hidden files
-
-// TODO: {bool serveFilesOutsidePath}
 
 /// Creates a Shelf [Handler] that serves files from the provided
 /// [fileSystemPath].
