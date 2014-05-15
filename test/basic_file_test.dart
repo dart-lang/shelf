@@ -194,13 +194,4 @@ void main() {
       });
     });
   });
-
-  // evil URL fixes
-
-  // hosted via other path: success, fail
-
-  // no sym links
-
-  // sym link within provided root
-  // sym link outside provided root
 }
