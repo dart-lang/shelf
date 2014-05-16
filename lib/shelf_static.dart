@@ -57,17 +57,17 @@ Handler createStaticHandler(String fileSystemPath,
       file = _tryDefaultFile(requestedPath, defaultDocument);
     }
 
-    if (file == null) {
-      return new Response.notFound('Not Found');
-    }
-
     if (!serveFilesOutsidePath) {
       var resolvedPath = file.resolveSymbolicLinksSync();
 
       // Do not serve a file outside of the original fileSystemPath
       if (!p.isWithin(fileSystemPath, resolvedPath)) {
-        return new Response.notFound('Not Found');
+        file = null;
       }
+    }
+
+    if (file == null) {
+      return new Response.notFound('Not Found');
     }
 
     if (fileType == FileSystemEntityType.DIRECTORY &&
