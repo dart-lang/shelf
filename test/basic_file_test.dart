@@ -97,7 +97,7 @@ void main() {
       var modified = new File(rootPath).statSync().changed.toUtc();
 
       return makeRequest(handler, '/root.txt').then((response) {
-        expect(response.lastModified, modified);
+        expect(response.lastModified, atSameTimeToSecond(modified));
       });
     });
   });
@@ -137,7 +137,7 @@ void main() {
         return makeRequest(handler, '/root.txt', headers: headers)
             .then((response) {
           expect(response.statusCode, HttpStatus.OK);
-          expect(response.lastModified, modified);
+          expect(response.lastModified, atSameTimeToSecond(modified));
         });
       });
     });

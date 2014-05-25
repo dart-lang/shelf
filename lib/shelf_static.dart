@@ -7,6 +7,8 @@ import 'package:mime/mime.dart' as mime;
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
+import 'src/util.dart';
+
 // directory listing
 // hidden files
 
@@ -87,8 +89,12 @@ Handler createStaticHandler(String fileSystemPath,
 
     var ifModifiedSince = request.ifModifiedSince;
 
-    if (ifModifiedSince != null && !fileStat.changed.isAfter(ifModifiedSince)) {
-      return new Response.notModified();
+
+    if (ifModifiedSince != null) {
+      var fileChangeAtSecResolution = toSecondResolution(fileStat.changed);
+      if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
+        return new Response.notModified();
+      }
     }
 
     var headers = <String, String>{

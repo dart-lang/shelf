@@ -2,12 +2,15 @@ library shelf_static.sample_test;
 
 import 'dart:async';
 import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/scheduled_test.dart';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_static/src/util.dart';
+
+import 'test_util.dart';
 
 void main() {
   group('/index.html', () {
@@ -61,7 +64,7 @@ Future _testFileContents(String filename) {
 
   return _requestFile(filename).then((response) {
     expect(response.contentLength, fileStat.size);
-    expect(response.lastModified, fileStat.changed.toUtc());
+    expect(response.lastModified, atSameTimeToSecond(fileStat.changed.toUtc()));
     return _expectCompletesWithBytes(response, fileContents);
   });
 }

@@ -6,6 +6,7 @@ library shelf_static.test_util;
 
 import 'dart:async';
 
+import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/src/util.dart';
@@ -41,4 +42,28 @@ Handler _rootHandler(String scriptName, Handler handler) {
 
     return handler(relativeRequest);
   };
+}
+
+Matcher atSameTimeToSecond(value) =>
+    new _SecondResolutionDateTimeMatcher(value);
+
+class _SecondResolutionDateTimeMatcher extends Matcher {
+  final DateTime _target;
+
+  _SecondResolutionDateTimeMatcher(DateTime target) :
+    this._target = toSecondResolution(target);
+
+  bool matches(item, Map matchState) {
+    if (item is! DateTime) return false;
+
+    return datesEqualToSecond(_target, item);
+  }
+
+  Description describe(Description descirption) =>
+      descirption.add('Must be at the same moment as $_target with resolution '
+          'to the second.');
+}
+
+bool datesEqualToSecond(DateTime d1, DateTime d2) {
+  return toSecondResolution(d1).isAtSameMomentAs(toSecondResolution(d2));
 }
