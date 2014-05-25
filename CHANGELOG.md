@@ -1,3 +1,7 @@
+## 0.1.4+5
+
+* Handle differences in resolution between `DateTime` and HTTP date format.
+
 ## 0.1.4+4
 
 * Using latest `shelf`. Cleaned up test code by using new features.
