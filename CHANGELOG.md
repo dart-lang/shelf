@@ -1,3 +1,7 @@
+## 0.1.4+4
+
+* Using latest `shelf`. Cleaned up test code by using new features.
+
 ## 0.1.4
 
 * Added named (optional) `defaultDocument` argument to `createStaticHandler`.

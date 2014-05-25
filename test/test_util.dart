@@ -37,24 +37,8 @@ Handler _rootHandler(String scriptName, Handler handler) {
     }
     assert(request.scriptName.isEmpty);
 
-    var relativePath = _ctx.relative(request.requestedUri.path,
-        from: scriptName);
-
-    assert(!relativePath.startsWith('/'));
-
-    relativePath = '/' + relativePath;
-
-    var url = new Uri(path: relativePath, query: request.url.query,
-        fragment: request.url.fragment);
-    var relativeRequest = _copy(request, scriptName, url);
+    var relativeRequest = request.change(scriptName: scriptName);
 
     return handler(relativeRequest);
   };
-}
-
-// TODO: until we have on https://code.google.com/p/dart/issues/detail?id=18453
-Request _copy(Request r, String scriptName, Uri url) {
-  return new Request(r.method, r.requestedUri,
-      protocolVersion: r.protocolVersion, headers: r.headers, url: url,
-      scriptName: scriptName, body: r.read(), context: r.context);
 }
