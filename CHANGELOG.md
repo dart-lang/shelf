@@ -1,3 +1,7 @@
+## 0.1.4+6
+
+* Updated development dependencies.
+
 ## 0.1.4+5
 
 * Handle differences in resolution between `DateTime` and HTTP date format.
