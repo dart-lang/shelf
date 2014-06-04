@@ -86,9 +86,7 @@ Handler createStaticHandler(String fileSystemPath,
     }
 
     var fileStat = file.statSync();
-
     var ifModifiedSince = request.ifModifiedSince;
-
 
     if (ifModifiedSince != null) {
       var fileChangeAtSecResolution = toSecondResolution(fileStat.changed);
@@ -103,7 +101,6 @@ Handler createStaticHandler(String fileSystemPath,
     };
 
     var contentType = mime.lookupMimeType(requestedPath);
-
     if (contentType != null) {
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     }
