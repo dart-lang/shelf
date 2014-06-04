@@ -122,8 +122,3 @@ File _tryDefaultFile(String dirPath, String defaultFile) {
 
   return null;
 }
-
-/// Use [createStaticHandler] instead.
-@deprecated
-Handler getHandler(String fileSystemPath) =>
-    createStaticHandler(fileSystemPath);

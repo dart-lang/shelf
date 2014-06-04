@@ -1,3 +1,7 @@
+## 0.2.0
+
+* Removed deprecated `getHandler`.
+
 ## 0.1.4+6
 
 * Updated development dependencies.
