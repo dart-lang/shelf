@@ -47,16 +47,16 @@ Handler createStaticHandler(String fileSystemPath,
 
     var segs = [fileSystemPath]..addAll(request.url.pathSegments);
 
-    var requestedPath = p.joinAll(segs);
+    var fsPath = p.joinAll(segs);
 
-    var fileType = FileSystemEntity.typeSync(requestedPath, followLinks: true);
+    var entityType = FileSystemEntity.typeSync(fsPath, followLinks: true);
 
     File file = null;
 
-    if (fileType == FileSystemEntityType.FILE) {
-      file = new File(requestedPath);
-    } else if (fileType == FileSystemEntityType.DIRECTORY) {
-      file = _tryDefaultFile(requestedPath, defaultDocument);
+    if (entityType == FileSystemEntityType.FILE) {
+      file = new File(fsPath);
+    } else if (entityType == FileSystemEntityType.DIRECTORY) {
+      file = _tryDefaultFile(fsPath, defaultDocument);
     }
 
     if (file == null) {
@@ -72,7 +72,7 @@ Handler createStaticHandler(String fileSystemPath,
       }
     }
 
-    if (fileType == FileSystemEntityType.DIRECTORY &&
+    if (entityType == FileSystemEntityType.DIRECTORY &&
         !request.url.path.endsWith('/')) {
       // when serving the default document for a directory, if the requested
       // path doesn't end with '/', redirect to the path with a trailing '/'
@@ -100,7 +100,7 @@ Handler createStaticHandler(String fileSystemPath,
       HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
     };
 
-    var contentType = mime.lookupMimeType(requestedPath);
+    var contentType = mime.lookupMimeType(fsPath);
     if (contentType != null) {
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     }
