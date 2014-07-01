@@ -2,6 +2,8 @@
 
 * Removed deprecated `getHandler`.
 
+* Send correct mime type for default document.
+
 ## 0.1.4+6
 
 * Updated development dependencies.
