@@ -1,5 +1,5 @@
 name: shelf_proxy
-version: 0.0.1
+version: 0.0.2-dev
 author: Kevin Moore <github@j832.com>
 description: Shelf handlers to proxy requests to other HTTP servers
 homepage: https://github.com/kevmoo/shelf_proxy

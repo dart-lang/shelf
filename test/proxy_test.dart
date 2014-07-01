@@ -34,11 +34,6 @@ void main() {
         expect(createProxyHandler(Uri.parse('http://example.com/')), isNotNull);
       });
 
-      test('with trailing slash works', () {
-        expect(createProxyHandler(Uri.parse('http://example.com/path')),
-            isNotNull);
-      });
-
       test('with path item', () {
         expect(createProxyHandler(Uri.parse('http://example.com/path')),
             isNotNull);
