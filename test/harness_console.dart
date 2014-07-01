@@ -8,6 +8,6 @@ import 'static_file_test.dart' as static_file;
 void main() {
   groupSep = ' - ';
 
-  proxy.main();
-  static_file.main();
+  group('proxy', proxy.main);
+  group('static file example', static_file.main);
 }
