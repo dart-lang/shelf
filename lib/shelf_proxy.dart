@@ -11,9 +11,17 @@ import 'package:shelf/shelf.dart';
 /// A request for `/test/sample.html` would result is a request for
 /// `http://example.com/files/test/sample.html`.
 Handler createProxyHandler(Uri rootUri) {
-  assert(rootUri.scheme == 'http' || rootUri.scheme == 'https');
-  assert(rootUri.query == '');
-  assert(rootUri.isAbsolute);
+  if (rootUri.scheme != 'http' && rootUri.scheme != 'https') {
+    throw new ArgumentError('rootUri must have a scheme of http or https.');
+  }
+
+  if (!rootUri.isAbsolute) {
+    throw new ArgumentError('rootUri must be absolute.');
+  }
+
+  if (rootUri.query.isNotEmpty) {
+    throw new ArgumentError('rootUri cannot contain a query.');
+  }
 
   return (Request request) {
     // TODO: really need to tear down the client when this is done...

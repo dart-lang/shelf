@@ -11,44 +11,98 @@ import 'package:shelf_proxy/shelf_proxy.dart';
 import 'test_util.dart';
 
 void main() {
-  test('root', () {
-    _scheduleServer(_handler);
+  group('arguments', () {
+    group('root uri must be http or https', () {
+      test('http works', () {
+        expect(createProxyHandler(Uri.parse('http://example.com')), isNotNull);
+      });
+      test('http works', () {
+        expect(createProxyHandler(Uri.parse('https://example.com')), isNotNull);
+      });
+      test('ftp does not work', () {
+        expect(() => createProxyHandler(Uri.parse('ftp://example.com')),
+            throwsArgumentError);
+      });
+    });
 
-    schedule(() {
-      var url = new Uri.http('localhost:$_serverPort', '');
-      var handler = createProxyHandler(url);
+    group('root uri must be absolute without query', () {
+      test('http works', () {
+        expect(createProxyHandler(Uri.parse('http://example.com')), isNotNull);
+      });
 
-      return makeRequest(handler, '/').then((response) {
-        expect(response.statusCode, HttpStatus.OK);
-        expect(response.readAsString(), completion('root with slash'));
+      test('with trailing slash works', () {
+        expect(createProxyHandler(Uri.parse('http://example.com/')), isNotNull);
+      });
+
+      test('with trailing slash works', () {
+        expect(createProxyHandler(Uri.parse('http://example.com/path')),
+            isNotNull);
+      });
+
+      test('with path item', () {
+        expect(createProxyHandler(Uri.parse('http://example.com/path')),
+            isNotNull);
+      });
+
+      test('with path item and trailing slash', () {
+        expect(createProxyHandler(Uri.parse('http://example.com/path/')),
+            isNotNull);
+      });
+
+      test('with a fragment', () {
+        expect(
+            () => createProxyHandler(Uri.parse('http://example.com/path#foo')),
+            throwsArgumentError);
+      });
+
+      test('with a query', () {
+        expect(
+            () => createProxyHandler(Uri.parse('http://example.com/path?a=b')),
+            throwsArgumentError);
       });
     });
   });
 
-  test('bar', () {
-    _scheduleServer(_handler);
+  group('requests', () {
+    test('root', () {
+      _scheduleServer(_handler);
 
-    schedule(() {
-      var url = new Uri.http('localhost:$_serverPort', '');
-      var handler = createProxyHandler(url);
+      schedule(() {
+        var url = new Uri.http('localhost:$_serverPort', '');
+        var handler = createProxyHandler(url);
 
-      return makeRequest(handler, '/bar').then((response) {
-        expect(response.statusCode, HttpStatus.OK);
-        expect(response.readAsString(), completion('bar'));
+        return makeRequest(handler, '/').then((response) {
+          expect(response.statusCode, HttpStatus.OK);
+          expect(response.readAsString(), completion('root with slash'));
+        });
       });
     });
-  });
 
-  test('bar/', () {
-    _scheduleServer(_handler);
+    test('bar', () {
+      _scheduleServer(_handler);
 
-    schedule(() {
-      var url = new Uri.http('localhost:$_serverPort', '');
-      var handler = createProxyHandler(url);
+      schedule(() {
+        var url = new Uri.http('localhost:$_serverPort', '');
+        var handler = createProxyHandler(url);
 
-      return makeRequest(handler, '/bar/').then((response) {
-        expect(response.statusCode, HttpStatus.OK);
-        expect(response.readAsString(), completion('bar with slash'));
+        return makeRequest(handler, '/bar').then((response) {
+          expect(response.statusCode, HttpStatus.OK);
+          expect(response.readAsString(), completion('bar'));
+        });
+      });
+    });
+
+    test('bar/', () {
+      _scheduleServer(_handler);
+
+      schedule(() {
+        var url = new Uri.http('localhost:$_serverPort', '');
+        var handler = createProxyHandler(url);
+
+        return makeRequest(handler, '/bar/').then((response) {
+          expect(response.statusCode, HttpStatus.OK);
+          expect(response.readAsString(), completion('bar with slash'));
+        });
       });
     });
   });
