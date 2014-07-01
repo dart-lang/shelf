@@ -24,8 +24,15 @@ Handler createProxyHandler(Uri rootUri) {
     return client.openUrl(request.method, url).then((ioRequest) {
       return ioRequest.close();
     }).then((ioResponse) {
+      var headers = {};
+      // dart:io - HttpClientResponse.contentLength is -1 if not defined
+      if (ioResponse.contentLength >= 0) {
+        headers[HttpHeaders.CONTENT_LENGTH] =
+            ioResponse.contentLength.toString();
+      }
 
-      return new Response(ioResponse.statusCode, body: ioResponse);
+      return new Response(ioResponse.statusCode, body: ioResponse,
+          headers: headers);
     });
   };
 }

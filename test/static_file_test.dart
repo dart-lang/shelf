@@ -12,7 +12,7 @@ import 'package:shelf_proxy/shelf_proxy.dart';
 import 'test_util.dart';
 
 void main() {
-  test('foo', () {
+  test('default document', () {
     _scheduleServer(_handler);
 
     schedule(() {
@@ -23,7 +23,7 @@ void main() {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.readAsString(),
             completion(contains('<title>shelf_static</title>')));
-        expect(response.contentLength, isNotNull);
+        expect(response.contentLength, 228);
       });
     });
   });
