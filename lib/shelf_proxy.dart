@@ -1,1 +1,48 @@
 library shelf_proxy;
+
+import 'dart:io';
+
+import 'package:shelf/shelf.dart';
+
+///
+///
+/// Imagine that rootUri is specified as `http://example.com/files`
+///
+/// A request for `/test/sample.html` would result is a request for
+/// `http://example.com/files/test/sample.html`.
+Handler createProxyHandler(Uri rootUri) {
+  assert(rootUri.scheme == 'http' || rootUri.scheme == 'https');
+  assert(rootUri.query == '');
+  assert(rootUri.isAbsolute);
+
+  return (Request request) {
+    // TODO: really need to tear down the client when this is done...
+    var client = new HttpClient();
+
+    var url = _getProxyUrl(rootUri, request.url);
+
+    return client.openUrl(request.method, url).then((ioRequest) {
+      return ioRequest.close();
+    }).then((ioResponse) {
+
+      return new Response(ioResponse.statusCode, body: ioResponse);
+    });
+  };
+}
+
+Uri _getProxyUrl(Uri proxyRoot, Uri requestUrl) {
+  assert(proxyRoot.scheme == 'http' || proxyRoot.scheme == 'https');
+  assert(proxyRoot.query == '');
+  assert(proxyRoot.isAbsolute);
+  assert(!requestUrl.isAbsolute);
+
+  var updatedPath = proxyRoot.pathSegments.toList()
+      ..addAll(requestUrl.pathSegments);
+
+  return new Uri(scheme: proxyRoot.scheme,
+      userInfo: proxyRoot.userInfo,
+      host: proxyRoot.host,
+      port: proxyRoot.port,
+      pathSegments: updatedPath,
+      query: requestUrl.query);
+}
