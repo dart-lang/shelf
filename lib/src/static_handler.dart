@@ -99,7 +99,7 @@ Handler createStaticHandler(String fileSystemPath,
       HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
     };
 
-    var contentType = mime.lookupMimeType(fsPath);
+    var contentType = mime.lookupMimeType(file.path);
     if (contentType != null) {
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     }
