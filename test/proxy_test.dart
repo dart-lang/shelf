@@ -78,7 +78,7 @@ void main() {
       });
     });
 
-    test('bar', () {
+    test('/bar', () {
       _scheduleServer(_handler);
 
       schedule(() {
@@ -92,7 +92,7 @@ void main() {
       });
     });
 
-    test('bar/', () {
+    test('/bar/', () {
       _scheduleServer(_handler);
 
       schedule(() {
@@ -102,6 +102,19 @@ void main() {
         return makeRequest(handler, '/bar/').then((response) {
           expect(response.statusCode, HttpStatus.OK);
           expect(response.readAsString(), completion('bar with slash'));
+        });
+      });
+    });
+
+    test('only GET is supported', () {
+      _scheduleServer(_handler);
+
+      schedule(() {
+        var url = new Uri.http('localhost:$_serverPort', '');
+        var handler = createProxyHandler(url);
+
+        return makeRequest(handler, '/', method: 'PUT').then((response) {
+          expect(response.statusCode, HttpStatus.METHOD_NOT_ALLOWED);
         });
       });
     });

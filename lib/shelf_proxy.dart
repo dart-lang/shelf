@@ -24,6 +24,10 @@ Handler createProxyHandler(Uri rootUri) {
   }
 
   return (Request request) {
+    if (request.method != 'GET') {
+      return new Response(HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
     // TODO: really need to tear down the client when this is done...
     var client = new HttpClient();
 

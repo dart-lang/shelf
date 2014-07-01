@@ -14,13 +14,17 @@ final p.Context _ctx = p.url;
 
 /// Makes a simple GET request to [handler] and returns the result.
 Future<Response> makeRequest(Handler handler, String path,
-    {String scriptName, Map<String, String> headers}) {
+    {String scriptName, Map<String, String> headers, String method}) {
   var rootedHandler = _rootHandler(scriptName, handler);
-  return syncFuture(() => rootedHandler(_fromPath(path, headers)));
+  return syncFuture(() =>
+      rootedHandler(_fromPath(path, headers, method: method)));
 }
 
-Request _fromPath(String path, Map<String, String> headers) =>
-    new Request('GET', Uri.parse('http://localhost' + path), headers: headers);
+Request _fromPath(String path, Map<String, String> headers, {String method}) {
+  if (method == null) method = 'GET';
+  return new Request(method, Uri.parse('http://localhost' + path),
+      headers: headers);
+}
 
 Handler _rootHandler(String scriptName, Handler handler) {
   if (scriptName == null || scriptName.isEmpty) {
