@@ -4,11 +4,19 @@ import 'dart:io';
 
 import 'package:shelf/shelf.dart';
 
+/// Creates a [Handler] that sends requests to another web server at the
+/// specified [rootUri].
 ///
+/// [rootUri] must be absolue with an http(s) scheme and no query or fragment
+/// components.
 ///
-/// Imagine that rootUri is specified as `http://example.com/files`
+/// Only requests with method `GET` are allowed. All other methods result in a
+/// `405` - [HttpStatus.METHOD_NOT_ALLOWED] response.
 ///
-/// A request for `/test/sample.html` would result is a request for
+/// Example:
+///
+/// If [rootUri] is specified as `http://example.com/files`, a request for
+/// `/test/sample.html` would result in a request to
 /// `http://example.com/files/test/sample.html`.
 Handler createProxyHandler(Uri rootUri) {
   if (rootUri.scheme != 'http' && rootUri.scheme != 'https') {
