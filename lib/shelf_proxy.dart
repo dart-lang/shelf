@@ -14,8 +14,8 @@ import 'src/utils.dart';
 ///
 /// To generate the proxy request, this concatenates [url] and [Request.url].
 /// This means that if the handler mounted under `/documentation` and [url] is
-/// `https://www.dartlang.org/docs`, a request to `/documentation/tutorials`
-/// will be proxied to `https://www.dartlang.org/docs/tutorials`.
+/// `http://example.com/docs`, a request to `/documentation/tutorials`
+/// will be proxied to `http://example.com/docs/tutorials`.
 ///
 /// [client] is used internally to make HTTP requests. It defaults to a
 /// `dart:io`-based client.
