@@ -1,10 +1,19 @@
-[![Build Status](https://drone.io/github.com/kevmoo/shelf_proxy/status.png)](https://drone.io/github.com/kevmoo/shelf_proxy/latest)
+## Proxy for Shelf
 
-[Shelf][shelf] `handler` to proxy requests to another web server.
+`shelf_proxy` is a [Shelf][] handler that proxies requests to an external
+server. It can be served directly and used as a proxy server, or it can be
+mounted within a larger application to proxy only certain URLs.
 
-Useful if you want to send a subset of requests to another HTTP endpoint, for
-instance `pub serve`.
+[Shelf]: pub.dartlang.org/packages/shelf
 
-See `example/example_server.dart` for a usage demonstration.
+```dart
+import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf_proxy/shelf_proxy.dart';
 
-[shelf]: http://pub.dartlang.org/packages/shelf
+void main() {
+  shelf_io.serve(proxyHandler("https://www.dartlang.org"), 'localhost', 8080)
+      .then((server) {
+    print('Proxying at http://${server.address.host}:${server.port}');
+  });
+}
+```

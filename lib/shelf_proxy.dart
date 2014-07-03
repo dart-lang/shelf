@@ -1,75 +1,103 @@
+// Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 library shelf_proxy;
 
-import 'dart:io';
-
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
-/// Creates a [Handler] that sends requests to another web server at the
-/// specified [rootUri].
+import 'src/utils.dart';
+
+/// A handler that proxies requests to [url].
 ///
-/// [rootUri] must be absolue with an http(s) scheme and no query or fragment
-/// components.
+/// To generate the proxy request, this concatenates [url] and [Request.url].
+/// This means that if the handler mounted under `/documentation` and [url] is
+/// `https://www.dartlang.org/docs`, a request to `/documentation/tutorials`
+/// will be proxied to `https://www.dartlang.org/docs/tutorials`.
 ///
-/// Only requests with method `GET` are allowed. All other methods result in a
-/// `405` - [HttpStatus.METHOD_NOT_ALLOWED] response.
+/// [client] is used internally to make HTTP requests. It defaults to a
+/// `dart:io`-based client.
 ///
-/// Example:
-///
-/// If [rootUri] is specified as `http://example.com/files`, a request for
-/// `/test/sample.html` would result in a request to
-/// `http://example.com/files/test/sample.html`.
-Handler createProxyHandler(Uri rootUri) {
-  if (rootUri.scheme != 'http' && rootUri.scheme != 'https') {
-    throw new ArgumentError('rootUri must have a scheme of http or https.');
-  }
+/// [proxyName] is used in headers to identify this proxy. It should be a valid
+/// HTTP token or a hostname. It defaults to `shelf_proxy`.
+Handler proxyHandler(url, {http.Client client, String proxyName}) {
+  if (url is String) url = Uri.parse(url);
+  if (client == null) client = new http.Client();
+  if (proxyName == null) proxyName = 'shelf_proxy';
 
-  if (!rootUri.isAbsolute) {
-    throw new ArgumentError('rootUri must be absolute.');
-  }
+  return (serverRequest) {
+    // TODO(nweiz): Support WebSocket requests.
 
-  if (rootUri.query.isNotEmpty) {
-    throw new ArgumentError('rootUri cannot contain a query.');
-  }
+    // TODO(nweiz): Handle TRACE requests correctly. See
+    // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
+    var requestUrl = url.resolve(serverRequest.url.toString());
+    var clientRequest = new http.StreamedRequest(
+        serverRequest.method, requestUrl);
+    clientRequest.followRedirects = false;
+    clientRequest.headers.addAll(serverRequest.headers);
+    clientRequest.headers['Host'] = url.authority;
 
-  return (Request request) {
-    if (request.method != 'GET') {
-      return new Response(HttpStatus.METHOD_NOT_ALLOWED);
-    }
+    // Add a Via header. See
+    // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+    _addHeader(clientRequest.headers, 'via',
+        '${serverRequest.protocolVersion} $proxyName');
 
-    // TODO: really need to tear down the client when this is done...
-    var client = new HttpClient();
+    store(serverRequest.read(), clientRequest.sink);
+    return client.send(clientRequest).then((clientResponse) {
+      // Add a Via header. See
+      // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+      _addHeader(clientResponse.headers, 'via', '1.1 $proxyName');
 
-    var url = _getProxyUrl(rootUri, request.url);
+      // Remove the transfer-encoding since the body has already been decoded by
+      // [client].
+      clientResponse.headers.remove('transfer-encoding');
 
-    return client.openUrl(request.method, url).then((ioRequest) {
-      return ioRequest.close();
-    }).then((ioResponse) {
-      var headers = {};
-      // dart:io - HttpClientResponse.contentLength is -1 if not defined
-      if (ioResponse.contentLength >= 0) {
-        headers[HttpHeaders.CONTENT_LENGTH] =
-            ioResponse.contentLength.toString();
+      // If the original response was gzipped, it will be decoded by [client]
+      // and we'll have no way of knowing its actual content-length.
+      if (clientResponse.headers['content-encoding'] == 'gzip') {
+        clientResponse.headers.remove('content-encoding');
+        clientResponse.headers.remove('content-length');
+
+        // Add a Warning header. See
+        // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
+        _addHeader(clientResponse.headers, 'warning',
+            '214 $proxyName "GZIP decoded"');
       }
 
-      return new Response(ioResponse.statusCode, body: ioResponse,
-          headers: headers);
+      // Make sure the Location header is pointing to the proxy server rather
+      // than the destination server, if possible.
+      if (clientResponse.isRedirect &&
+          clientResponse.headers.containsKey('location')) {
+        var location = requestUrl.resolve(clientResponse.headers['location'])
+            .toString();
+        if (p.url.isWithin(url.toString(), location)) {
+          clientResponse.headers['location'] =
+              '/' + p.url.relative(location, from: url.toString());
+        } else {
+          clientResponse.headers['location'] = location;
+        }
+      }
+
+      return new Response(clientResponse.statusCode,
+          body: clientResponse.stream,
+          headers: clientResponse.headers);
     });
   };
 }
 
-Uri _getProxyUrl(Uri proxyRoot, Uri requestUrl) {
-  assert(proxyRoot.scheme == 'http' || proxyRoot.scheme == 'https');
-  assert(proxyRoot.query == '');
-  assert(proxyRoot.isAbsolute);
-  assert(!requestUrl.isAbsolute);
+/// Use [proxyHandler] instead.
+@deprecated
+Handler createProxyHandler(Uri rootUri) => proxyHandler(rootUri);
 
-  var updatedPath = proxyRoot.pathSegments.toList()
-      ..addAll(requestUrl.pathSegments);
-
-  return new Uri(scheme: proxyRoot.scheme,
-      userInfo: proxyRoot.userInfo,
-      host: proxyRoot.host,
-      port: proxyRoot.port,
-      pathSegments: updatedPath,
-      query: requestUrl.query);
+// TODO(nweiz): use built-in methods for this when http and shelf support them.
+/// Add a header with [name] and [value] to [headers], handling existing headers
+/// gracefully.
+void _addHeader(Map<String, String> headers, String name, String value) {
+  if (headers.containsKey(name)) {
+    headers[name] += ', $value';
+  } else {
+    headers[name] = value;
+  }
 }

@@ -10,7 +10,6 @@ const _PUB_PORT = 7777;
 final _encoder = new JsonEncoder.withIndent('  ');
 
 void main() {
-
   //
   // The api handler responds to requests to '/api' with a JSON document
   // containing an incrementing 'count' value.
@@ -33,7 +32,7 @@ void main() {
   //
   var cascade = new Cascade()
       .add(apiHandler)
-      .add(createProxyHandler(Uri.parse('http://localhost:$_PUB_PORT')));
+      .add(proxyHandler(Uri.parse('http://localhost:$_PUB_PORT')));
 
   //
   // Creates a pipeline handler which first logs requests and then sends them
