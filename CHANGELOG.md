@@ -1,3 +1,7 @@
+## 0.1.0+1
+
+* Added `drone.io` badge to `README.md`.
+
 ## 0.1.0
 
 * `createProxyHandler` (new deprecated) is replaced with `proxyHandler`.
