@@ -1,3 +1,7 @@
+## 0.2.1
+
+* Removed `Uri` format checks now that the core libraries is more strict. 
+
 ## 0.2.0
 
 * Removed deprecated `getHandler`.

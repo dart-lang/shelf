@@ -38,12 +38,6 @@ Handler createStaticHandler(String fileSystemPath,
   }
 
   return (Request request) {
-    // TODO: expand these checks and/or follow updates to Uri class to be more
-    //       strict. https://code.google.com/p/dart/issues/detail?id=16081
-    if (request.requestedUri.path.contains(' ')) {
-      return new Response.forbidden('The requested path is invalid.');
-    }
-
     var segs = [fileSystemPath]..addAll(request.url.pathSegments);
 
     var fsPath = p.joinAll(segs);

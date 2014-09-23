@@ -59,9 +59,11 @@ void main() {
     schedule(() {
       var handler = createStaticHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/static/files/with space.txt',
+      return makeRequest(handler, '/static/files/with%20space.txt',
           scriptName: '/static').then((response) {
-        expect(response.statusCode, HttpStatus.FORBIDDEN);
+        expect(response.statusCode, HttpStatus.OK);
+        expect(response.contentLength, 18);
+        expect(response.readAsString(), completion('with space content'));
       });
     });
   });
