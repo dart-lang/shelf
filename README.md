@@ -10,7 +10,7 @@ import 'package:shelf_static/shelf_static.dart';
 
 void main() {
   var handler = createStaticHandler('example/files', 
-      defaultDocument: 'index.html')
+      defaultDocument: 'index.html');
 
   io.serve(handler, 'localhost', 8080);
 }
