@@ -6,7 +6,7 @@
 server. It can be served directly and used as a proxy server, or it can be
 mounted within a larger application to proxy only certain URLs.
 
-[Shelf]: pub.dartlang.org/packages/shelf
+[Shelf]: http://pub.dartlang.org/packages/shelf
 
 ```dart
 import 'package:shelf/shelf_io.dart' as shelf_io;
