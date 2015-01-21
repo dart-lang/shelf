@@ -50,24 +50,21 @@ Middleware logRequests({void logger(String msg, bool isError)}) =>
   };
 };
 
-String _getMessage(DateTime requestTime, int statusCode, Uri url,
-  String method, Duration elapsedTime) {
-
+String _getMessage(DateTime requestTime, int statusCode, Uri url, String method,
+    Duration elapsedTime) {
   return '${requestTime}\t$elapsedTime\t$method\t[${statusCode}]\t${url}';
 }
 
-String _getErrorMessage(DateTime requestTime, Uri url,
-  String method, Duration elapsedTime, Object error, StackTrace stack) {
-
+String _getErrorMessage(DateTime requestTime, Uri url, String method,
+    Duration elapsedTime, Object error, StackTrace stack) {
   var chain = new Chain.current();
   if (stack != null) {
     chain = new Chain.forTrace(stack)
-      .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
-      .terse;
+        .foldFrames((frame) => frame.isCore || frame.package == 'shelf').terse;
   }
 
   var msg = '${requestTime}\t$elapsedTime\t$method\t${url}\n$error';
-  if(chain == null) return msg;
+  if (chain == null) return msg;
 
   return '$msg\n$chain';
 }

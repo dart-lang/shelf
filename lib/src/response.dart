@@ -276,8 +276,8 @@ Map<String, String> _adjustHeaders(
 /// Adds a header with [name] and [value] to [headers], which may be null.
 ///
 /// Returns a new map without modifying [headers].
-Map<String, String> _addHeader(Map<String, String> headers, String name,
-    String value) {
+Map<String, String> _addHeader(
+    Map<String, String> headers, String name, String value) {
   headers = headers == null ? {} : new Map.from(headers);
   headers[name] = value;
   return headers;

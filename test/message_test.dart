@@ -14,8 +14,7 @@ import 'test_util.dart';
 
 class _TestMessage extends Message {
   _TestMessage(Map<String, String> headers, Map<String, Object> context,
-        Stream<List<int>> body)
-      : super(body, headers: headers, context: context);
+      Stream<List<int>> body) : super(body, headers: headers, context: context);
 
   Message change({Map<String, String> headers, Map<String, Object> context}) {
     throw new UnimplementedError();
@@ -119,10 +118,8 @@ void main() {
     test("supports a Stream<List<int>> body", () {
       var controller = new StreamController();
       var request = _createMessage(body: controller.stream);
-      expect(request.read().toList(), completion(equals([
-        HELLO_BYTES,
-        WORLD_BYTES
-      ])));
+      expect(request.read().toList(),
+          completion(equals([HELLO_BYTES, WORLD_BYTES])));
 
       controller.add(HELLO_BYTES);
       return new Future(() {
@@ -160,9 +157,7 @@ void main() {
     });
 
     test("comes from the content-length header", () {
-      var request = _createMessage(headers: {
-        'content-length': '42'
-      });
+      var request = _createMessage(headers: {'content-length': '42'});
       expect(request.contentLength, 42);
     });
   });
@@ -173,13 +168,13 @@ void main() {
     });
 
     test("comes from the content-type header", () {
-      expect(_createMessage(headers: {
-        'content-type': 'text/plain'
-      }).mimeType, equals('text/plain'));
+      expect(_createMessage(headers: {'content-type': 'text/plain'}).mimeType,
+          equals('text/plain'));
     });
 
     test("doesn't include parameters", () {
-      expect(_createMessage(headers: {
+      expect(_createMessage(
+          headers: {
         'content-type': 'text/plain; foo=bar; bar=baz'
       }).mimeType, equals('text/plain'));
     });
@@ -191,19 +186,19 @@ void main() {
     });
 
     test("is null without a charset parameter", () {
-      expect(_createMessage(headers: {
-        'content-type': 'text/plain'
-      }).encoding, isNull);
+      expect(_createMessage(headers: {'content-type': 'text/plain'}).encoding,
+          isNull);
     });
 
     test("is null with an unrecognized charset parameter", () {
-      expect(_createMessage(headers: {
-        'content-type': 'text/plain; charset=fblthp'
-      }).encoding, isNull);
+      expect(_createMessage(
+              headers: {'content-type': 'text/plain; charset=fblthp'}).encoding,
+          isNull);
     });
 
     test("comes from the content-type charset parameter", () {
-      expect(_createMessage(headers: {
+      expect(_createMessage(
+          headers: {
         'content-type': 'text/plain; charset=iso-8859-1'
       }).encoding, equals(LATIN1));
     });

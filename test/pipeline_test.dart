@@ -71,9 +71,8 @@ void main() {
       return response;
     });
 
-    var innerPipeline = const Pipeline()
-        .addMiddleware(middlewareA)
-        .addMiddleware(middlewareB);
+    var innerPipeline =
+        const Pipeline().addMiddleware(middlewareA).addMiddleware(middlewareB);
 
     var handler = const Pipeline()
         .addMiddleware(innerPipeline.middleware)

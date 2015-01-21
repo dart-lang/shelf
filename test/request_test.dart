@@ -28,8 +28,7 @@ void main() {
     });
 
     test('requestedUri must be absolute', () {
-      expect(() => new Request('GET', Uri.parse('/path')),
-          throwsArgumentError);
+      expect(() => new Request('GET', Uri.parse('/path')), throwsArgumentError);
     });
 
     test('if uri is null, scriptName must be null', () {
@@ -39,23 +38,21 @@ void main() {
 
     test('if scriptName is null, uri must be null', () {
       var relativeUri = new Uri(path: '/cool/beans.html');
-      expect(() => new Request('GET', Uri.parse('/path'),
-          url: relativeUri), throwsArgumentError);
+      expect(() => new Request('GET', Uri.parse('/path'), url: relativeUri),
+          throwsArgumentError);
     });
 
     test('uri must be relative', () {
       var relativeUri = Uri.parse('http://localhost/test');
 
       expect(() => new Request('GET', LOCALHOST_URI,
-          url: relativeUri, scriptName: '/news'),
-          throwsArgumentError);
+          url: relativeUri, scriptName: '/news'), throwsArgumentError);
 
       // NOTE: explicitly testing fragments due to Issue 18053
       relativeUri = Uri.parse('http://localhost/test#fragment');
 
       expect(() => new Request('GET', LOCALHOST_URI,
-          url: relativeUri, scriptName: '/news'),
-          throwsArgumentError);
+          url: relativeUri, scriptName: '/news'), throwsArgumentError);
     });
 
     test('uri and scriptName', () {
@@ -88,7 +85,7 @@ void main() {
       var fullUrl = 'http://localhost$scriptName$testUrl';
 
       expect(() => new Request('GET', Uri.parse(fullUrl),
-          url: Uri.parse(testUrl), scriptName: scriptName),
+              url: Uri.parse(testUrl), scriptName: scriptName),
           throwsArgumentError);
     });
 
@@ -97,16 +94,16 @@ void main() {
       var scriptName = 'assets/static';
       var fullUrl = 'http://localhost/assets/static/pages';
 
-      expect(() => new Request('GET',Uri.parse(fullUrl),
-          url: Uri.parse(pathInfo), scriptName: scriptName),
+      expect(() => new Request('GET', Uri.parse(fullUrl),
+              url: Uri.parse(pathInfo), scriptName: scriptName),
           throwsArgumentError);
 
       pathInfo = '/assets/static/page';
       scriptName = '/';
       fullUrl = 'http://localhost/assets/static/pages';
 
-      expect(() => new Request('GET',Uri.parse(fullUrl),
-          url: Uri.parse(pathInfo), scriptName: scriptName),
+      expect(() => new Request('GET', Uri.parse(fullUrl),
+              url: Uri.parse(pathInfo), scriptName: scriptName),
           throwsArgumentError);
     });
 
@@ -115,8 +112,8 @@ void main() {
       var scriptName = '/';
       var fullUrl = 'http://localhost/assets/static/pages';
 
-      expect(() => new Request('GET',Uri.parse(fullUrl),
-          url: Uri.parse(pathInfo), scriptName: scriptName),
+      expect(() => new Request('GET', Uri.parse(fullUrl),
+              url: Uri.parse(pathInfo), scriptName: scriptName),
           throwsArgumentError);
     });
   });
@@ -128,9 +125,8 @@ void main() {
     });
 
     test("comes from the Last-Modified header", () {
-      var request = _request({
-        'if-modified-since': 'Sun, 06 Nov 1994 08:49:37 GMT'
-      });
+      var request =
+          _request({'if-modified-since': 'Sun, 06 Nov 1994 08:49:37 GMT'});
       expect(request.ifModifiedSince,
           equals(DateTime.parse("1994-11-06 08:49:37z")));
     });
@@ -199,8 +195,8 @@ void main() {
     test('scriptName and url', () {
       var uri = Uri.parse('https://test.example.com/static/file.html');
       var request = new Request('GET', uri);
-      var copy = request.change(scriptName: '/dynamic',
-          url: Uri.parse('/other_path/file.html'));
+      var copy = request.change(
+          scriptName: '/dynamic', url: Uri.parse('/other_path/file.html'));
 
       expect(copy.scriptName, '/dynamic');
       expect(copy.url, Uri.parse('/other_path/file.html'));

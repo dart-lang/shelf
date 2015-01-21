@@ -45,8 +45,8 @@ void main() {
     test("the second response should be returned if it matches and the first "
         "doesn't", () {
       return syncFuture(() {
-        return handler(new Request('GET', LOCALHOST_URI,
-            headers: {'one': 'false'}));
+        return handler(
+            new Request('GET', LOCALHOST_URI, headers: {'one': 'false'}));
       }).then((response) {
         expect(response.statusCode, equals(200));
         expect(response.readAsString(), completion(equals('handler 2')));
@@ -115,7 +115,7 @@ void main() {
 
   test('[shouldCascade] controls which responses cause cascading', () {
     var handler = new Cascade(
-          shouldCascade: (response) => response.statusCode % 2 == 1)
+            shouldCascade: (response) => response.statusCode % 2 == 1)
         .add((_) => new Response.movedPermanently('/'))
         .add((_) => new Response.forbidden('handler 2'))
         .add((_) => new Response.notFound('handler 3'))
@@ -135,8 +135,8 @@ void main() {
 
     test('passing [statusCodes] and [shouldCascade] at the same time fails',
         () {
-      expect(() => new Cascade(
-            statusCodes: [404, 405], shouldCascade: (_) => false),
+      expect(() =>
+              new Cascade(statusCodes: [404, 405], shouldCascade: (_) => false),
           throwsArgumentError);
     });
   });

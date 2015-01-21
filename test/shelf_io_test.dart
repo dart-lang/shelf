@@ -94,8 +94,8 @@ void main() {
       return syncHandler(request);
     });
 
-    return schedule(() => http.get('http://localhost:$_serverPort$path'))
-        .then((response) {
+    return schedule(() => http.get('http://localhost:$_serverPort$path')).then(
+        (response) {
       expect(response.statusCode, HttpStatus.OK);
       expect(response.body, 'Hello from /foo/bar');
     });
@@ -103,10 +103,8 @@ void main() {
 
   test('custom response headers are received by the client', () {
     _scheduleServer((request) {
-      return new Response.ok('Hello from /', headers: {
-        'test-header': 'test-value',
-        'test-list': 'a, b, c'
-      });
+      return new Response.ok('Hello from /',
+          headers: {'test-header': 'test-value', 'test-list': 'a, b, c'});
     });
 
     return _scheduleGet().then((response) {
@@ -193,8 +191,7 @@ void main() {
       request.hijack(expectAsync((stream, sink) {
         expect(stream.first, completion(equals("Hello".codeUnits)));
 
-        sink.add((
-            "HTTP/1.1 404 Not Found\r\n"
+        sink.add(("HTTP/1.1 404 Not Found\r\n"
             "Date: Mon, 23 May 2005 22:38:34 GMT\r\n"
             "Content-Length: 13\r\n"
             "\r\n"
@@ -206,8 +203,8 @@ void main() {
     return _schedulePost(body: "Hello").then((response) {
       expect(response.statusCode, HttpStatus.NOT_FOUND);
       expect(response.headers["date"], "Mon, 23 May 2005 22:38:34 GMT");
-      expect(response.stream.bytesToString(),
-          completion(equals("Hello, world!")));
+      expect(
+          response.stream.bytesToString(), completion(equals("Hello, world!")));
     });
   });
 
@@ -301,9 +298,8 @@ void main() {
     test('defers to header in response', () {
       var date = new DateTime.utc(1981, 6, 5);
       _scheduleServer((request) {
-        return new Response.ok('test', headers: {
-          HttpHeaders.DATE: parser.formatHttpDate(date)
-        });
+        return new Response.ok('test',
+            headers: {HttpHeaders.DATE: parser.formatHttpDate(date)});
       });
 
       return _scheduleGet().then((response) {
@@ -353,17 +349,15 @@ Future _scheduleServer(Handler handler) {
 Future<http.Response> _scheduleGet({Map<String, String> headers}) {
   if (headers == null) headers = {};
 
-  return schedule(() =>
-      http.get('http://localhost:$_serverPort/', headers: headers));
+  return schedule(
+      () => http.get('http://localhost:$_serverPort/', headers: headers));
 }
 
-Future<http.StreamedResponse> _schedulePost({Map<String, String> headers,
-    String body}) {
-
+Future<http.StreamedResponse> _schedulePost(
+    {Map<String, String> headers, String body}) {
   return schedule(() {
-
-    var request = new http.Request('POST',
-        Uri.parse('http://localhost:$_serverPort/'));
+    var request =
+        new http.Request('POST', Uri.parse('http://localhost:$_serverPort/'));
 
     if (headers != null) request.headers.addAll(headers);
     if (body != null) request.body = body;

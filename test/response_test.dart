@@ -40,8 +40,7 @@ void main() {
 
     test("adds an explicit encoding to the content-type", () {
       var response = new Response.ok("è",
-          encoding: LATIN1,
-          headers: {'content-type': 'text/plain'});
+          encoding: LATIN1, headers: {'content-type': 'text/plain'});
       expect(response.headers,
           containsPair('content-type', 'text/plain; charset=iso-8859-1'));
     });
@@ -49,8 +48,8 @@ void main() {
     test("sets an absent content-type to application/octet-stream in order to "
         "set the charset", () {
       var response = new Response.ok("è", encoding: LATIN1);
-      expect(response.headers, containsPair('content-type',
-          'application/octet-stream; charset=iso-8859-1'));
+      expect(response.headers, containsPair(
+          'content-type', 'application/octet-stream; charset=iso-8859-1'));
     });
 
     test("overwrites an existing charset if given an explicit encoding", () {
@@ -65,8 +64,8 @@ void main() {
   group("new Response.internalServerError without a body", () {
     test('sets the body to "Internal Server Error"', () {
       var response = new Response.internalServerError();
-      expect(response.readAsString(),
-          completion(equals("Internal Server Error")));
+      expect(
+          response.readAsString(), completion(equals("Internal Server Error")));
     });
 
     test('sets the content-type header to text/plain', () {
@@ -75,7 +74,8 @@ void main() {
     });
 
     test('preserves content-type parameters', () {
-      var response = new Response.internalServerError(headers: {
+      var response = new Response.internalServerError(
+          headers: {
         'content-type': 'application/octet-stream; param=whatever'
       });
       expect(response.headers,
@@ -101,7 +101,8 @@ void main() {
     });
 
     test("comes from the Expires header", () {
-      expect(new Response.ok("okay!", headers: {
+      expect(new Response.ok("okay!",
+          headers: {
         'expires': 'Sun, 06 Nov 1994 08:49:37 GMT'
       }).expires, equals(DateTime.parse("1994-11-06 08:49:37z")));
     });
@@ -113,7 +114,8 @@ void main() {
     });
 
     test("comes from the Last-Modified header", () {
-      expect(new Response.ok("okay!", headers: {
+      expect(new Response.ok("okay!",
+          headers: {
         'last-modified': 'Sun, 06 Nov 1994 08:49:37 GMT'
       }).lastModified, equals(DateTime.parse("1994-11-06 08:49:37z")));
     });
@@ -123,7 +125,9 @@ void main() {
     test('with no arguments returns instance with equal values', () {
       var controller = new StreamController();
 
-      var request = new Response(345, body: 'hèllo, world', encoding: LATIN1,
+      var request = new Response(345,
+          body: 'hèllo, world',
+          encoding: LATIN1,
           headers: {'header1': 'header value 1'},
           context: {'context1': 'context value 1'});
 

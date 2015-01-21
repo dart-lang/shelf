@@ -53,8 +53,7 @@ void main() {
     test('hijacking a non-hijackable request throws a StateError', () {
       var request = new Request('GET', LOCALHOST_URI);
       var newRequest = request.change();
-      expect(() => newRequest.hijack((_, __) => null),
-          throwsStateError);
+      expect(() => newRequest.hijack((_, __) => null), throwsStateError);
     });
 
     test('hijacking a hijackable request throws a HijackException and calls '

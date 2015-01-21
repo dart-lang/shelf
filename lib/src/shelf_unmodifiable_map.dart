@@ -31,8 +31,8 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
     }
 
     if (ignoreKeyCase) {
-      source = new pc.CanonicalizedMap<String, String, V>.from(source,
-          (key) => key.toLowerCase(), isValidKey: (key) => key != null);
+      source = new pc.CanonicalizedMap<String, String, V>.from(
+          source, (key) => key.toLowerCase(), isValidKey: (key) => key != null);
     } else {
       source = new Map<String, V>.from(source);
     }
@@ -47,6 +47,6 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
 // TODO(kevmoo): Consider using MapView from dart:collection which has a const
 // ctor. Would require updating min SDK to 1.5.
 class _EmptyShelfUnmodifiableMap<V> extends pc.DelegatingMap<String, V>
-    implements ShelfUnmodifiableMap<V>  {
+    implements ShelfUnmodifiableMap<V> {
   const _EmptyShelfUnmodifiableMap() : super(const {});
 }

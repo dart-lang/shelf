@@ -46,10 +46,10 @@ abstract class Message {
   /// Creates a new [Message].
   ///
   /// If [headers] is `null`, it is treated as empty.
-  Message(this._body, {Map<String, String> headers,
-        Map<String, Object> context})
+  Message(this._body,
+      {Map<String, String> headers, Map<String, Object> context})
       : this.headers = new ShelfUnmodifiableMap<String>(headers,
-            ignoreKeyCase: true),
+          ignoreKeyCase: true),
         this.context = new ShelfUnmodifiableMap<Object>(context,
             ignoreKeyCase: false);
 
@@ -107,7 +107,7 @@ abstract class Message {
   Stream<List<int>> read() {
     if (_bodyWasRead) {
       throw new StateError("The 'read' method can only be called once on a "
-                           "shelf.Request/shelf.Response object.");
+          "shelf.Request/shelf.Response object.");
     }
     _bodyWasRead = true;
     return _body;

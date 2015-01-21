@@ -67,8 +67,8 @@ Middleware createMiddleware({requestHandler(Request request),
       return syncFuture(() => requestHandler(request)).then((response) {
         if (response != null) return response;
 
-        return syncFuture(() => innerHandler(request))
-            .then((response) => responseHandler(response), onError: onError);
+        return syncFuture(() => innerHandler(request)).then(
+            (response) => responseHandler(response), onError: onError);
       });
     };
   };

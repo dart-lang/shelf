@@ -19,11 +19,11 @@ const WORLD_BYTES = const [32, 119, 111, 114, 108, 100];
 ///
 /// By default, replies with a status code 200, empty headers, and
 /// `Hello from ${request.url.path}`.
-Response syncHandler(Request request, {int statusCode,
-    Map<String, String> headers}) {
+Response syncHandler(Request request,
+    {int statusCode, Map<String, String> headers}) {
   if (statusCode == null) statusCode = 200;
-  return new Response(statusCode, headers: headers,
-      body: 'Hello from ${request.url.path}');
+  return new Response(statusCode,
+      headers: headers, body: 'Hello from ${request.url.path}');
 }
 
 /// Calls [syncHandler] and wraps the response in a [Future].

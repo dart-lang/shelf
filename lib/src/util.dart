@@ -38,6 +38,5 @@ catchTopLevelErrors(callback(), void onError(error, StackTrace stackTrace)) {
 Map updateMap(Map original, Map updates) {
   if (updates == null || updates.isEmpty) return original;
 
-  return new Map.from(original)
-      ..addAll(updates);
+  return new Map.from(original)..addAll(updates);
 }

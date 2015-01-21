@@ -23,8 +23,7 @@ import 'src/util.dart';
 ///
 /// See the documentation for [HttpServer.bind] for more details on [address],
 /// [port], and [backlog].
-Future<HttpServer> serve(Handler handler, address, int port,
-    {int backlog}) {
+Future<HttpServer> serve(Handler handler, address, int port, {int backlog}) {
   if (backlog == null) backlog = 0;
   return HttpServer.bind(address, port, backlog: backlog).then((server) {
     serveRequests(server, handler);
@@ -81,11 +80,11 @@ Future handleRequest(HttpRequest request, Handler handler) {
       response = _logError('null response from handler.');
     } else if (!shelfRequest.canHijack) {
       var message = new StringBuffer()
-          ..writeln("Got a response for hijacked request "
-              "${shelfRequest.method} ${shelfRequest.requestedUri}:")
-          ..writeln(response.statusCode);
-      response.headers.forEach((key, value) =>
-          message.writeln("${key}: ${value}"));
+        ..writeln("Got a response for hijacked request "
+            "${shelfRequest.method} ${shelfRequest.requestedUri}:")
+        ..writeln(response.statusCode);
+      response.headers
+          .forEach((key, value) => message.writeln("${key}: ${value}"));
       throw new Exception(message.toString().trim());
     }
 
@@ -106,13 +105,16 @@ Request _fromHttpRequest(HttpRequest request) {
   });
 
   onHijack(callback) {
-    return request.response.detachSocket(writeHeaders: false)
+    return request.response
+        .detachSocket(writeHeaders: false)
         .then((socket) => callback(socket, socket));
   }
 
   return new Request(request.method, request.requestedUri,
-      protocolVersion: request.protocolVersion, headers: headers,
-      body: request, onHijack: onHijack);
+      protocolVersion: request.protocolVersion,
+      headers: headers,
+      body: request,
+      onHijack: onHijack);
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
@@ -131,7 +133,8 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
     httpResponse.headers.date = new DateTime.now().toUtc();
   }
 
-  return httpResponse.addStream(response.read())
+  return httpResponse
+      .addStream(response.read())
       .then((_) => httpResponse.close());
 }
 
@@ -143,8 +146,7 @@ Response _logError(String message, [StackTrace stackTrace]) {
     chain = new Chain.forTrace(stackTrace);
   }
   chain = chain
-      .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
-      .terse;
+      .foldFrames((frame) => frame.isCore || frame.package == 'shelf').terse;
 
   stderr.writeln('ERROR - ${new DateTime.now()}');
   stderr.writeln(message);
