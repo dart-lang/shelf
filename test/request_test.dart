@@ -5,14 +5,16 @@
 library shelf.request_test;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:shelf/shelf.dart';
 import 'package:unittest/unittest.dart';
 
 import 'test_util.dart';
 
-Request _request([Map<String, String> headers, Stream<List<int>> body]) {
-  return new Request("GET", LOCALHOST_URI, headers: headers, body: body);
+Request _request({Map<String, String> headers, body, Encoding encoding}) {
+  return new Request("GET", LOCALHOST_URI,
+      headers: headers, body: body, encoding: encoding);
 }
 
 void main() {
@@ -125,8 +127,8 @@ void main() {
     });
 
     test("comes from the Last-Modified header", () {
-      var request =
-          _request({'if-modified-since': 'Sun, 06 Nov 1994 08:49:37 GMT'});
+      var request = _request(
+          headers: {'if-modified-since': 'Sun, 06 Nov 1994 08:49:37 GMT'});
       expect(request.ifModifiedSince,
           equals(DateTime.parse("1994-11-06 08:49:37z")));
     });

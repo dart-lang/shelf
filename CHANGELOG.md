@@ -1,3 +1,7 @@
+## 0.5.7
+
+* Updated `Request` to support the `body` model from `Response`.  
+
 ## 0.5.6
 
 * Fixed `createMiddleware` to only catch errors if `errorHandler` is provided.

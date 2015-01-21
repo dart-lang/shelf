@@ -40,3 +40,13 @@ Map updateMap(Map original, Map updates) {
 
   return new Map.from(original)..addAll(updates);
 }
+
+/// Adds a header with [name] and [value] to [headers], which may be null.
+///
+/// Returns a new map without modifying [headers].
+Map<String, String> addHeader(
+    Map<String, String> headers, String name, String value) {
+  headers = headers == null ? {} : new Map.from(headers);
+  headers[name] = value;
+  return headers;
+}

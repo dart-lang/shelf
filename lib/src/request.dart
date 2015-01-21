@@ -5,6 +5,7 @@
 library shelf.request;
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
 
@@ -88,6 +89,15 @@ class Request extends Message {
   /// Setting one of [url] or [scriptName] and not the other will throw an
   /// [ArgumentError].
   ///
+  /// [body] is the request body. It may be either a [String], a
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  /// If it's a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. The default encoding is UTF-8.
+  ///
+  /// If [encoding] is passed, the "encoding" field of the Content-Type header
+  /// in [headers] will be set appropriately. If there is no existing
+  /// Content-Type header, it will be set to "application/octet-stream".
+  ///
   /// The default value for [protocolVersion] is '1.1'.
   ///
   /// ## `onHijack`
@@ -117,8 +127,8 @@ class Request extends Message {
   /// See also [hijack].
   // TODO(kevmoo) finish documenting the rest of the arguments.
   Request(String method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, Uri url, String scriptName,
-      Stream<List<int>> body, Map<String, Object> context,
+      Map<String, String> headers, Uri url, String scriptName, body,
+      Encoding encoding, Map<String, Object> context,
       OnHijackCallback onHijack})
       : this._(method, requestedUri,
           protocolVersion: protocolVersion,
@@ -126,6 +136,7 @@ class Request extends Message {
           url: url,
           scriptName: scriptName,
           body: body,
+          encoding: encoding,
           context: context,
           onHijack: onHijack == null ? null : new _OnHijack(onHijack));
 
@@ -136,8 +147,8 @@ class Request extends Message {
   /// source [Request] to ensure that [hijack] can only be called once, even
   /// from a changed [Request].
   Request._(this.method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, Uri url, String scriptName,
-      Stream<List<int>> body, Map<String, Object> context, _OnHijack onHijack})
+      Map<String, String> headers, Uri url, String scriptName, body,
+      Encoding encoding, Map<String, Object> context, _OnHijack onHijack})
       : this.requestedUri = requestedUri,
         this.protocolVersion = protocolVersion == null
             ? '1.1'
@@ -145,8 +156,7 @@ class Request extends Message {
         this.url = _computeUrl(requestedUri, url, scriptName),
         this.scriptName = _computeScriptName(requestedUri, url, scriptName),
         this._onHijack = onHijack,
-        super(body == null ? new Stream.fromIterable([]) : body,
-            headers: headers, context: context) {
+        super(body, encoding: encoding, headers: headers, context: context) {
     if (method.isEmpty) throw new ArgumentError('method cannot be empty.');
 
     if (!requestedUri.isAbsolute) {

@@ -11,6 +11,7 @@ import 'package:http_parser/http_parser.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 import 'shelf_unmodifiable_map.dart';
+import 'util.dart';
 
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
@@ -45,11 +46,21 @@ abstract class Message {
 
   /// Creates a new [Message].
   ///
+  /// [body] is the response body. It may be either a [String], a
+  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
+  /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
+  /// UTF-8.
+  ///
   /// If [headers] is `null`, it is treated as empty.
-  Message(this._body,
-      {Map<String, String> headers, Map<String, Object> context})
-      : this.headers = new ShelfUnmodifiableMap<String>(headers,
-          ignoreKeyCase: true),
+  ///
+  /// If [encoding] is passed, the "encoding" field of the Content-Type header
+  /// in [headers] will be set appropriately. If there is no existing
+  /// Content-Type header, it will be set to "application/octet-stream".
+  Message(body, {Encoding encoding, Map<String, String> headers,
+      Map<String, Object> context})
+      : this._body = _bodyToStream(body, encoding),
+        this.headers = new ShelfUnmodifiableMap<String>(
+            _adjustHeaders(headers, encoding), ignoreKeyCase: true),
         this.context = new ShelfUnmodifiableMap<Object>(context,
             ignoreKeyCase: false);
 
@@ -129,4 +140,35 @@ abstract class Message {
   /// Creates a new [Message] by copying existing values and applying specified
   /// changes.
   Message change({Map<String, String> headers, Map<String, Object> context});
+}
+
+/// Converts [body] to a byte stream.
+///
+/// [body] may be either a [String], a [Stream<List<int>>], or `null`. If it's a
+/// [String], [encoding] will be used to convert it to a [Stream<List<int>>].
+Stream<List<int>> _bodyToStream(body, Encoding encoding) {
+  if (encoding == null) encoding = UTF8;
+  if (body == null) return new Stream.fromIterable([]);
+  if (body is String) return new Stream.fromIterable([encoding.encode(body)]);
+  if (body is Stream) return body;
+
+  throw new ArgumentError('Response body "$body" must be a String or a '
+      'Stream.');
+}
+
+/// Adds information about [encoding] to [headers].
+///
+/// Returns a new map without modifying [headers].
+Map<String, String> _adjustHeaders(
+    Map<String, String> headers, Encoding encoding) {
+  if (headers == null) headers = const {};
+  if (encoding == null) return headers;
+  if (headers['content-type'] == null) {
+    return addHeader(headers, 'content-type',
+        'application/octet-stream; charset=${encoding.name}');
+  }
+
+  var contentType = new MediaType.parse(headers['content-type']).change(
+      parameters: {'charset': encoding.name});
+  return addHeader(headers, 'content-type', contentType.toString());
 }

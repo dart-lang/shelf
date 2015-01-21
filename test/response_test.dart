@@ -27,40 +27,6 @@ void main() {
     });
   });
 
-  group("new Response", () {
-    test("defaults to encoding a String as UTF-8", () {
-      expect(new Response.ok("è").read().toList(),
-          completion(equals([[195, 168]])));
-    });
-
-    test("uses the explicit encoding if available", () {
-      expect(new Response.ok("è", encoding: LATIN1).read().toList(),
-          completion(equals([[232]])));
-    });
-
-    test("adds an explicit encoding to the content-type", () {
-      var response = new Response.ok("è",
-          encoding: LATIN1, headers: {'content-type': 'text/plain'});
-      expect(response.headers,
-          containsPair('content-type', 'text/plain; charset=iso-8859-1'));
-    });
-
-    test("sets an absent content-type to application/octet-stream in order to "
-        "set the charset", () {
-      var response = new Response.ok("è", encoding: LATIN1);
-      expect(response.headers, containsPair(
-          'content-type', 'application/octet-stream; charset=iso-8859-1'));
-    });
-
-    test("overwrites an existing charset if given an explicit encoding", () {
-      var response = new Response.ok("è",
-          encoding: LATIN1,
-          headers: {'content-type': 'text/plain; charset=whatever'});
-      expect(response.headers,
-          containsPair('content-type', 'text/plain; charset=iso-8859-1'));
-    });
-  });
-
   group("new Response.internalServerError without a body", () {
     test('sets the body to "Internal Server Error"', () {
       var response = new Response.internalServerError();

@@ -13,8 +13,9 @@ import 'package:unittest/unittest.dart';
 import 'test_util.dart';
 
 class _TestMessage extends Message {
-  _TestMessage(Map<String, String> headers, Map<String, Object> context,
-      Stream<List<int>> body) : super(body, headers: headers, context: context);
+  _TestMessage(Map<String, String> headers, Map<String, Object> context, body,
+      Encoding encoding)
+      : super(body, headers: headers, context: context, encoding: encoding);
 
   Message change({Map<String, String> headers, Map<String, Object> context}) {
     throw new UnimplementedError();
@@ -22,9 +23,8 @@ class _TestMessage extends Message {
 }
 
 Message _createMessage({Map<String, String> headers,
-    Map<String, Object> context, Stream<List<int>> body}) {
-  if (body == null) body = new Stream.fromIterable([]);
-  return new _TestMessage(headers, context, body);
+    Map<String, Object> context, body, Encoding encoding}) {
+  return new _TestMessage(headers, context, body, encoding);
 }
 
 void main() {
@@ -201,6 +201,39 @@ void main() {
           headers: {
         'content-type': 'text/plain; charset=iso-8859-1'
       }).encoding, equals(LATIN1));
+    });
+
+    test("defaults to encoding a String as UTF-8", () {
+      expect(_createMessage(body: "è").read().toList(),
+          completion(equals([[195, 168]])));
+    });
+
+    test("uses the explicit encoding if available", () {
+      expect(_createMessage(body: "è", encoding: LATIN1).read().toList(),
+          completion(equals([[232]])));
+    });
+
+    test("adds an explicit encoding to the content-type", () {
+      var request = _createMessage(
+          body: "è", encoding: LATIN1, headers: {'content-type': 'text/plain'});
+      expect(request.headers,
+          containsPair('content-type', 'text/plain; charset=iso-8859-1'));
+    });
+
+    test("sets an absent content-type to application/octet-stream in order to "
+        "set the charset", () {
+      var request = _createMessage(body: "è", encoding: LATIN1);
+      expect(request.headers, containsPair(
+          'content-type', 'application/octet-stream; charset=iso-8859-1'));
+    });
+
+    test("overwrites an existing charset if given an explicit encoding", () {
+      var request = _createMessage(
+          body: "è",
+          encoding: LATIN1,
+          headers: {'content-type': 'text/plain; charset=whatever'});
+      expect(request.headers,
+          containsPair('content-type', 'text/plain; charset=iso-8859-1'));
     });
   });
 }

@@ -4,7 +4,6 @@
 
 library shelf.response;
 
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
@@ -124,7 +123,7 @@ class Response extends Message {
       : this(statusCode,
             body: body,
             encoding: encoding,
-            headers: _addHeader(
+            headers: addHeader(
                 headers, 'location', _locationToString(location)),
             context: context);
 
@@ -136,7 +135,7 @@ class Response extends Message {
   /// the old value should be used.
   Response.notModified({Map<String, String> headers,
     Map<String, Object> context})
-      : this(304, headers: _addHeader(
+      : this(304, headers: addHeader(
             headers, 'date', formatHttpDate(new DateTime.now())),
             context: context);
 
@@ -213,9 +212,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response(this.statusCode, {body, Map<String, String> headers,
       Encoding encoding, Map<String, Object> context})
-      : super(_bodyToStream(body, encoding),
-          headers: _adjustHeaders(headers, encoding),
-          context: context) {
+      : super(body, encoding: encoding, headers: headers, context: context) {
     if (statusCode < 100) {
       throw new ArgumentError("Invalid status code: $statusCode.");
     }
@@ -242,59 +239,18 @@ class Response extends Message {
   }
 }
 
-/// Converts [body] to a byte stream.
-///
-/// [body] may be either a [String], a [Stream<List<int>>], or `null`. If it's a
-/// [String], [encoding] will be used to convert it to a [Stream<List<int>>].
-Stream<List<int>> _bodyToStream(body, Encoding encoding) {
-  if (encoding == null) encoding = UTF8;
-  if (body == null) return new Stream.fromIterable([]);
-  if (body is String) return new Stream.fromIterable([encoding.encode(body)]);
-  if (body is Stream) return body;
-
-  throw new ArgumentError('Response body "$body" must be a String or a '
-      'Stream.');
-}
-
-/// Adds information about [encoding] to [headers].
-///
-/// Returns a new map without modifying [headers].
-Map<String, String> _adjustHeaders(
-    Map<String, String> headers, Encoding encoding) {
-  if (headers == null) headers = const {};
-  if (encoding == null) return headers;
-  if (headers['content-type'] == null) {
-    return _addHeader(headers, 'content-type',
-        'application/octet-stream; charset=${encoding.name}');
-  }
-
-  var contentType = new MediaType.parse(headers['content-type'])
-      .change(parameters: {'charset': encoding.name});
-  return _addHeader(headers, 'content-type', contentType.toString());
-}
-
-/// Adds a header with [name] and [value] to [headers], which may be null.
-///
-/// Returns a new map without modifying [headers].
-Map<String, String> _addHeader(
-    Map<String, String> headers, String name, String value) {
-  headers = headers == null ? {} : new Map.from(headers);
-  headers[name] = value;
-  return headers;
-}
-
 /// Adds content-type information to [headers].
 ///
 /// Returns a new map without modifying [headers]. This is used to add
 /// content-type information when creating a 500 response with a default body.
 Map<String, String> _adjustErrorHeaders(Map<String, String> headers) {
   if (headers == null || headers['content-type'] == null) {
-    return _addHeader(headers, 'content-type', 'text/plain');
+    return addHeader(headers, 'content-type', 'text/plain');
   }
 
   var contentType = new MediaType.parse(headers['content-type'])
       .change(mimeType: 'text/plain');
-  return _addHeader(headers, 'content-type', contentType.toString());
+  return addHeader(headers, 'content-type', contentType.toString());
 }
 
 /// Converts [location], which may be a [String] or a [Uri], to a [String].
