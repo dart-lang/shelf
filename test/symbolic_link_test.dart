@@ -18,9 +18,7 @@ void main() {
       });
     });
 
-    d.dir('originals', [
-        d.file('index.html', '<html></html>'),
-    ]).create();
+    d.dir('originals', [d.file('index.html', '<html></html>'),]).create();
 
     d.dir('alt_root').create();
 
@@ -111,8 +109,8 @@ void main() {
   group('access outside of root enabled', () {
     test('access real file', () {
       schedule(() {
-        var handler = createStaticHandler(d.defaultRoot,
-            serveFilesOutsidePath: true);
+        var handler =
+            createStaticHandler(d.defaultRoot, serveFilesOutsidePath: true);
 
         return makeRequest(handler, '/originals/index.html').then((response) {
           expect(response.statusCode, HttpStatus.OK);
@@ -125,8 +123,8 @@ void main() {
     group('links under root dir', () {
       test('access sym linked file in real dir', () {
         schedule(() {
-          var handler = createStaticHandler(d.defaultRoot,
-              serveFilesOutsidePath: true);
+          var handler =
+              createStaticHandler(d.defaultRoot, serveFilesOutsidePath: true);
 
           return makeRequest(handler, '/link_index.html').then((response) {
             expect(response.statusCode, HttpStatus.OK);
@@ -138,8 +136,8 @@ void main() {
 
       test('access file in sym linked dir', () {
         schedule(() {
-          var handler = createStaticHandler(d.defaultRoot,
-              serveFilesOutsidePath: true);
+          var handler =
+              createStaticHandler(d.defaultRoot, serveFilesOutsidePath: true);
 
           return makeRequest(handler, '/link_dir/index.html').then((response) {
             expect(response.statusCode, HttpStatus.OK);

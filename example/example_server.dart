@@ -20,8 +20,8 @@ void main(List<String> args) {
     pipeline = pipeline.addMiddleware(shelf.logRequests());
   }
 
-  var handler = pipeline.addHandler(createStaticHandler('example/files',
-          defaultDocument: 'index.html'));
+  var handler = pipeline.addHandler(
+      createStaticHandler('example/files', defaultDocument: 'index.html'));
 
   io.serve(handler, 'localhost', 8080).then((server) {
     print('Serving at http://${server.address.host}:${server.port}');
@@ -29,4 +29,4 @@ void main(List<String> args) {
 }
 
 ArgParser _getParser() => new ArgParser()
-    ..addFlag('logging', abbr: 'l', defaultsTo: true, negatable: true);
+  ..addFlag('logging', abbr: 'l', defaultsTo: true, negatable: true);

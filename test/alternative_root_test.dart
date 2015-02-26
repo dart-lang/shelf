@@ -18,10 +18,12 @@ void main() {
     });
 
     d.file('root.txt', 'root txt').create();
-    d.dir('files', [
-        d.file('test.txt', 'test txt content'),
-        d.file('with space.txt', 'with space content')
-    ]).create();
+    d
+        .dir('files', [
+      d.file('test.txt', 'test txt content'),
+      d.file('with space.txt', 'with space content')
+    ])
+        .create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;
@@ -85,8 +87,8 @@ void main() {
     schedule(() {
       var handler = createStaticHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/static/not_here.txt',
-          scriptName: '/static').then((response) {
+      return makeRequest(handler, '/static/not_here.txt', scriptName: '/static')
+          .then((response) {
         expect(response.statusCode, HttpStatus.NOT_FOUND);
       });
     });

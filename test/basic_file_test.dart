@@ -22,10 +22,12 @@ void main() {
     d.file('index.html', '<html></html>').create();
     d.file('root.txt', 'root txt').create();
     d.file('random.unknown', 'no clue').create();
-    d.dir('files', [
-        d.file('test.txt', 'test txt content'),
-        d.file('with space.txt', 'with space content')
-    ]).create();
+    d
+        .dir('files', [
+      d.file('test.txt', 'test txt content'),
+      d.file('with space.txt', 'with space content')
+    ])
+        .create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;
@@ -112,12 +114,10 @@ void main() {
         var rootPath = p.join(d.defaultRoot, 'root.txt');
         var modified = new File(rootPath).statSync().changed.toUtc();
 
-        var headers = {
-          HttpHeaders.IF_MODIFIED_SINCE: formatHttpDate(modified)
-        };
+        var headers = {HttpHeaders.IF_MODIFIED_SINCE: formatHttpDate(modified)};
 
-        return makeRequest(handler, '/root.txt', headers: headers)
-            .then((response) {
+        return makeRequest(handler, '/root.txt', headers: headers).then(
+            (response) {
           expect(response.statusCode, HttpStatus.NOT_MODIFIED);
           expect(response.contentLength, isNull);
         });
@@ -133,11 +133,11 @@ void main() {
 
         var headers = {
           HttpHeaders.IF_MODIFIED_SINCE:
-            formatHttpDate(modified.subtract(const Duration(seconds: 1)))
+              formatHttpDate(modified.subtract(const Duration(seconds: 1)))
         };
 
-        return makeRequest(handler, '/root.txt', headers: headers)
-            .then((response) {
+        return makeRequest(handler, '/root.txt', headers: headers).then(
+            (response) {
           expect(response.statusCode, HttpStatus.OK);
           expect(response.lastModified, atSameTimeToSecond(modified));
         });
@@ -153,11 +153,11 @@ void main() {
 
         var headers = {
           HttpHeaders.IF_MODIFIED_SINCE:
-            formatHttpDate(modified.add(const Duration(seconds: 1)))
+              formatHttpDate(modified.add(const Duration(seconds: 1)))
         };
 
-        return makeRequest(handler, '/root.txt', headers: headers)
-            .then((response) {
+        return makeRequest(handler, '/root.txt', headers: headers).then(
+            (response) {
           expect(response.statusCode, HttpStatus.NOT_MODIFIED);
           expect(response.contentLength, isNull);
         });

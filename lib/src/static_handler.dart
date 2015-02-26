@@ -71,8 +71,12 @@ Handler createStaticHandler(String fileSystemPath,
       // path doesn't end with '/', redirect to the path with a trailing '/'
       var uri = request.requestedUri;
       assert(!uri.path.endsWith('/'));
-      var location = new Uri(scheme: uri.scheme, userInfo: uri.userInfo,
-          host: uri.host, port: uri.port, path: uri.path + '/',
+      var location = new Uri(
+          scheme: uri.scheme,
+          userInfo: uri.userInfo,
+          host: uri.host,
+          port: uri.port,
+          path: uri.path + '/',
           query: uri.query);
 
       return new Response.movedPermanently(location.toString());

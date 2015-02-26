@@ -18,10 +18,12 @@ void main() {
     });
 
     d.file('root.txt', 'root txt').create();
-    d.dir('files', [
-        d.file('test.txt', 'test txt content'),
-        d.file('with space.txt', 'with space content')
-    ]).create();
+    d
+        .dir('files', [
+      d.file('test.txt', 'test txt content'),
+      d.file('with space.txt', 'with space content')
+    ])
+        .create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;
@@ -45,7 +47,8 @@ void main() {
   test('non-existent absolute path', () {
     schedule(() {
       var nonExistingAbsolute = p.join(d.defaultRoot, 'not_here');
-      expect(() => createStaticHandler(nonExistingAbsolute), throwsArgumentError);
+      expect(
+          () => createStaticHandler(nonExistingAbsolute), throwsArgumentError);
     });
   });
 

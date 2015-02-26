@@ -21,10 +21,12 @@ void main() {
 
     d.file('index.html', '<html></html>').create();
     d.file('root.txt', 'root txt').create();
-    d.dir('files', [
-        d.file('index.html', '<html><body>files</body></html>'),
-        d.file('with space.txt', 'with space content')
-    ]).create();
+    d
+        .dir('files', [
+      d.file('index.html', '<html><body>files</body></html>'),
+      d.file('with space.txt', 'with space content')
+    ])
+        .create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;
@@ -34,10 +36,15 @@ void main() {
 
   group('default document value', () {
     test('cannot contain slashes', () {
-      var invalidValues = ['file/foo.txt', '/bar.txt', '//bar.txt',
-                           '//news/bar.txt', 'foo/../bar.txt'];
+      var invalidValues = [
+        'file/foo.txt',
+        '/bar.txt',
+        '//bar.txt',
+        '//news/bar.txt',
+        'foo/../bar.txt'
+      ];
 
-      for(var val in invalidValues) {
+      for (var val in invalidValues) {
         expect(() => createStaticHandler(d.defaultRoot, defaultDocument: val),
             throwsArgumentError);
       }
@@ -91,8 +98,8 @@ void main() {
   group('default document specified', () {
     test('access "/index.html"', () {
       schedule(() {
-        var handler = createStaticHandler(d.defaultRoot,
-            defaultDocument: 'index.html');
+        var handler =
+            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
 
         return makeRequest(handler, '/index.html').then((response) {
           expect(response.statusCode, HttpStatus.OK);
@@ -105,8 +112,8 @@ void main() {
 
     test('access "/"', () {
       schedule(() {
-        var handler = createStaticHandler(d.defaultRoot,
-            defaultDocument: 'index.html');
+        var handler =
+            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
 
         return makeRequest(handler, '/').then((response) {
           expect(response.statusCode, HttpStatus.OK);
@@ -119,8 +126,8 @@ void main() {
 
     test('access "/files"', () {
       schedule(() {
-        var handler = createStaticHandler(d.defaultRoot,
-            defaultDocument: 'index.html');
+        var handler =
+            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
 
         return makeRequest(handler, '/files').then((response) {
           expect(response.statusCode, HttpStatus.MOVED_PERMANENTLY);
@@ -132,8 +139,8 @@ void main() {
 
     test('access "/files/" dir', () {
       schedule(() {
-        var handler = createStaticHandler(d.defaultRoot,
-            defaultDocument: 'index.html');
+        var handler =
+            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
 
         return makeRequest(handler, '/files/').then((response) {
           expect(response.statusCode, HttpStatus.OK);

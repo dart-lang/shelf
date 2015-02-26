@@ -50,8 +50,8 @@ Matcher atSameTimeToSecond(value) =>
 class _SecondResolutionDateTimeMatcher extends Matcher {
   final DateTime _target;
 
-  _SecondResolutionDateTimeMatcher(DateTime target) :
-    this._target = toSecondResolution(target);
+  _SecondResolutionDateTimeMatcher(DateTime target)
+      : this._target = toSecondResolution(target);
 
   bool matches(item, Map matchState) {
     if (item is! DateTime) return false;
@@ -59,9 +59,9 @@ class _SecondResolutionDateTimeMatcher extends Matcher {
     return datesEqualToSecond(_target, item);
   }
 
-  Description describe(Description descirption) =>
-      descirption.add('Must be at the same moment as $_target with resolution '
-          'to the second.');
+  Description describe(Description descirption) => descirption.add(
+      'Must be at the same moment as $_target with resolution '
+      'to the second.');
 }
 
 bool datesEqualToSecond(DateTime d1, DateTime d2) {
