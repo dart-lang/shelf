@@ -31,6 +31,28 @@ Future<HttpServer> serve(Handler handler, address, int port, {int backlog}) {
   });
 }
 
+/// Starts an [HttpServer] that listens on the specified [address] and
+/// [port] using SSL/TLS and sends requests to [handler].
+///
+/// See the documentation for [HttpServer.bindSecure] for more details on [address],
+/// [port], [backlog] and [certificateName].
+///
+/// In order to use this method, the SSL database should be configured first.
+/// This can be done as follows:
+///     SecureSocket.initialize(database: "./db",
+///                             password: "my_secure_password");
+Future<HttpServer> serveSecure(Handler handler, address, int port, String certificateName,
+                               {int backlog, bool requestClientCertificate: false}) {
+  if (backlog == null) backlog = 0;
+  return HttpServer.bindSecure(address, port,
+                               backlog: backlog,
+                               certificateName: certificateName,
+                               requestClientCertificate: requestClientCertificate).then((server) {
+    serveRequests(server, handler);
+    return server;
+  });
+}
+
 /// Serve a [Stream] of [HttpRequest]s.
 ///
 /// [HttpServer] implements [Stream<HttpRequest>] so it can be passed directly
