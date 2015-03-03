@@ -1,5 +1,8 @@
 ## Web Server Middleware for Dart
 
+[![Build Status](https://travis-ci.org/dart-lang/shelf.svg?branch=master)](https://travis-ci.org/dart-lang/shelf)
+[![Coverage Status](https://coveralls.io/repos/dart-lang/shelf/badge.svg?branch=master)](https://coveralls.io/r/dart-lang/shelf?branch=travis_coveralls)
+
 ## Introduction
 
 **Shelf** makes it easy to create and compose **web servers** and **parts of web
