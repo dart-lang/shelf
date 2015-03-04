@@ -44,7 +44,7 @@ void main() {
     });
   });
 
-  test('logs a request with an asynchronous response', () {
+  test('logs a request with an asynchronous error response', () {
     var handler = const Pipeline()
         .addMiddleware(logRequests(logger: (msg, isError) {
       expect(gotLog, isFalse);

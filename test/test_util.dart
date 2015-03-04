@@ -23,7 +23,7 @@ Response syncHandler(Request request,
     {int statusCode, Map<String, String> headers}) {
   if (statusCode == null) statusCode = 200;
   return new Response(statusCode,
-      headers: headers, body: 'Hello from ${request.url.path}');
+      headers: headers, body: 'Hello from ${request.requestedUri.path}');
 }
 
 /// Calls [syncHandler] and wraps the response in a [Future].

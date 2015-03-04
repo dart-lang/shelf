@@ -66,6 +66,27 @@ each request. For example, a routing middleware might choose which handler to
 call based on the request's URI or HTTP method, while a cascading middleware
 might call each one in sequence until one returns a successful response.
 
+Middleware that routes requests between handlers should be sure to update each
+request's [`handlerPath`][handlerPath] and [`url`][url]. This allows inner
+handlers to know where they are in the application so they can do their own
+routing correctly. This can be easily accomplished using
+[`Request.change()`][change]:
+
+[handlerPath]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_handlerPath
+[url]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_url
+[change]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_change
+
+```dart
+// In an imaginary routing middleware...
+var component = request.url.pathComponents.first;
+var handler = _handlers[component];
+if (handler == null) return new Response.notFound(null);
+
+// Create a new request just like this one but with whatever URL comes after
+// [component] instead.
+return handler(request.change(script: component));
+```
+
 ## Adapters
 
 An adapter is any code that creates [shelf.Request][] objects, passes them to a
@@ -78,7 +99,7 @@ or it might pipe requests directly from an HTTP client to a Shelf handler.
 [shelf_io.serve]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf-io@id_serve
 
 When implementing an adapter, some rules must be followed. The adapter must not
-pass the `url` or `scriptName` parameters to [new shelf.Request][]; it should
+pass the `url` or `handlerPath` parameters to [new shelf.Request][]; it should
 only pass `requestedUri`. If it passes the `context` parameter, all keys must
 begin with the adapter's package name followed by a period. If multiple headers
 with the same name are received, the adapter must collapse them into a single

@@ -23,32 +23,37 @@ typedef void OnHijackCallback(HijackCallback callback);
 
 /// Represents an HTTP request to be processed by a Shelf application.
 class Request extends Message {
-  /// The remainder of the [requestedUri] path and query designating the virtual
-  /// "location" of the request's target within the handler.
+  /// The URL path from the current handler to the requested resource, relative
+  /// to [handlerPath], plus any query parameters.
   ///
-  /// [url] may be an empty, if [requestedUri]targets the handler
-  /// root and does not have a trailing slash.
+  /// This should be used by handlers for determining which resource to serve,
+  /// in preference to [requestedUri]. This allows handlers to do the right
+  /// thing when they're mounted anywhere in the application. Routers should be
+  /// sure to update this when dispatching to a nested handler, using the
+  /// `path` parameter to [change].
   ///
-  /// [url] is never null. If it is not empty, it will start with `/`.
+  /// [url]'s path is always relative. It may be empty, if [requestedUri] ends
+  /// at this handler. [url] will always have the same query parameters as
+  /// [requestedUri].
   ///
-  /// [scriptName] and [url] combine to create a valid path that should
-  /// correspond to the [requestedUri] path.
+  /// [handlerPath] and [url]'s path combine to create [requestedUri]'s path.
   final Uri url;
 
   /// The HTTP request method, such as "GET" or "POST".
   final String method;
 
-  /// The initial portion of the [requestedUri] path that corresponds to the
-  /// handler.
+  /// The URL path to the current handler.
   ///
-  /// [scriptName] allows a handler to know its virtual "location".
+  /// This allows a handler to know its location within the URL-space of an
+  /// application. Routers should be sure to update this when dispatching to a
+  /// nested handler, using the `path` parameter to [change].
   ///
-  /// If the handler corresponds to the "root" of a server, it will be an
-  /// empty string, otherwise it will start with a `/`
+  /// [handlerPath] is always a root-relative URL path; that is, it always
+  /// starts with `/`. It will also end with `/` whenever [url]'s path is
+  /// non-empty, or if [requestUri]'s path ends with `/`.
   ///
-  /// [scriptName] and [url] combine to create a valid path that should
-  /// correspond to the [requestedUri] path.
-  final String scriptName;
+  /// [handlerPath] and [url]'s path combine to create [requestedUri]'s path.
+  final String handlerPath;
 
   /// The HTTP protocol version used in the request, either "1.0" or "1.1".
   final String protocolVersion;
@@ -83,11 +88,12 @@ class Request extends Message {
 
   /// Creates a new [Request].
   ///
-  /// If [url] and [scriptName] are omitted, they are inferred from
-  /// [requestedUri].
-  ///
-  /// Setting one of [url] or [scriptName] and not the other will throw an
-  /// [ArgumentError].
+  /// [handlerPath] must be root-relative. [url]'s path must be fully relative,
+  /// and it must have the same query parameters as [requestedUri].
+  /// [handlerPath] and [url]'s path must combine to be the path component of
+  /// [requestedUri]. If they're not passed, [handlerPath] will default to `/`
+  /// and [url] to `requestedUri.path` without the initial `/`. If only one is
+  /// passed, the other will be inferred.
   ///
   /// [body] is the request body. It may be either a [String], a
   /// [Stream<List<int>>], or `null` to indicate no body.
@@ -127,14 +133,14 @@ class Request extends Message {
   /// See also [hijack].
   // TODO(kevmoo) finish documenting the rest of the arguments.
   Request(String method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, Uri url, String scriptName, body,
+      Map<String, String> headers, String handlerPath, Uri url, body,
       Encoding encoding, Map<String, Object> context,
       OnHijackCallback onHijack})
       : this._(method, requestedUri,
           protocolVersion: protocolVersion,
           headers: headers,
           url: url,
-          scriptName: scriptName,
+          handlerPath: handlerPath,
           body: body,
           encoding: encoding,
           context: context,
@@ -147,43 +153,31 @@ class Request extends Message {
   /// source [Request] to ensure that [hijack] can only be called once, even
   /// from a changed [Request].
   Request._(this.method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, Uri url, String scriptName, body,
+      Map<String, String> headers, String handlerPath, Uri url, body,
       Encoding encoding, Map<String, Object> context, _OnHijack onHijack})
       : this.requestedUri = requestedUri,
         this.protocolVersion = protocolVersion == null
             ? '1.1'
             : protocolVersion,
-        this.url = _computeUrl(requestedUri, url, scriptName),
-        this.scriptName = _computeScriptName(requestedUri, url, scriptName),
+        this.url = _computeUrl(requestedUri, handlerPath, url),
+        this.handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
         this._onHijack = onHijack,
         super(body, encoding: encoding, headers: headers, context: context) {
     if (method.isEmpty) throw new ArgumentError('method cannot be empty.');
 
     if (!requestedUri.isAbsolute) {
-      throw new ArgumentError('requstedUri must be an absolute URI.');
-    }
-
-    // TODO(kevmoo) if defined, check that scriptName is a fully-encoded, valid
-    // path component
-    if (this.scriptName.isNotEmpty && !this.scriptName.startsWith('/')) {
-      throw new ArgumentError('scriptName must be empty or start with "/".');
-    }
-
-    if (this.scriptName == '/') {
       throw new ArgumentError(
-          'scriptName can never be "/". It should be empty instead.');
+          'requestedUri "$requestedUri" must be an absolute URL.');
     }
 
-    if (this.scriptName.endsWith('/')) {
-      throw new ArgumentError('scriptName must not end with "/".');
+    if (requestedUri.fragment.isNotEmpty) {
+      throw new ArgumentError(
+          'requestedUri "$requestedUri" may not have a fragment.');
     }
 
-    if (this.url.path.isNotEmpty && !this.url.path.startsWith('/')) {
-      throw new ArgumentError('url must be empty or start with "/".');
-    }
-
-    if (this.scriptName.isEmpty && this.url.path.isEmpty) {
-      throw new ArgumentError('scriptName and url cannot both be empty.');
+    if (this.handlerPath + this.url.path != this.requestedUri.path) {
+      throw new ArgumentError('handlerPath "$handlerPath" and url "$url" must '
+          'combine to equal requestedUri path "${requestedUri.path}".');
     }
   }
 
@@ -191,43 +185,35 @@ class Request extends Message {
   /// changes.
   ///
   /// New key-value pairs in [context] and [headers] will be added to the copied
-  /// [Request].
+  /// [Request]. If [context] or [headers] includes a key that already exists,
+  /// the key-value pair will replace the corresponding entry in the copied
+  /// [Request]. All other context and header values from the [Request] will be
+  /// included in the copied [Request] unchanged.
   ///
-  /// If [context] or [headers] includes a key that already exists, the
-  /// key-value pair will replace the corresponding entry in the copied
-  /// [Request].
+  /// [path] is used to update both [handlerPath] and [url]. It's designed for
+  /// routing middleware, and represents the path from the current handler to
+  /// the next handler. It must be a prefix of [url]; [handlerPath] becomes
+  /// `handlerPath + "/" + path`, and [url] becomes relative to that. For
+  /// example:
   ///
-  /// All other context and header values from the [Request] will be included
-  /// in the copied [Request] unchanged.
+  ///     print(request.handlerPath); // => /static/
+  ///     print(request.url);        // => dir/file.html
   ///
-  /// If [scriptName] is provided and [url] is not, [scriptName] must be a
-  /// prefix of [this.url]. [url] will default to [this.url] with this prefix
-  /// removed. Useful for routing middleware that sends requests to an inner
-  /// [Handler].
+  ///     request = request.change(path: "dir");
+  ///     print(request.handlerPath); // => /static/dir/
+  ///     print(request.url);        // => file.html
   Request change({Map<String, String> headers, Map<String, Object> context,
-      String scriptName, Uri url}) {
+      String path}) {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    if (scriptName != null && url == null) {
-      var path = this.url.path;
-      if (path.startsWith(scriptName)) {
-        path = path.substring(scriptName.length);
-        url = new Uri(path: path, query: this.url.query);
-      } else {
-        throw new ArgumentError('If scriptName is provided without url, it must'
-            ' be a prefix of the existing url path.');
-      }
-    }
-
-    if (url == null) url = this.url;
-    if (scriptName == null) scriptName = this.scriptName;
+    var handlerPath = this.handlerPath;
+    if (path != null) handlerPath += path;
 
     return new Request._(this.method, this.requestedUri,
         protocolVersion: this.protocolVersion,
         headers: headers,
-        url: url,
-        scriptName: scriptName,
+        handlerPath: handlerPath,
         body: this.read(),
         context: context,
         onHijack: _onHijack);
@@ -282,41 +268,80 @@ class _OnHijack {
 
 /// Computes `url` from the provided [Request] constructor arguments.
 ///
-/// If [url] and [scriptName] are `null`, infer value from [requestedUrl],
-/// otherwise return [url].
-///
-/// If [url] is provided, but [scriptName] is omitted, throws an
-/// [ArgumentError].
-Uri _computeUrl(Uri requestedUri, Uri url, String scriptName) {
-  if (url == null && scriptName == null) {
-    return new Uri(path: requestedUri.path, query: requestedUri.query);
+/// If [url] is `null`, the value is inferred from [requestedUrl] and
+/// [handlerPath] if available. Otherwise [url] is returned.
+Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
+  if (handlerPath != null &&
+      handlerPath != requestedUri.path &&
+      !handlerPath.endsWith("/")) {
+    handlerPath += "/";
   }
 
-  if (url != null && scriptName != null) {
-    if (url.scheme.isNotEmpty) throw new ArgumentError('url must be relative.');
+  if (url != null) {
+    if (url.scheme.isNotEmpty || url.hasAuthority || url.fragment.isNotEmpty) {
+      throw new ArgumentError('url "$url" may contain only a path and query '
+          'parameters.');
+    }
+
+    if (!requestedUri.path.endsWith(url.path)) {
+      throw new ArgumentError('url "$url" must be a suffix of requestedUri '
+          '"$requestedUri".');
+    }
+
+    if (requestedUri.query != url.query) {
+      throw new ArgumentError('url "$url" must have the same query parameters '
+          'as requestedUri "$requestedUri".');
+    }
+
+    if (url.path.startsWith('/')) {
+      throw new ArgumentError('url "$url" must be relative.');
+    }
+
+    var startOfUrl = requestedUri.path.length - url.path.length;
+    if (requestedUri.path.substring(startOfUrl - 1, startOfUrl) != '/') {
+      throw new ArgumentError('url "$url" must be on a path boundary in '
+          'requestedUri "$requestedUri".');
+    }
+
     return url;
+  } else if (handlerPath != null) {
+    return new Uri(
+        path: requestedUri.path.substring(handlerPath.length),
+        query: requestedUri.query);
+  } else {
+    // Skip the initial "/".
+    var path = requestedUri.path.substring(1);
+    return new Uri(path: path, query: requestedUri.query);
   }
-
-  throw new ArgumentError(
-      'url and scriptName must both be null or both be set.');
 }
 
-/// Computes `scriptName` from the provided [Request] constructor arguments.
+/// Computes `handlerPath` from the provided [Request] constructor arguments.
 ///
-/// If [url] and [scriptName] are `null` it returns an empty string, otherwise
-/// [scriptName] is returned.
-///
-/// If [script] is provided, but [url] is omitted, throws an
-/// [ArgumentError].
-String _computeScriptName(Uri requstedUri, Uri url, String scriptName) {
-  if (url == null && scriptName == null) {
-    return '';
+/// If [handlerPath] is `null`, the value is inferred from [requestedUrl] and
+/// [url] if available. Otherwise [handlerPath] is returned.
+String _computeHandlerPath(Uri requestedUri, String handlerPath, Uri url) {
+  if (handlerPath != null &&
+      handlerPath != requestedUri.path &&
+      !handlerPath.endsWith("/")) {
+    handlerPath += "/";
   }
 
-  if (url != null && scriptName != null) {
-    return scriptName;
-  }
+  if (handlerPath != null) {
+    if (!requestedUri.path.startsWith(handlerPath)) {
+      throw new ArgumentError('handlerPath "$handlerPath" must be a prefix of '
+          'requestedUri path "${requestedUri.path}"');
+    }
 
-  throw new ArgumentError(
-      'url and scriptName must both be null or both be set.');
+    if (!handlerPath.startsWith('/')) {
+      throw new ArgumentError(
+          'handlerPath "$handlerPath" must be root-relative.');
+    }
+
+    return handlerPath;
+  } else if (url != null) {
+    var index = requestedUri.path.indexOf(url.path);
+    return requestedUri.path.substring(0, index);
+  } else {
+    return '/';
+  }
 }

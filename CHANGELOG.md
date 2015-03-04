@@ -1,6 +1,31 @@
+## 0.6.0
+
+**Breaking change:** The semantics of `Request.scriptName` and
+[`Request.url`][url] have been overhauled, and the former has been renamed to
+[`Request.handlerPath`][handlerPath]. `handlerPath` is now the root-relative URL
+path to the current handler, while `url`'s path is the relative path from the
+current handler to the requested. The new semantics are easier to describe and
+to understand.
+
+[url]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_url
+[handlerPath]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_handlerPath
+
+Practically speaking, the main difference is that the `/` at the beginning of
+`url`'s path has been moved to the end of `handlerPath`. This makes `url`'s path
+easier to parse using the `path` package.
+
+[`Request.change`][change]'s handling of `handlerPath` and `url` has also
+changed. Instead of taking both parameters separately and requiring that the
+user manually maintain all the associated guarantees, it now takes a single
+`path` parameter. This parameter is the relative path from the current
+`handlerPath` to the next one, and sets both `handlerPath` and `url` on the new
+`Request` accordingly.
+
+[change]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_change
+
 ## 0.5.7
 
-* Updated `Request` to support the `body` model from `Response`.  
+* Updated `Request` to support the `body` model from `Response`.
 
 ## 0.5.6
 

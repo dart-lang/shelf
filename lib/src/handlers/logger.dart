@@ -31,8 +31,8 @@ Middleware logRequests({void logger(String msg, bool isError)}) =>
     var watch = new Stopwatch()..start();
 
     return syncFuture(() => innerHandler(request)).then((response) {
-      var msg = _getMessage(startTime, response.statusCode, request.url,
-          request.method, watch.elapsed);
+      var msg = _getMessage(startTime, response.statusCode,
+          request.requestedUri, request.method, watch.elapsed);
 
       logger(msg, false);
 
@@ -40,8 +40,8 @@ Middleware logRequests({void logger(String msg, bool isError)}) =>
     }, onError: (error, stackTrace) {
       if (error is HijackException) throw error;
 
-      var msg = _getErrorMessage(startTime, request.url, request.method,
-          watch.elapsed, error, stackTrace);
+      var msg = _getErrorMessage(startTime, request.requestedUri,
+          request.method, watch.elapsed, error, stackTrace);
 
       logger(msg, true);
 
@@ -50,12 +50,13 @@ Middleware logRequests({void logger(String msg, bool isError)}) =>
   };
 };
 
-String _getMessage(DateTime requestTime, int statusCode, Uri url, String method,
-    Duration elapsedTime) {
-  return '${requestTime}\t$elapsedTime\t$method\t[${statusCode}]\t${url}';
+String _getMessage(DateTime requestTime, int statusCode, Uri requestedUri,
+    String method, Duration elapsedTime) {
+  return '${requestTime}\t$elapsedTime\t$method\t[${statusCode}]\t'
+      '${requestedUri.path}${requestedUri.query}';
 }
 
-String _getErrorMessage(DateTime requestTime, Uri url, String method,
+String _getErrorMessage(DateTime requestTime, Uri requestedUri, String method,
     Duration elapsedTime, Object error, StackTrace stack) {
   var chain = new Chain.current();
   if (stack != null) {
@@ -63,7 +64,8 @@ String _getErrorMessage(DateTime requestTime, Uri url, String method,
         .foldFrames((frame) => frame.isCore || frame.package == 'shelf').terse;
   }
 
-  var msg = '${requestTime}\t$elapsedTime\t$method\t${url}\n$error';
+  var msg = '${requestTime}\t$elapsedTime\t$method\t${requestedUri.path}'
+      '${requestedUri.query}\n$error';
   if (chain == null) return msg;
 
   return '$msg\n$chain';

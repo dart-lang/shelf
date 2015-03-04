@@ -85,11 +85,11 @@ void main() {
       var expectedUrl = 'http://localhost:$_serverPort$path';
       expect(request.requestedUri, Uri.parse(expectedUrl));
 
-      expect(request.url.path, '/foo/bar');
+      expect(request.url.path, 'foo/bar');
       expect(request.url.pathSegments, ['foo', 'bar']);
       expect(request.protocolVersion, '1.1');
       expect(request.url.query, 'qs=value');
-      expect(request.scriptName, '');
+      expect(request.handlerPath, '/');
 
       return syncHandler(request);
     });
