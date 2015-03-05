@@ -1,4 +1,4 @@
-library shelf_static.harness_console;
+library shelf_static.test_all;
 
 import 'package:scheduled_test/scheduled_test.dart';
 
