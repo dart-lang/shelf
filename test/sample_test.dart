@@ -8,7 +8,6 @@ import 'package:scheduled_test/scheduled_test.dart';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/shelf_static.dart';
-import 'package:shelf_static/src/util.dart';
 
 import 'test_util.dart';
 
@@ -79,7 +78,7 @@ Future _expectCompletesWithBytes(Response response, List<int> expectedBytes) {
 Future<Response> _request(Request request) {
   var handler = createStaticHandler(_samplePath);
 
-  return syncFuture(() => handler(request));
+  return new Future.sync(() => handler(request));
 }
 
 String get _samplePath {

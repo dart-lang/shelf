@@ -17,7 +17,7 @@ final p.Context _ctx = p.url;
 Future<Response> makeRequest(Handler handler, String path,
     {String scriptName, Map<String, String> headers}) {
   var rootedHandler = _rootHandler(scriptName, handler);
-  return syncFuture(() => rootedHandler(_fromPath(path, headers)));
+  return new Future.sync(() => rootedHandler(_fromPath(path, headers)));
 }
 
 Request _fromPath(String path, Map<String, String> headers) =>
