@@ -5,7 +5,7 @@
 
 
 ### Example
-```
+```dart
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
 
