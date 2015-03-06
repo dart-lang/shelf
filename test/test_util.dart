@@ -10,6 +10,10 @@ import 'package:matcher/matcher.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/src/util.dart';
+import 'package:stack_trace/stack_trace.dart';
+
+/// Like [Future.sync], but wraps the Future in [Chain.track] as well.
+Future syncFuture(callback()) => Chain.track(new Future.sync(callback));
 
 final p.Context _ctx = p.url;
 
