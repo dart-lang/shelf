@@ -35,7 +35,7 @@ void main() {
     schedule(() {
       var handler = createStaticHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/static/root.txt', scriptName: '/static')
+      return makeRequest(handler, '/static/root.txt', handlerPath: 'static')
           .then((response) {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.contentLength, 8);
@@ -49,7 +49,7 @@ void main() {
       var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/files/with%20space.txt',
-          scriptName: '/static').then((response) {
+          handlerPath: 'static').then((response) {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.contentLength, 18);
         expect(response.readAsString(), completion('with space content'));
@@ -62,7 +62,7 @@ void main() {
       var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/files/with%20space.txt',
-          scriptName: '/static').then((response) {
+          handlerPath: 'static').then((response) {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.contentLength, 18);
         expect(response.readAsString(), completion('with space content'));
@@ -75,7 +75,7 @@ void main() {
       var handler = createStaticHandler(d.defaultRoot);
 
       return makeRequest(handler, '/static/files/test.txt',
-          scriptName: '/static').then((response) {
+          handlerPath: 'static').then((response) {
         expect(response.statusCode, HttpStatus.OK);
         expect(response.contentLength, 16);
         expect(response.readAsString(), completion('test txt content'));
@@ -87,8 +87,8 @@ void main() {
     schedule(() {
       var handler = createStaticHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/static/not_here.txt', scriptName: '/static')
-          .then((response) {
+      return makeRequest(handler, '/static/not_here.txt',
+          handlerPath: 'static').then((response) {
         expect(response.statusCode, HttpStatus.NOT_FOUND);
       });
     });

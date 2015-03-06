@@ -2,6 +2,8 @@
 
 * Bumped up minimum SDK to 1.7.0.
 
+* Added support for `shelf` 0.6.0.
+
 ## 0.2.1
 
 * Removed `Uri` format checks now that the core libraries is more strict. 

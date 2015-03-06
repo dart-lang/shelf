@@ -6,43 +6,35 @@ library shelf_static.test_util;
 
 import 'dart:async';
 
-import 'package:matcher/matcher.dart';
+import 'package:unittest/unittest.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/src/util.dart';
-import 'package:stack_trace/stack_trace.dart';
-
-/// Like [Future.sync], but wraps the Future in [Chain.track] as well.
-Future syncFuture(callback()) => Chain.track(new Future.sync(callback));
 
 final p.Context _ctx = p.url;
 
 /// Makes a simple GET request to [handler] and returns the result.
 Future<Response> makeRequest(Handler handler, String path,
-    {String scriptName, Map<String, String> headers}) {
-  var rootedHandler = _rootHandler(scriptName, handler);
+    {String handlerPath, Map<String, String> headers}) {
+  var rootedHandler = _rootHandler(handlerPath, handler);
   return new Future.sync(() => rootedHandler(_fromPath(path, headers)));
 }
 
 Request _fromPath(String path, Map<String, String> headers) =>
     new Request('GET', Uri.parse('http://localhost' + path), headers: headers);
 
-Handler _rootHandler(String scriptName, Handler handler) {
-  if (scriptName == null || scriptName.isEmpty) {
+Handler _rootHandler(String path, Handler handler) {
+  if (path == null || path.isEmpty) {
     return handler;
   }
 
-  if (!scriptName.startsWith('/')) {
-    throw new ArgumentError('scriptName must start with "/" or be empty');
-  }
-
   return (Request request) {
-    if (!_ctx.isWithin(scriptName, request.requestedUri.path)) {
+    if (!_ctx.isWithin("/$path", request.requestedUri.path)) {
       return new Response.notFound('not found');
     }
-    assert(request.scriptName.isEmpty);
+    assert(request.handlerPath == '/');
 
-    var relativeRequest = request.change(scriptName: scriptName);
+    var relativeRequest = request.change(path: path);
 
     return handler(relativeRequest);
   };

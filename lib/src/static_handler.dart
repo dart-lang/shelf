@@ -65,12 +65,11 @@ Handler createStaticHandler(String fileSystemPath,
       }
     }
 
+    var uri = request.requestedUri;
     if (entityType == FileSystemEntityType.DIRECTORY &&
-        !request.url.path.endsWith('/')) {
+        !uri.path.endsWith('/')) {
       // when serving the default document for a directory, if the requested
       // path doesn't end with '/', redirect to the path with a trailing '/'
-      var uri = request.requestedUri;
-      assert(!uri.path.endsWith('/'));
       var location = new Uri(
           scheme: uri.scheme,
           userInfo: uri.userInfo,
