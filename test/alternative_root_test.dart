@@ -87,8 +87,8 @@ void main() {
     schedule(() {
       var handler = createStaticHandler(d.defaultRoot);
 
-      return makeRequest(handler, '/static/not_here.txt',
-          handlerPath: 'static').then((response) {
+      return makeRequest(handler, '/static/not_here.txt', handlerPath: 'static')
+          .then((response) {
         expect(response.statusCode, HttpStatus.NOT_FOUND);
       });
     });
