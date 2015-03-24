@@ -1,3 +1,7 @@
+## 0.6.1
+
+** Fixed spelling errors in README and code comments.
+
 ## 0.6.0
 
 **Breaking change:** The semantics of `Request.scriptName` and

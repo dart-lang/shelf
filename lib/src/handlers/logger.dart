@@ -13,7 +13,7 @@ import '../util.dart';
 /// Middleware which prints the time of the request, the elapsed time for the
 /// inner handlers, the response's status code and the request URI.
 ///
-/// [logger] takes two paramaters.
+/// [logger] takes two parameters.
 ///
 /// `msg` includes the request time, duration, request method, and requested
 /// path.

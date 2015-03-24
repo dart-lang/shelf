@@ -12,7 +12,7 @@ servers**. How?
 * Map server logic into a simple function: a single argument for the request,
 the response is the return value.
 * Trivially mix and match synchronous and asynchronous processing.
-* Flexibliity to return a simple string or a byte stream with the same model.
+* Flexibility to return a simple string or a byte stream with the same model.
 
 ## Example
 

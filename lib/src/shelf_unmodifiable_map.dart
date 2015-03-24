@@ -18,7 +18,7 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
   ///
   /// If [ignoreKeyCase] is `true`, the keys will have case-insensitive access.
   ///
-  /// [source] is copied to a new [Map] to ensure changes to the paramater value
+  /// [source] is copied to a new [Map] to ensure changes to the parameter value
   /// after constructions are not reflected.
   factory ShelfUnmodifiableMap(Map<String, V> source,
       {bool ignoreKeyCase: false}) {

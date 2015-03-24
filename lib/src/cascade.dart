@@ -38,7 +38,7 @@ class Cascade {
   ///
   /// If [statusCodes] is passed, responses with those status codes are
   /// considered unacceptable. If [shouldCascade] is passed, responses for which
-  /// it returns `true` are considered unacceptale. [statusCode] and
+  /// it returns `true` are considered unacceptable. [statusCode] and
   /// [shouldCascade] may not both be passed.
   Cascade({Iterable<int> statusCodes, bool shouldCascade(Response response)})
       : _shouldCascade = _computeShouldCascade(statusCodes, shouldCascade),

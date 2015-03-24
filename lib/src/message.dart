@@ -89,7 +89,7 @@ abstract class Message {
 
   /// The encoding of the message body.
   ///
-  /// This is parsed from the "charset" paramater of the Content-Type header in
+  /// This is parsed from the "charset" parameter of the Content-Type header in
   /// [headers].
   ///
   /// If [headers] doesn't have a Content-Type header or it specifies an
