@@ -1,3 +1,7 @@
+## 0.6.1+1
+
+* Don't throw a bogus exception for `null` responses.
+
 ## 0.6.1
 
 * `shelf_io` now takes a `"shelf.io.buffer_output"` `Response.context` parameter

@@ -84,7 +84,8 @@ Future handleRequest(HttpRequest request, Handler handler) {
     return _logError('Error thrown by handler.\n$error', stackTrace);
   }).then((response) {
     if (response == null) {
-      response = _logError('null response from handler.');
+      return _writeResponse(
+          _logError('null response from handler.'), request.response);
     } else if (shelfRequest.canHijack) {
       return _writeResponse(response, request.response);
     }
