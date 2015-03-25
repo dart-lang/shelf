@@ -1,6 +1,9 @@
 ## 0.6.1
 
-** Fixed spelling errors in README and code comments.
+* `shelf_io` now takes a `"shelf.io.buffer_output"` `Response.context` parameter
+  that controls `HttpResponse.bufferOutput`.
+
+* Fixed spelling errors in README and code comments.
 
 ## 0.6.0
 

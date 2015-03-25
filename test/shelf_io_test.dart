@@ -10,6 +10,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as parser;
+import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
@@ -328,6 +329,35 @@ void main() {
 
       return _scheduleGet().then((response) {
         expect(response.headers, containsPair(HttpHeaders.SERVER, 'myServer'));
+      });
+    });
+  });
+
+  test('respects the "shelf.io.buffer_output" context parameter', () {
+    var controller = new StreamController();
+    _scheduleServer((request) {
+      controller.add("Hello, ");
+
+      return new Response.ok(UTF8.encoder.bind(controller.stream),
+          context: {"shelf.io.buffer_output": false});
+    });
+
+    schedule(() {
+      var request = new http.Request(
+          "GET", Uri.parse('http://localhost:$_serverPort/'));
+
+      return request.send().then((response) {
+        var stream = new ScheduledStream(UTF8.decoder.bind(response.stream));
+
+        return stream.next().then((data) {
+          expect(data, equals("Hello, "));
+          controller.add("world!");
+          return stream.next();
+        }).then((data) {
+          expect(data, equals("world!"));
+          controller.close();
+          expect(stream.hasNext, completion(isFalse));
+        });
       });
     });
   });

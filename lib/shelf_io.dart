@@ -7,7 +7,14 @@
 /// One can provide an instance of [HttpServer] as the `requests` parameter in
 /// [serveRequests].
 ///
-/// The `dart:io` adapter supports request hijacking; see [Request.hijack].
+/// This adapter supports request hijacking; see [Request.hijack]. It also
+/// supports the `"shelf.io.buffer_output"` `Response.context` property. If this
+/// property is `true` (the default), streamed responses will be buffered to
+/// improve performance; if it's `false`, all chunks will be pushed over the
+/// wire as they're received. See [`HttpResponse.bufferOutput`][bufferOutput]
+/// for more information.
+///
+/// [bufferOutput]: https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart:io.HttpResponse#id_bufferOutput
 library shelf.io;
 
 import 'dart:async';
@@ -78,17 +85,17 @@ Future handleRequest(HttpRequest request, Handler handler) {
   }).then((response) {
     if (response == null) {
       response = _logError('null response from handler.');
-    } else if (!shelfRequest.canHijack) {
-      var message = new StringBuffer()
-        ..writeln("Got a response for hijacked request "
-            "${shelfRequest.method} ${shelfRequest.requestedUri}:")
-        ..writeln(response.statusCode);
-      response.headers
-          .forEach((key, value) => message.writeln("${key}: ${value}"));
-      throw new Exception(message.toString().trim());
+    } else if (shelfRequest.canHijack) {
+      return _writeResponse(response, request.response);
     }
 
-    return _writeResponse(response, request.response);
+    var message = new StringBuffer()
+      ..writeln("Got a response for hijacked request "
+          "${shelfRequest.method} ${shelfRequest.requestedUri}:")
+      ..writeln(response.statusCode);
+    response.headers
+        .forEach((key, value) => message.writeln("${key}: ${value}"));
+    throw new Exception(message.toString().trim());
   }).catchError((error, stackTrace) {
     // Ignore HijackExceptions.
     if (error is! HijackException) throw error;
@@ -118,6 +125,10 @@ Request _fromHttpRequest(HttpRequest request) {
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
+  if (response.context.containsKey("shelf.io.buffer_output")) {
+    httpResponse.bufferOutput = response.context["shelf.io.buffer_output"];
+  }
+
   httpResponse.statusCode = response.statusCode;
 
   response.headers.forEach((header, value) {
