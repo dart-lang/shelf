@@ -30,9 +30,19 @@ import 'src/util.dart';
 ///
 /// See the documentation for [HttpServer.bind] for more details on [address],
 /// [port], and [backlog].
-Future<HttpServer> serve(Handler handler, address, int port, {int backlog}) {
+///
+/// If [defaultResponseHeaders] is provided then they will be used instead of the normal default headers
+Future<HttpServer> serve(Handler handler, address, int port,
+    {int backlog, Map<String, String> defaultResponseHeaders}) {
   if (backlog == null) backlog = 0;
   return HttpServer.bind(address, port, backlog: backlog).then((server) {
+    if (defaultResponseHeaders != null) {
+      var headers = server.defaultResponseHeaders;
+      headers.clear();
+      defaultResponseHeaders.forEach((k, v) {
+        headers.set(k, v);
+      });
+    }
     serveRequests(server, handler);
     return server;
   });
