@@ -50,10 +50,14 @@ Middleware logRequests({void logger(String msg, bool isError)}) =>
   };
 };
 
+String _formatQuery(String query) {
+  return query == '' ? '' : '?$query';
+}
+
 String _getMessage(DateTime requestTime, int statusCode, Uri requestedUri,
     String method, Duration elapsedTime) {
   return '${requestTime}\t$elapsedTime\t$method\t[${statusCode}]\t'
-      '${requestedUri.path}${requestedUri.query}';
+      '${requestedUri.path}${_formatQuery(requestedUri.query)}';
 }
 
 String _getErrorMessage(DateTime requestTime, Uri requestedUri, String method,
@@ -65,7 +69,7 @@ String _getErrorMessage(DateTime requestTime, Uri requestedUri, String method,
   }
 
   var msg = '${requestTime}\t$elapsedTime\t$method\t${requestedUri.path}'
-      '${requestedUri.query}\n$error';
+      '${_formatQuery(requestedUri.query)}\n$error';
   if (chain == null) return msg;
 
   return '$msg\n$chain';
