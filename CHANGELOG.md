@@ -1,3 +1,7 @@
+## 0.6.1+2
+
+* `logRequests` outputs a better message a request has a query string.
+
 ## 0.6.1+1
 
 * Don't throw a bogus exception for `null` responses.
@@ -116,9 +120,9 @@ user manually maintain all the associated guarantees, it now takes a single
 
 * Access to headers for `Request` and `Response` is now case-insensitive.
 
-* The constructor for `Request` has been simplified. 
+* The constructor for `Request` has been simplified.
 
-* `Request` now exposes `url` which replaces `pathInfo`, `queryString`, and 
+* `Request` now exposes `url` which replaces `pathInfo`, `queryString`, and
   `pathSegments`.
 
 ## 0.3.0+9
