@@ -18,7 +18,7 @@ abstract class Message {
   /// The HTTP headers.
   ///
   /// The value is immutable.
-  final Map<String, String> headers;
+  final Map<String, Object> headers;
 
   /// Extra context that can be used by for middleware and handlers.
   ///
@@ -56,10 +56,10 @@ abstract class Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Message(body, {Encoding encoding, Map<String, String> headers,
+  Message(body, {Encoding encoding, Map<String, Object> headers,
       Map<String, Object> context})
       : this._body = _bodyToStream(body, encoding),
-        this.headers = new ShelfUnmodifiableMap<String>(
+        this.headers = new ShelfUnmodifiableMap<Object>(
             _adjustHeaders(headers, encoding), ignoreKeyCase: true),
         this.context = new ShelfUnmodifiableMap<Object>(context,
             ignoreKeyCase: false);
@@ -139,7 +139,7 @@ abstract class Message {
 
   /// Creates a new [Message] by copying existing values and applying specified
   /// changes.
-  Message change({Map<String, String> headers, Map<String, Object> context});
+  Message change({Map<String, Object> headers, Map<String, Object> context});
 }
 
 /// Converts [body] to a byte stream.
@@ -159,8 +159,8 @@ Stream<List<int>> _bodyToStream(body, Encoding encoding) {
 /// Adds information about [encoding] to [headers].
 ///
 /// Returns a new map without modifying [headers].
-Map<String, String> _adjustHeaders(
-    Map<String, String> headers, Encoding encoding) {
+Map<String, Object> _adjustHeaders(
+    Map<String, Object> headers, Encoding encoding) {
   if (headers == null) headers = const {};
   if (encoding == null) return headers;
   if (headers['content-type'] == null) {

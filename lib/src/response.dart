@@ -53,7 +53,7 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.ok(body, {Map<String, String> headers, Encoding encoding,
+  Response.ok(body, {Map<String, Object> headers, Encoding encoding,
     Map<String, Object> context})
       : this(200, body: body, headers: headers, encoding: encoding,
           context: context);
@@ -72,7 +72,7 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.movedPermanently(location, {body, Map<String, String> headers,
+  Response.movedPermanently(location, {body, Map<String, Object> headers,
       Encoding encoding, Map<String, Object> context})
       : this._redirect(301, location, body, headers, encoding,
           context: context);
@@ -91,7 +91,7 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.found(location, {body, Map<String, String> headers,
+  Response.found(location, {body, Map<String, Object> headers,
       Encoding encoding, Map<String, Object> context})
       : this._redirect(302, location, body, headers, encoding,
           context: context);
@@ -111,14 +111,14 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.seeOther(location, {body, Map<String, String> headers,
+  Response.seeOther(location, {body, Map<String, Object> headers,
       Encoding encoding, Map<String, Object> context})
       : this._redirect(303, location, body, headers, encoding,
           context: context);
 
   /// Constructs a helper constructor for redirect responses.
   Response._redirect(int statusCode, location, body,
-      Map<String, String> headers, Encoding encoding,
+      Map<String, Object> headers, Encoding encoding,
       { Map<String, Object> context })
       : this(statusCode,
             body: body,
@@ -133,7 +133,7 @@ class Response extends Message {
   /// information used to determine whether the requested resource has changed
   /// since the last request. It indicates that the resource has not changed and
   /// the old value should be used.
-  Response.notModified({Map<String, String> headers,
+  Response.notModified({Map<String, Object> headers,
     Map<String, Object> context})
       : this(304, headers: addHeader(
             headers, 'date', formatHttpDate(new DateTime.now())),
@@ -151,7 +151,7 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.forbidden(body, {Map<String, String> headers,
+  Response.forbidden(body, {Map<String, Object> headers,
       Encoding encoding, Map<String, Object> context})
       : this(403,
           headers: body == null ? _adjustErrorHeaders(headers) : headers,
@@ -171,7 +171,7 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.notFound(body, {Map<String, String> headers, Encoding encoding,
+  Response.notFound(body, {Map<String, Object> headers, Encoding encoding,
     Map<String, Object> context})
       : this(404,
           headers: body == null ? _adjustErrorHeaders(headers) : headers,
@@ -191,7 +191,7 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.internalServerError({body, Map<String, String> headers,
+  Response.internalServerError({body, Map<String, Object> headers,
       Encoding encoding, Map<String, Object> context})
       : this(500,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
@@ -210,7 +210,7 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response(this.statusCode, {body, Map<String, String> headers,
+  Response(this.statusCode, {body, Map<String, Object> headers,
       Encoding encoding, Map<String, Object> context})
       : super(body, encoding: encoding, headers: headers, context: context) {
     if (statusCode < 100) {
@@ -230,7 +230,7 @@ class Response extends Message {
   ///
   /// All other context and header values from the [Response] will be included
   /// in the copied [Response] unchanged.
-  Response change({Map<String, String> headers, Map<String, Object> context}) {
+  Response change({Map<String, Object> headers, Map<String, Object> context}) {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
@@ -243,7 +243,7 @@ class Response extends Message {
 ///
 /// Returns a new map without modifying [headers]. This is used to add
 /// content-type information when creating a 500 response with a default body.
-Map<String, String> _adjustErrorHeaders(Map<String, String> headers) {
+Map<String, String> _adjustErrorHeaders(Map<String, Object> headers) {
   if (headers == null || headers['content-type'] == null) {
     return addHeader(headers, 'content-type', 'text/plain');
   }
