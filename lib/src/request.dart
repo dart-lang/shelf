@@ -133,7 +133,7 @@ class Request extends Message {
   /// See also [hijack].
   // TODO(kevmoo) finish documenting the rest of the arguments.
   Request(String method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, String handlerPath, Uri url, body,
+      Map<String, Object> headers, String handlerPath, Uri url, body,
       Encoding encoding, Map<String, Object> context,
       OnHijackCallback onHijack})
       : this._(method, requestedUri,
@@ -153,7 +153,7 @@ class Request extends Message {
   /// source [Request] to ensure that [hijack] can only be called once, even
   /// from a changed [Request].
   Request._(this.method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, String handlerPath, Uri url, body,
+      Map<String, Object> headers, String handlerPath, Uri url, body,
       Encoding encoding, Map<String, Object> context, _OnHijack onHijack})
       : this.requestedUri = requestedUri,
         this.protocolVersion = protocolVersion == null
@@ -202,7 +202,7 @@ class Request extends Message {
   ///     request = request.change(path: "dir");
   ///     print(request.handlerPath); // => /static/dir/
   ///     print(request.url);        // => file.html
-  Request change({Map<String, String> headers, Map<String, Object> context,
+  Request change({Map<String, Object> headers, Map<String, Object> context,
       String path}) {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
