@@ -5,7 +5,7 @@
 library shelf.log_middleware_test;
 
 import 'package:shelf/shelf.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'test_util.dart';
 

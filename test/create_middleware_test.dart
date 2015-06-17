@@ -7,7 +7,7 @@ library shelf.create_middleware_test;
 import 'dart:async';
 
 import 'package:shelf/shelf.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'test_util.dart';
 

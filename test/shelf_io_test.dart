@@ -234,19 +234,22 @@ void main() {
     }));
   });
 
-  test("doesn't pass asynchronous exceptions to the root error zone", () {
-    return Zone.ROOT.run(() {
-      return shelf_io.serve((request) {
+  test("doesn't pass asynchronous exceptions to the root error zone", () async {
+    var response = await Zone.ROOT.run(() async {
+      var server = await shelf_io.serve((request) {
         new Future(() => throw 'oh no');
         return syncHandler(request);
-      }, 'localhost', 0).then((server) {
-        return http.get('http://localhost:${server.port}').then((response) {
-          expect(response.statusCode, HttpStatus.OK);
-          expect(response.body, 'Hello from /');
-          server.close();
-        });
-      });
+      }, 'localhost', 0);
+
+      try {
+        return await http.get('http://localhost:${server.port}');
+      } finally {
+        server.close();
+      }
     });
+
+    expect(response.statusCode, HttpStatus.OK);
+    expect(response.body, 'Hello from /');
   });
 
   test('a bad HTTP request results in a 500 response', () {
