@@ -1,3 +1,7 @@
+## 0.6.2
+
+* Updated minimum SDK to `1.9.0`.
+
 ## 0.6.1+2
 
 * `logRequests` outputs a better message a request has a query string.

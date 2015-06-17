@@ -4,9 +4,10 @@
 
 library shelf.cascade;
 
+import 'dart:async';
+
 import 'handler.dart';
 import 'response.dart';
-import 'util.dart';
 
 /// A typedef for [Cascade._shouldCascade].
 typedef bool _ShouldCascade(Response response);
@@ -71,7 +72,7 @@ class Cascade {
 
     return (request) {
       if (_parent._handler == null) return _handler(request);
-      return syncFuture(() => _parent.handler(request)).then((response) {
+      return new Future.sync(() => _parent.handler(request)).then((response) {
         if (_shouldCascade(response)) return _handler(request);
         return response;
       });

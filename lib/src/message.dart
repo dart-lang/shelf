@@ -8,7 +8,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
-import 'package:stack_trace/stack_trace.dart';
 
 import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
@@ -134,7 +133,7 @@ abstract class Message {
   Future<String> readAsString([Encoding encoding]) {
     if (encoding == null) encoding = this.encoding;
     if (encoding == null) encoding = UTF8;
-    return Chain.track(encoding.decodeStream(read()));
+    return encoding.decodeStream(read());
   }
 
   /// Creates a new [Message] by copying existing values and applying specified

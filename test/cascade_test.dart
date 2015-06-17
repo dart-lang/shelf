@@ -4,8 +4,9 @@
 
 library shelf.cascade_test;
 
+import 'dart:async';
+
 import 'package:shelf/shelf.dart';
-import 'package:shelf/src/util.dart';
 import 'package:unittest/unittest.dart';
 
 import 'test_util.dart';
@@ -44,7 +45,7 @@ void main() {
 
     test("the second response should be returned if it matches and the first "
         "doesn't", () {
-      return syncFuture(() {
+      return new Future.sync(() {
         return handler(
             new Request('GET', LOCALHOST_URI, headers: {'one': 'false'}));
       }).then((response) {
@@ -55,7 +56,7 @@ void main() {
 
     test("the third response should be returned if it matches and the first "
         "two don't", () {
-      return syncFuture(() {
+      return new Future.sync(() {
         return handler(new Request('GET', LOCALHOST_URI,
             headers: {'one': 'false', 'two': 'false'}));
       }).then((response) {
@@ -65,7 +66,7 @@ void main() {
     });
 
     test("the third response should be returned if no response matches", () {
-      return syncFuture(() {
+      return new Future.sync(() {
         return handler(new Request('GET', LOCALHOST_URI,
             headers: {'one': 'false', 'two': 'false', 'three': 'false'}));
       }).then((response) {

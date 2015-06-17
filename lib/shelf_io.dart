@@ -69,7 +69,7 @@ Future handleRequest(HttpRequest request, Handler handler) {
 
   // TODO(nweiz): abstract out hijack handling to make it easier to implement an
   // adapter.
-  return syncFuture(() => handler(shelfRequest))
+  return new Future.sync(() => handler(shelfRequest))
       .catchError((error, stackTrace) {
     if (error is HijackException) {
       // A HijackException should bypass the response-writing logic entirely.

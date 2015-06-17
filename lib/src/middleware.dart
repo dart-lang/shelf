@@ -4,11 +4,12 @@
 
 library shelf.middleware;
 
+import 'dart:async';
+
 import 'request.dart';
 import 'response.dart';
 import 'handler.dart';
 import 'hijack_exception.dart';
-import 'util.dart';
 
 /// A function which creates a new [Handler] by wrapping a [Handler].
 ///
@@ -64,10 +65,10 @@ Middleware createMiddleware({requestHandler(Request request),
 
   return (Handler innerHandler) {
     return (request) {
-      return syncFuture(() => requestHandler(request)).then((response) {
+      return new Future.sync(() => requestHandler(request)).then((response) {
         if (response != null) return response;
 
-        return syncFuture(() => innerHandler(request)).then(
+        return new Future.sync(() => innerHandler(request)).then(
             (response) => responseHandler(response), onError: onError);
       });
     };
