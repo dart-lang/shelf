@@ -138,7 +138,8 @@ abstract class Message {
 
   /// Creates a new [Message] by copying existing values and applying specified
   /// changes.
-  Message change({Map<String, String> headers, Map<String, Object> context});
+  Message change({Map<String, String> headers, Map<String, Object> context,
+      body});
 }
 
 /// Converts [body] to a byte stream.

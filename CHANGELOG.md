@@ -1,3 +1,7 @@
+## 0.6.2
+
+* Added a `body` named argument to `change` method on `Request` and `Response`.
+
 ## 0.6.1+3
 
 * Updated minimum SDK to `1.9.0`.

@@ -190,6 +190,9 @@ class Request extends Message {
   /// [Request]. All other context and header values from the [Request] will be
   /// included in the copied [Request] unchanged.
   ///
+  /// [body] is the request body. It may be either a [String] or a
+  /// [Stream<List<int>>].
+  ///
   /// [path] is used to update both [handlerPath] and [url]. It's designed for
   /// routing middleware, and represents the path from the current handler to
   /// the next handler. It must be a prefix of [url]; [handlerPath] becomes
@@ -203,9 +206,11 @@ class Request extends Message {
   ///     print(request.handlerPath); // => /static/dir/
   ///     print(request.url);        // => file.html
   Request change({Map<String, String> headers, Map<String, Object> context,
-      String path}) {
+      String path, body}) {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
+
+    if (body == null) body = this.read();
 
     var handlerPath = this.handlerPath;
     if (path != null) handlerPath += path;
@@ -214,7 +219,7 @@ class Request extends Message {
         protocolVersion: this.protocolVersion,
         headers: headers,
         handlerPath: handlerPath,
-        body: this.read(),
+        body: body,
         context: context,
         onHijack: _onHijack);
   }

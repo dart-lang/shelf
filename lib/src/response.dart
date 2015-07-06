@@ -230,11 +230,17 @@ class Response extends Message {
   ///
   /// All other context and header values from the [Response] will be included
   /// in the copied [Response] unchanged.
-  Response change({Map<String, String> headers, Map<String, Object> context}) {
+  ///
+  /// [body] is the request body. It may be either a [String] or a
+  /// [Stream<List<int>>].
+  Response change(
+      {Map<String, String> headers, Map<String, Object> context, body}) {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    return new Response(this.statusCode, body: this.read(), headers: headers,
+    if (body == null) body = this.read();
+
+    return new Response(this.statusCode, body: body, headers: headers,
         context: context);
   }
 }

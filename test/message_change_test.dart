@@ -4,6 +4,9 @@
 
 library shelf.message_change_test;
 
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:test/test.dart';
 
 import 'package:shelf/shelf.dart';
@@ -13,15 +16,15 @@ import 'test_util.dart';
 
 void main() {
   group('Request', () {
-    _testChange(({headers, context}) {
-      return new Request('GET', LOCALHOST_URI,
+    _testChange(({body, headers, context}) {
+      return new Request('GET', LOCALHOST_URI, body: body,
           headers: headers, context: context);
     });
   });
 
   group('Response', () {
-    _testChange(({headers, context}) {
-      return new Response.ok(null, headers: headers, context: context);
+    _testChange(({body, headers, context}) {
+      return new Response.ok(body, headers: headers, context: context);
     });
   });
 }
@@ -29,7 +32,29 @@ void main() {
 /// Shared test method used by [Request] and [Response] tests to validate
 /// the behavior of `change` with different `headers` and `context` values.
 void _testChange(Message factory(
-    {Map<String, String> headers, Map<String, Object> context})) {
+    {body, Map<String, String> headers, Map<String, Object> context})) {
+  group('body', () {
+    test('with String', () async {
+      var request = factory(body: 'Hello, world');
+      var copy = request.change(body: 'Goodbye, world');
+
+      var newBody = await copy.readAsString();
+
+      expect(newBody, equals('Goodbye, world'));
+    });
+
+    test('with Stream', () async {
+      var request = factory(body: 'Hello, world');
+      var copy = request.change(
+          body: new Stream.fromIterable(['Goodbye, world'])
+            .transform(UTF8.encoder));
+
+      var newBody = await copy.readAsString();
+
+      expect(newBody, equals('Goodbye, world'));
+    });
+  });
+
   test('with empty headers returns indentical instance', () {
     var request = factory(headers: {'header1': 'header value 1'});
     var copy = request.change(headers: {});
