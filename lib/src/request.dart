@@ -298,7 +298,8 @@ Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
     }
 
     var startOfUrl = requestedUri.path.length - url.path.length;
-    if (requestedUri.path.substring(startOfUrl - 1, startOfUrl) != '/') {
+    if (url.path.isNotEmpty &&
+        requestedUri.path.substring(startOfUrl - 1, startOfUrl) != '/') {
       throw new ArgumentError('url "$url" must be on a path boundary in '
           'requestedUri "$requestedUri".');
     }
@@ -339,6 +340,8 @@ String _computeHandlerPath(Uri requestedUri, String handlerPath, Uri url) {
 
     return handlerPath;
   } else if (url != null) {
+    if (url.path.isEmpty) return requestedUri.path;
+
     var index = requestedUri.path.indexOf(url.path);
     return requestedUri.path.substring(0, index);
   } else {

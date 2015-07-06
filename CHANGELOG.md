@@ -1,6 +1,9 @@
-## 0.6.2
+## 0.6.1+3
 
 * Updated minimum SDK to `1.9.0`.
+
+* Allow an empty `url` parameter to be passed in to `new Request()`. This fits
+  the stated semantics of the class, and should not have been forbidden.
 
 ## 0.6.1+2
 
