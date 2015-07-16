@@ -1,5 +1,5 @@
 name: shelf_web_socket
-version: 0.0.1+2
+version: 0.0.2-dev
 author: "Dart Team <misc@dartlang.org>"
 homepage: http://github.com/dart-lang/shelf_web_socket
 description: >
@@ -9,6 +9,6 @@ dependencies:
   shelf: ">=0.5.2 <0.7.0"
 dev_dependencies:
   http: ">=0.10.0 <0.12.0"
-  unittest: ">=0.10.0 <0.12.0"
+  test: ">=0.12.0 <0.13.0"
 environment:
   sdk: ">=1.4.0-dev.5.0 <2.0.0"

@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 Map<String, String> get _handshakeHeaders => {
   "Upgrade": "websocket",
