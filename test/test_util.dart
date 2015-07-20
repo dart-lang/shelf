@@ -6,10 +6,10 @@ library shelf_static.test_util;
 
 import 'dart:async';
 
-import 'package:unittest/unittest.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/src/util.dart';
+import 'package:test/test.dart';
 
 final p.Context _ctx = p.url;
 

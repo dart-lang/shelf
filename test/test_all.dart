@@ -10,7 +10,6 @@ import 'sample_test.dart' as sample;
 import 'symbolic_link_test.dart' as symbolic_link;
 
 void main() {
-  groupSep = ' - ';
   group('alternative_root', alternative_root.main);
   group('basic_file', basic_file.main);
   group('default_document', default_document.main);
