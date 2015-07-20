@@ -116,8 +116,8 @@ void main() {
 
         var headers = {HttpHeaders.IF_MODIFIED_SINCE: formatHttpDate(modified)};
 
-        return makeRequest(handler, '/root.txt', headers: headers).then(
-            (response) {
+        return makeRequest(handler, '/root.txt', headers: headers)
+            .then((response) {
           expect(response.statusCode, HttpStatus.NOT_MODIFIED);
           expect(response.contentLength, isNull);
         });
@@ -136,8 +136,8 @@ void main() {
               formatHttpDate(modified.subtract(const Duration(seconds: 1)))
         };
 
-        return makeRequest(handler, '/root.txt', headers: headers).then(
-            (response) {
+        return makeRequest(handler, '/root.txt', headers: headers)
+            .then((response) {
           expect(response.statusCode, HttpStatus.OK);
           expect(response.lastModified, atSameTimeToSecond(modified));
         });
@@ -156,8 +156,8 @@ void main() {
               formatHttpDate(modified.add(const Duration(seconds: 1)))
         };
 
-        return makeRequest(handler, '/root.txt', headers: headers).then(
-            (response) {
+        return makeRequest(handler, '/root.txt', headers: headers)
+            .then((response) {
           expect(response.statusCode, HttpStatus.NOT_MODIFIED);
           expect(response.contentLength, isNull);
         });
