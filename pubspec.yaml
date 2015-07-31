@@ -8,9 +8,9 @@ environment:
 dependencies:
   http_parser: '>=0.0.2+2 <0.1.0'
   mime: '>=0.9.0 <0.10.0'
+  path: '>=1.1.0 <2.0.0'
   shelf: '>=0.5.7 <0.7.0'
 dev_dependencies:
   args: '>=0.12.0 <0.14.0'
-  path: '>=1.1.0 <2.0.0'
   scheduled_test: '>=0.12.0 <0.13.0'
   test: '>=0.12.0 <0.13.0'

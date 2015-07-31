@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library shelf_static.staic_handler;
+library shelf_static.static_handler;
 
 import 'dart:io';
 
@@ -11,6 +11,7 @@ import 'package:mime/mime.dart' as mime;
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
+import 'directory_listing.dart';
 import 'util.dart';
 
 // TODO option to exclude hidden files?
@@ -25,8 +26,12 @@ import 'util.dart';
 /// When a existing directory is requested and a [defaultDocument] is specified
 /// the directory is checked for a file with that name. If it exists, it is
 /// served.
+///
+/// If no [defaultDocument] is found and [listDirectories] is true, then the
+/// handler produces a listing of the directory.
 Handler createStaticHandler(String fileSystemPath,
-    {bool serveFilesOutsidePath: false, String defaultDocument}) {
+    {bool serveFilesOutsidePath: false, String defaultDocument,
+    bool listDirectories: false}) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -54,6 +59,11 @@ Handler createStaticHandler(String fileSystemPath,
       file = new File(fsPath);
     } else if (entityType == FileSystemEntityType.DIRECTORY) {
       file = _tryDefaultFile(fsPath, defaultDocument);
+      if (file == null && listDirectories) {
+        var uri = request.requestedUri;
+        if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
+        return listDirectory(fileSystemPath, fsPath);
+      }
     }
 
     if (file == null) {
@@ -69,20 +79,12 @@ Handler createStaticHandler(String fileSystemPath,
       }
     }
 
+    // when serving the default document for a directory, if the requested
+    // path doesn't end with '/', redirect to the path with a trailing '/'
     var uri = request.requestedUri;
     if (entityType == FileSystemEntityType.DIRECTORY &&
         !uri.path.endsWith('/')) {
-      // when serving the default document for a directory, if the requested
-      // path doesn't end with '/', redirect to the path with a trailing '/'
-      var location = new Uri(
-          scheme: uri.scheme,
-          userInfo: uri.userInfo,
-          host: uri.host,
-          port: uri.port,
-          path: uri.path + '/',
-          query: uri.query);
-
-      return new Response.movedPermanently(location.toString());
+      return _redirectToAddTrailingSlash(uri);
     }
 
     var fileStat = file.statSync();
@@ -107,6 +109,18 @@ Handler createStaticHandler(String fileSystemPath,
 
     return new Response.ok(file.openRead(), headers: headers);
   };
+}
+
+Response _redirectToAddTrailingSlash(Uri uri) {
+  var location = new Uri(
+      scheme: uri.scheme,
+      userInfo: uri.userInfo,
+      host: uri.host,
+      port: uri.port,
+      path: uri.path + '/',
+      query: uri.query);
+
+  return new Response.movedPermanently(location.toString());
 }
 
 File _tryDefaultFile(String dirPath, String defaultFile) {
