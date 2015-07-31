@@ -1,8 +1,8 @@
 name: shelf_static
 version: 0.2.3-dev
-author: Kevin Moore <github@j832.com>
+author: Dart Team <misc@dartlang.org>
 description: Static file server support for Shelf
-homepage: https://github.com/kevmoo/shelf_static.dart
+homepage: https://github.com/dart-lang/shelf_static
 environment:
   sdk: '>=1.7.0 <2.0.0'
 dependencies:
