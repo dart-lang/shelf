@@ -1,3 +1,7 @@
+## 0.2.3
+
+* Added `listDirectories` argument to `createStaticHandler`. 
+
 ## 0.2.2
 
 * Bumped up minimum SDK to 1.7.0.
