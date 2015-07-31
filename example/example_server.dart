@@ -11,7 +11,19 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
 
 void main(List<String> args) {
-  var result = _getParser().parse(args);
+  var parser = _getParser();
+
+  ArgResults result;
+  try {
+    result = parser.parse(args);
+  } on FormatException catch (e) {
+    stderr.writeln(e.message);
+    stderr.writeln(parser.usage);
+    // http://linux.die.net/include/sysexits.h
+    // #define EX_USAGE	64	/* command line usage error */
+    exit(64);
+  }
+
   var logging = result['logging'];
 
   if (!FileSystemEntity.isFileSync('example/example_server.dart')) {
