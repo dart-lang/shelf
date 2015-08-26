@@ -1,5 +1,5 @@
 name: shelf
-version: 0.6.3-dev
+version: 0.6.2+1
 author: Dart Team <misc@dartlang.org>
 description: Web Server Middleware for Dart
 homepage: https://github.com/dart-lang/shelf
@@ -7,7 +7,7 @@ environment:
   sdk: '>=1.9.0 <2.0.0'
 dependencies:
   collection: '^1.0.0'
-  http_parser: '^0.0.0'
+  http_parser: '>=0.0.0 <2.0.0'
   path: '^1.0.0'
   stack_trace: '^1.0.0'
 dev_dependencies:

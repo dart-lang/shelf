@@ -1,3 +1,7 @@
+## 0.6.2+1
+
+* Support `http_parser` 1.0.0.
+
 ## 0.6.2
 
 * Added a `body` named argument to `change` method on `Request` and `Response`.
