@@ -1,3 +1,7 @@
+## 0.2.3+1
+
+* Support `http_parser` 1.0.0.
+
 ## 0.2.3
 
 * Added `listDirectories` argument to `createStaticHandler`. 
