@@ -5,7 +5,7 @@ connections. It exposes a single function, [webSocketHandler][], which calls an
 `onConnection` callback with a [CompatibleWebSocket][] object for every
 connection that's established.
 
-[Shelf]: pub.dartlang.org/packages/shelf
+[Shelf]: https://pub.dartlang.org/packages/shelf
 
 [WebSocket]: https://tools.ietf.org/html/rfc6455
 
