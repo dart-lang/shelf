@@ -210,7 +210,7 @@ class Request extends Message {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    if (body == null) body = this.read();
+    if (body == null) body = getBody(this);
 
     var handlerPath = this.handlerPath;
     if (path != null) handlerPath += path;

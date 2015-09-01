@@ -1,3 +1,11 @@
+## 0.6.3
+
+* Messages returned by `Request.change()` and `Response.change()` are marked
+  read whenever the original message is read, and vice-versa. This means that
+  it's possible to read a message on which `change()` has been called and to
+  call `change()` on a message more than once, as long as `read()` is called on
+  only one of those messages.
+
 ## 0.6.2+1
 
 * Support `http_parser` 1.0.0.

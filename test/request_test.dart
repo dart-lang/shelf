@@ -278,5 +278,31 @@ void main() {
         expect(() => request.change(path: 'di'), throwsArgumentError);
       });
     });
+
+    test("allows the original request to be read", () {
+      var request = _request();
+      var changed = request.change();
+
+      expect(request.read().toList(), completion(isEmpty));
+      expect(changed.read, throwsStateError);
+    });
+
+    test("allows the changed request to be read", () {
+      var request = _request();
+      var changed = request.change();
+
+      expect(changed.read().toList(), completion(isEmpty));
+      expect(request.read, throwsStateError);
+    });
+
+    test("allows another changed request to be read", () {
+      var request = _request();
+      var changed1 = request.change();
+      var changed2 = request.change();
+
+      expect(changed2.read().toList(), completion(isEmpty));
+      expect(changed1.read, throwsStateError);
+      expect(request.read, throwsStateError);
+    });
   });
 }

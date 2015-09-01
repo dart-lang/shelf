@@ -238,7 +238,7 @@ class Response extends Message {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    if (body == null) body = this.read();
+    if (body == null) body = getBody(this);
 
     return new Response(this.statusCode, body: body, headers: headers,
         context: context);

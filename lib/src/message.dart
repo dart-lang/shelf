@@ -9,8 +9,11 @@ import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
 
+import 'body.dart';
 import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
+
+Body getBody(Message message) => message._body;
 
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
@@ -35,13 +38,7 @@ abstract class Message {
   /// The streaming body of the message.
   ///
   /// This can be read via [read] or [readAsString].
-  final Stream<List<int>> _body;
-
-  /// This boolean indicates whether [_body] has been read.
-  ///
-  /// After calling [read], or [readAsString] (which internally calls [read]),
-  /// this will be `true`.
-  bool _bodyWasRead = false;
+  final Body _body;
 
   /// Creates a new [Message].
   ///
@@ -57,7 +54,7 @@ abstract class Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Message(body, {Encoding encoding, Map<String, String> headers,
       Map<String, Object> context})
-      : this._body = _bodyToStream(body, encoding),
+      : this._body = new Body(body, encoding),
         this.headers = new ShelfUnmodifiableMap<String>(
             _adjustHeaders(headers, encoding), ignoreKeyCase: true),
         this.context = new ShelfUnmodifiableMap<Object>(context,
@@ -114,14 +111,7 @@ abstract class Message {
   /// Returns a [Stream] representing the body.
   ///
   /// Can only be called once.
-  Stream<List<int>> read() {
-    if (_bodyWasRead) {
-      throw new StateError("The 'read' method can only be called once on a "
-          "shelf.Request/shelf.Response object.");
-    }
-    _bodyWasRead = true;
-    return _body;
-  }
+  Stream<List<int>> read() => _body.read();
 
   /// Returns a [Future] containing the body as a String.
   ///
@@ -140,20 +130,6 @@ abstract class Message {
   /// changes.
   Message change({Map<String, String> headers, Map<String, Object> context,
       body});
-}
-
-/// Converts [body] to a byte stream.
-///
-/// [body] may be either a [String], a [Stream<List<int>>], or `null`. If it's a
-/// [String], [encoding] will be used to convert it to a [Stream<List<int>>].
-Stream<List<int>> _bodyToStream(body, Encoding encoding) {
-  if (encoding == null) encoding = UTF8;
-  if (body == null) return new Stream.fromIterable([]);
-  if (body is String) return new Stream.fromIterable([encoding.encode(body)]);
-  if (body is Stream) return body;
-
-  throw new ArgumentError('Response body "$body" must be a String or a '
-      'Stream.');
 }
 
 /// Adds information about [encoding] to [headers].

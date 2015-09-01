@@ -112,5 +112,32 @@ void main() {
           ..close();
       });
     });
+
+
+    test("allows the original response to be read", () {
+      var response = new Response.ok(null);
+      var changed = response.change();
+
+      expect(response.read().toList(), completion(isEmpty));
+      expect(changed.read, throwsStateError);
+    });
+
+    test("allows the changed response to be read", () {
+      var response = new Response.ok(null);
+      var changed = response.change();
+
+      expect(changed.read().toList(), completion(isEmpty));
+      expect(response.read, throwsStateError);
+    });
+
+    test("allows another changed response to be read", () {
+      var response = new Response.ok(null);
+      var changed1 = response.change();
+      var changed2 = response.change();
+
+      expect(changed2.read().toList(), completion(isEmpty));
+      expect(changed1.read, throwsStateError);
+      expect(response.read, throwsStateError);
+    });
   });
 }
