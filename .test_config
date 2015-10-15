@@ -1,3 +1,5 @@
 { 
-  "test_package": true
+  "test_package": {
+    "platforms": ["vm"]
+  }
 }
