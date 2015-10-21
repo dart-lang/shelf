@@ -6,11 +6,13 @@ library shelf.shelf_unmodifiable_map;
 
 import 'dart:collection';
 
-import 'package:collection/wrappers.dart' as pc;
+import 'package:http_parser/http_parser.dart';
 
-/// A simple wrapper over [pc.UnmodifiableMapView] which avoids re-wrapping
-/// itself.
+/// A simple wrapper over [UnmodifiableMapView] which avoids re-wrapping itself.
 class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
+  /// `true` if the key values are already lowercase.
+  final bool _ignoreKeyCase;
+
   /// If [source] is a [ShelfUnmodifiableMap] with matching [ignoreKeyCase],
   /// then [source] is returned.
   ///
@@ -22,7 +24,10 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
   /// after constructions are not reflected.
   factory ShelfUnmodifiableMap(Map<String, V> source,
       {bool ignoreKeyCase: false}) {
-    if (source is ShelfUnmodifiableMap<V>) {
+    if (source is ShelfUnmodifiableMap<V> &&
+        //        !ignoreKeyCase: no transformation of the input is required
+        // source._ignoreKeyCase: the input cannot be transformed any more
+        (!ignoreKeyCase || source._ignoreKeyCase)) {
       return source;
     }
 
@@ -31,22 +36,21 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
     }
 
     if (ignoreKeyCase) {
-      source = new pc.CanonicalizedMap<String, String, V>.from(
-          source, (key) => key.toLowerCase(), isValidKey: (key) => key != null);
+      source = new CaseInsensitiveMap<V>.from(source);
     } else {
       source = new Map<String, V>.from(source);
     }
 
-    return new ShelfUnmodifiableMap<V>._(source);
+    return new ShelfUnmodifiableMap<V>._(source, ignoreKeyCase);
   }
 
-  ShelfUnmodifiableMap._(Map<String, V> source) : super(source);
+  ShelfUnmodifiableMap._(Map<String, V> source, this._ignoreKeyCase)
+      : super(source);
 }
 
-/// An const empty implementation of [ShelfUnmodifiableMap].
-// TODO(kevmoo): Consider using MapView from dart:collection which has a const
-// ctor. Would require updating min SDK to 1.5.
-class _EmptyShelfUnmodifiableMap<V> extends pc.DelegatingMap<String, V>
+/// A const implementation of an empty [ShelfUnmodifiableMap].
+class _EmptyShelfUnmodifiableMap<V> extends MapView<String, V>
     implements ShelfUnmodifiableMap<V> {
+  bool get _ignoreKeyCase => true;
   const _EmptyShelfUnmodifiableMap() : super(const {});
 }

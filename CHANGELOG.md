@@ -1,3 +1,7 @@
+## 0.6.3+1
+
+* Cleaned up handling of certain `Map` instances and related dependencies.
+
 ## 0.6.3
 
 * Messages returned by `Request.change()` and `Response.change()` are marked
