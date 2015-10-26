@@ -25,6 +25,8 @@ import 'package:stack_trace/stack_trace.dart';
 import 'shelf.dart';
 import 'src/util.dart';
 
+export 'src/io_server.dart';
+
 /// Starts an [HttpServer] that listens on the specified [address] and
 /// [port] and sends requests to [handler].
 ///

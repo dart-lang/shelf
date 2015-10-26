@@ -148,6 +148,11 @@ catchTopLevelErrors(callback(), void onError(error, StackTrace stackTrace)) {
 }
 ```
 
+An adapter that knows its own URL should provide an implementation of the
+[`Server`][server] interface.
+
+[server]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf@id_Server
+
 ## Inspiration
 
 * [Connect](http://www.senchalabs.org/connect/) for NodeJS.

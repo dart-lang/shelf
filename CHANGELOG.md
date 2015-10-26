@@ -1,3 +1,12 @@
+## 0.6.4
+
+* Add a `Server` interface representing an adapter that knows its own URL.
+
+* Add a `ServerHandler` class that exposes a `Server` backed by a `Handler`.
+
+* Add an `IOServer` class that implements `Server` in terms of `dart:io`'s
+  `HttpServer`.
+
 ## 0.6.3+1
 
 * Cleaned up handling of certain `Map` instances and related dependencies.

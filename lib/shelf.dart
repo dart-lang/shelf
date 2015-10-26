@@ -12,3 +12,5 @@ export 'src/middleware.dart';
 export 'src/pipeline.dart';
 export 'src/request.dart';
 export 'src/response.dart';
+export 'src/server.dart';
+export 'src/server_handler.dart';
