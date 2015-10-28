@@ -53,56 +53,60 @@ void serveRequests(Stream<HttpRequest> requests, Handler handler) {
   catchTopLevelErrors(() {
     requests.listen((request) => handleRequest(request, handler));
   }, (error, stackTrace) {
-    _logError('Asynchronous error\n$error', stackTrace);
+    _logTopLevelError('Asynchronous error\n$error', stackTrace);
   });
 }
 
 /// Uses [handler] to handle [request].
 ///
 /// Returns a [Future] which completes when the request has been handled.
-Future handleRequest(HttpRequest request, Handler handler) {
+Future handleRequest(HttpRequest request, Handler handler) async {
   var shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
   } catch (error, stackTrace) {
-    var response = _logError('Error parsing request.\n$error', stackTrace);
-    return _writeResponse(response, request.response);
+    var response = _logTopLevelError(
+        'Error parsing request.\n$error', stackTrace);
+    await _writeResponse(response, request.response);
+    return;
   }
 
   // TODO(nweiz): abstract out hijack handling to make it easier to implement an
   // adapter.
-  return new Future.sync(() => handler(shelfRequest))
-      .catchError((error, stackTrace) {
-    if (error is HijackException) {
-      // A HijackException should bypass the response-writing logic entirely.
-      if (!shelfRequest.canHijack) throw error;
+  var response;
+  try {
+    response = await handler(shelfRequest);
+  } on HijackException catch (error, stackTrace) {
+    // A HijackException should bypass the response-writing logic entirely.
+    if (!shelfRequest.canHijack) return;
 
-      // If the request wasn't hijacked, we shouldn't be seeing this exception.
-      return _logError(
-          "Caught HijackException, but the request wasn't hijacked.",
-          stackTrace);
-    }
+    // If the request wasn't hijacked, we shouldn't be seeing this exception.
+    response = _logError(
+        shelfRequest,
+        "Caught HijackException, but the request wasn't hijacked.",
+        stackTrace);
+  } catch (error, stackTrace) {
+    response = _logError(
+        shelfRequest, 'Error thrown by handler.\n$error', stackTrace);
+  }
 
-    return _logError('Error thrown by handler.\n$error', stackTrace);
-  }).then((response) {
-    if (response == null) {
-      return _writeResponse(
-          _logError('null response from handler.'), request.response);
-    } else if (shelfRequest.canHijack) {
-      return _writeResponse(response, request.response);
-    }
+  if (response == null) {
+    await _writeResponse(
+        _logError(shelfRequest, 'null response from handler.'),
+        request.response);
+    return;
+  } else if (shelfRequest.canHijack) {
+    await _writeResponse(response, request.response);
+    return;
+  }
 
-    var message = new StringBuffer()
-      ..writeln("Got a response for hijacked request "
-          "${shelfRequest.method} ${shelfRequest.requestedUri}:")
-      ..writeln(response.statusCode);
-    response.headers
-        .forEach((key, value) => message.writeln("${key}: ${value}"));
-    throw new Exception(message.toString().trim());
-  }).catchError((error, stackTrace) {
-    // Ignore HijackExceptions.
-    if (error is! HijackException) throw error;
-  });
+  var message = new StringBuffer()
+    ..writeln("Got a response for hijacked request "
+        "${shelfRequest.method} ${shelfRequest.requestedUri}:")
+    ..writeln(response.statusCode);
+  response.headers
+      .forEach((key, value) => message.writeln("${key}: ${value}"));
+  throw new Exception(message.toString().trim());
 }
 
 /// Creates a new [Request] from the provided [HttpRequest].
@@ -154,7 +158,20 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
 
 // TODO(kevmoo) A developer mode is needed to include error info in response
 // TODO(kevmoo) Make error output plugable. stderr, logging, etc
-Response _logError(String message, [StackTrace stackTrace]) {
+Response _logError(Request request, String message, [StackTrace stackTrace]) {
+  // Add information about the request itself.
+  var buffer = new StringBuffer();
+  buffer.write("${request.method} ${request.requestedUri.path}");
+  if (request.requestedUri.query.isNotEmpty) {
+    buffer.write("?${request.requestedUri.query}");
+  }
+  buffer.writeln();
+  buffer.write(message);
+
+  return _logTopLevelError(buffer.toString(), stackTrace);
+}
+
+Response _logTopLevelError(String message, [StackTrace stackTrace]) {
   var chain = new Chain.current();
   if (stackTrace != null) {
     chain = new Chain.forTrace(stackTrace);

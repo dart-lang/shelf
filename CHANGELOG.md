@@ -1,3 +1,8 @@
+## 0.6.4+1
+
+* When the `shelf_io` adapter detects an error, print the request context as
+  well as the error itself.
+
 ## 0.6.4
 
 * Add a `Server` interface representing an adapter that knows its own URL.
