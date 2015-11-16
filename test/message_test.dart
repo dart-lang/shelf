@@ -11,6 +11,7 @@ import 'package:shelf/src/message.dart';
 import 'package:test/test.dart';
 
 import 'test_util.dart';
+import 'package:shelf/src/response.dart';
 
 class _TestMessage extends Message {
   _TestMessage(Map<String, String> headers, Map<String, Object> context, body,
@@ -235,6 +236,43 @@ void main() {
           headers: {'content-type': 'text/plain; charset=whatever'});
       expect(request.headers,
           containsPair('content-type', 'text/plain; charset=iso-8859-1'));
+    });
+  });
+
+  group("content type should be preserved when setting encoding", () {
+    final contentType = 'application/atom+xml';
+    final charset = 'charset=utf-8';
+
+    test("when encoding is not set", () {
+      final response = new Response.ok("", headers: {
+        'content-type' : contentType
+      });
+
+      expect(response.headers['content-type'], contentType);
+    });
+
+    test("when encoding is set", () {
+      final response = new Response.ok("", headers: {
+        'content-type' : contentType,
+      }, encoding: UTF8);
+
+      expect(response.headers['content-type'], '$contentType; $charset');
+    });
+
+    test("when encoding is set", () {
+      final response = new Response.ok("", headers: {
+        'content-type' : contentType,
+      }, encoding: UTF8);
+
+      expect(response.headers['content-type'], '$contentType; $charset');
+    });
+
+    test("when content-type is specified in another case", () {
+      final response = new Response.ok("", headers: {
+        'Content-Type' : contentType,
+      }, encoding: UTF8);
+
+      expect(response.headers['content-type'], '$contentType; $charset');
     });
   });
 }

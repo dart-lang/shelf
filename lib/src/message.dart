@@ -139,12 +139,15 @@ Map<String, String> _adjustHeaders(
     Map<String, String> headers, Encoding encoding) {
   if (headers == null) headers = const {};
   if (encoding == null) return headers;
+
+  headers = new CaseInsensitiveMap.from(headers);
+
   if (headers['content-type'] == null) {
     return addHeader(headers, 'content-type',
         'application/octet-stream; charset=${encoding.name}');
   }
 
-  var contentType = new MediaType.parse(headers['content-type']).change(
-      parameters: {'charset': encoding.name});
+  var contentType = new MediaType.parse(headers['content-type'])
+      .change(parameters: {'charset': encoding.name});
   return addHeader(headers, 'content-type', contentType.toString());
 }
