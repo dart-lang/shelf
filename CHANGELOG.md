@@ -1,3 +1,9 @@
+## 0.6.4+2
+
+* Fix a bug where the `Content-Type` header didn't interact properly with the
+  `encoding` parameter for `new Request()` and `new Response()` if it wasn't
+  lowercase.
+
 ## 0.6.4+1
 
 * When the `shelf_io` adapter detects an error, print the request context as
