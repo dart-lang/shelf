@@ -8,10 +8,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:shelf/src/message.dart';
+import 'package:shelf/src/response.dart';
 import 'package:test/test.dart';
 
 import 'test_util.dart';
-import 'package:shelf/src/response.dart';
 
 class _TestMessage extends Message {
   _TestMessage(Map<String, String> headers, Map<String, Object> context, body,
@@ -205,6 +205,14 @@ void main() {
       }).encoding, equals(LATIN1));
     });
 
+    test("comes from the content-type charset parameter with a different case",
+        () {
+      expect(_createMessage(
+          headers: {
+        'Content-Type': 'text/plain; charset=iso-8859-1'
+      }).encoding, equals(LATIN1));
+    });
+
     test("defaults to encoding a String as UTF-8", () {
       expect(_createMessage(body: "è").read().toList(),
           completion(equals([[195, 168]])));
@@ -222,6 +230,14 @@ void main() {
           containsPair('content-type', 'text/plain; charset=iso-8859-1'));
     });
 
+    test("adds an explicit encoding to the content-type with a different case",
+        () {
+      var request = _createMessage(
+          body: "è", encoding: LATIN1, headers: {'Content-Type': 'text/plain'});
+      expect(request.headers,
+          containsPair('Content-Type', 'text/plain; charset=iso-8859-1'));
+    });
+
     test("sets an absent content-type to application/octet-stream in order to "
         "set the charset", () {
       var request = _createMessage(body: "è", encoding: LATIN1);
@@ -236,43 +252,6 @@ void main() {
           headers: {'content-type': 'text/plain; charset=whatever'});
       expect(request.headers,
           containsPair('content-type', 'text/plain; charset=iso-8859-1'));
-    });
-  });
-
-  group("content type should be preserved when setting encoding", () {
-    final contentType = 'application/atom+xml';
-    final charset = 'charset=utf-8';
-
-    test("when encoding is not set", () {
-      final response = new Response.ok("", headers: {
-        'content-type' : contentType
-      });
-
-      expect(response.headers['content-type'], contentType);
-    });
-
-    test("when encoding is set", () {
-      final response = new Response.ok("", headers: {
-        'content-type' : contentType,
-      }, encoding: UTF8);
-
-      expect(response.headers['content-type'], '$contentType; $charset');
-    });
-
-    test("when encoding is set", () {
-      final response = new Response.ok("", headers: {
-        'content-type' : contentType,
-      }, encoding: UTF8);
-
-      expect(response.headers['content-type'], '$contentType; $charset');
-    });
-
-    test("when content-type is specified in another case", () {
-      final response = new Response.ok("", headers: {
-        'Content-Type' : contentType,
-      }, encoding: UTF8);
-
-      expect(response.headers['content-type'], '$contentType; $charset');
     });
   });
 }
