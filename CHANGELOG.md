@@ -1,3 +1,7 @@
+## 0.6.4+3
+
+* Support `http_parser` 2.0.0.
+
 ## 0.6.4+2
 
 * Fix a bug where the `Content-Type` header didn't interact properly with the
