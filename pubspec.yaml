@@ -1,11 +1,11 @@
 name: shelf_web_socket
-version: 0.0.1+4
+version: 0.0.1+5
 author: "Dart Team <misc@dartlang.org>"
 homepage: http://github.com/dart-lang/shelf_web_socket
 description: >
   A WebSocket handler for Shelf.
 dependencies:
-  http_parser: ">=0.0.2 <2.0.0"
+  http_parser: ">=0.0.2 <3.0.0"
   shelf: ">=0.5.2 <0.7.0"
 dev_dependencies:
   http: ">=0.10.0 <0.12.0"

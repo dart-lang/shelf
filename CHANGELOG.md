@@ -1,3 +1,7 @@
+## 0.0.1+5
+
+* Support `http_parser` 2.0.0.
+
 ## 0.0.1+4
 
 * Fix a link to `shelf` in the README.
