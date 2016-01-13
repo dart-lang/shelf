@@ -15,8 +15,6 @@
 /// for more information.
 ///
 /// [bufferOutput]: https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart:io.HttpResponse#id_bufferOutput
-library shelf.io;
-
 import 'dart:async';
 import 'dart:io';
 

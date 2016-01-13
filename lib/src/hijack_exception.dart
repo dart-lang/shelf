@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library shelf.hijack_exception;
-
 /// An exception used to indicate that a request has been hijacked.
 ///
 /// This shouldn't be captured by any code other than the Shelf adapter that
