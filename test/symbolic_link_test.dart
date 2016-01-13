@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library shelf_static.symbolic_link_test;
-
 import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
