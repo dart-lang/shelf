@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:http_parser/http_parser.dart';
 import 'package:shelf/shelf.dart';
 
 import 'src/web_socket_handler.dart';
@@ -20,8 +21,8 @@ typedef _BinaryFunction(arg1, arg2);
 /// This means that this can be placed first in a [Cascade] and only upgrade
 /// requests will be handled.
 ///
-/// The [onConnection] must take a [CompatibleWebSocket] as its first argument.
-/// It may also take a string, the [WebSocket subprotocol][], as its second
+/// The [onConnection] must take a [WebSocketChannel] as its first argument. It
+/// may also take a string, the [WebSocket subprotocol][], as its second
 /// argument. The subprotocol is determined by looking at the client's
 /// `Sec-WebSocket-Protocol` header and selecting the first entry that also
 /// appears in [protocols]. If no subprotocols are shared between the client and

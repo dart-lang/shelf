@@ -64,8 +64,8 @@ class WebSocketHandler {
     }
 
     var protocol = _chooseProtocol(request);
-    request.hijack((stream, byteSink) {
-      var sink = UTF8.encoder.startChunkedConversion(byteSink);
+    request.hijack((channel) {
+      var sink = UTF8.encoder.startChunkedConversion(channel.sink);
       sink.add(
           "HTTP/1.1 101 Switching Protocols\r\n"
           "Upgrade: websocket\r\n"
@@ -74,7 +74,7 @@ class WebSocketHandler {
       if (protocol != null) sink.add("Sec-WebSocket-Protocol: $protocol\r\n");
       sink.add("\r\n");
 
-      _onConnection(new CompatibleWebSocket(stream, sink: byteSink), protocol);
+      _onConnection(new WebSocketChannel(channel), protocol);
     });
 
     // [request.hijack] is guaranteed to throw a [HijackException], so we'll

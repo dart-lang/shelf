@@ -1,3 +1,11 @@
+## 0.1.0
+
+* **Breaking change**: `webSocketHandler()` now passes a
+  [`WebSocketChannel`][WebSocketChannel] to the `onConnection()` callback,
+  rather than a deprecated `CompatibleWebSocket`.
+
+[WebSocketChannel]: https://www.dartdocs.org/documentation/http_parser/2.1.0/http_parser/WebSocketChannel-class.html
+
 ## 0.0.1+5
 
 * Support `http_parser` 2.0.0.

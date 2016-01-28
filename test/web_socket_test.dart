@@ -17,59 +17,62 @@ Map<String, String> get _handshakeHeaders => {
 };
 
 void main() {
-  test("can communicate with a dart:io WebSocket client", () {
-    return shelf_io.serve(webSocketHandler((webSocket) {
-      webSocket.add("hello!");
-      webSocket.first.then((request) {
+  test("can communicate with a dart:io WebSocket client", () async {
+    var server = await shelf_io.serve(webSocketHandler((webSocket) {
+      webSocket.sink.add("hello!");
+      webSocket.stream.first.then((request) {
         expect(request, equals("ping"));
-        webSocket.add("pong");
-        webSocket.close();
+        webSocket.sink.add("pong");
+        webSocket.sink.close();
       });
-    }), "localhost", 0).then((server) {
-      return WebSocket.connect('ws://localhost:${server.port}')
-          .then((webSocket) {
-        var n = 0;
-        return webSocket.listen((message) {
-          if (n == 0) {
-            expect(message, equals("hello!"));
-            webSocket.add("ping");
-          } else if (n == 1) {
-            expect(message, equals("pong"));
-            webSocket.close();
-            server.close();
-          } else {
-            fail("Only expected two messages.");
-          }
-          n++;
-        }).asFuture();
-      }).whenComplete(server.close);
-    });
+    }), "localhost", 0);
+
+    try {
+      var webSocket = await WebSocket.connect('ws://localhost:${server.port}');
+      var n = 0;
+      await webSocket.listen((message) {
+        if (n == 0) {
+          expect(message, equals("hello!"));
+          webSocket.add("ping");
+        } else if (n == 1) {
+          expect(message, equals("pong"));
+          webSocket.close();
+          server.close();
+        } else {
+          fail("Only expected two messages.");
+        }
+        n++;
+      }).asFuture();
+    } finally {
+      await server.close();
+    }
   });
 
-  test("negotiates the sub-protocol", () {
-    return shelf_io.serve(webSocketHandler((webSocket, protocol) {
+  test("negotiates the sub-protocol", () async {
+    var server = await shelf_io.serve(webSocketHandler((webSocket, protocol) {
       expect(protocol, equals("two"));
-      webSocket.close();
-    }, protocols: ["three", "two", "x"]), "localhost", 0).then((server) {
-      return WebSocket.connect('ws://localhost:${server.port}',
-          protocols: ["one", "two", "three"]).then((webSocket) {
-        expect(webSocket.protocol, equals("two"));
-        return webSocket.close();
-      }).whenComplete(server.close);
-    });
+      webSocket.sink.close();
+    }, protocols: ["three", "two", "x"]), "localhost", 0);
+
+    try {
+      var webSocket = await WebSocket.connect(
+          'ws://localhost:${server.port}',
+          protocols: ["one", "two", "three"]);
+      expect(webSocket.protocol, equals("two"));
+      return webSocket.close();
+    } finally {
+      await server.close();
+    }
   });
 
   group("with a set of allowed origins", () {
     var server;
     var url;
-    setUp(() {
-      return shelf_io.serve(webSocketHandler((webSocket) {
-        webSocket.close();
-      }, allowedOrigins: ["pub.dartlang.org", "GoOgLe.CoM"]), "localhost", 0)
-          .then((server_) {
-        server = server_;
-        url = 'http://localhost:${server.port}/';
-      });
+    setUp(() async {
+      server = await shelf_io.serve(webSocketHandler((webSocket) {
+        webSocket.sink.close();
+      }, allowedOrigins: ["pub.dartlang.org", "GoOgLe.CoM"]), "localhost", 0);
+      url = 'http://localhost:${server.port}/';
     });
 
     tearDown(() => server.close());
@@ -104,29 +107,26 @@ void main() {
   });
 
   // Regression test for issue 21894.
-  test("allows a Connection header with multiple values", () {
-    return shelf_io.serve(webSocketHandler((webSocket) {
-      webSocket.close();
-    }), "localhost", 0).then((server) {
-      var url = 'http://localhost:${server.port}/';
+  test("allows a Connection header with multiple values", () async {
+    var server = await shelf_io.serve(webSocketHandler((webSocket) {
+      webSocket.sink.close();
+    }), "localhost", 0);
 
-      var headers = _handshakeHeaders;
-      headers['Connection'] = 'Other-Token, Upgrade';
-      expect(http.get(url, headers: headers).whenComplete(server.close),
-          hasStatus(101));
-    });
+    var url = 'http://localhost:${server.port}/';
+    var headers = _handshakeHeaders;
+    headers['Connection'] = 'Other-Token, Upgrade';
+    expect(http.get(url, headers: headers).whenComplete(server.close),
+        hasStatus(101));
   });
 
   group("HTTP errors", () {
     var server;
     var url;
-    setUp(() {
-      return shelf_io.serve(webSocketHandler((_) {
+    setUp(() async {
+      server = await shelf_io.serve(webSocketHandler((_) {
         fail("should not create a WebSocket");
-      }), "localhost", 0).then((server_) {
-        server = server_;
-        url = 'http://localhost:${server.port}/';
-      });
+      }), "localhost", 0);
+      url = 'http://localhost:${server.port}/';
     });
 
     tearDown(() => server.close());
