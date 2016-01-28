@@ -246,7 +246,7 @@ class Request extends Message {
       throw new StateError("This request can't be hijacked.");
     }
 
-    if (callback is ZoneUnaryCallback) {
+    if (callback is! ZoneBinaryCallback) {
       var oldCallback = callback;
       callback = (stream, sink) {
         oldCallback(new StreamChannel<List<int>>(stream, sink));
