@@ -1,3 +1,11 @@
+## 0.6.5
+
+* `Request.hijack()` now takes a callback that accepts a single `StreamChannel`
+  argument rather than separate `Stream` and `StreamSink` arguments. The old
+  callback signature is still supported, but should be considered deprecated.
+
+* The `HijackCallback` and `OnHijackCallback` typedefs are deprecated.
+
 ## 0.6.4+3
 
 * Support `http_parser` 2.0.0.

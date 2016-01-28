@@ -11,7 +11,7 @@ import 'test_util.dart';
 
 void main() {
   test('hijacking a non-hijackable request throws a StateError', () {
-    expect(() => new Request('GET', LOCALHOST_URI).hijack((_, __) => null),
+    expect(() => new Request('GET', LOCALHOST_URI).hijack((_) => null),
         throwsStateError);
   });
 
@@ -29,10 +29,10 @@ void main() {
       callback(streamController.stream, sinkController);
     }));
 
-    expect(() => request.hijack(expectAsync((stream, sink) {
-      expect(stream.first, completion(equals([1, 2, 3])));
-      sink.add([4, 5, 6]);
-      sink.close();
+    expect(() => request.hijack(expectAsync((channel) {
+      expect(channel.stream.first, completion(equals([1, 2, 3])));
+      channel.sink.add([4, 5, 6]);
+      channel.sink.close();
     })), throwsA(new isInstanceOf<HijackException>()));
   });
 
@@ -41,17 +41,17 @@ void main() {
     var request = new Request('GET', LOCALHOST_URI,
         onHijack: expectAsync((_) => null, count: 1));
 
-    expect(() => request.hijack((_, __) => null),
+    expect(() => request.hijack((_) => null),
         throwsA(new isInstanceOf<HijackException>()));
 
-    expect(() => request.hijack((_, __) => null), throwsStateError);
+    expect(() => request.hijack((_) => null), throwsStateError);
   });
 
   group('calling change', () {
     test('hijacking a non-hijackable request throws a StateError', () {
       var request = new Request('GET', LOCALHOST_URI);
       var newRequest = request.change();
-      expect(() => newRequest.hijack((_, __) => null), throwsStateError);
+      expect(() => newRequest.hijack((_) => null), throwsStateError);
     });
 
     test('hijacking a hijackable request throws a HijackException and calls '
@@ -70,10 +70,10 @@ void main() {
 
       var newRequest = request.change();
 
-      expect(() => newRequest.hijack(expectAsync((stream, sink) {
-        expect(stream.first, completion(equals([1, 2, 3])));
-        sink.add([4, 5, 6]);
-        sink.close();
+      expect(() => newRequest.hijack(expectAsync((channel) {
+        expect(channel.stream.first, completion(equals([1, 2, 3])));
+        channel.sink.add([4, 5, 6]);
+        channel.sink.close();
       })), throwsA(new isInstanceOf<HijackException>()));
     });
 
@@ -85,10 +85,10 @@ void main() {
 
       var newRequest = request.change();
 
-      expect(() => newRequest.hijack((_, __) => null),
+      expect(() => newRequest.hijack((_) => null),
           throwsA(new isInstanceOf<HijackException>()));
 
-      expect(() => request.hijack((_, __) => null), throwsStateError);
+      expect(() => request.hijack((_) => null), throwsStateError);
     });
   });
 }

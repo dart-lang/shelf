@@ -6,17 +6,20 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import 'hijack_exception.dart';
 import 'message.dart';
 import 'util.dart';
 
 /// A callback provided by a Shelf handler that's passed to [Request.hijack].
+@Deprecated("Will be removed in shelf 0.7.0.")
 typedef void HijackCallback(
     Stream<List<int>> stream, StreamSink<List<int>> sink);
 
 /// A callback provided by a Shelf adapter that's used by [Request.hijack] to
 /// provide a [HijackCallback] with a socket.
+@Deprecated("Will be removed in shelf 0.7.0.")
 typedef void OnHijackCallback(HijackCallback callback);
 
 /// Represents an HTTP request to be processed by a Shelf application.
@@ -133,7 +136,8 @@ class Request extends Message {
   Request(String method, Uri requestedUri, {String protocolVersion,
       Map<String, String> headers, String handlerPath, Uri url, body,
       Encoding encoding, Map<String, Object> context,
-      OnHijackCallback onHijack})
+      void onHijack(void hijack(
+          Stream<List<int>> stream, StreamSink<List<int>> sink))})
       : this._(method, requestedUri,
           protocolVersion: protocolVersion,
           headers: headers,
@@ -226,21 +230,27 @@ class Request extends Message {
   ///
   /// Synchronously, this throws a [HijackException] that indicates to the
   /// adapter that it shouldn't emit a response itself. Asynchronously,
-  /// [callback] is called with a [Stream<List<int>>] and
-  /// [StreamSink<List<int>>], respectively, that provide access to the
-  /// underlying request socket.
+  /// [callback] is called with a [StreamChannel<List<int>>] that provides
+  /// access to the underlying request socket.
   ///
-  /// If the sink is closed, the stream will be closed as well. The stream and
-  /// sink may be the same object, as in the case of a `dart:io` `Socket`
-  /// object.
+  /// For backwards compatibility, if the callback takes two arguments, it will
+  /// be passed a `Stream<List<int>>` and a `StreamSink<List<int>>` separately,
+  /// but this behavior is deprecated.
   ///
   /// This may only be called when using a Shelf adapter that supports
   /// hijacking, such as the `dart:io` adapter. In addition, a given request may
   /// only be hijacked once. [canHijack] can be used to detect whether this
   /// request can be hijacked.
-  void hijack(HijackCallback callback) {
+  void hijack(Function callback) {
     if (_onHijack == null) {
       throw new StateError("This request can't be hijacked.");
+    }
+
+    if (callback is ZoneUnaryCallback) {
+      var oldCallback = callback;
+      callback = (stream, sink) {
+        oldCallback(new StreamChannel<List<int>>(stream, sink));
+      };
     }
 
     _onHijack.run(callback);
