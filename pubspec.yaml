@@ -9,6 +9,6 @@ dependencies:
   shelf: ">=0.6.5 <0.8.0"
 dev_dependencies:
   http: ">=0.10.0 <0.12.0"
-  test: ">=0.12.0 <0.13.0"
+  test: "^0.12.0"
 environment:
-  sdk: ">=1.4.0-dev.5.0 <2.0.0"
+  sdk: ">=1.8.0 <2.0.0"
