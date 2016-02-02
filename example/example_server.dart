@@ -5,14 +5,17 @@
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 
-void main() {
+main() async {
   var handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
       .addHandler(_echoRequest);
 
-  io.serve(handler, 'localhost', 8080).then((server) {
-    print('Serving at http://${server.address.host}:${server.port}');
-  });
+  var server = await io.serve(handler, 'localhost', 8080);
+
+  // Enable content compression
+  server.autoCompress = true;
+
+  print('Serving at http://${server.address.host}:${server.port}');
 }
 
 shelf.Response _echoRequest(shelf.Request request) {

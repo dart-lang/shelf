@@ -6,7 +6,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:shelf/src/message.dart';
-import 'package:shelf/src/response.dart';
 import 'package:test/test.dart';
 
 import 'test_util.dart';
