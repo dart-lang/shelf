@@ -1,3 +1,7 @@
+## 0.1.0+3
+
+* Support version `0.7.0` of `shelf`.
+
 ## 0.1.0+2
 
 * Support version `0.6.0` of `shelf`.
