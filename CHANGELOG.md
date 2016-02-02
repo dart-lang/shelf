@@ -1,3 +1,7 @@
+## 0.2.3+3
+
+* Support `shelf` 0.7.0.
+
 ## 0.2.3+2
 
 * Support `http_parser` 2.0.0.
