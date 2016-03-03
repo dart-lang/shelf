@@ -1,3 +1,12 @@
+## 0.2.0
+
+* **Breaking change**: `webSocketHandler()` now uses the
+  [`WebSocketChannel`][WebSocketChannel] class defined in the
+  `web_socket_channel` package, rather than the deprecated class defined in
+  `http_parser`.
+
+[WebSocketChannel]: https://www.dartdocs.org/documentation/web_socket_channel/latest/web_socket_channel/WebSocketChannel-class.html
+
 ## 0.1.0
 
 * **Breaking change**: `webSocketHandler()` now passes a

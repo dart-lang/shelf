@@ -4,8 +4,8 @@
 
 import 'dart:convert';
 
-import 'package:http_parser/http_parser.dart';
 import 'package:shelf/shelf.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// A class that exposes a handler for upgrading WebSocket requests.
 class WebSocketHandler {
@@ -70,7 +70,7 @@ class WebSocketHandler {
           "HTTP/1.1 101 Switching Protocols\r\n"
           "Upgrade: websocket\r\n"
           "Connection: Upgrade\r\n"
-          "Sec-WebSocket-Accept: ${CompatibleWebSocket.signKey(key)}\r\n");
+          "Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n");
       if (protocol != null) sink.add("Sec-WebSocket-Protocol: $protocol\r\n");
       sink.add("\r\n");
 
