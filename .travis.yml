@@ -3,6 +3,9 @@ sudo: false
 dart:
   - stable
   - dev
+cache:
+  directories:
+    - $HOME/.pub-cache
 with_content_shell: true
 before_install:
   - "export DISPLAY=:99.0"
