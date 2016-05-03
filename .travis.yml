@@ -3,6 +3,11 @@ sudo: false
 dart:
   - stable
   - dev
+  - 1.16.0
+  - 1.15.0
+  - 1.14.2
+  - 1.13.2
+  - 1.12.2
 cache:
   directories:
     - $HOME/.pub-cache
