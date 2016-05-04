@@ -1,3 +1,7 @@
+## 0.6.5+1
+
+* Fix all strong-mode warnings and errors.
+
 ## 0.6.5
 
 * `Request.hijack()` now takes a callback that accepts a single `StreamChannel`

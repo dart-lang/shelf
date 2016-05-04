@@ -246,14 +246,14 @@ class Request extends Message {
       throw new StateError("This request can't be hijacked.");
     }
 
-    if (callback is! ZoneBinaryCallback) {
-      var oldCallback = callback;
-      callback = (stream, sink) {
-        oldCallback(new StreamChannel<List<int>>(stream, sink));
-      };
+    if (callback is HijackCallback) {
+      _onHijack.run(callback);
+    } else {
+      _onHijack.run((Stream<List<int>> stream, StreamSink<List<int>> sink) {
+        callback(new StreamChannel<List<int>>(stream, sink));
+      });
     }
 
-    _onHijack.run(callback);
     throw const HijackException();
   }
 }

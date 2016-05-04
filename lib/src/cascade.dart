@@ -80,8 +80,8 @@ class Cascade {
 
 /// Computes the [Cascade._shouldCascade] function based on the user's
 /// parameters.
-Function _computeShouldCascade(
-    Iterable<int> statusCodes, Function shouldCascade) {
+_ShouldCascade _computeShouldCascade(Iterable<int> statusCodes,
+    bool shouldCascade(Response response)) {
   if (shouldCascade != null) return shouldCascade;
   if (statusCodes == null) statusCodes = [404, 405];
   statusCodes = statusCodes.toSet();

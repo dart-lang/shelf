@@ -109,7 +109,7 @@ Future handleRequest(HttpRequest request, Handler handler) async {
 
 /// Creates a new [Request] from the provided [HttpRequest].
 Request _fromHttpRequest(HttpRequest request) {
-  var headers = {};
+  var headers = <String, String>{};
   request.headers.forEach((k, v) {
     // Multiple header values are joined with commas.
     // See http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-21#page-22

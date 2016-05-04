@@ -11,7 +11,7 @@ import 'test_util.dart';
 
 void main() {
   group('a cascade with several handlers', () {
-    var handler;
+    Handler handler;
     setUp(() {
       handler = new Cascade().add((request) {
         if (request.headers['one'] == 'false') {
@@ -34,11 +34,10 @@ void main() {
       }).handler;
     });
 
-    test('the first response should be returned if it matches', () {
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.statusCode, equals(200));
-        expect(response.readAsString(), completion(equals('handler 1')));
-      });
+    test('the first response should be returned if it matches', () async {
+      var response = await makeSimpleRequest(handler);
+      expect(response.statusCode, equals(200));
+      expect(response.readAsString(), completion(equals('handler 1')));
     });
 
     test("the second response should be returned if it matches and the first "

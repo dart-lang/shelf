@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:async/async.dart';
+
 /// The body of a request or response.
 ///
 /// This tracks whether the body has been read. It's separate from [Message]
@@ -28,13 +30,13 @@ class Body {
 
     if (body is Body) return body;
 
-    var stream;
+    Stream<List<int>> stream;
     if (body == null) {
       stream = new Stream.fromIterable([]);
     } else if (body is String) {
       stream = new Stream.fromIterable([encoding.encode(body)]);
     } else if (body is Stream) {
-      stream = body;
+      stream = DelegatingStream.typed(body);
     } else {
       throw new ArgumentError('Response body "$body" must be a String or a '
           'Stream.');

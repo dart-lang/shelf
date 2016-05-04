@@ -14,7 +14,7 @@ void main() {
     gotLog = false;
   });
 
-  var logger = (msg, isError) {
+  var logger = (String msg, bool isError) {
     expect(gotLog, isFalse);
     gotLog = true;
     expect(isError, isFalse);

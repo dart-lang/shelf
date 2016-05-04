@@ -253,7 +253,7 @@ void main() {
   });
 
   test('a bad HTTP request results in a 500 response', () {
-    var socket;
+    Socket socket;
 
     _scheduleServer(syncHandler);
 
@@ -274,10 +274,9 @@ void main() {
       return socket.close();
     });
 
-    schedule(() {
-      return UTF8.decodeStream(socket).then((value) {
-        expect(value, contains('500 Internal Server Error'));
-      });
+    schedule(() async {
+      expect(await UTF8.decodeStream(socket),
+          contains('500 Internal Server Error'));
     });
   });
 
@@ -337,7 +336,7 @@ void main() {
   });
 
   test('respects the "shelf.io.buffer_output" context parameter', () {
-    var controller = new StreamController();
+    var controller = new StreamController<String>();
     _scheduleServer((request) {
       controller.add("Hello, ");
 
@@ -382,13 +381,13 @@ Future _scheduleServer(Handler handler) {
 Future<http.Response> _scheduleGet({Map<String, String> headers}) {
   if (headers == null) headers = {};
 
-  return schedule(
+  return schedule/*<Future<http.Response>>*/(
       () => http.get('http://localhost:$_serverPort/', headers: headers));
 }
 
 Future<http.StreamedResponse> _schedulePost(
     {Map<String, String> headers, String body}) {
-  return schedule(() {
+  return schedule/*<Future<http.StreamedResponse>>*/(() {
     var request =
         new http.Request('POST', Uri.parse('http://localhost:$_serverPort/'));
 
