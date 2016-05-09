@@ -1,5 +1,5 @@
 name: shelf_proxy
-version: 0.1.0+3
+version: 0.1.0+4
 author: Dart Team <misc@dartlang.org>
 description: A shelf handler for proxying requests to another server.
 homepage: https://github.com/dart-lang/shelf_proxy
@@ -9,4 +9,5 @@ dependencies:
   shelf: '>=0.5.2 <0.8.0'
 dev_dependencies:
   browser: '>=0.10.0 <0.11.0'
-  scheduled_test: '>=0.11.0 <0.12.0'
+  scheduled_test: '>=0.12.0 <0.13.0'
+  test: '>=0.12.0 <0.13.0'

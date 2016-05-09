@@ -215,13 +215,13 @@ void main() {
 /// [targetPath] is the root-relative path on the target server to proxy to. It
 /// defaults to `/`.
 void createProxy(shelf.Handler handler, {String targetPath}) {
-  handler = wrapAsync(handler, 'target server handler');
+  handler = expectAsync(handler, reason: 'target server handler');
   schedule(() {
     return shelf_io.serve(handler, 'localhost', 0).then((targetServer) {
       targetUri = Uri.parse('http://localhost:${targetServer.port}');
       if (targetPath != null) targetUri = targetUri.resolve(targetPath);
-      var proxyServerHandler = wrapAsync(
-          proxyHandler(targetUri), 'proxy server handler');
+      var proxyServerHandler = expectAsync(
+          proxyHandler(targetUri), reason: 'proxy server handler');
 
       return shelf_io.serve(proxyServerHandler, 'localhost', 0)
           .then((proxyServer) {
