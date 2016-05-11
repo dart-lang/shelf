@@ -1,3 +1,7 @@
+## 0.2.1
+
+* Fix all strong-mode warnings.
+
 ## 0.2.0
 
 * **Breaking change**: `webSocketHandler()` now uses the
