@@ -29,7 +29,7 @@ import 'util.dart';
 /// handler produces a listing of the directory.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath: false, String defaultDocument,
-    bool listDirectories: false}) {
+    bool listDirectories: false, bool useMagicBytesForContentType: false}) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -44,7 +44,7 @@ Handler createStaticHandler(String fileSystemPath,
     }
   }
 
-  return (Request request) {
+  return (Request request) async {
     var segs = [fileSystemPath]..addAll(request.url.pathSegments);
 
     var fsPath = p.joinAll(segs);
@@ -100,7 +100,15 @@ Handler createStaticHandler(String fileSystemPath,
       HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
     };
 
-    var contentType = mime.lookupMimeType(file.path);
+
+    var contentType;
+    if(useMagicBytesForContentType) {
+      List<int> magicBytes = await file.openRead(0,2).single;
+      contentType = mime.lookupMimeType(file.path, headerBytes: magicBytes);
+    } else {
+      contentType = mime.lookupMimeType(file.path);
+    }
+
     if (contentType != null) {
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     }
