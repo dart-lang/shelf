@@ -3,7 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:math' as math;
 
+import 'package:convert/convert.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart' as mime;
 import 'package:path/path.dart' as p;
@@ -28,13 +30,13 @@ import 'util.dart';
 /// If no [defaultDocument] is found and [listDirectories] is true, then the
 /// handler produces a listing of the directory.
 ///
-/// If [useHeaderBytesForContentType] is set to false, then the content type will
-/// be determined by the file's extension, as is the mime library's default behavior.
-/// Setting it to true will cause up tot he first 25 bytes of the file to be read
-/// and used to determine the content type.
+/// If [useHeaderBytesForContentType] is `true`, the contents of the
+/// file will be used along with the file path to determine the content type.
 Handler createStaticHandler(String fileSystemPath,
-    {bool serveFilesOutsidePath: false, String defaultDocument,
-    bool listDirectories: false, bool useHeaderBytesForContentType: false}) {
+    {bool serveFilesOutsidePath: false,
+    String defaultDocument,
+    bool listDirectories: false,
+    bool useHeaderBytesForContentType: false}) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -105,15 +107,16 @@ Handler createStaticHandler(String fileSystemPath,
       HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
     };
 
+    String contentType;
+    if (useHeaderBytesForContentType) {
+      var length =
+          math.min(mime.defaultMagicNumbersMaxLength, file.lengthSync());
 
-    var contentType;
-    if(useHeaderBytesForContentType) {
-      int length = 25; // The longest file header identifier
-      int file_length =file.lengthSync();
-      if(file_length<length)
-        length = file_length;
-      List<int> magicBytes = await file.openRead(0,length).single;
-      contentType = mime.lookupMimeType(file.path, headerBytes: magicBytes);
+      var byteSink = new ByteAccumulatorSink();
+
+      await file.openRead(0, length).listen(byteSink.add).asFuture();
+
+      contentType = mime.lookupMimeType(file.path, headerBytes: byteSink.bytes);
     } else {
       contentType = mime.lookupMimeType(file.path);
     }
