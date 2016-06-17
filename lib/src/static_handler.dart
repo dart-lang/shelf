@@ -27,6 +27,11 @@ import 'util.dart';
 ///
 /// If no [defaultDocument] is found and [listDirectories] is true, then the
 /// handler produces a listing of the directory.
+///
+/// If [useHeaderBytesForContentType] is set to false, then the content type will
+/// be determined by the file's extension, as is the mime library's default behavior.
+/// Setting it to true will cause up tot he first 25 bytes of the file to be read
+/// and used to determine the content type.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath: false, String defaultDocument,
     bool listDirectories: false, bool useHeaderBytesForContentType: false}) {
