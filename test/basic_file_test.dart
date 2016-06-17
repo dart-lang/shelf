@@ -25,7 +25,7 @@ void main() {
     d.file('index.html', '<html></html>').create();
     d.file('root.txt', 'root txt').create();
     d.file('random.unknown', 'no clue').create();
-    d.binaryFile('magic_bytes_test_image', BASE64.decode(r"iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AYRETkSXaxBzQAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAbUlEQVQI1wXBvwpBYRwA0HO/kjBKJmXRLWXxJ4PsnsMTeAEPILvNZrybF7B4A6XvQW6k+DkHwqgM1TnMpoEoDMtwOJE7pB/VXmF3CdseucmjxaAruR41Pl9p/Gbyoq5B9FeL2OR7zJ+3aC/X8QdQCyIArPsHkQAAAABJRU5ErkJggg==")).create();
+    d.binaryFile('header_bytes_test_image', BASE64.decode(r"iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AYRETkSXaxBzQAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAbUlEQVQI1wXBvwpBYRwA0HO/kjBKJmXRLWXxJ4PsnsMTeAEPILvNZrybF7B4A6XvQW6k+DkHwqgM1TnMpoEoDMtwOJE7pB/VXmF3CdseucmjxaAruR41Pl9p/Gbyoq5B9FeL2OR7zJ+3aC/X8QdQCyIArPsHkQAAAABJRU5ErkJggg==")).create();
     d
         .dir('files', [
       d.file('test.txt', 'test txt content'),
@@ -202,9 +202,9 @@ void main() {
 
     test('magic_bytes_test_image should be image/png', () {
       schedule(() {
-        var handler = createStaticHandler(d.defaultRoot, useMagicBytesForContentType: true);
+        var handler = createStaticHandler(d.defaultRoot, useHeaderBytesForContentType: true);
 
-        return makeRequest(handler, '/magic_bytes_test_image').then((response) {
+        return makeRequest(handler, '/header_bytes_test_image').then((response) {
           expect(response.mimeType, "image/png");
         });
       });
