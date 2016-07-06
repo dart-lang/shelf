@@ -1,3 +1,8 @@
+## 0.2.4
+
+* Add support for "sniffing" the content of the file for the content-type via an optional
+  `useHeaderBytesForContentType` argument on `createStaticHandler`.
+
 ## 0.2.3+4
 
 * Support `http_parser` 3.0.0.

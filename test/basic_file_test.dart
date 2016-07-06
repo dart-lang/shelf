@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
@@ -24,12 +25,20 @@ void main() {
     d.file('index.html', '<html></html>').create();
     d.file('root.txt', 'root txt').create();
     d.file('random.unknown', 'no clue').create();
-    d
-        .dir('files', [
+
+    var pngBytesContent =
+        r"iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAABmJLR0QA/wD/AP+gvae"
+        r"TAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AYRETkSXaxBzQAAAB1pVFh0Q2"
+        r"9tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAbUlEQVQI1wXBvwpBYRwA0"
+        r"HO/kjBKJmXRLWXxJ4PsnsMTeAEPILvNZrybF7B4A6XvQW6k+DkHwqgM1TnMpoEoDMtw"
+        r"OJE7pB/VXmF3CdseucmjxaAruR41Pl9p/Gbyoq5B9FeL2OR7zJ+3aC/X8QdQCyIArPs"
+        r"HkQAAAABJRU5ErkJggg==";
+
+    d.dir('files', [
       d.file('test.txt', 'test txt content'),
-      d.file('with space.txt', 'with space content')
-    ])
-        .create();
+      d.file('with space.txt', 'with space content'),
+      d.binaryFile('header_bytes_test_image', BASE64.decode(pngBytesContent))
+    ]).create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;
@@ -194,6 +203,18 @@ void main() {
 
         return makeRequest(handler, '/random.unknown').then((response) {
           expect(response.mimeType, isNull);
+        });
+      });
+    });
+
+    test('magic_bytes_test_image should be image/png', () {
+      schedule(() {
+        var handler = createStaticHandler(d.defaultRoot,
+            useHeaderBytesForContentType: true);
+
+        return makeRequest(handler, '/files/header_bytes_test_image')
+            .then((response) {
+          expect(response.mimeType, "image/png");
         });
       });
     });

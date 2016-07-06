@@ -3,7 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:math' as math;
 
+import 'package:convert/convert.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart' as mime;
 import 'package:path/path.dart' as p;
@@ -27,9 +29,14 @@ import 'util.dart';
 ///
 /// If no [defaultDocument] is found and [listDirectories] is true, then the
 /// handler produces a listing of the directory.
+///
+/// If [useHeaderBytesForContentType] is `true`, the contents of the
+/// file will be used along with the file path to determine the content type.
 Handler createStaticHandler(String fileSystemPath,
-    {bool serveFilesOutsidePath: false, String defaultDocument,
-    bool listDirectories: false}) {
+    {bool serveFilesOutsidePath: false,
+    String defaultDocument,
+    bool listDirectories: false,
+    bool useHeaderBytesForContentType: false}) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -44,7 +51,7 @@ Handler createStaticHandler(String fileSystemPath,
     }
   }
 
-  return (Request request) {
+  return (Request request) async {
     var segs = [fileSystemPath]..addAll(request.url.pathSegments);
 
     var fsPath = p.joinAll(segs);
@@ -100,7 +107,20 @@ Handler createStaticHandler(String fileSystemPath,
       HttpHeaders.LAST_MODIFIED: formatHttpDate(fileStat.changed)
     };
 
-    var contentType = mime.lookupMimeType(file.path);
+    String contentType;
+    if (useHeaderBytesForContentType) {
+      var length =
+          math.min(mime.defaultMagicNumbersMaxLength, file.lengthSync());
+
+      var byteSink = new ByteAccumulatorSink();
+
+      await file.openRead(0, length).listen(byteSink.add).asFuture();
+
+      contentType = mime.lookupMimeType(file.path, headerBytes: byteSink.bytes);
+    } else {
+      contentType = mime.lookupMimeType(file.path);
+    }
+
     if (contentType != null) {
       headers[HttpHeaders.CONTENT_TYPE] = contentType;
     }
