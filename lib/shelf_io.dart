@@ -29,7 +29,7 @@ export 'src/io_server.dart';
 /// [port] and sends requests to [handler].
 ///
 /// See the documentation for [HttpServer.bind] for more details on [address],
-/// [port], and [backlog].
+/// [port], [backlog] and [shared].
 Future<HttpServer> serve(Handler handler, address, int port,
     {int backlog, bool shared}) {
   if (backlog == null) backlog = 0;

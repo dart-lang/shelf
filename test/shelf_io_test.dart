@@ -280,6 +280,15 @@ void main() {
     });
   });
 
+  test('shared server', () {
+    _scheduleSharedServer(syncHandler);
+
+    return _scheduleGet().then((response) {
+      expect(response.statusCode, HttpStatus.OK);
+      expect(response.body, 'Hello from /');
+    });
+  });
+
   group('date header', () {
     test('is sent by default', () {
       _scheduleServer(syncHandler);
@@ -376,6 +385,26 @@ Future _scheduleServer(Handler handler) {
 
     _serverPort = server.port;
   }));
+}
+
+Future _scheduleSharedServer(Handler handler) {
+  return schedule(() {
+    Completer completer = new Completer();
+    for (int i = 0; i < 3; i++) {
+      shelf_io.serve(handler, 'localhost', 0, shared: true).then((server) {
+        currentSchedule.onComplete.schedule(() {
+          _serverPort = null;
+          return server.close(force: true);
+        });
+
+        if (i == 2) {
+          completer.complete();
+        }
+        _serverPort = server.port;
+      });
+    }
+    return completer.future;
+  });
 }
 
 Future<http.Response> _scheduleGet({Map<String, String> headers}) {
