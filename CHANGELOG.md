@@ -1,3 +1,7 @@
+## 0.6.5+3
+
+* Improve the documentation of `logRequests()`.
+
 ## 0.6.5+2
 
 * Support `http_parser` 3.0.0.
