@@ -1,3 +1,7 @@
+## 0.6.6
+
+* Bump minimum supported Dart SDK to `>=1.13.2`.
+
 ## 0.6.5+3
 
 * Improve the documentation of `logRequests()`.
