@@ -78,7 +78,7 @@ class Body {
 
     // Non-ASCII code units between U+0080 and U+009F produce 8-bit characters
     // with the high bit set.
-    return bytes.any((byte) => byte & 0x80 != 0);
+    return bytes.every((byte) => byte & 0x80 == 0);
   }
 
   /// Returns a [Stream] representing the body.
