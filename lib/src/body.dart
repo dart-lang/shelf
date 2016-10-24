@@ -5,8 +5,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:async/async.dart';
+import 'package:collection/collection.dart';
 
 /// The body of a request or response.
 ///
@@ -76,13 +76,9 @@ class Body {
     // longer.
     if (bytes.length != codeUnits) return false;
 
-    for (var byte in bytes) {
-      // Non-ASCII code units between U+0080 and U+009F produce 8-bit
-      // characters with the high bit set.
-      if (byte & 0x80 != 0) return false;
-    }
-
-    return true;
+    // Non-ASCII code units between U+0080 and U+009F produce 8-bit characters
+    // with the high bit set.
+    return bytes.any((byte) => byte & 0x80 != 0);
   }
 
   /// Returns a [Stream] representing the body.

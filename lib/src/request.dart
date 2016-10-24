@@ -105,6 +105,9 @@ class Request extends Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   ///
+  /// If a non-[Stream] object is passed for the [body], the Content-Length
+  /// header is automatically set to the length of that body.
+  ///
   /// The default value for [protocolVersion] is '1.1'.
   ///
   /// ## `onHijack`

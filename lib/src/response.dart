@@ -208,6 +208,9 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  ///
+  /// If a non-[Stream] object is passed for the [body], the Content-Length
+  /// header is automatically set to the length of that body.
   Response(this.statusCode, {body, Map<String, String> headers,
       Encoding encoding, Map<String, Object> context})
       : super(body, encoding: encoding, headers: headers, context: context) {
