@@ -3,15 +3,17 @@ sudo: false
 dart:
   - stable
   - dev
-  - 1.16.0
-  - 1.15.0
-  - 1.14.2
-  - 1.13.2
+  - 1.19.0
+  - 1.18.1
+  - 1.17.1
 cache:
   directories:
     - $HOME/.pub-cache
 with_content_shell: true
-before_install:
+addons:
+  firefox: "latest"
+before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
+  - 't=0; until (xdpyinfo -display :99 &> /dev/null || test $t -gt 10); do sleep 1; let t=$t+1; done'
 script: ./tool/travis.sh

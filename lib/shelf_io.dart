@@ -116,8 +116,8 @@ Request _fromHttpRequest(HttpRequest request) {
     headers[k] = v.join(',');
   });
 
-  onHijack(callback) {
-    return request.response
+  void onHijack(callback) {
+    request.response
         .detachSocket(writeHeaders: false)
         .then((socket) => callback(socket, socket));
   }

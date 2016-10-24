@@ -3,7 +3,7 @@
 # Fast fail the script on failures.
 set -e
 
-pub run test -p vm,content-shell,firefox
+pub run test -p vm,content-shell,firefox -j 1
 
 # Install dart_coveralls; gather and send coverage data.
 if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "stable" ]; then
