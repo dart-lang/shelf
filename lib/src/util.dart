@@ -4,6 +4,10 @@
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
+
+import 'shelf_unmodifiable_map.dart';
+
 /// Like [new Future], but avoids around issue 11911 by using [new Future.value]
 /// under the covers.
 Future newFuture(callback()) => new Future.value().then((_) => callback());
@@ -43,4 +47,18 @@ Map<String, String> addHeader(
   headers = headers == null ? {} : new Map.from(headers);
   headers[name] = value;
   return headers;
+}
+
+/// Returns the header with the given [name] in [headers].
+///
+/// This works even if [headers] is `null`, or if it's not yet a
+/// case-insensitive map.
+String getHeader(Map<String, String> headers, String name) {
+  if (headers == null) return null;
+  if (headers is ShelfUnmodifiableMap) return headers[name];
+
+  for (var key in headers.keys) {
+    if (equalsIgnoreAsciiCase(key, name)) return headers[key];
+  }
+  return null;
 }

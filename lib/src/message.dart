@@ -13,6 +13,11 @@ import 'util.dart';
 
 Body getBody(Message message) => message._body;
 
+/// The default set of headers for a message created with no body and no
+/// explicit headers.
+final _defaultHeaders = new ShelfUnmodifiableMap<String>(
+    {"content-length": "0"}, ignoreKeyCase: true);
+
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
   /// The HTTP headers.
@@ -40,7 +45,7 @@ abstract class Message {
 
   /// Creates a new [Message].
   ///
-  /// [body] is the response body. It may be either a [String], a
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
   /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
   /// UTF-8.
@@ -52,10 +57,13 @@ abstract class Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Message(body, {Encoding encoding, Map<String, String> headers,
       Map<String, Object> context})
-      : this._body = new Body(body, encoding),
-        this.headers = new ShelfUnmodifiableMap<String>(
-            _adjustHeaders(headers, encoding), ignoreKeyCase: true),
-        this.context = new ShelfUnmodifiableMap<Object>(context,
+      : this._(new Body(body, encoding), headers, context);
+
+  Message._(Body body, Map<String, String> headers, Map<String, Object> context)
+      : _body = body,
+        headers = new ShelfUnmodifiableMap<String>(
+            _adjustHeaders(headers, body), ignoreKeyCase: true),
+        context = new ShelfUnmodifiableMap<Object>(context,
             ignoreKeyCase: false);
 
   /// The contents of the content-length field in [headers].
@@ -63,6 +71,7 @@ abstract class Message {
   /// If not set, `null`.
   int get contentLength {
     if (_contentLengthCache != null) return _contentLengthCache;
+    if (_body.contentLength != null) return _body.contentLength;
     if (!headers.containsKey('content-length')) return null;
     _contentLengthCache = int.parse(headers['content-length']);
     return _contentLengthCache;
@@ -134,17 +143,48 @@ abstract class Message {
 ///
 /// Returns a new map without modifying [headers].
 Map<String, String> _adjustHeaders(
-    Map<String, String> headers, Encoding encoding) {
-  if (headers == null) headers = const {};
-  if (encoding == null) return headers;
-
-  headers = new CaseInsensitiveMap.from(headers);
-  if (headers['content-type'] == null) {
-    return addHeader(headers, 'content-type',
-        'application/octet-stream; charset=${encoding.name}');
+    Map<String, String> headers, Body body) {
+  var sameEncoding = _sameEncoding(headers, body);
+  if (sameEncoding) {
+    if (body.contentLength == null ||
+        getHeader(headers, 'content-length') ==
+            body.contentLength.toString()) {
+      return headers ?? const ShelfUnmodifiableMap.empty();
+    } else if (body.contentLength == 0 &&
+        (headers == null || headers.isEmpty)) {
+      return _defaultHeaders;
+    }
   }
 
-  var contentType = new MediaType.parse(headers['content-type']).change(
-      parameters: {'charset': encoding.name});
-  return addHeader(headers, 'content-type', contentType.toString());
+  var newHeaders = headers == null
+      ? new CaseInsensitiveMap<String>()
+      : new CaseInsensitiveMap<String>.from(headers);
+
+  if (!sameEncoding) {
+    if (newHeaders['content-type'] == null) {
+      newHeaders['content-type'] =
+          'application/octet-stream; charset=${body.encoding.name}';
+    } else {
+      var contentType = new MediaType.parse(newHeaders['content-type'])
+          .change(parameters: {'charset': body.encoding.name});
+      newHeaders['content-type'] = contentType.toString();
+    }
+  }
+
+  if (body.contentLength != null) {
+    newHeaders['content-length'] = body.contentLength.toString();
+  }
+
+  return newHeaders;
+}
+
+/// Returns whether [headers] declares the same encoding as [body].
+bool _sameEncoding(Map<String, String> headers, Body body) {
+  if (body.encoding == null) return true;
+
+  var contentType = getHeader(headers, 'content-type');
+  if (contentType == null) return false;
+
+  var charset = new MediaType.parse(contentType).parameters['charset'];
+  return Encoding.getByName(charset) == body.encoding;
 }

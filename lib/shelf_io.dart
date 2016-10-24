@@ -149,6 +149,11 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
     httpResponse.headers.date = new DateTime.now().toUtc();
   }
 
+  // Work around sdk#27660.
+  if (response.contentLength == 0) {
+    httpResponse.headers.chunkedTransferEncoding = false;
+  }
+
   return httpResponse
       .addStream(response.read())
       .then((_) => httpResponse.close());
