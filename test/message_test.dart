@@ -36,9 +36,11 @@ void main() {
       expect(message.headers, containsPair('FOO', 'bar'));
     });
 
-    test('null header value becomes empty, immutable', () {
+    test('null header value becomes default', () {
       var message = _createMessage();
-      expect(message.headers, isEmpty);
+      expect(message.headers, equals({'content-length': '0'}));
+      expect(message.headers, containsPair('CoNtEnT-lEnGtH', '0'));
+      expect(message.headers, same(_createMessage().headers));
       expect(() => message.headers['h1'] = 'value1', throwsUnsupportedError);
     });
 
@@ -128,6 +130,13 @@ void main() {
       });
     });
 
+    test("supports a List<int> body", () {
+      var controller = new StreamController();
+      var request = _createMessage(body: HELLO_BYTES);
+      expect(request.read().toList(),
+          completion(equals([HELLO_BYTES])));
+    });
+
     test("throws when calling read()/readAsString() multiple times", () {
       var request;
 
@@ -149,15 +158,45 @@ void main() {
     });
   });
 
-  group("contentLength", () {
-    test("is null without a content-length header", () {
+  group("content-length", () {
+    test("is 0 with a default body and without a content-length header", () {
       var request = _createMessage();
+      expect(request.contentLength, 0);
+    });
+
+    test("comes from a byte body", () {
+      var request = _createMessage(body: [1, 2, 3]);
+      expect(request.contentLength, 3);
+    });
+
+    test("comes from a string body", () {
+      var request = _createMessage(body: 'foobar');
+      expect(request.contentLength, 6);
+    });
+
+    test("is set based on byte length for a string body", () {
+      var request = _createMessage(body: 'fööbär');
+      expect(request.contentLength, 9);
+
+      request = _createMessage(body: 'fööbär', encoding: LATIN1);
+      expect(request.contentLength, 6);
+    });
+
+    test("is null for a stream body", () {
+      var request = _createMessage(body: new Stream.empty());
       expect(request.contentLength, isNull);
     });
 
-    test("comes from the content-length header", () {
-      var request = _createMessage(headers: {'content-length': '42'});
+    test("uses the content-length header for a stream body", () {
+      var request = _createMessage(
+          body: new Stream.empty(), headers: {'content-length': '42'});
       expect(request.contentLength, 42);
+    });
+
+    test("real body length takes precedence over content-length header", () {
+      var request = _createMessage(
+          body: [1, 2, 3], headers: {'content-length': '42'});
+      expect(request.contentLength, 3);
     });
   });
 

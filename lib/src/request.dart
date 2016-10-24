@@ -96,14 +96,17 @@ class Request extends Message {
   /// and [url] to `requestedUri.path` without the initial `/`. If only one is
   /// passed, the other will be inferred.
   ///
-  /// [body] is the request body. It may be either a [String], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  /// If it's a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. The default encoding is UTF-8.
+  /// [body] is the request body. It may be either a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
+  /// [encoding] is used to encode it to a [Stream<List<int>>]. The default
+  /// encoding is UTF-8.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  ///
+  /// If a non-[Stream] object is passed for the [body], the Content-Length
+  /// header is automatically set to the length of that body.
   ///
   /// The default value for [protocolVersion] is '1.1'.
   ///
@@ -192,8 +195,8 @@ class Request extends Message {
   /// [Request]. All other context and header values from the [Request] will be
   /// included in the copied [Request] unchanged.
   ///
-  /// [body] is the request body. It may be either a [String] or a
-  /// [Stream<List<int>>].
+  /// [body] is the request body. It may be either a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null` to indicate no body.
   ///
   /// [path] is used to update both [handlerPath] and [url]. It's designed for
   /// routing middleware, and represents the path from the current handler to

@@ -4,6 +4,7 @@
 
 import 'dart:collection';
 
+import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 
 /// A simple wrapper over [UnmodifiableMapView] which avoids re-wrapping itself.
@@ -41,6 +42,9 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
 
     return new ShelfUnmodifiableMap<V>._(source, ignoreKeyCase);
   }
+
+  /// Returns an empty [ShelfUnmodifiableMap].
+  const factory ShelfUnmodifiableMap.empty() = _EmptyShelfUnmodifiableMap<V>;
 
   ShelfUnmodifiableMap._(Map<String, V> source, this._ignoreKeyCase)
       : super(source);

@@ -1,6 +1,15 @@
 ## 0.6.6
 
-* Bump minimum supported Dart SDK to `>=1.13.2`.
+* Allow `List<int>`s to be passed as request or response bodies.
+
+* Requests and responses now automatically set `Content-Length` headers when the
+  body length is known ahead of time.
+
+* Work around [sdk#27660][] by manually setting
+  `HttpResponse.chunkedTransferEncoding` to `false` for requests known to have
+  no content.
+
+[sdk#27660]: https://github.com/dart-lang/sdk/issues/27660
 
 ## 0.6.5+3
 

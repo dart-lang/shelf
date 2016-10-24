@@ -43,7 +43,7 @@ class Response extends Message {
   ///
   /// This indicates that the request has succeeded.
   ///
-  /// [body] is the response body. It may be either a [String], a
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
   /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
   /// UTF-8.
@@ -62,7 +62,7 @@ class Response extends Message {
   /// URI. [location] is that URI; it can be either a [String] or a [Uri]. It's
   /// automatically set as the Location header in [headers].
   ///
-  /// [body] is the response body. It may be either a [String], a
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
   /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
   /// UTF-8.
@@ -81,7 +81,7 @@ class Response extends Message {
   /// URI. [location] is that URI; it can be either a [String] or a [Uri]. It's
   /// automatically set as the Location header in [headers].
   ///
-  /// [body] is the response body. It may be either a [String], a
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
   /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
   /// UTF-8.
@@ -101,7 +101,7 @@ class Response extends Message {
   /// [String] or a [Uri]. It's automatically set as the Location header in
   /// [headers].
   ///
-  /// [body] is the response body. It may be either a [String], a
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
   /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
   /// UTF-8.
@@ -141,10 +141,10 @@ class Response extends Message {
   ///
   /// This indicates that the server is refusing to fulfill the request.
   ///
-  /// [body] is the response body. It may be a [String], a [Stream<List<int>>],
-  /// or `null`. If it's a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. The default encoding is UTF-8. If it's `null` or not
-  /// passed, a default error message is used.
+  /// [body] is the response body. It may be a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] is used to
+  /// encode it to a [Stream<List<int>>]. The default encoding is UTF-8. If it's
+  /// `null` or not passed, a default error message is used.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -161,10 +161,10 @@ class Response extends Message {
   /// This indicates that the server didn't find any resource matching the
   /// requested URI.
   ///
-  /// [body] is the response body. It may be a [String], a [Stream<List<int>>],
-  /// or `null`. If it's a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. The default encoding is UTF-8. If it's `null` or not
-  /// passed, a default error message is used.
+  /// [body] is the response body. It may be a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] is used to
+  /// encode it to a [Stream<List<int>>]. The default encoding is UTF-8. If it's
+  /// `null` or not passed, a default error message is used.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -181,10 +181,10 @@ class Response extends Message {
   /// This indicates that the server had an internal error that prevented it
   /// from fulfilling the request.
   ///
-  /// [body] is the response body. It may be a [String], a [Stream<List<int>>],
-  /// or `null`. If it's a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. The default encoding is UTF-8. If it's `null` or not
-  /// passed, a default error message is used.
+  /// [body] is the response body. It may be a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] is used to
+  /// encode it to a [Stream<List<int>>]. The default encoding is UTF-8. If it's
+  /// `null` or not passed, a default error message is used.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -200,14 +200,17 @@ class Response extends Message {
   ///
   /// [statusCode] must be greater than or equal to 100.
   ///
-  /// [body] is the response body. It may be either a [String], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  /// If it's a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. The default encoding is UTF-8.
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
+  /// [encoding] is used to encode it to a [Stream<List<int>>]. The default
+  /// encoding is UTF-8.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  ///
+  /// If a non-[Stream] object is passed for the [body], the Content-Length
+  /// header is automatically set to the length of that body.
   Response(this.statusCode, {body, Map<String, String> headers,
       Encoding encoding, Map<String, Object> context})
       : super(body, encoding: encoding, headers: headers, context: context) {
@@ -229,8 +232,8 @@ class Response extends Message {
   /// All other context and header values from the [Response] will be included
   /// in the copied [Response] unchanged.
   ///
-  /// [body] is the request body. It may be either a [String] or a
-  /// [Stream<List<int>>].
+  /// [body] is the request body. It may be either a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null` to indicate no body.
   Response change(
       {Map<String, String> headers, Map<String, Object> context, body}) {
     headers = updateMap(this.headers, headers);
