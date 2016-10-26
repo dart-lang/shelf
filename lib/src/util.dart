@@ -62,3 +62,17 @@ String getHeader(Map<String, String> headers, String name) {
   }
   return null;
 }
+
+/// Returns whether [headers] contains a header with the given [name].
+///
+/// This works even if [headers] is `null`, or if it's not yet a
+/// case-insensitive map.
+bool hasHeader(Map<String, String> headers, String name) {
+  if (headers == null) return false;
+  if (headers is ShelfUnmodifiableMap) return headers.containsKey(name);
+
+  for (var key in headers.keys) {
+    if (equalsIgnoreAsciiCase(key, name)) return true;
+  }
+  return false;
+}

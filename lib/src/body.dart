@@ -23,11 +23,12 @@ class Body {
   /// encoding was used.
   final Encoding encoding;
 
-  /// The length of the stream returned by [read], or `null` if that can't be
-  /// determined efficiently.
-  final int contentLength;
+  /// If `true`, the stream returned by [read] will be empty.
+  ///
+  /// This may have false negatives, but it won't have false positives.
+  final bool isEmpty;
 
-  Body._(this._stream, this.encoding, this.contentLength);
+  Body._(this._stream, this.encoding, this.isEmpty);
 
   /// Converts [body] to a byte stream and wraps it in a [Body].
   ///
@@ -38,25 +39,23 @@ class Body {
     if (body is Body) return body;
 
     Stream<List<int>> stream;
-    int contentLength;
+    var isEmpty = false;
     if (body == null) {
-      contentLength = 0;
+      isEmpty = true;
       stream = new Stream.fromIterable([]);
     } else if (body is String) {
+      isEmpty = body.isEmpty;
       if (encoding == null) {
         var encoded = UTF8.encode(body);
         // If the text is plain ASCII, don't modify the encoding. This means
-        // that an encoding of "text/plain" will stay put.
+        // that an encoding of "text/plain" without a charset will stay put.
         if (!_isPlainAscii(encoded, body.length)) encoding = UTF8;
-        contentLength = encoded.length;
         stream = new Stream.fromIterable([encoded]);
       } else {
-        var encoded = encoding.encode(body);
-        contentLength = encoded.length;
-        stream = new Stream.fromIterable([encoded]);
+        stream = new Stream.fromIterable([encoding.encode(body)]);
       }
     } else if (body is List) {
-      contentLength = body.length;
+      isEmpty = body.isEmpty;
       stream = new Stream.fromIterable([DelegatingList.typed(body)]);
     } else if (body is Stream) {
       stream = DelegatingStream.typed(body);
@@ -65,7 +64,7 @@ class Body {
           'Stream.');
     }
 
-    return new Body._(stream, encoding, contentLength);
+    return new Body._(stream, encoding, isEmpty);
   }
 
   /// Returns whether [bytes] is plain ASCII.

@@ -1,3 +1,14 @@
+## 0.6.7
+
+* Add `Request.isEmpty` and `Response.isEmpty` getters which indicate whether a
+  message has an empty body.
+
+* Don't automatically generate `Content-Length` headers on messages where they
+  may not be allowed.
+
+* User-specified `Content-Length` headers now always take precedence over
+  automatically-generated headers.
+
 ## 0.6.6
 
 * Allow `List<int>`s to be passed as request or response bodies.

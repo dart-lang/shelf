@@ -150,9 +150,7 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
   }
 
   // Work around sdk#27660.
-  if (response.contentLength == 0) {
-    httpResponse.headers.chunkedTransferEncoding = false;
-  }
+  if (response.isEmpty) httpResponse.headers.chunkedTransferEncoding = false;
 
   return httpResponse
       .addStream(response.read())
