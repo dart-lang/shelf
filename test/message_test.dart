@@ -36,10 +36,9 @@ void main() {
       expect(message.headers, containsPair('FOO', 'bar'));
     });
 
-    test('null header value becomes default', () {
+    test('null header value returns an empty unmodifiable map', () {
       var message = _createMessage();
-      expect(message.headers, equals({'content-length': '0'}));
-      expect(message.headers, containsPair('CoNtEnT-lEnGtH', '0'));
+      expect(message.headers, isEmpty);
       expect(message.headers, same(_createMessage().headers));
       expect(() => message.headers['h1'] = 'value1', throwsUnsupportedError);
     });
@@ -158,46 +157,41 @@ void main() {
     });
   });
 
-  group("content-length", () {
-    test("is 0 with a default body and without a content-length header", () {
+  group("isEmpty", () {
+    test("is true with a default body and without a content-length header", () {
       var request = _createMessage();
-      expect(request.contentLength, 0);
+      expect(request.isEmpty, isTrue);
     });
 
-    test("is 0 with an empty byte body", () {
+    test("is true with an empty byte body", () {
       var request = _createMessage(body: []);
-      expect(request.contentLength, 0);
+      expect(request.isEmpty, isTrue);
     });
 
-    test("is 0 with an empty string body", () {
+    test("is true with an empty string body", () {
       var request = _createMessage(body: '');
-      expect(request.contentLength, 0);
+      expect(request.isEmpty, isTrue);
     });
 
-    test("is null for an empty stream body", () {
+    test("is false for an empty stream body", () {
       var request = _createMessage(body: new Stream.empty());
-      expect(request.contentLength, isNull);
+      expect(request.isEmpty, isFalse);
     });
 
-    test("is null for a non-empty byte body", () {
+    test("is false for a non-empty byte body", () {
       var request = _createMessage(body: [1, 2, 3]);
-      expect(request.contentLength, isNull);
+      expect(request.isEmpty, isFalse);
     });
 
-    test("is null for a non-empty string body", () {
+    test("is false for a non-empty string body", () {
       var request = _createMessage(body: "foo");
-      expect(request.contentLength, isNull);
+      expect(request.isEmpty, isFalse);
     });
 
-    test("uses the content-length header for a stream body", () {
+    test("is false for a stream body even if a content length is passed", () {
       var request = _createMessage(
-          body: new Stream.empty(), headers: {'content-length': '42'});
-      expect(request.contentLength, 42);
-    });
-
-    test("content-length header takes precedence over an empty body", () {
-      var request = _createMessage(headers: {'content-length': '42'});
-      expect(request.contentLength, 42);
+          body: new Stream.empty(), headers: {'content-length': '0'});
+      expect(request.isEmpty, isFalse);
     });
   });
 

@@ -13,11 +13,6 @@ import 'util.dart';
 
 Body getBody(Message message) => message._body;
 
-/// The default set of headers for a message created with no body and no
-/// explicit headers.
-final _defaultHeaders = new ShelfUnmodifiableMap<String>(
-    {"content-length": "0"}, ignoreKeyCase: true);
-
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
   /// The HTTP headers.
@@ -149,39 +144,20 @@ abstract class Message {
 Map<String, String> _adjustHeaders(
     Map<String, String> headers, Body body) {
   var sameEncoding = _sameEncoding(headers, body);
-  if (sameEncoding) {
-    if (!body.isEmpty || hasHeader(headers, 'content-length')) {
-      return headers ?? const ShelfUnmodifiableMap.empty();
-    } else if (body.isEmpty && (headers == null || headers.isEmpty)) {
-      return _defaultHeaders;
-    }
-  }
+  if (sameEncoding) return headers ?? const ShelfUnmodifiableMap.empty();
 
   var newHeaders = headers == null
       ? new CaseInsensitiveMap<String>()
       : new CaseInsensitiveMap<String>.from(headers);
 
-  if (!sameEncoding) {
-    if (newHeaders['content-type'] == null) {
-      newHeaders['content-type'] =
-          'application/octet-stream; charset=${body.encoding.name}';
-    } else {
-      var contentType = new MediaType.parse(newHeaders['content-type'])
-          .change(parameters: {'charset': body.encoding.name});
-      newHeaders['content-type'] = contentType.toString();
-    }
+  if (newHeaders['content-type'] == null) {
+    newHeaders['content-type'] =
+        'application/octet-stream; charset=${body.encoding.name}';
+  } else {
+    var contentType = new MediaType.parse(newHeaders['content-type'])
+        .change(parameters: {'charset': body.encoding.name});
+    newHeaders['content-type'] = contentType.toString();
   }
-
-  // Only add a content-length header if the length is 0 and there isn't already
-  // a content-length set. Content-length may not be sent with a chunked
-  // transfer encoding, and HEAD requests may send a non-zero content-length
-  // along with an empty body.
-  //
-  // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.4.
-  if (body.isEmpty) {
-    newHeaders.putIfAbsent('content-length', () => '0');
-  }
-
   return newHeaders;
 }
 
