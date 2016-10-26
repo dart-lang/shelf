@@ -1,3 +1,7 @@
+## 0.6.7+1
+
+* Never auto-generate a `Content-Length` header.
+
 ## 0.6.7
 
 * Add `Request.isEmpty` and `Response.isEmpty` getters which indicate whether a
