@@ -164,26 +164,28 @@ void main() {
       expect(request.contentLength, 0);
     });
 
-    test("comes from a byte body", () {
-      var request = _createMessage(body: [1, 2, 3]);
-      expect(request.contentLength, 3);
+    test("is 0 with an empty byte body", () {
+      var request = _createMessage(body: []);
+      expect(request.contentLength, 0);
     });
 
-    test("comes from a string body", () {
-      var request = _createMessage(body: 'foobar');
-      expect(request.contentLength, 6);
+    test("is 0 with an empty string body", () {
+      var request = _createMessage(body: '');
+      expect(request.contentLength, 0);
     });
 
-    test("is set based on byte length for a string body", () {
-      var request = _createMessage(body: 'fööbär');
-      expect(request.contentLength, 9);
-
-      request = _createMessage(body: 'fööbär', encoding: LATIN1);
-      expect(request.contentLength, 6);
-    });
-
-    test("is null for a stream body", () {
+    test("is null for an empty stream body", () {
       var request = _createMessage(body: new Stream.empty());
+      expect(request.contentLength, isNull);
+    });
+
+    test("is null for a non-empty byte body", () {
+      var request = _createMessage(body: [1, 2, 3]);
+      expect(request.contentLength, isNull);
+    });
+
+    test("is null for a non-empty string body", () {
+      var request = _createMessage(body: "foo");
       expect(request.contentLength, isNull);
     });
 
@@ -193,10 +195,9 @@ void main() {
       expect(request.contentLength, 42);
     });
 
-    test("real body length takes precedence over content-length header", () {
-      var request = _createMessage(
-          body: [1, 2, 3], headers: {'content-length': '42'});
-      expect(request.contentLength, 3);
+    test("content-length header takes precedence over an empty body", () {
+      var request = _createMessage(headers: {'content-length': '42'});
+      expect(request.contentLength, 42);
     });
   });
 

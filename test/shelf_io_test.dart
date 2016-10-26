@@ -335,6 +335,29 @@ void main() {
     });
   });
 
+  group("doesn't use a chunked transfer-encoding", () {
+    test("for a response with an empty body", () {
+      _scheduleServer((request) => new Response.notModified());
+
+      return _scheduleGet().then((response) {
+        expect(response.headers, isNot(contains('transfer-encoding')));
+        expect(response.headers, containsPair('content-length', '0'));
+      });
+    });
+
+    test("for a response with an empty body and a non-empty content-length",
+        () {
+      _scheduleServer((request) {
+        return new Response.ok(null, headers: {'content-length': '42'});
+      });
+
+      return _scheduleHead().then((response) {
+        expect(response.headers, isNot(contains('transfer-encoding')));
+        expect(response.headers, containsPair('content-length', '42'));
+      });
+    });
+  });
+
   test('respects the "shelf.io.buffer_output" context parameter', () {
     var controller = new StreamController<String>();
     _scheduleServer((request) {
@@ -383,6 +406,13 @@ Future<http.Response> _scheduleGet({Map<String, String> headers}) {
 
   return schedule/*<Future<http.Response>>*/(
       () => http.get('http://localhost:$_serverPort/', headers: headers));
+}
+
+Future<http.Response> _scheduleHead({Map<String, String> headers}) {
+  if (headers == null) headers = {};
+
+  return schedule/*<Future<http.Response>>*/(
+      () => http.head('http://localhost:$_serverPort/', headers: headers));
 }
 
 Future<http.StreamedResponse> _schedulePost(

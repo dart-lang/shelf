@@ -43,6 +43,11 @@ abstract class Message {
   /// This can be read via [read] or [readAsString].
   final Body _body;
 
+  /// If `true`, the stream returned by [read] won't emit any bytes.
+  ///
+  /// This may have false negatives, but it won't have false positives.
+  bool get isEmpty => _body.isEmpty;
+
   /// Creates a new [Message].
   ///
   /// [body] is the response body. It may be either a [String], a [List<int>], a
@@ -71,7 +76,6 @@ abstract class Message {
   /// If not set, `null`.
   int get contentLength {
     if (_contentLengthCache != null) return _contentLengthCache;
-    if (_body.contentLength != null) return _body.contentLength;
     if (!headers.containsKey('content-length')) return null;
     _contentLengthCache = int.parse(headers['content-length']);
     return _contentLengthCache;
@@ -146,12 +150,9 @@ Map<String, String> _adjustHeaders(
     Map<String, String> headers, Body body) {
   var sameEncoding = _sameEncoding(headers, body);
   if (sameEncoding) {
-    if (body.contentLength == null ||
-        getHeader(headers, 'content-length') ==
-            body.contentLength.toString()) {
+    if (!body.isEmpty || hasHeader(headers, 'content-length')) {
       return headers ?? const ShelfUnmodifiableMap.empty();
-    } else if (body.contentLength == 0 &&
-        (headers == null || headers.isEmpty)) {
+    } else if (body.isEmpty && (headers == null || headers.isEmpty)) {
       return _defaultHeaders;
     }
   }
@@ -171,8 +172,14 @@ Map<String, String> _adjustHeaders(
     }
   }
 
-  if (body.contentLength != null) {
-    newHeaders['content-length'] = body.contentLength.toString();
+  // Only add a content-length header if the length is 0 and there isn't already
+  // a content-length set. Content-length may not be sent with a chunked
+  // transfer encoding, and HEAD requests may send a non-zero content-length
+  // along with an empty body.
+  //
+  // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.4.
+  if (body.isEmpty) {
+    newHeaders.putIfAbsent('content-length', () => '0');
   }
 
   return newHeaders;
