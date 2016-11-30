@@ -44,9 +44,15 @@ class Response extends Message {
   /// This indicates that the request has succeeded.
   ///
   /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
-  /// UTF-8.
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -63,9 +69,15 @@ class Response extends Message {
   /// automatically set as the Location header in [headers].
   ///
   /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
-  /// UTF-8.
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -82,9 +94,15 @@ class Response extends Message {
   /// automatically set as the Location header in [headers].
   ///
   /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
-  /// UTF-8.
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -102,9 +120,15 @@ class Response extends Message {
   /// [headers].
   ///
   /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
-  /// UTF-8.
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -141,10 +165,16 @@ class Response extends Message {
   ///
   /// This indicates that the server is refusing to fulfill the request.
   ///
-  /// [body] is the response body. It may be a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] is used to
-  /// encode it to a [Stream<List<int>>]. The default encoding is UTF-8. If it's
-  /// `null` or not passed, a default error message is used.
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -161,10 +191,16 @@ class Response extends Message {
   /// This indicates that the server didn't find any resource matching the
   /// requested URI.
   ///
-  /// [body] is the response body. It may be a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] is used to
-  /// encode it to a [Stream<List<int>>]. The default encoding is UTF-8. If it's
-  /// `null` or not passed, a default error message is used.
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -181,10 +217,16 @@ class Response extends Message {
   /// This indicates that the server had an internal error that prevented it
   /// from fulfilling the request.
   ///
-  /// [body] is the response body. It may be a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] is used to
-  /// encode it to a [Stream<List<int>>]. The default encoding is UTF-8. If it's
-  /// `null` or not passed, a default error message is used.
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
@@ -201,9 +243,15 @@ class Response extends Message {
   /// [statusCode] must be greater than or equal to 100.
   ///
   /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. The default
-  /// encoding is UTF-8.
+  /// [Stream<List<int>>], or `null` to indicate no body.
+  ///
+  /// If the body is a [String], [encoding] is used to encode it to a
+  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
+  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// unless a Transfer-Encoding header is set. Otherwise, it's a
+  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
+  /// encoding to the body.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing

@@ -102,6 +102,26 @@ void main() {
     });
   });
 
+  test('chunked requests are un-chunked', () {
+    _scheduleServer(expectAsync((request) {
+      expect(request.contentLength, isNull);
+      expect(request.method, 'POST');
+      expect(request.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+      expect(request.read().toList(), completion(equals([[1, 2, 3, 4]])));
+      return new Response.ok(null);
+    }));
+
+    schedule(() async {
+      var request = new http.StreamedRequest(
+          'POST', Uri.parse('http://localhost:$_serverPort'));
+      request.sink.add([1, 2, 3, 4]);
+      request.sink.close();
+
+      var response = await request.send();
+      expect(response.statusCode, HttpStatus.OK);
+    });
+  });
+
   test('custom response headers are received by the client', () {
     _scheduleServer((request) {
       return new Response.ok('Hello from /',
@@ -335,12 +355,97 @@ void main() {
     });
   });
 
-  test("doesn't use a chunked transfer-encoding for a response with an empty "
-      "body", () {
-    _scheduleServer((request) => new Response.notModified());
+  group('chunked coding', () {
+    group('is added when the transfer-encoding header is', () {
+      test('unset', () {
+        _scheduleServer((request) {
+          return new Response.ok(new Stream.fromIterable([[1, 2, 3, 4]]));
+        });
 
-    return _scheduleGet().then((response) {
-      expect(response.headers, isNot(contains('transfer-encoding')));
+        return _scheduleGet().then((response) {
+          expect(response.headers,
+              containsPair(HttpHeaders.TRANSFER_ENCODING, 'chunked'));
+          expect(response.bodyBytes, equals([1, 2, 3, 4]));
+        });
+      });
+
+      test('"identity"', () {
+        _scheduleServer((request) {
+          return new Response.ok(new Stream.fromIterable([[1, 2, 3, 4]]),
+              headers: {HttpHeaders.TRANSFER_ENCODING: 'identity'});
+        });
+
+        return _scheduleGet().then((response) {
+          expect(response.headers,
+              containsPair(HttpHeaders.TRANSFER_ENCODING, 'chunked'));
+          expect(response.bodyBytes, equals([1, 2, 3, 4]));
+        });
+      });
+    });
+
+    test('is preserved when the transfer-encoding header is "chunked"', () {
+      _scheduleServer((request) {
+        return new Response.ok(
+            new Stream.fromIterable(["2\r\nhi0\r\n\r\n".codeUnits]),
+            headers: {HttpHeaders.TRANSFER_ENCODING: 'chunked'});
+      });
+
+      return _scheduleGet().then((response) {
+        expect(response.headers,
+            containsPair(HttpHeaders.TRANSFER_ENCODING, 'chunked'));
+        expect(response.body, equals("hi"));
+      });
+    });
+
+    group('is not added when', () {
+      test('content-length is set', () {
+        _scheduleServer((request) {
+          return new Response.ok(new Stream.fromIterable([[1, 2, 3, 4]]),
+              headers: {HttpHeaders.CONTENT_LENGTH: '4'});
+        });
+
+        return _scheduleGet().then((response) {
+          expect(response.headers,
+              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(response.bodyBytes, equals([1, 2, 3, 4]));
+        });
+      });
+
+      test('status code is 1xx', () {
+        _scheduleServer((request) {
+          return new Response(123, body: new Stream.empty());
+        });
+
+        return _scheduleGet().then((response) {
+          expect(response.headers,
+              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(response.body, isEmpty);
+        });
+      });
+
+      test('status code is 204', () {
+        _scheduleServer((request) {
+          return new Response(204, body: new Stream.empty());
+        });
+
+        return _scheduleGet().then((response) {
+          expect(response.headers,
+              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(response.body, isEmpty);
+        });
+      });
+
+      test('status code is 304', () {
+        _scheduleServer((request) {
+          return new Response(304, body: new Stream.empty());
+        });
+
+        return _scheduleGet().then((response) {
+          expect(response.headers,
+              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(response.body, isEmpty);
+        });
+      });
     });
   });
 
@@ -392,13 +497,6 @@ Future<http.Response> _scheduleGet({Map<String, String> headers}) {
 
   return schedule/*<Future<http.Response>>*/(
       () => http.get('http://localhost:$_serverPort/', headers: headers));
-}
-
-Future<http.Response> _scheduleHead({Map<String, String> headers}) {
-  if (headers == null) headers = {};
-
-  return schedule/*<Future<http.Response>>*/(
-      () => http.head('http://localhost:$_serverPort/', headers: headers));
 }
 
 Future<http.StreamedResponse> _schedulePost(

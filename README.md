@@ -98,16 +98,7 @@ or it might pipe requests directly from an HTTP client to a Shelf handler.
 
 [shelf_io.serve]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf-io@id_serve
 
-When implementing an adapter, some rules must be followed. The adapter must not
-pass the `url` or `handlerPath` parameters to [new shelf.Request][]; it should
-only pass `requestedUri`. If it passes the `context` parameter, all keys must
-begin with the adapter's package name followed by a period. If multiple headers
-with the same name are received, the adapter must collapse them into a single
-header separated by commas as per [RFC 2616 section 4.2][].
-
-[new shelf.Request]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_Request-
-
-[RFC 2616 section 4.2]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
+### API Requirements
 
 An adapter must handle all errors from the handler, including the handler
 returning a `null` response. It should print each error to the console if
@@ -117,14 +108,6 @@ information about the error that occurred. This ensures that unexpected errors
 don't result in exposing internal information in production by default; if the
 user wants to return detailed error descriptions, they should explicitly include
 middleware to do so.
-
-An adapter should include information about itself in the Server header of the
-response by default. If the handler returns a response with the Server header
-set, that must take precedence over the adapter's default header.
-
-An adapter should include the Date header with the time the handler returns a
-response. If the handler returns a response with the Date header set, that must
-take precedence.
 
 An adapter should ensure that asynchronous errors thrown by the handler don't
 cause the application to crash, even if they aren't reported by the future
@@ -152,6 +135,55 @@ An adapter that knows its own URL should provide an implementation of the
 [`Server`][server] interface.
 
 [server]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf@id_Server
+
+### Request Requirements
+
+When implementing an adapter, some rules must be followed. The adapter must not
+pass the `url` or `handlerPath` parameters to [new shelf.Request][]; it should
+only pass `requestedUri`. If it passes the `context` parameter, all keys must
+begin with the adapter's package name followed by a period. If multiple headers
+with the same name are received, the adapter must collapse them into a single
+header separated by commas as per [RFC 2616 section 4.2][].
+
+[new shelf.Request]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_Request-
+
+[RFC 2616 section 4.2]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
+
+If the underlying request uses a chunked transfer coding, the adapter must
+decode the body before passing it to [new shelf.Request][] and should remove the
+`Transfer-Encoding` header. This ensures that message bodies are chunked if and
+only if the headers declare that they are.
+
+### Response Requirements
+
+An adapter must not add or modify any [entity headers][] for a response.
+
+[entity headers]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.1
+
+If *none* of the following conditions are true, the adapter must apply
+[chunked transfer coding][] to a response's body and set its Transfer-Encoding header to `chunked`:
+
+* The status code is less than 200, or equal to 204 or 304.
+* A Content-Length header is provided.
+* The Content-Type header indicates the MIME type `multipart/byteranges`.
+* The Transfer-Encoding header is set to anything other than `identity`.
+
+[chunked transfer coding]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
+
+Adapters may find the [`addChunkedEncoding()`][addChunkedEncoding] middleware
+useful for implementing this behavior, if the underlying server doesn't
+implement it manually.
+
+When responding to a HEAD request, the adapter must not emit an entity body.
+Otherwise, it shouldn't modify the entity body in any way.
+
+An adapter should include information about itself in the Server header of the
+response by default. If the handler returns a response with the Server header
+set, that must take precedence over the adapter's default header.
+
+An adapter should include the Date header with the time the handler returns a
+response. If the handler returns a response with the Date header set, that must
+take precedence.
 
 ## Inspiration
 

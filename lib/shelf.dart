@@ -4,7 +4,8 @@
 
 export 'src/cascade.dart';
 export 'src/handler.dart';
-export 'src/handlers/logger.dart';
+export 'src/middleware/add_chunked_encoding.dart';
+export 'src/middleware/logger.dart';
 export 'src/hijack_exception.dart';
 export 'src/middleware.dart';
 export 'src/pipeline.dart';

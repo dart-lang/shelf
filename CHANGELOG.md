@@ -1,3 +1,16 @@
+## 0.6.7+2
+
+* Go back to auto-generating a `Content-Length` header when the length is known
+  ahead-of-time *and* the user hasn't explicitly specified a `Transfer-Encoding:
+  chunked`.
+
+* Clarify adapter requirements around transfer codings.
+
+* Make `shelf_io` consistent with the clarified adapter requirements. In
+  particular, it removes the `Transfer-Encoding` header from chunked requests,
+  and it doesn't apply additional chunking to responses that already declare
+  `Transfer-Encoding: chunked`.
+
 ## 0.6.7+1
 
 * Never auto-generate a `Content-Length` header.

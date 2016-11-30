@@ -73,7 +73,8 @@ void _testChange(Message factory(
 
     expect(copy.headers, {
       'test': 'test value',
-      'test2': 'test2 value'
+      'test2': 'test2 value',
+      'content-length': '0'
     });
   });
 
@@ -81,7 +82,7 @@ void _testChange(Message factory(
     var request = factory(headers: {'test': 'test value'});
     var copy = request.change(headers: {'test': 'new test value'});
 
-    expect(copy.headers, {'test': 'new test value'});
+    expect(copy.headers, {'test': 'new test value', 'content-length': '0'});
   });
 
   test('new context values are added', () {
