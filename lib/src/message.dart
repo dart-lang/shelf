@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 
 import 'body.dart';
@@ -12,6 +13,11 @@ import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
 
 Body getBody(Message message) => message._body;
+
+/// The default set of headers for a message created with no body and no
+/// explicit headers.
+final _defaultHeaders = new ShelfUnmodifiableMap<String>(
+    {"content-length": "0"}, ignoreKeyCase: true);
 
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
@@ -41,7 +47,7 @@ abstract class Message {
   /// If `true`, the stream returned by [read] won't emit any bytes.
   ///
   /// This may have false negatives, but it won't have false positives.
-  bool get isEmpty => _body.isEmpty;
+  bool get isEmpty => _body.contentLength == 0;
 
   /// Creates a new [Message].
   ///
@@ -144,20 +150,39 @@ abstract class Message {
 Map<String, String> _adjustHeaders(
     Map<String, String> headers, Body body) {
   var sameEncoding = _sameEncoding(headers, body);
-  if (sameEncoding) return headers ?? const ShelfUnmodifiableMap.empty();
+  if (sameEncoding) {
+    if (body.contentLength == null ||
+        getHeader(headers, 'content-length') ==
+            body.contentLength.toString()) {
+      return headers ?? const ShelfUnmodifiableMap.empty();
+    } else if (body.contentLength == 0 &&
+        (headers == null || headers.isEmpty)) {
+      return _defaultHeaders;
+    }
+  }
 
   var newHeaders = headers == null
       ? new CaseInsensitiveMap<String>()
       : new CaseInsensitiveMap<String>.from(headers);
 
-  if (newHeaders['content-type'] == null) {
-    newHeaders['content-type'] =
-        'application/octet-stream; charset=${body.encoding.name}';
-  } else {
-    var contentType = new MediaType.parse(newHeaders['content-type'])
-        .change(parameters: {'charset': body.encoding.name});
-    newHeaders['content-type'] = contentType.toString();
+  if (!sameEncoding) {
+    if (newHeaders['content-type'] == null) {
+      newHeaders['content-type'] =
+          'application/octet-stream; charset=${body.encoding.name}';
+    } else {
+      var contentType = new MediaType.parse(newHeaders['content-type'])
+          .change(parameters: {'charset': body.encoding.name});
+      newHeaders['content-type'] = contentType.toString();
+    }
   }
+
+  if (body.contentLength != null) {
+    var coding = newHeaders['transfer-encoding'];
+    if (coding == null || equalsIgnoreAsciiCase(coding, 'identity')) {
+      newHeaders['content-length'] = body.contentLength.toString();
+    }
+  }
+
   return newHeaders;
 }
 

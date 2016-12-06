@@ -18,6 +18,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 import 'shelf.dart';
@@ -116,6 +118,9 @@ Request _fromHttpRequest(HttpRequest request) {
     headers[k] = v.join(',');
   });
 
+  // Remove the Transfer-Encoding header per the adapter requirements.
+  headers.remove(HttpHeaders.TRANSFER_ENCODING);
+
   void onHijack(callback) {
     request.response
         .detachSocket(writeHeaders: false)
@@ -136,10 +141,35 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
 
   httpResponse.statusCode = response.statusCode;
 
+  // An adapter must not add or modify the `Transfer-Encoding` parameter, but
+  // the Dart SDK sets it by default. Set this before we fill in
+  // [response.headers] so that the user or Shelf can explicitly override it if
+  // necessary.
+  httpResponse.headers.chunkedTransferEncoding = false;
+
   response.headers.forEach((header, value) {
     if (value == null) return;
     httpResponse.headers.set(header, value);
   });
+
+  var coding = response.headers['transfer-encoding'];
+  if (coding != null && !equalsIgnoreAsciiCase(coding, 'identity')) {
+    // If the response is already in a chunked encoding, de-chunk it because
+    // otherwise `dart:io` will try to add another layer of chunking.
+    //
+    // TODO(nweiz): Do this more cleanly when sdk#27886 is fixed.
+    response = response.change(
+        body: chunkedCoding.decoder.bind(response.read()));
+    httpResponse.headers.set(HttpHeaders.TRANSFER_ENCODING, 'chunked');
+  } else if (response.statusCode >= 200 &&
+      response.statusCode != 204 &&
+      response.statusCode != 304 &&
+      response.contentLength == null &&
+      response.mimeType != 'multipart/byteranges') {
+    // If the response isn't chunked yet and there's no other way to tell its
+    // length, enable `dart:io`'s chunked encoding.
+    httpResponse.headers.set(HttpHeaders.TRANSFER_ENCODING, 'chunked');
+  }
 
   if (!response.headers.containsKey(HttpHeaders.SERVER)) {
     httpResponse.headers.set(HttpHeaders.SERVER, 'dart:io with Shelf');
@@ -148,9 +178,6 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
   if (!response.headers.containsKey(HttpHeaders.DATE)) {
     httpResponse.headers.date = new DateTime.now().toUtc();
   }
-
-  // Work around sdk#27660.
-  if (response.isEmpty) httpResponse.headers.chunkedTransferEncoding = false;
 
   return httpResponse
       .addStream(response.read())

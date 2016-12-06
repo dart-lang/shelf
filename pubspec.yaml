@@ -8,7 +8,7 @@ environment:
 dependencies:
   async: '^1.10.0'
   collection: '^1.5.0'
-  http_parser: '>=1.0.0 <4.0.0'
+  http_parser: '^3.1.0'
   path: '^1.0.0'
   stack_trace: '^1.0.0'
   stream_channel: '^1.0.0'

@@ -36,9 +36,10 @@ void main() {
       expect(message.headers, containsPair('FOO', 'bar'));
     });
 
-    test('null header value returns an empty unmodifiable map', () {
+    test('null header value becomes default', () {
       var message = _createMessage();
-      expect(message.headers, isEmpty);
+      expect(message.headers, equals({'content-length': '0'}));
+      expect(message.headers, containsPair('CoNtEnT-lEnGtH', '0'));
       expect(message.headers, same(_createMessage().headers));
       expect(() => message.headers['h1'] = 'value1', throwsUnsupportedError);
     });
@@ -157,41 +158,63 @@ void main() {
     });
   });
 
-  group("isEmpty", () {
-    test("is true with a default body and without a content-length header", () {
+  group("content-length", () {
+    test("is 0 with a default body and without a content-length header", () {
       var request = _createMessage();
-      expect(request.isEmpty, isTrue);
+      expect(request.contentLength, 0);
     });
 
-    test("is true with an empty byte body", () {
-      var request = _createMessage(body: []);
-      expect(request.isEmpty, isTrue);
-    });
-
-    test("is true with an empty string body", () {
-      var request = _createMessage(body: '');
-      expect(request.isEmpty, isTrue);
-    });
-
-    test("is false for an empty stream body", () {
-      var request = _createMessage(body: new Stream.empty());
-      expect(request.isEmpty, isFalse);
-    });
-
-    test("is false for a non-empty byte body", () {
+    test("comes from a byte body", () {
       var request = _createMessage(body: [1, 2, 3]);
-      expect(request.isEmpty, isFalse);
+      expect(request.contentLength, 3);
     });
 
-    test("is false for a non-empty string body", () {
-      var request = _createMessage(body: "foo");
-      expect(request.isEmpty, isFalse);
+    test("comes from a string body", () {
+      var request = _createMessage(body: 'foobar');
+      expect(request.contentLength, 6);
     });
 
-    test("is false for a stream body even if a content length is passed", () {
+    test("is set based on byte length for a string body", () {
+      var request = _createMessage(body: 'fööbär');
+      expect(request.contentLength, 9);
+
+      request = _createMessage(body: 'fööbär', encoding: LATIN1);
+      expect(request.contentLength, 6);
+    });
+
+    test("is null for a stream body", () {
+      var request = _createMessage(body: new Stream.empty());
+      expect(request.contentLength, isNull);
+    });
+
+    test("uses the content-length header for a stream body", () {
       var request = _createMessage(
-          body: new Stream.empty(), headers: {'content-length': '0'});
-      expect(request.isEmpty, isFalse);
+          body: new Stream.empty(), headers: {'content-length': '42'});
+      expect(request.contentLength, 42);
+    });
+
+    test("real body length takes precedence over content-length header", () {
+      var request = _createMessage(
+          body: [1, 2, 3], headers: {'content-length': '42'});
+      expect(request.contentLength, 3);
+    });
+
+    test("is null for a chunked transfer encoding", () {
+      var request = _createMessage(
+          body: "1\r\na0\r\n\r\n", headers: {'transfer-encoding': 'chunked'});
+      expect(request.contentLength, isNull);
+    });
+
+    test("is null for a non-identity transfer encoding", () {
+      var request = _createMessage(
+          body: "1\r\na0\r\n\r\n", headers: {'transfer-encoding': 'custom'});
+      expect(request.contentLength, isNull);
+    });
+
+    test("is set for identity transfer encoding", () {
+      var request = _createMessage(
+          body: "1\r\na0\r\n\r\n", headers: {'transfer-encoding': 'identity'});
+      expect(request.contentLength, equals(9));
     });
   });
 
