@@ -39,7 +39,7 @@ void main() {
 
   test("stops servicing requests after Server.close is called", () {
     var serverHandler = new ServerHandler(LOCALHOST_URI);
-    serverHandler.server.mount(expectAsync((_) {}, count: 0));
+    serverHandler.server.mount(expectAsync1((_) {}, count: 0));
     serverHandler.server.close();
 
     expect(makeSimpleRequest(serverHandler.handler), throwsStateError);

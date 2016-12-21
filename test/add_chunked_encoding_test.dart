@@ -7,8 +7,6 @@ import 'dart:async';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
-import 'test_util.dart';
-
 void main() {
   test('adds chunked encoding with no transfer-encoding header', () async {
     var response = await _chunkResponse(

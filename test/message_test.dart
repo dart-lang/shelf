@@ -131,7 +131,6 @@ void main() {
     });
 
     test("supports a List<int> body", () {
-      var controller = new StreamController();
       var request = _createMessage(body: HELLO_BYTES);
       expect(request.read().toList(),
           completion(equals([HELLO_BYTES])));

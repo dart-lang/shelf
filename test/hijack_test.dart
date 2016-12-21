@@ -18,8 +18,8 @@ void main() {
   test('hijacking a hijackable request throws a HijackException and calls '
       'onHijack', () {
     var request = new Request('GET', LOCALHOST_URI,
-        onHijack: expectAsync((callback) {
-      var streamController = new StreamController();
+        onHijack: expectAsync1((void callback(a, b)) {
+      var streamController = new StreamController<List<int>>();
       streamController.add([1, 2, 3]);
       streamController.close();
 
@@ -29,7 +29,7 @@ void main() {
       callback(streamController.stream, sinkController);
     }));
 
-    expect(() => request.hijack(expectAsync((channel) {
+    expect(() => request.hijack(expectAsync1((channel) {
       expect(channel.stream.first, completion(equals([1, 2, 3])));
       channel.sink.add([4, 5, 6]);
       channel.sink.close();
@@ -39,7 +39,7 @@ void main() {
   test('hijacking a hijackable request twice throws a StateError', () {
     // Assert that the [onHijack] callback is only called once.
     var request = new Request('GET', LOCALHOST_URI,
-        onHijack: expectAsync((_) => null, count: 1));
+        onHijack: expectAsync1((_) => null, count: 1));
 
     expect(() => request.hijack((_) => null),
         throwsA(new isInstanceOf<HijackException>()));
@@ -57,8 +57,8 @@ void main() {
     test('hijacking a hijackable request throws a HijackException and calls '
         'onHijack', () {
       var request = new Request('GET', LOCALHOST_URI,
-          onHijack: expectAsync((callback) {
-        var streamController = new StreamController();
+          onHijack: expectAsync1((callback(a, b)) {
+        var streamController = new StreamController<List<int>>();
         streamController.add([1, 2, 3]);
         streamController.close();
 
@@ -70,7 +70,7 @@ void main() {
 
       var newRequest = request.change();
 
-      expect(() => newRequest.hijack(expectAsync((channel) {
+      expect(() => newRequest.hijack(expectAsync1((channel) {
         expect(channel.stream.first, completion(equals([1, 2, 3])));
         channel.sink.add([4, 5, 6]);
         channel.sink.close();
@@ -81,7 +81,7 @@ void main() {
         'StateError', () {
       // Assert that the [onHijack] callback is only called once.
       var request = new Request('GET', LOCALHOST_URI,
-          onHijack: expectAsync((_) => null, count: 1));
+          onHijack: expectAsync1((_) => null, count: 1));
 
       var newRequest = request.change();
 

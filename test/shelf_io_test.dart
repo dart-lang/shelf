@@ -103,7 +103,7 @@ void main() {
   });
 
   test('chunked requests are un-chunked', () {
-    _scheduleServer(expectAsync((request) {
+    _scheduleServer(expectAsync1((request) {
       expect(request.contentLength, isNull);
       expect(request.method, 'POST');
       expect(request.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
@@ -209,7 +209,7 @@ void main() {
     _scheduleServer((request) {
       expect(request.method, 'POST');
 
-      request.hijack(expectAsync((stream, sink) {
+      request.hijack(expectAsync2((stream, sink) {
         expect(stream.first, completion(equals("Hello".codeUnits)));
 
         sink.add(("HTTP/1.1 404 Not Found\r\n"
@@ -249,7 +249,7 @@ void main() {
           server.close();
         });
       });
-    }, onError: expectAsync((error) {
+    }, onError: expectAsync1((error) {
       expect(error, equals('oh no'));
     }));
   });
