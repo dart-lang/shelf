@@ -3,10 +3,17 @@
 # Fast fail the script on failures.
 set -e
 
-pub run test -p vm,content-shell,firefox -j 1
+THE_COMMAND="pub run test -p $TEST_PLATFORM"
+if [ $TEST_PLATFORM == 'firefox' ] || [ $TEST_PLATFORM == 'content-shell' ]; then
+    # browser tests don't run well on travis unless one-at-a-time
+    THE_COMMAND="$THE_COMMAND -j 1"
+fi
+
+echo $THE_COMMAND
+exec $THE_COMMAND
 
 # Install dart_coveralls; gather and send coverage data.
-if [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "stable" ]; then
+if [ $TEST_PLATFORM == 'vm' ] && [ "$COVERALLS_TOKEN" ] && [ "$TRAVIS_DART_VERSION" = "stable" ]; then
   pub global activate dart_coveralls
 
   pub global run dart_coveralls report \

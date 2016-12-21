@@ -1,19 +1,33 @@
 language: dart
 sudo: false
 dart:
-  - stable
   - dev
-  - 1.19.0
-  - 1.18.1
-  - 1.17.1
+  - stable
+  - 1.21.0
+  - 1.20.1
+  - 1.19.1
+with_content_shell: true
+env:
+  - TEST_PLATFORM=vm
+  - TEST_PLATFORM=content-shell
+  - TEST_PLATFORM=firefox
 cache:
   directories:
     - $HOME/.pub-cache
-with_content_shell: true
-addons:
-  firefox: "latest"
 before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - 't=0; until (xdpyinfo -display :99 &> /dev/null || test $t -gt 10); do sleep 1; let t=$t+1; done'
 script: ./tool/travis.sh
+matrix:
+  allow_failures:
+    # Exclude SDKs before 1.22.0-dev.4 which are lacking fix
+    # https://github.com/dart-lang/sdk/commit/7c3c297a8ad907f12bf12b96a21777421067fd18
+    - dart: stable
+      env: TEST_PLATFORM=firefox
+    - dart: 1.21.0
+      env: TEST_PLATFORM=firefox
+    - dart: 1.20.1
+      env: TEST_PLATFORM=firefox
+    - dart: 1.19.1
+      env: TEST_PLATFORM=firefox
