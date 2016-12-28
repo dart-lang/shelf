@@ -386,7 +386,7 @@ void main() {
     test('is preserved when the transfer-encoding header is "chunked"', () {
       _scheduleServer((request) {
         return new Response.ok(
-            new Stream.fromIterable(["2\r\nhi0\r\n\r\n".codeUnits]),
+            new Stream.fromIterable(["2\r\nhi\r\n0\r\n\r\n".codeUnits]),
             headers: {HttpHeaders.TRANSFER_ENCODING: 'chunked'});
       });
 

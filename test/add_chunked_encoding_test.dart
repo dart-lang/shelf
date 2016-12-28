@@ -14,7 +14,7 @@ void main() {
     var response = await _chunkResponse(
         new Response.ok(new Stream.fromIterable(["hi".codeUnits])));
     expect(response.headers, containsPair('transfer-encoding', 'chunked'));
-    expect(response.readAsString(), completion(equals("2\r\nhi0\r\n\r\n")));
+    expect(response.readAsString(), completion(equals("2\r\nhi\r\n0\r\n\r\n")));
   });
 
   test('adds chunked encoding with transfer-encoding: identity', () async {
@@ -22,7 +22,7 @@ void main() {
         new Stream.fromIterable(["hi".codeUnits]),
         headers: {'transfer-encoding': 'identity'}));
     expect(response.headers, containsPair('transfer-encoding', 'chunked'));
-    expect(response.readAsString(), completion(equals("2\r\nhi0\r\n\r\n")));
+    expect(response.readAsString(), completion(equals("2\r\nhi\r\n0\r\n\r\n")));
   });
 
   test("doesn't add chunked encoding with content length", () async {
