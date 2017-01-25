@@ -130,7 +130,7 @@ void main() {
         return makeRequest(handler, '/root.txt', headers: headers)
             .then((response) {
           expect(response.statusCode, HttpStatus.NOT_MODIFIED);
-          expect(response.contentLength, isNull);
+          expect(response.contentLength, 0);
         });
       });
     });
@@ -170,7 +170,7 @@ void main() {
         return makeRequest(handler, '/root.txt', headers: headers)
             .then((response) {
           expect(response.statusCode, HttpStatus.NOT_MODIFIED);
-          expect(response.contentLength, isNull);
+          expect(response.contentLength, 0);
         });
       });
     });
