@@ -135,6 +135,21 @@ void main() {
     });
   });
 
+  test('default response headers override the defaults in HttpServer', () {
+    _scheduleServer((request) {
+      return new Response.ok('Hello from /',
+      headers: {'test-header': 'test-value', 'test-list': 'a, b, c'});
+    }, defaultResponseHeaders: {'foo': 'bar'});
+
+    return _scheduleGet().then((response) {
+      expect(response.statusCode, HttpStatus.OK);
+      expect(response.body, 'Hello from /');
+      expect(response.headers['test-header'], 'test-value');
+      expect(response.headers['foo'], 'bar');
+      expect(response.headers['X-Frame-Options'], isNull);
+    });
+  });
+
   test('custom status code is received by the client', () {
     _scheduleServer((request) {
       return new Response(299, body: 'Hello from /');
@@ -481,8 +496,12 @@ void main() {
 
 int _serverPort;
 
-Future _scheduleServer(Handler handler) {
-  return schedule(() => shelf_io.serve(handler, 'localhost', 0).then((server) {
+Future _scheduleServer(Handler handler,
+    {Map<String, String> defaultResponseHeaders}) {
+  return schedule(() => shelf_io
+      .serve(handler, 'localhost', 0,
+          defaultResponseHeaders: defaultResponseHeaders)
+      .then((server) {
     currentSchedule.onComplete.schedule(() {
       _serverPort = null;
       return server.close(force: true);
