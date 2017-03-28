@@ -15,7 +15,8 @@ void main() {
         throwsStateError);
   });
 
-  test('hijacking a hijackable request throws a HijackException and calls '
+  test(
+      'hijacking a hijackable request throws a HijackException and calls '
       'onHijack', () {
     var request = new Request('GET', LOCALHOST_URI,
         onHijack: expectAsync1((void callback(a, b)) {
@@ -29,11 +30,13 @@ void main() {
       callback(streamController.stream, sinkController);
     }));
 
-    expect(() => request.hijack(expectAsync1((channel) {
-      expect(channel.stream.first, completion(equals([1, 2, 3])));
-      channel.sink.add([4, 5, 6]);
-      channel.sink.close();
-    })), throwsA(new isInstanceOf<HijackException>()));
+    expect(
+        () => request.hijack(expectAsync1((channel) {
+              expect(channel.stream.first, completion(equals([1, 2, 3])));
+              channel.sink.add([4, 5, 6]);
+              channel.sink.close();
+            })),
+        throwsA(new isInstanceOf<HijackException>()));
   });
 
   test('hijacking a hijackable request twice throws a StateError', () {
@@ -54,7 +57,8 @@ void main() {
       expect(() => newRequest.hijack((_) => null), throwsStateError);
     });
 
-    test('hijacking a hijackable request throws a HijackException and calls '
+    test(
+        'hijacking a hijackable request throws a HijackException and calls '
         'onHijack', () {
       var request = new Request('GET', LOCALHOST_URI,
           onHijack: expectAsync1((callback(a, b)) {
@@ -70,14 +74,17 @@ void main() {
 
       var newRequest = request.change();
 
-      expect(() => newRequest.hijack(expectAsync1((channel) {
-        expect(channel.stream.first, completion(equals([1, 2, 3])));
-        channel.sink.add([4, 5, 6]);
-        channel.sink.close();
-      })), throwsA(new isInstanceOf<HijackException>()));
+      expect(
+          () => newRequest.hijack(expectAsync1((channel) {
+                expect(channel.stream.first, completion(equals([1, 2, 3])));
+                channel.sink.add([4, 5, 6]);
+                channel.sink.close();
+              })),
+          throwsA(new isInstanceOf<HijackException>()));
     });
 
-    test('hijacking the original request after calling change throws a '
+    test(
+        'hijacking the original request after calling change throws a '
         'StateError', () {
       // Assert that the [onHijack] callback is only called once.
       var request = new Request('GET', LOCALHOST_URI,

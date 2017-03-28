@@ -25,6 +25,7 @@ class Response extends Message {
     _expiresCache = parseHttpDate(headers['expires']);
     return _expiresCache;
   }
+
   DateTime _expiresCache;
 
   /// The date and time the source of the response's data was last modified.
@@ -37,6 +38,7 @@ class Response extends Message {
     _lastModifiedCache = parseHttpDate(headers['last-modified']);
     return _lastModifiedCache;
   }
+
   DateTime _lastModifiedCache;
 
   /// Constructs a 200 OK response.
@@ -57,10 +59,12 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.ok(body, {Map<String, String> headers, Encoding encoding,
-    Map<String, Object> context})
-      : this(200, body: body, headers: headers, encoding: encoding,
-          context: context);
+  Response.ok(body,
+      {Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
+      : this(200,
+            body: body, headers: headers, encoding: encoding, context: context);
 
   /// Constructs a 301 Moved Permanently response.
   ///
@@ -82,10 +86,13 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.movedPermanently(location, {body, Map<String, String> headers,
-      Encoding encoding, Map<String, Object> context})
+  Response.movedPermanently(location,
+      {body,
+      Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
       : this._redirect(301, location, body, headers, encoding,
-          context: context);
+            context: context);
 
   /// Constructs a 302 Found response.
   ///
@@ -107,10 +114,13 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.found(location, {body, Map<String, String> headers,
-      Encoding encoding, Map<String, Object> context})
+  Response.found(location,
+      {body,
+      Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
       : this._redirect(302, location, body, headers, encoding,
-          context: context);
+            context: context);
 
   /// Constructs a 303 See Other response.
   ///
@@ -133,20 +143,23 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.seeOther(location, {body, Map<String, String> headers,
-      Encoding encoding, Map<String, Object> context})
+  Response.seeOther(location,
+      {body,
+      Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
       : this._redirect(303, location, body, headers, encoding,
-          context: context);
+            context: context);
 
   /// Constructs a helper constructor for redirect responses.
   Response._redirect(int statusCode, location, body,
       Map<String, String> headers, Encoding encoding,
-      { Map<String, Object> context })
+      {Map<String, Object> context})
       : this(statusCode,
             body: body,
             encoding: encoding,
-            headers: addHeader(
-                headers, 'location', _locationToString(location)),
+            headers:
+                addHeader(headers, 'location', _locationToString(location)),
             context: context);
 
   /// Constructs a 304 Not Modified response.
@@ -155,10 +168,11 @@ class Response extends Message {
   /// information used to determine whether the requested resource has changed
   /// since the last request. It indicates that the resource has not changed and
   /// the old value should be used.
-  Response.notModified({Map<String, String> headers,
-    Map<String, Object> context})
-      : this(304, headers: addHeader(
-            headers, 'date', formatHttpDate(new DateTime.now())),
+  Response.notModified(
+      {Map<String, String> headers, Map<String, Object> context})
+      : this(304,
+            headers:
+                addHeader(headers, 'date', formatHttpDate(new DateTime.now())),
             context: context);
 
   /// Constructs a 403 Forbidden response.
@@ -179,12 +193,14 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.forbidden(body, {Map<String, String> headers,
-      Encoding encoding, Map<String, Object> context})
+  Response.forbidden(body,
+      {Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
       : this(403,
-          headers: body == null ? _adjustErrorHeaders(headers) : headers,
-          body: body == null ? 'Forbidden' : body,
-          context: context);
+            headers: body == null ? _adjustErrorHeaders(headers) : headers,
+            body: body == null ? 'Forbidden' : body,
+            context: context);
 
   /// Constructs a 404 Not Found response.
   ///
@@ -205,12 +221,14 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.notFound(body, {Map<String, String> headers, Encoding encoding,
-    Map<String, Object> context})
+  Response.notFound(body,
+      {Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
       : this(404,
-          headers: body == null ? _adjustErrorHeaders(headers) : headers,
-          body: body == null ? 'Not Found' : body,
-          context: context);
+            headers: body == null ? _adjustErrorHeaders(headers) : headers,
+            body: body == null ? 'Not Found' : body,
+            context: context);
 
   /// Constructs a 500 Internal Server Error response.
   ///
@@ -231,8 +249,11 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.internalServerError({body, Map<String, String> headers,
-      Encoding encoding, Map<String, Object> context})
+  Response.internalServerError(
+      {body,
+      Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
       : this(500,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
             body: body == null ? 'Internal Server Error' : body,
@@ -256,8 +277,11 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response(this.statusCode, {body, Map<String, String> headers,
-      Encoding encoding, Map<String, Object> context})
+  Response(this.statusCode,
+      {body,
+      Map<String, String> headers,
+      Encoding encoding,
+      Map<String, Object> context})
       : super(body, encoding: encoding, headers: headers, context: context) {
     if (statusCode < 100) {
       throw new ArgumentError("Invalid status code: $statusCode.");
@@ -286,8 +310,8 @@ class Response extends Message {
 
     if (body == null) body = getBody(this);
 
-    return new Response(this.statusCode, body: body, headers: headers,
-        context: context);
+    return new Response(this.statusCode,
+        body: body, headers: headers, context: context);
   }
 }
 

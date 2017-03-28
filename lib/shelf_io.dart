@@ -65,8 +65,8 @@ Future handleRequest(HttpRequest request, Handler handler) async {
   try {
     shelfRequest = _fromHttpRequest(request);
   } catch (error, stackTrace) {
-    var response = _logTopLevelError(
-        'Error parsing request.\n$error', stackTrace);
+    var response =
+        _logTopLevelError('Error parsing request.\n$error', stackTrace);
     await _writeResponse(response, request.response);
     return;
   }
@@ -81,18 +81,15 @@ Future handleRequest(HttpRequest request, Handler handler) async {
     if (!shelfRequest.canHijack) return;
 
     // If the request wasn't hijacked, we shouldn't be seeing this exception.
-    response = _logError(
-        shelfRequest,
-        "Caught HijackException, but the request wasn't hijacked.",
-        stackTrace);
+    response = _logError(shelfRequest,
+        "Caught HijackException, but the request wasn't hijacked.", stackTrace);
   } catch (error, stackTrace) {
-    response = _logError(
-        shelfRequest, 'Error thrown by handler.\n$error', stackTrace);
+    response =
+        _logError(shelfRequest, 'Error thrown by handler.\n$error', stackTrace);
   }
 
   if (response == null) {
-    await _writeResponse(
-        _logError(shelfRequest, 'null response from handler.'),
+    await _writeResponse(_logError(shelfRequest, 'null response from handler.'),
         request.response);
     return;
   } else if (shelfRequest.canHijack) {
@@ -104,8 +101,7 @@ Future handleRequest(HttpRequest request, Handler handler) async {
     ..writeln("Got a response for hijacked request "
         "${shelfRequest.method} ${shelfRequest.requestedUri}:")
     ..writeln(response.statusCode);
-  response.headers
-      .forEach((key, value) => message.writeln("${key}: ${value}"));
+  response.headers.forEach((key, value) => message.writeln("${key}: ${value}"));
   throw new Exception(message.toString().trim());
 }
 
@@ -158,8 +154,8 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
     // otherwise `dart:io` will try to add another layer of chunking.
     //
     // TODO(nweiz): Do this more cleanly when sdk#27886 is fixed.
-    response = response.change(
-        body: chunkedCoding.decoder.bind(response.read()));
+    response =
+        response.change(body: chunkedCoding.decoder.bind(response.read()));
     httpResponse.headers.set(HttpHeaders.TRANSFER_ENCODING, 'chunked');
   } else if (response.statusCode >= 200 &&
       response.statusCode != 204 &&
@@ -205,7 +201,8 @@ Response _logTopLevelError(String message, [StackTrace stackTrace]) {
     chain = new Chain.forTrace(stackTrace);
   }
   chain = chain
-      .foldFrames((frame) => frame.isCore || frame.package == 'shelf').terse;
+      .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
+      .terse;
 
   stderr.writeln('ERROR - ${new DateTime.now()}');
   stderr.writeln(message);

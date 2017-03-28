@@ -85,6 +85,7 @@ class Request extends Message {
     _ifModifiedSinceCache = parseHttpDate(headers['if-modified-since']);
     return _ifModifiedSinceCache;
   }
+
   DateTime _ifModifiedSinceCache;
 
   /// Creates a new [Request].
@@ -133,20 +134,25 @@ class Request extends Message {
   ///
   /// See also [hijack].
   // TODO(kevmoo) finish documenting the rest of the arguments.
-  Request(String method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, String handlerPath, Uri url, body,
-      Encoding encoding, Map<String, Object> context,
-      void onHijack(void hijack(
-          Stream<List<int>> stream, StreamSink<List<int>> sink))})
+  Request(String method, Uri requestedUri,
+      {String protocolVersion,
+      Map<String, String> headers,
+      String handlerPath,
+      Uri url,
+      body,
+      Encoding encoding,
+      Map<String, Object> context,
+      void onHijack(
+          void hijack(Stream<List<int>> stream, StreamSink<List<int>> sink))})
       : this._(method, requestedUri,
-          protocolVersion: protocolVersion,
-          headers: headers,
-          url: url,
-          handlerPath: handlerPath,
-          body: body,
-          encoding: encoding,
-          context: context,
-          onHijack: onHijack == null ? null : new _OnHijack(onHijack));
+            protocolVersion: protocolVersion,
+            headers: headers,
+            url: url,
+            handlerPath: handlerPath,
+            body: body,
+            encoding: encoding,
+            context: context,
+            onHijack: onHijack == null ? null : new _OnHijack(onHijack));
 
   /// This constructor has the same signature as [new Request] except that
   /// accepts [onHijack] as [_OnHijack].
@@ -154,13 +160,18 @@ class Request extends Message {
   /// Any [Request] created by calling [change] will pass [_onHijack] from the
   /// source [Request] to ensure that [hijack] can only be called once, even
   /// from a changed [Request].
-  Request._(this.method, Uri requestedUri, {String protocolVersion,
-      Map<String, String> headers, String handlerPath, Uri url, body,
-      Encoding encoding, Map<String, Object> context, _OnHijack onHijack})
+  Request._(this.method, Uri requestedUri,
+      {String protocolVersion,
+      Map<String, String> headers,
+      String handlerPath,
+      Uri url,
+      body,
+      Encoding encoding,
+      Map<String, Object> context,
+      _OnHijack onHijack})
       : this.requestedUri = requestedUri,
-        this.protocolVersion = protocolVersion == null
-            ? '1.1'
-            : protocolVersion,
+        this.protocolVersion =
+            protocolVersion == null ? '1.1' : protocolVersion,
         this.url = _computeUrl(requestedUri, handlerPath, url),
         this.handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
         this._onHijack = onHijack,
@@ -207,8 +218,11 @@ class Request extends Message {
   ///     request = request.change(path: "dir");
   ///     print(request.handlerPath); // => /static/dir/
   ///     print(request.url);        // => file.html
-  Request change({Map<String, String> headers, Map<String, Object> context,
-      String path, body}) {
+  Request change(
+      {Map<String, String> headers,
+      Map<String, Object> context,
+      String path,
+      body}) {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 

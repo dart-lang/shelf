@@ -95,8 +95,8 @@ void main() {
       return syncHandler(request);
     });
 
-    return schedule(() => http.get('http://localhost:$_serverPort$path')).then(
-        (response) {
+    return schedule(() => http.get('http://localhost:$_serverPort$path'))
+        .then((response) {
       expect(response.statusCode, HttpStatus.OK);
       expect(response.body, 'Hello from /foo/bar');
     });
@@ -107,7 +107,11 @@ void main() {
       expect(request.contentLength, isNull);
       expect(request.method, 'POST');
       expect(request.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
-      expect(request.read().toList(), completion(equals([[1, 2, 3, 4]])));
+      expect(
+          request.read().toList(),
+          completion(equals([
+            [1, 2, 3, 4]
+          ])));
       return new Response.ok(null);
     }));
 
@@ -213,10 +217,11 @@ void main() {
         expect(stream.first, completion(equals("Hello".codeUnits)));
 
         sink.add(("HTTP/1.1 404 Not Found\r\n"
-            "Date: Mon, 23 May 2005 22:38:34 GMT\r\n"
-            "Content-Length: 13\r\n"
-            "\r\n"
-            "Hello, world!").codeUnits);
+                "Date: Mon, 23 May 2005 22:38:34 GMT\r\n"
+                "Content-Length: 13\r\n"
+                "\r\n"
+                "Hello, world!")
+            .codeUnits);
         sink.close();
       }));
     });
@@ -359,7 +364,9 @@ void main() {
     group('is added when the transfer-encoding header is', () {
       test('unset', () {
         _scheduleServer((request) {
-          return new Response.ok(new Stream.fromIterable([[1, 2, 3, 4]]));
+          return new Response.ok(new Stream.fromIterable([
+            [1, 2, 3, 4]
+          ]));
         });
 
         return _scheduleGet().then((response) {
@@ -371,7 +378,10 @@ void main() {
 
       test('"identity"', () {
         _scheduleServer((request) {
-          return new Response.ok(new Stream.fromIterable([[1, 2, 3, 4]]),
+          return new Response.ok(
+              new Stream.fromIterable([
+                [1, 2, 3, 4]
+              ]),
               headers: {HttpHeaders.TRANSFER_ENCODING: 'identity'});
         });
 
@@ -400,13 +410,16 @@ void main() {
     group('is not added when', () {
       test('content-length is set', () {
         _scheduleServer((request) {
-          return new Response.ok(new Stream.fromIterable([[1, 2, 3, 4]]),
+          return new Response.ok(
+              new Stream.fromIterable([
+                [1, 2, 3, 4]
+              ]),
               headers: {HttpHeaders.CONTENT_LENGTH: '4'});
         });
 
         return _scheduleGet().then((response) {
-          expect(response.headers,
-              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(
+              response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
           expect(response.bodyBytes, equals([1, 2, 3, 4]));
         });
       });
@@ -417,8 +430,8 @@ void main() {
         });
 
         return _scheduleGet().then((response) {
-          expect(response.headers,
-              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(
+              response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
           expect(response.body, isEmpty);
         });
       });
@@ -429,8 +442,8 @@ void main() {
         });
 
         return _scheduleGet().then((response) {
-          expect(response.headers,
-              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(
+              response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
           expect(response.body, isEmpty);
         });
       });
@@ -441,8 +454,8 @@ void main() {
         });
 
         return _scheduleGet().then((response) {
-          expect(response.headers,
-              isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+          expect(
+              response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
           expect(response.body, isEmpty);
         });
       });
@@ -459,8 +472,8 @@ void main() {
     });
 
     schedule(() {
-      var request = new http.Request(
-          "GET", Uri.parse('http://localhost:$_serverPort/'));
+      var request =
+          new http.Request("GET", Uri.parse('http://localhost:$_serverPort/'));
 
       return request.send().then((response) {
         var stream = new ScheduledStream(UTF8.decoder.bind(response.stream));
@@ -483,13 +496,13 @@ int _serverPort;
 
 Future _scheduleServer(Handler handler) {
   return schedule(() => shelf_io.serve(handler, 'localhost', 0).then((server) {
-    currentSchedule.onComplete.schedule(() {
-      _serverPort = null;
-      return server.close(force: true);
-    });
+        currentSchedule.onComplete.schedule(() {
+          _serverPort = null;
+          return server.close(force: true);
+        });
 
-    _serverPort = server.port;
-  }));
+        _serverPort = server.port;
+      }));
 }
 
 Future<http.Response> _scheduleGet({Map<String, String> headers}) {

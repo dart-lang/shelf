@@ -147,9 +147,11 @@ void main() {
     });
 
     test('throw from responseHandler does not hit error handler', () {
-      var middleware = createMiddleware(responseHandler: (response) {
-        throw 'middleware error';
-      }, errorHandler: (e, s) => fail('should never get here'));
+      var middleware = createMiddleware(
+          responseHandler: (response) {
+            throw 'middleware error';
+          },
+          errorHandler: (e, s) => fail('should never get here'));
 
       var handler =
           const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
@@ -158,9 +160,11 @@ void main() {
     });
 
     test('requestHandler throw does not hit errorHandlers', () {
-      var middleware = createMiddleware(requestHandler: (request) {
-        throw 'middleware error';
-      }, errorHandler: (e, s) => fail('should never get here'));
+      var middleware = createMiddleware(
+          requestHandler: (request) {
+            throw 'middleware error';
+          },
+          errorHandler: (e, s) => fail('should never get here'));
 
       var handler =
           const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
@@ -174,9 +178,8 @@ void main() {
         return _middlewareResponse;
       });
 
-      var handler = const Pipeline()
-          .addMiddleware(middleware)
-          .addHandler((request) {
+      var handler =
+          const Pipeline().addMiddleware(middleware).addHandler((request) {
         throw 'bad handler';
       });
 
@@ -191,22 +194,21 @@ void main() {
         throw error;
       });
 
-      var handler = const Pipeline()
-          .addMiddleware(middleware)
-          .addHandler((request) {
+      var handler =
+          const Pipeline().addMiddleware(middleware).addHandler((request) {
         throw 'bad handler';
       });
 
       expect(makeSimpleRequest(handler), throwsA('bad handler'));
     });
 
-    test('error thrown by inner handler without a middleware errorHandler is '
+    test(
+        'error thrown by inner handler without a middleware errorHandler is '
         'rethrown', () {
       var middleware = createMiddleware();
 
-      var handler = const Pipeline()
-          .addMiddleware(middleware)
-          .addHandler((request) {
+      var handler =
+          const Pipeline().addMiddleware(middleware).addHandler((request) {
         throw 'bad handler';
       });
 

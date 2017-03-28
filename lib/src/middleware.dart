@@ -46,7 +46,8 @@ typedef Handler Middleware(Handler innerHandler);
 /// does not receive errors thrown by [requestHandler] or [responseHandler], nor
 /// does it receive [HijackException]s. It can either return a new response or
 /// throw an error.
-Middleware createMiddleware({requestHandler(Request request),
+Middleware createMiddleware(
+    {requestHandler(Request request),
     responseHandler(Response response),
     errorHandler(error, StackTrace stackTrace)}) {
   if (requestHandler == null) requestHandler = (request) => null;
@@ -66,8 +67,8 @@ Middleware createMiddleware({requestHandler(Request request),
       return new Future.sync(() => requestHandler(request)).then((response) {
         if (response != null) return response;
 
-        return new Future.sync(() => innerHandler(request)).then(
-            (response) => responseHandler(response), onError: onError);
+        return new Future.sync(() => innerHandler(request))
+            .then((response) => responseHandler(response), onError: onError);
       });
     };
   };

@@ -15,8 +15,8 @@ import 'test_util.dart';
 void main() {
   group('Request', () {
     _testChange(({body, headers, context}) {
-      return new Request('GET', LOCALHOST_URI, body: body,
-          headers: headers, context: context);
+      return new Request('GET', LOCALHOST_URI,
+          body: body, headers: headers, context: context);
     });
   });
 
@@ -29,8 +29,9 @@ void main() {
 
 /// Shared test method used by [Request] and [Response] tests to validate
 /// the behavior of `change` with different `headers` and `context` values.
-void _testChange(Message factory(
-    {body, Map<String, String> headers, Map<String, Object> context})) {
+void _testChange(
+    Message factory(
+        {body, Map<String, String> headers, Map<String, Object> context})) {
   group('body', () {
     test('with String', () async {
       var request = factory(body: 'Hello, world');
@@ -45,7 +46,7 @@ void _testChange(Message factory(
       var request = factory(body: 'Hello, world');
       var copy = request.change(
           body: new Stream.fromIterable(['Goodbye, world'])
-            .transform(UTF8.encoder));
+              .transform(UTF8.encoder));
 
       var newBody = await copy.readAsString();
 
@@ -71,11 +72,8 @@ void _testChange(Message factory(
     var request = factory(headers: {'test': 'test value'});
     var copy = request.change(headers: {'test2': 'test2 value'});
 
-    expect(copy.headers, {
-      'test': 'test value',
-      'test2': 'test2 value',
-      'content-length': '0'
-    });
+    expect(copy.headers,
+        {'test': 'test value', 'test2': 'test2 value', 'content-length': '0'});
   });
 
   test('existing header values are overwritten', () {

@@ -15,14 +15,17 @@ class _TestMessage extends Message {
       Encoding encoding)
       : super(body, headers: headers, context: context, encoding: encoding);
 
-  Message change({Map<String, String> headers, Map<String, Object> context,
-      body}) {
+  Message change(
+      {Map<String, String> headers, Map<String, Object> context, body}) {
     throw new UnimplementedError();
   }
 }
 
-Message _createMessage({Map<String, String> headers,
-    Map<String, Object> context, body, Encoding encoding}) {
+Message _createMessage(
+    {Map<String, String> headers,
+    Map<String, Object> context,
+    body,
+    Encoding encoding}) {
   return new _TestMessage(headers, context, body, encoding);
 }
 
@@ -91,21 +94,28 @@ void main() {
     });
 
     test("defaults to UTF-8", () {
-      var request = _createMessage(body: new Stream.fromIterable([[195, 168]]));
+      var request = _createMessage(
+          body: new Stream.fromIterable([
+        [195, 168]
+      ]));
       expect(request.readAsString(), completion(equals("è")));
     });
 
     test("the content-type header overrides the default", () {
       var request = _createMessage(
           headers: {'content-type': 'text/plain; charset=iso-8859-1'},
-          body: new Stream.fromIterable([[195, 168]]));
+          body: new Stream.fromIterable([
+            [195, 168]
+          ]));
       expect(request.readAsString(), completion(equals("Ã¨")));
     });
 
     test("an explicit encoding overrides the content-type header", () {
       var request = _createMessage(
           headers: {'content-type': 'text/plain; charset=iso-8859-1'},
-          body: new Stream.fromIterable([[195, 168]]));
+          body: new Stream.fromIterable([
+            [195, 168]
+          ]));
       expect(request.readAsString(LATIN1), completion(equals("Ã¨")));
     });
   });
@@ -132,8 +142,7 @@ void main() {
 
     test("supports a List<int> body", () {
       var request = _createMessage(body: HELLO_BYTES);
-      expect(request.read().toList(),
-          completion(equals([HELLO_BYTES])));
+      expect(request.read().toList(), completion(equals([HELLO_BYTES])));
     });
 
     test("throws when calling read()/readAsString() multiple times", () {
@@ -193,8 +202,8 @@ void main() {
     });
 
     test("real body length takes precedence over content-length header", () {
-      var request = _createMessage(
-          body: [1, 2, 3], headers: {'content-length': '42'});
+      var request =
+          _createMessage(body: [1, 2, 3], headers: {'content-length': '42'});
       expect(request.contentLength, 3);
     });
 
@@ -228,10 +237,11 @@ void main() {
     });
 
     test("doesn't include parameters", () {
-      expect(_createMessage(
-          headers: {
-        'content-type': 'text/plain; foo=bar; bar=baz'
-      }).mimeType, equals('text/plain'));
+      expect(
+          _createMessage(
+                  headers: {'content-type': 'text/plain; foo=bar; bar=baz'})
+              .mimeType,
+          equals('text/plain'));
     });
   });
 
@@ -246,34 +256,43 @@ void main() {
     });
 
     test("is null with an unrecognized charset parameter", () {
-      expect(_createMessage(
+      expect(
+          _createMessage(
               headers: {'content-type': 'text/plain; charset=fblthp'}).encoding,
           isNull);
     });
 
     test("comes from the content-type charset parameter", () {
-      expect(_createMessage(
-          headers: {
-        'content-type': 'text/plain; charset=iso-8859-1'
-      }).encoding, equals(LATIN1));
+      expect(
+          _createMessage(
+                  headers: {'content-type': 'text/plain; charset=iso-8859-1'})
+              .encoding,
+          equals(LATIN1));
     });
 
     test("comes from the content-type charset parameter with a different case",
         () {
-      expect(_createMessage(
-          headers: {
-        'Content-Type': 'text/plain; charset=iso-8859-1'
-      }).encoding, equals(LATIN1));
+      expect(
+          _createMessage(
+                  headers: {'Content-Type': 'text/plain; charset=iso-8859-1'})
+              .encoding,
+          equals(LATIN1));
     });
 
     test("defaults to encoding a String as UTF-8", () {
-      expect(_createMessage(body: "è").read().toList(),
-          completion(equals([[195, 168]])));
+      expect(
+          _createMessage(body: "è").read().toList(),
+          completion(equals([
+            [195, 168]
+          ])));
     });
 
     test("uses the explicit encoding if available", () {
-      expect(_createMessage(body: "è", encoding: LATIN1).read().toList(),
-          completion(equals([[232]])));
+      expect(
+          _createMessage(body: "è", encoding: LATIN1).read().toList(),
+          completion(equals([
+            [232]
+          ])));
     });
 
     test("adds an explicit encoding to the content-type", () {
@@ -291,11 +310,14 @@ void main() {
           containsPair('Content-Type', 'text/plain; charset=iso-8859-1'));
     });
 
-    test("sets an absent content-type to application/octet-stream in order to "
+    test(
+        "sets an absent content-type to application/octet-stream in order to "
         "set the charset", () {
       var request = _createMessage(body: "è", encoding: LATIN1);
-      expect(request.headers, containsPair(
-          'content-type', 'application/octet-stream; charset=iso-8859-1'));
+      expect(
+          request.headers,
+          containsPair(
+              'content-type', 'application/octet-stream; charset=iso-8859-1'));
     });
 
     test("overwrites an existing charset if given an explicit encoding", () {

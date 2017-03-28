@@ -38,8 +38,7 @@ void main() {
     });
 
     test('preserves content-type parameters', () {
-      var response = new Response.internalServerError(
-          headers: {
+      var response = new Response.internalServerError(headers: {
         'content-type': 'application/octet-stream; param=whatever'
       });
       expect(response.headers,
@@ -65,10 +64,10 @@ void main() {
     });
 
     test("comes from the Expires header", () {
-      expect(new Response.ok("okay!",
-          headers: {
-        'expires': 'Sun, 06 Nov 1994 08:49:37 GMT'
-      }).expires, equals(DateTime.parse("1994-11-06 08:49:37z")));
+      expect(
+          new Response.ok("okay!",
+              headers: {'expires': 'Sun, 06 Nov 1994 08:49:37 GMT'}).expires,
+          equals(DateTime.parse("1994-11-06 08:49:37z")));
     });
   });
 
@@ -78,10 +77,11 @@ void main() {
     });
 
     test("comes from the Last-Modified header", () {
-      expect(new Response.ok("okay!",
-          headers: {
-        'last-modified': 'Sun, 06 Nov 1994 08:49:37 GMT'
-      }).lastModified, equals(DateTime.parse("1994-11-06 08:49:37z")));
+      expect(
+          new Response.ok("okay!",
+                  headers: {'last-modified': 'Sun, 06 Nov 1994 08:49:37 GMT'})
+              .lastModified,
+          equals(DateTime.parse("1994-11-06 08:49:37z")));
     });
   });
 
@@ -110,7 +110,6 @@ void main() {
           ..close();
       });
     });
-
 
     test("allows the original response to be read", () {
       var response = new Response.ok(null);

@@ -49,8 +49,7 @@ void main() {
       });
 
       test("may be empty", () {
-        var request = new Request(
-            'GET', Uri.parse("http://localhost/foo/bar"),
+        var request = new Request('GET', Uri.parse("http://localhost/foo/bar"),
             url: Uri.parse(""));
         expect(request.url, equals(Uri.parse("")));
       });
@@ -168,8 +167,7 @@ void main() {
         test('must be the requestedUri path if url is empty', () {
           expect(() {
             new Request('GET', Uri.parse('http://localhost/test'),
-                handlerPath: '/',
-                url: Uri.parse(''));
+                handlerPath: '/', url: Uri.parse(''));
           }, throwsArgumentError);
         });
       });

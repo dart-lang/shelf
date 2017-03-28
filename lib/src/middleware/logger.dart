@@ -21,31 +21,31 @@ import '../middleware.dart';
 /// If [logger] is not passed, the message is just passed to [print].
 Middleware logRequests({void logger(String msg, bool isError)}) =>
     (innerHandler) {
-  if (logger == null) logger = _defaultLogger;
+      if (logger == null) logger = _defaultLogger;
 
-  return (request) {
-    var startTime = new DateTime.now();
-    var watch = new Stopwatch()..start();
+      return (request) {
+        var startTime = new DateTime.now();
+        var watch = new Stopwatch()..start();
 
-    return new Future.sync(() => innerHandler(request)).then((response) {
-      var msg = _getMessage(startTime, response.statusCode,
-          request.requestedUri, request.method, watch.elapsed);
+        return new Future.sync(() => innerHandler(request)).then((response) {
+          var msg = _getMessage(startTime, response.statusCode,
+              request.requestedUri, request.method, watch.elapsed);
 
-      logger(msg, false);
+          logger(msg, false);
 
-      return response;
-    }, onError: (error, stackTrace) {
-      if (error is HijackException) throw error;
+          return response;
+        }, onError: (error, stackTrace) {
+          if (error is HijackException) throw error;
 
-      var msg = _getErrorMessage(startTime, request.requestedUri,
-          request.method, watch.elapsed, error, stackTrace);
+          var msg = _getErrorMessage(startTime, request.requestedUri,
+              request.method, watch.elapsed, error, stackTrace);
 
-      logger(msg, true);
+          logger(msg, true);
 
-      throw error;
-    });
-  };
-};
+          throw error;
+        });
+      };
+    };
 
 String _formatQuery(String query) {
   return query == '' ? '' : '?$query';
@@ -62,7 +62,8 @@ String _getErrorMessage(DateTime requestTime, Uri requestedUri, String method,
   var chain = new Chain.current();
   if (stack != null) {
     chain = new Chain.forTrace(stack)
-        .foldFrames((frame) => frame.isCore || frame.package == 'shelf').terse;
+        .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
+        .terse;
   }
 
   var msg = '${requestTime}\t$elapsedTime\t$method\t${requestedUri.path}'

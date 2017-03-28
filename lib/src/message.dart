@@ -17,7 +17,8 @@ Body getBody(Message message) => message._body;
 /// The default set of headers for a message created with no body and no
 /// explicit headers.
 final _defaultHeaders = new ShelfUnmodifiableMap<String>(
-    {"content-length": "0"}, ignoreKeyCase: true);
+    {"content-length": "0"},
+    ignoreKeyCase: true);
 
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
@@ -61,16 +62,19 @@ abstract class Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Message(body, {Encoding encoding, Map<String, String> headers,
+  Message(body,
+      {Encoding encoding,
+      Map<String, String> headers,
       Map<String, Object> context})
       : this._(new Body(body, encoding), headers, context);
 
   Message._(Body body, Map<String, String> headers, Map<String, Object> context)
       : _body = body,
         headers = new ShelfUnmodifiableMap<String>(
-            _adjustHeaders(headers, body), ignoreKeyCase: true),
-        context = new ShelfUnmodifiableMap<Object>(context,
-            ignoreKeyCase: false);
+            _adjustHeaders(headers, body),
+            ignoreKeyCase: true),
+        context =
+            new ShelfUnmodifiableMap<Object>(context, ignoreKeyCase: false);
 
   /// The contents of the content-length field in [headers].
   ///
@@ -81,6 +85,7 @@ abstract class Message {
     _contentLengthCache = int.parse(headers['content-length']);
     return _contentLengthCache;
   }
+
   int _contentLengthCache;
 
   /// The MIME type of the message.
@@ -118,6 +123,7 @@ abstract class Message {
     _contentTypeCache = new MediaType.parse(headers['content-type']);
     return _contentTypeCache;
   }
+
   MediaType _contentTypeCache;
 
   /// Returns a [Stream] representing the body.
@@ -140,20 +146,18 @@ abstract class Message {
 
   /// Creates a new [Message] by copying existing values and applying specified
   /// changes.
-  Message change({Map<String, String> headers, Map<String, Object> context,
-      body});
+  Message change(
+      {Map<String, String> headers, Map<String, Object> context, body});
 }
 
 /// Adds information about [encoding] to [headers].
 ///
 /// Returns a new map without modifying [headers].
-Map<String, String> _adjustHeaders(
-    Map<String, String> headers, Body body) {
+Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
   var sameEncoding = _sameEncoding(headers, body);
   if (sameEncoding) {
     if (body.contentLength == null ||
-        getHeader(headers, 'content-length') ==
-            body.contentLength.toString()) {
+        getHeader(headers, 'content-length') == body.contentLength.toString()) {
       return headers ?? const ShelfUnmodifiableMap.empty();
     } else if (body.contentLength == 0 &&
         (headers == null || headers.isEmpty)) {
