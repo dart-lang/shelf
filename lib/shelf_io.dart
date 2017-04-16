@@ -40,6 +40,50 @@ Future<HttpServer> serve(Handler handler, address, int port, {int backlog}) {
   });
 }
 
+/// Starts an [HttpServer] that listens on the specified [address] and
+/// [port] using SSL/TLS and sends requests to [handler].
+///
+/// See the documentation for [HttpServer.bindSecure] for more details on [address],
+/// [port], [backlog] and [certificateName].
+///
+/// If [certificateDatabase] is provided, [SecureSocket.initialize] is also called
+/// to initialize the SSL/TLS setting. The params [certificateDatabasePassword] and
+/// [useBuiltinRoots] are also passed to this method.
+///
+/// If [redirectHttpPort] is set, will also listen for HTTP requests on that port
+/// and redirect the traffic to the HTTPS port.
+///
+/// For more info on how to configure your certificate database, visit
+/// https://gist.github.com/stevenroose/e6abde14258971eae982
+Future<HttpServer> serveSecure(Handler handler, address, int port, String certificateName,
+                               {int backlog,
+                                String certificateDatabase,
+                                String certificateDatabasePassword,
+                                bool useBuiltinRoots: true,
+                                int redirectHttpPort}) {
+  if (backlog == null) backlog = 0;
+  if(certificateDatabase != null) {
+    SecureSocket.initialize(database: certificateDatabase,
+                            password: certificateDatabasePassword,
+                            useBuiltinRoots: useBuiltinRoots);
+  }
+  return HttpServer.bindSecure(address, port, certificateName: certificateName,
+                               backlog: backlog).then((server) {
+    serveRequests(server, handler);
+    if(redirectHttpPort != null) {
+      return HttpServer.bind(address, redirectHttpPort, backlog: backlog).then((redirectServer) {
+        redirectServer.listen((request) {
+          request.response.redirect(request.uri.replace(scheme: "https"),
+                                    status: HttpStatus.MOVED_PERMANENTLY);
+        });
+        return server;
+      });
+    } else {
+      return server;
+    }
+  });
+}
+
 /// Serve a [Stream] of [HttpRequest]s.
 ///
 /// [HttpServer] implements [Stream<HttpRequest>] so it can be passed directly
