@@ -32,6 +32,9 @@ import 'util.dart';
 ///
 /// If [useHeaderBytesForContentType] is `true`, the contents of the
 /// file will be used along with the file path to determine the content type.
+///
+/// Specify a custom [contentTypeResolver] to customize automatic content type
+/// detection.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath: false,
     String defaultDocument,
