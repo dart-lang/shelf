@@ -5,6 +5,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
+import 'package:mime/mime.dart' as mime;
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
@@ -34,10 +35,13 @@ void main() {
         r"OJE7pB/VXmF3CdseucmjxaAruR41Pl9p/Gbyoq5B9FeL2OR7zJ+3aC/X8QdQCyIArPs"
         r"HkQAAAABJRU5ErkJggg==";
 
+    var webpBytesContent = r"UklGRiQAAABXRUJQVlA4IBgAAAAwAQCdASoBAAEAAQAcJaQAA3AA/v3AgAA=";
+
     d.dir('files', [
       d.file('test.txt', 'test txt content'),
       d.file('with space.txt', 'with space content'),
-      d.binaryFile('header_bytes_test_image', BASE64.decode(pngBytesContent))
+      d.binaryFile('header_bytes_test_image', BASE64.decode(pngBytesContent)),
+      d.binaryFile('header_bytes_test_webp', BASE64.decode(webpBytesContent))
     ]).create();
 
     currentSchedule.onComplete.schedule(() {
@@ -207,9 +211,9 @@ void main() {
       });
     });
 
-    test('magic_bytes_test_image should be image/png', () {
+    test('header_bytes_test_image should be image/png', () {
       schedule(() {
-        var handler = createStaticHandler(d.defaultRoot,
+        final dynamic handler = createStaticHandler(d.defaultRoot,
             useHeaderBytesForContentType: true);
 
         return makeRequest(handler, '/files/header_bytes_test_image')
@@ -218,5 +222,21 @@ void main() {
         });
       });
     });
+
+    test('header_bytes_test_webp should be image/webp', () {
+      schedule(() {
+        final mime.MimeTypeResolver resolver = new mime.MimeTypeResolver();
+        resolver.addMagicNumber(<int>[0x52,0x49,0x46,0x46,0x00,0x00,0x00,0x00,0x57,0x45,0x42,0x50], "image/webp",
+                                mask: <int>[0xFF,0xFF,0xFF,0xFF,0x00,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF]);
+        final dynamic handler = createStaticHandler(d.defaultRoot,
+            useHeaderBytesForContentType: true, contentTypeResolver: resolver);
+
+        return makeRequest(handler, '/files/header_bytes_test_webp')
+            .then((response) {
+          expect(response.mimeType, "image/webp");
+        });
+      });
+    });
+
   });
 }
