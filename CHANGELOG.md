@@ -1,3 +1,8 @@
+## 0.2.5
+
+* Add support for using a custom `MimeTypeResolver` for the handler to use when determining 
+  content-type via an optional `contentTypeResolver` argument on `createStaticHandler`.
+
 ## 0.2.4
 
 * Add support for "sniffing" the content of the file for the content-type via an optional

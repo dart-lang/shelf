@@ -55,8 +55,7 @@ Handler createStaticHandler(String fileSystemPath,
     }
   }
 
-  if(contentTypeResolver==null)
-    contentTypeResolver = new mime.MimeTypeResolver();
+  contentTypeResolver ??= new mime.MimeTypeResolver();
 
   return (Request request) async {
     var segs = [fileSystemPath]..addAll(request.url.pathSegments);
