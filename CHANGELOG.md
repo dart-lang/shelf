@@ -1,7 +1,6 @@
 ## 0.2.5
 
-* Add support for using a custom `MimeTypeResolver` for the handler to use when determining 
-  content-type via an optional `contentTypeResolver` argument on `createStaticHandler`.
+* Add an optional `contentTypeResolver` argument to `createStaticHandler`.
 
 ## 0.2.4
 
