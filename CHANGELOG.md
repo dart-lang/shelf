@@ -1,3 +1,7 @@
+## 0.2.5
+
+* Add an optional `contentTypeResolver` argument to `createStaticHandler`.
+
 ## 0.2.4
 
 * Add support for "sniffing" the content of the file for the content-type via an optional

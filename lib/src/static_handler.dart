@@ -32,11 +32,15 @@ import 'util.dart';
 ///
 /// If [useHeaderBytesForContentType] is `true`, the contents of the
 /// file will be used along with the file path to determine the content type.
+///
+/// Specify a custom [contentTypeResolver] to customize automatic content type
+/// detection.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath: false,
     String defaultDocument,
     bool listDirectories: false,
-    bool useHeaderBytesForContentType: false}) {
+    bool useHeaderBytesForContentType: false,
+    mime.MimeTypeResolver contentTypeResolver}) {
   var rootDir = new Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw new ArgumentError('A directory corresponding to fileSystemPath '
@@ -50,6 +54,8 @@ Handler createStaticHandler(String fileSystemPath,
       throw new ArgumentError('defaultDocument must be a file name.');
     }
   }
+
+  contentTypeResolver ??= new mime.MimeTypeResolver();
 
   return (Request request) async {
     var segs = [fileSystemPath]..addAll(request.url.pathSegments);
@@ -110,15 +116,15 @@ Handler createStaticHandler(String fileSystemPath,
     String contentType;
     if (useHeaderBytesForContentType) {
       var length =
-          math.min(mime.defaultMagicNumbersMaxLength, file.lengthSync());
+          math.min(contentTypeResolver.magicNumbersMaxLength, file.lengthSync());
 
       var byteSink = new ByteAccumulatorSink();
 
       await file.openRead(0, length).listen(byteSink.add).asFuture();
 
-      contentType = mime.lookupMimeType(file.path, headerBytes: byteSink.bytes);
+      contentType = contentTypeResolver.lookup(file.path, headerBytes: byteSink.bytes);
     } else {
-      contentType = mime.lookupMimeType(file.path);
+      contentType = contentTypeResolver.lookup(file.path);
     }
 
     if (contentType != null) {
