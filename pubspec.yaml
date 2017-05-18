@@ -1,5 +1,5 @@
 name: shelf_test_handler
-version: 1.0.0-dev
+version: 1.0.0-rc.1
 description: A Shelf handler that makes it easy to test HTTP interactions.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/shelf_test_handler
