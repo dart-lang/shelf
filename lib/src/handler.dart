@@ -88,6 +88,8 @@ class ShelfTestHandler {
 
       throw new TestFailure(
           "$description handler returned null for $requestInfo.");
+    } on HijackException catch (_) {
+      rethrow;
     } catch (error, stackTrace) {
       _zone.handleUncaughtError(error, stackTrace);
     }
