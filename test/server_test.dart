@@ -32,7 +32,8 @@ void main() {
       webSocket.sink.close();
     }));
 
-    var webSocket = await WebSocket.connect("ws://localhost:${server.url.port}");
+    var webSocket =
+        await WebSocket.connect("ws://localhost:${server.url.port}");
     expect(webSocket, emits("hello!"));
   });
 }

@@ -72,8 +72,8 @@ class ShelfTestHandler {
       }
 
       var expectation = _expectations.removeFirst();
-      if ((expectation.method != request.method &&
-              expectation.method != null) ||
+      if ((expectation.method != null &&
+              expectation.method != request.method) ||
           (expectation.path != "/${request.url.path}" &&
               expectation.path != null)) {
         var message = "$description received unexpected request $requestInfo.";
