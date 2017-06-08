@@ -64,7 +64,7 @@ Handler createStaticHandler(String fileSystemPath,
 
     var entityType = FileSystemEntity.typeSync(fsPath, followLinks: true);
 
-    File file = null;
+    File file;
 
     if (entityType == FileSystemEntityType.FILE) {
       file = new File(fsPath);
@@ -115,14 +115,15 @@ Handler createStaticHandler(String fileSystemPath,
 
     String contentType;
     if (useHeaderBytesForContentType) {
-      var length =
-          math.min(contentTypeResolver.magicNumbersMaxLength, file.lengthSync());
+      var length = math.min(
+          contentTypeResolver.magicNumbersMaxLength, file.lengthSync());
 
       var byteSink = new ByteAccumulatorSink();
 
       await file.openRead(0, length).listen(byteSink.add).asFuture();
 
-      contentType = contentTypeResolver.lookup(file.path, headerBytes: byteSink.bytes);
+      contentType =
+          contentTypeResolver.lookup(file.path, headerBytes: byteSink.bytes);
     } else {
       contentType = contentTypeResolver.lookup(file.path);
     }

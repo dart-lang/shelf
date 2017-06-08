@@ -77,9 +77,12 @@ Response listDirectory(String fileSystemPath, String dirPath) {
     controller.add(encoding.encode(string));
   }
 
-  String heading = path.relative(dirPath, from: fileSystemPath);
-  if (heading == '.') heading = '/';
-  else heading = '/$heading/';
+  var heading = path.relative(dirPath, from: fileSystemPath);
+  if (heading == '.') {
+    heading = '/';
+  } else {
+    heading = '/$heading/';
+  }
 
   add(_getHeader(sanitizer.convert(heading)));
   new Directory(dirPath).list().listen((FileSystemEntity entity) {

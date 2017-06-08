@@ -1,7 +1,6 @@
 `shelf_static` is a `Handler` for the Dart `shelf` package.
 
 [![Build Status](https://travis-ci.org/dart-lang/shelf_static.svg?branch=master)](https://travis-ci.org/dart-lang/shelf_static?branch=master)
-[![Coverage Status](https://coveralls.io/repos/dart-lang/shelf_static/badge.svg?branch=master&service=github)](https://coveralls.io/github/dart-lang/shelf_static?branch=master)
 
 ### Example
 ```dart

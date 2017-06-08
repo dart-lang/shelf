@@ -23,12 +23,10 @@ void main() {
 
     d.file('index.html', '<html></html>').create();
     d.file('root.txt', 'root txt').create();
-    d
-        .dir('files', [
+    d.dir('files', [
       d.file('index.html', '<html><body>files</body></html>'),
       d.file('with space.txt', 'with space content')
-    ])
-        .create();
+    ]).create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;

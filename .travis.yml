@@ -1,6 +1,14 @@
 language: dart
 sudo: false
 dart:
-  - stable
   - dev
-script: ./tool/travis.sh
+  - stable
+  - 1.23.0
+  - 1.22.1
+cache:
+  directories:
+    - $HOME/.pub-cache
+dart_task:
+  - test: --platform vm
+  - dartfmt
+  - dartanalyzer

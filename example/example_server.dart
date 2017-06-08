@@ -60,6 +60,7 @@ ArgParser _getParser() => new ArgParser()
       abbr: 'f',
       defaultsTo: false,
       negatable: false,
-      help: 'List the files in the source directory instead of servering the default document - "$_defaultDoc".');
+      help: 'List the files in the source directory instead of serving the '
+          'default document - "$_defaultDoc".');
 
 const _defaultDoc = 'index.html';

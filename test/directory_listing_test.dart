@@ -22,13 +22,11 @@ void main() {
 
     d.file('index.html', '<html></html>').create();
     d.file('root.txt', 'root txt').create();
-    d
-        .dir('files', [
+    d.dir('files', [
       d.file('index.html', '<html><body>files</body></html>'),
       d.file('with space.txt', 'with space content'),
       d.dir('empty subfolder', []),
-    ])
-        .create();
+    ]).create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;
@@ -77,8 +75,10 @@ void main() {
 
         return makeRequest(handler, '/files/empty subfolder').then((response) {
           expect(response.statusCode, HttpStatus.MOVED_PERMANENTLY);
-          expect(response.headers, containsPair(HttpHeaders.LOCATION,
-              'http://localhost/files/empty%20subfolder/'));
+          expect(
+              response.headers,
+              containsPair(HttpHeaders.LOCATION,
+                  'http://localhost/files/empty%20subfolder/'));
         });
       });
     });

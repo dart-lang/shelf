@@ -20,7 +20,9 @@ void main() {
       });
     });
 
-    d.dir('originals', [d.file('index.html', '<html></html>'),]).create();
+    d.dir('originals', [
+      d.file('index.html', '<html></html>'),
+    ]).create();
 
     d.dir('alt_root').create();
 

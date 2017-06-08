@@ -20,12 +20,10 @@ void main() {
     });
 
     d.file('root.txt', 'root txt').create();
-    d
-        .dir('files', [
+    d.dir('files', [
       d.file('test.txt', 'test txt content'),
       d.file('with space.txt', 'with space content')
-    ])
-        .create();
+    ]).create();
 
     currentSchedule.onComplete.schedule(() {
       d.defaultRoot = null;
