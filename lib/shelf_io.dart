@@ -57,6 +57,23 @@ void serveRequests(Stream<HttpRequest> requests, Handler handler) {
   });
 }
 
+/// Starts an SSL [HttpServer] that listens on the specified [address] and
+/// [port] and sends requests to [handler].
+///
+/// See the documentation for [HttpServer.bindSecure] for more details on
+/// [address], [port], and [backlog].
+Future<HttpServer> serveSecure(
+    Handler handler, address, int port, SecurityContext serverContext,
+    {int backlog}) {
+  if (backlog == null) backlog = 0;
+  return HttpServer
+      .bindSecure(address, port, serverContext, backlog: backlog)
+      .then((server) {
+    serveRequests(server, handler);
+    return server;
+  });
+}
+
 /// Uses [handler] to handle [request].
 ///
 /// Returns a [Future] which completes when the request has been handled.
