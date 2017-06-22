@@ -1,3 +1,7 @@
+## 0.6.8
+
+* Add a `securityContext` parameter to `self_io.serve()`.
+
 ## 0.6.7+2
 
 * Go back to auto-generating a `Content-Length` header when the length is known
