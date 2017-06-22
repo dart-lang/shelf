@@ -3,14 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-@TestOn('vm')
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart' as parser;
-import 'package:scheduled_test/scheduled_stream.dart';
 import 'package:scheduled_test/scheduled_test.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
@@ -38,7 +34,7 @@ void main() {
     });
   });
 
-  test('secure async handler returns a value to the client', () {
+  test('secure sync ahandler returns a value to the client', () {
     _scheduleServer(asyncHandler, securityContext: securityContext);
 
     return _scheduleGet().then((req) async {
@@ -66,8 +62,8 @@ Future _scheduleServer(Handler handler, {SecurityContext securityContext}) {
       }));
 }
 
-Future<HttpRequest> _scheduleGet() {
-  return schedule/*<Future<HttpRequest>>*/(() {
+Future<HttpClientRequest> _scheduleGet() {
+  return schedule/*<Future<HttpClientRequest>>*/(() {
     return client.getUrl(Uri.parse('https://localhost:$_serverPort/'));
   });
 }
