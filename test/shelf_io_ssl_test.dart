@@ -38,7 +38,7 @@ void main() {
     });
   });
 
-  test('secure sync ahandler returns a value to the client', () {
+  test('secure async handler returns a value to the client', () {
     _scheduleServer(asyncHandler, securityContext: securityContext);
 
     return _scheduleGet().then((req) async {
