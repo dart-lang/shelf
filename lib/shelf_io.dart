@@ -30,11 +30,22 @@ export 'src/io_server.dart';
 /// Starts an [HttpServer] that listens on the specified [address] and
 /// [port] and sends requests to [handler].
 ///
-/// See the documentation for [HttpServer.bind] for more details on [address],
-/// [port], and [backlog].
-Future<HttpServer> serve(Handler handler, address, int port, {int backlog}) {
-  if (backlog == null) backlog = 0;
-  return HttpServer.bind(address, port, backlog: backlog).then((server) {
+/// If a [securityContext] is provided an HTTPS server will be started.
+////
+/// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
+/// for more details on [address], [port], and [backlog].
+Future<HttpServer> serve(Handler handler, address, int port,
+    {SecurityContext securityContext, int backlog}) {
+  backlog ??= 0;
+  if (securityContext == null) {
+    return HttpServer.bind(address, port, backlog: backlog).then((server) {
+      serveRequests(server, handler);
+      return server;
+    });
+  }
+  return HttpServer
+      .bindSecure(address, port, securityContext, backlog: backlog)
+      .then((server) {
     serveRequests(server, handler);
     return server;
   });
@@ -54,23 +65,6 @@ void serveRequests(Stream<HttpRequest> requests, Handler handler) {
     requests.listen((request) => handleRequest(request, handler));
   }, (error, stackTrace) {
     _logTopLevelError('Asynchronous error\n$error', stackTrace);
-  });
-}
-
-/// Starts an SSL [HttpServer] that listens on the specified [address] and
-/// [port] and sends requests to [handler].
-///
-/// See the documentation for [HttpServer.bindSecure] for more details on
-/// [address], [port], and [backlog].
-Future<HttpServer> serveSecure(
-    Handler handler, address, int port, SecurityContext serverContext,
-    {int backlog}) {
-  if (backlog == null) backlog = 0;
-  return HttpServer
-      .bindSecure(address, port, serverContext, backlog: backlog)
-      .then((server) {
-    serveRequests(server, handler);
-    return server;
   });
 }
 
