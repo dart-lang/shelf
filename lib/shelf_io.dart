@@ -35,20 +35,14 @@ export 'src/io_server.dart';
 /// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
 /// for more details on [address], [port], and [backlog].
 Future<HttpServer> serve(Handler handler, address, int port,
-    {SecurityContext securityContext, int backlog}) {
+    {SecurityContext securityContext, int backlog}) async {
   backlog ??= 0;
-  if (securityContext == null) {
-    return HttpServer.bind(address, port, backlog: backlog).then((server) {
-      serveRequests(server, handler);
-      return server;
-    });
-  }
-  return HttpServer
-      .bindSecure(address, port, securityContext, backlog: backlog)
-      .then((server) {
-    serveRequests(server, handler);
-    return server;
-  });
+  HttpServer server = await (securityContext == null
+      ? HttpServer.bind(address, port, backlog: backlog)
+      : HttpServer.bindSecure(address, port, securityContext,
+          backlog: backlog));
+  serveRequests(server, handler);
+  return server;
 }
 
 /// Serve a [Stream] of [HttpRequest]s.
