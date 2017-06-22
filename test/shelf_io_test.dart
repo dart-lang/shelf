@@ -493,7 +493,7 @@ void main() {
   });
 
   group('ssl tests', () {
-    final SecurityContext securityContext = new SecurityContext()
+    var securityContext = new SecurityContext()
       ..setTrustedCertificatesBytes(certChainBytes)
       ..useCertificateChainBytes(certChainBytes)
       ..usePrivateKeyBytes(certKeyBytes, password: 'dartdart');
@@ -518,7 +518,7 @@ void main() {
       });
     });
 
-    test('secure sync ahandler returns a value to the client', () {
+    test('secure async handler returns a value to the client', () {
       _scheduleServer(asyncHandler, securityContext: securityContext);
 
       return _scheduleSecureGet().then((req) async {
