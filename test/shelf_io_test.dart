@@ -15,6 +15,7 @@ import 'package:scheduled_test/scheduled_test.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
+import 'ssl_certs.dart';
 import 'test_util.dart';
 
 void main() {
@@ -490,12 +491,53 @@ void main() {
       });
     });
   });
+
+  group('ssl tests', () {
+    var securityContext = new SecurityContext()
+      ..setTrustedCertificatesBytes(certChainBytes)
+      ..useCertificateChainBytes(certChainBytes)
+      ..usePrivateKeyBytes(certKeyBytes, password: 'dartdart');
+
+    var sslClient = new HttpClient(context: securityContext);
+
+    Future<HttpClientRequest> _scheduleSecureGet() {
+      return schedule/*<Future<HttpClientRequest>>*/(() {
+        return sslClient.getUrl(Uri.parse('https://localhost:$_serverPort/'));
+      });
+    }
+
+    test('secure sync handler returns a value to the client', () {
+      _scheduleServer(syncHandler, securityContext: securityContext);
+
+      return _scheduleSecureGet().then((req) async {
+        var response = await req.close();
+        expect(response.statusCode, HttpStatus.OK);
+        response.transform(UTF8.decoder).listen((contents) {
+          expect(contents, 'Hello from /');
+        });
+      });
+    });
+
+    test('secure async handler returns a value to the client', () {
+      _scheduleServer(asyncHandler, securityContext: securityContext);
+
+      return _scheduleSecureGet().then((req) async {
+        var response = await req.close();
+        expect(response.statusCode, HttpStatus.OK);
+        response.transform(UTF8.decoder).listen((contents) {
+          expect(contents, 'Hello from /');
+        });
+      });
+    });
+  });
 }
 
 int _serverPort;
 
-Future _scheduleServer(Handler handler) {
-  return schedule(() => shelf_io.serve(handler, 'localhost', 0).then((server) {
+Future _scheduleServer(Handler handler, {SecurityContext securityContext}) {
+  return schedule(() => shelf_io
+          .serve(handler, 'localhost', 0, securityContext: securityContext)
+          .then((server) {
         currentSchedule.onComplete.schedule(() {
           _serverPort = null;
           return server.close(force: true);

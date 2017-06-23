@@ -30,14 +30,19 @@ export 'src/io_server.dart';
 /// Starts an [HttpServer] that listens on the specified [address] and
 /// [port] and sends requests to [handler].
 ///
-/// See the documentation for [HttpServer.bind] for more details on [address],
-/// [port], and [backlog].
-Future<HttpServer> serve(Handler handler, address, int port, {int backlog}) {
-  if (backlog == null) backlog = 0;
-  return HttpServer.bind(address, port, backlog: backlog).then((server) {
-    serveRequests(server, handler);
-    return server;
-  });
+/// If a [securityContext] is provided an HTTPS server will be started.
+////
+/// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
+/// for more details on [address], [port], and [backlog].
+Future<HttpServer> serve(Handler handler, address, int port,
+    {SecurityContext securityContext, int backlog}) async {
+  backlog ??= 0;
+  HttpServer server = await (securityContext == null
+      ? HttpServer.bind(address, port, backlog: backlog)
+      : HttpServer.bindSecure(address, port, securityContext,
+          backlog: backlog));
+  serveRequests(server, handler);
+  return server;
 }
 
 /// Serve a [Stream] of [HttpRequest]s.
