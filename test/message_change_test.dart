@@ -15,7 +15,7 @@ import 'test_util.dart';
 void main() {
   group('Request', () {
     _testChange(({body, headers, context}) {
-      return new Request('GET', LOCALHOST_URI,
+      return new Request('GET', localhostUri,
           body: body, headers: headers, context: context);
     });
   });

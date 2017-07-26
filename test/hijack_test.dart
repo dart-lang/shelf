@@ -11,14 +11,14 @@ import 'test_util.dart';
 
 void main() {
   test('hijacking a non-hijackable request throws a StateError', () {
-    expect(() => new Request('GET', LOCALHOST_URI).hijack((_) => null),
+    expect(() => new Request('GET', localhostUri).hijack((_) => null),
         throwsStateError);
   });
 
   test(
       'hijacking a hijackable request throws a HijackException and calls '
       'onHijack', () {
-    var request = new Request('GET', LOCALHOST_URI,
+    var request = new Request('GET', localhostUri,
         onHijack: expectAsync1((void callback(a, b)) {
       var streamController = new StreamController<List<int>>();
       streamController.add([1, 2, 3]);
@@ -41,7 +41,7 @@ void main() {
 
   test('hijacking a hijackable request twice throws a StateError', () {
     // Assert that the [onHijack] callback is only called once.
-    var request = new Request('GET', LOCALHOST_URI,
+    var request = new Request('GET', localhostUri,
         onHijack: expectAsync1((_) => null, count: 1));
 
     expect(() => request.hijack((_) => null),
@@ -52,7 +52,7 @@ void main() {
 
   group('calling change', () {
     test('hijacking a non-hijackable request throws a StateError', () {
-      var request = new Request('GET', LOCALHOST_URI);
+      var request = new Request('GET', localhostUri);
       var newRequest = request.change();
       expect(() => newRequest.hijack((_) => null), throwsStateError);
     });
@@ -60,7 +60,7 @@ void main() {
     test(
         'hijacking a hijackable request throws a HijackException and calls '
         'onHijack', () {
-      var request = new Request('GET', LOCALHOST_URI,
+      var request = new Request('GET', localhostUri,
           onHijack: expectAsync1((callback(a, b)) {
         var streamController = new StreamController<List<int>>();
         streamController.add([1, 2, 3]);
@@ -87,7 +87,7 @@ void main() {
         'hijacking the original request after calling change throws a '
         'StateError', () {
       // Assert that the [onHijack] callback is only called once.
-      var request = new Request('GET', LOCALHOST_URI,
+      var request = new Request('GET', localhostUri,
           onHijack: expectAsync1((_) => null, count: 1));
 
       var newRequest = request.change();

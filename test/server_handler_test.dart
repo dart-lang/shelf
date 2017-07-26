@@ -11,13 +11,13 @@ import 'test_util.dart';
 
 void main() {
   test("passes the URL to the server", () {
-    var serverHandler = new ServerHandler(LOCALHOST_URI);
-    expect(serverHandler.server.url, equals(LOCALHOST_URI));
+    var serverHandler = new ServerHandler(localhostUri);
+    expect(serverHandler.server.url, equals(localhostUri));
   });
 
   test("pipes a request from ServerHandler.handler to a mounted handler",
       () async {
-    var serverHandler = new ServerHandler(LOCALHOST_URI);
+    var serverHandler = new ServerHandler(localhostUri);
     serverHandler.server.mount(asyncHandler);
 
     var response = await makeSimpleRequest(serverHandler.handler);
@@ -27,7 +27,7 @@ void main() {
 
   test("waits until the server's handler is mounted to service a request",
       () async {
-    var serverHandler = new ServerHandler(LOCALHOST_URI);
+    var serverHandler = new ServerHandler(localhostUri);
     var future = makeSimpleRequest(serverHandler.handler);
     await new Future.delayed(Duration.ZERO);
 
@@ -38,7 +38,7 @@ void main() {
   });
 
   test("stops servicing requests after Server.close is called", () {
-    var serverHandler = new ServerHandler(LOCALHOST_URI);
+    var serverHandler = new ServerHandler(localhostUri);
     serverHandler.server.mount(expectAsync1((_) {}, count: 0));
     serverHandler.server.close();
 
@@ -48,7 +48,7 @@ void main() {
   test("calls onClose when Server.close is called", () async {
     var onCloseCalled = false;
     var completer = new Completer();
-    var serverHandler = new ServerHandler(LOCALHOST_URI, onClose: () {
+    var serverHandler = new ServerHandler(localhostUri, onClose: () {
       onCloseCalled = true;
       return completer.future;
     });
@@ -68,7 +68,7 @@ void main() {
   });
 
   test("doesn't allow Server.mount to be called multiple times", () {
-    var serverHandler = new ServerHandler(LOCALHOST_URI);
+    var serverHandler = new ServerHandler(localhostUri);
     serverHandler.server.mount((_) {});
     expect(() => serverHandler.server.mount((_) {}), throwsStateError);
     expect(() => serverHandler.server.mount((_) {}), throwsStateError);

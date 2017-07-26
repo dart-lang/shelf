@@ -4,10 +4,10 @@
 
 import 'dart:async';
 
-import 'request.dart';
-import 'response.dart';
 import 'handler.dart';
 import 'hijack_exception.dart';
+import 'request.dart';
+import 'response.dart';
 
 /// A function which creates a new [Handler] by wrapping a [Handler].
 ///
@@ -54,7 +54,7 @@ Middleware createMiddleware(
 
   if (responseHandler == null) responseHandler = (response) => response;
 
-  var onError = null;
+  var onError;
   if (errorHandler != null) {
     onError = (error, stackTrace) {
       if (error is HijackException) throw error;

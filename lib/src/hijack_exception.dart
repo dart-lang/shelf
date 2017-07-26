@@ -9,7 +9,7 @@
 /// make sure to pass on HijackExceptions.
 ///
 /// See also [Request.hijack].
-class HijackException {
+class HijackException implements Exception {
   const HijackException();
 
   String toString() =>

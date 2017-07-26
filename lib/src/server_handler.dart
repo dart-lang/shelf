@@ -6,8 +6,8 @@ import 'dart:async';
 
 import 'package:async/async.dart';
 
-import 'request.dart';
 import 'handler.dart';
+import 'request.dart';
 import 'server.dart';
 
 /// A connected pair of a [Server] and a [Handler].
