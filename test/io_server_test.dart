@@ -16,7 +16,10 @@ import 'test_util.dart';
 void main() {
   var server;
   setUp(() async {
-    server = await IOServer.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    var address = Platform.environment.containsKey('TRAVIS')
+        ? InternetAddress.LOOPBACK_IP_V4
+        : InternetAddress.LOOPBACK_IP_V6;
+    server = await IOServer.bind(address, 0);
   });
 
   tearDown(() => server.close());
