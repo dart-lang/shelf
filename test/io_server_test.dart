@@ -16,7 +16,7 @@ import 'test_util.dart';
 void main() {
   var server;
   setUp(() async {
-    server = await IOServer.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    server = await IOServer.bind(InternetAddress.LOOPBACK_IP_V6, 0);
   });
 
   tearDown(() => server.close());
