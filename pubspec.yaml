@@ -4,7 +4,7 @@ author: Dart Team <misc@dartlang.org>
 description: Web Server Middleware for Dart
 homepage: https://github.com/dart-lang/shelf
 environment:
-  sdk: '>=1.13.2 <2.0.0'
+  sdk: '>=1.13.2 <2.0.0-dev.infinity'
 dependencies:
   async: '^1.10.0'
   collection: '^1.5.0'
