@@ -45,7 +45,7 @@ void main() {
         "doesn't", () {
       return new Future.sync(() {
         return handler(
-            new Request('GET', LOCALHOST_URI, headers: {'one': 'false'}));
+            new Request('GET', localhostUri, headers: {'one': 'false'}));
       }).then((response) {
         expect(response.statusCode, equals(200));
         expect(response.readAsString(), completion(equals('handler 2')));
@@ -56,7 +56,7 @@ void main() {
         "the third response should be returned if it matches and the first "
         "two don't", () {
       return new Future.sync(() {
-        return handler(new Request('GET', LOCALHOST_URI,
+        return handler(new Request('GET', localhostUri,
             headers: {'one': 'false', 'two': 'false'}));
       }).then((response) {
         expect(response.statusCode, equals(200));
@@ -66,7 +66,7 @@ void main() {
 
     test("the third response should be returned if no response matches", () {
       return new Future.sync(() {
-        return handler(new Request('GET', LOCALHOST_URI,
+        return handler(new Request('GET', localhostUri,
             headers: {'one': 'false', 'two': 'false', 'three': 'false'}));
       }).then((response) {
         expect(response.statusCode, equals(404));

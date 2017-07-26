@@ -7,10 +7,10 @@ import 'dart:async';
 import 'package:shelf/shelf.dart';
 
 // "hello,"
-const HELLO_BYTES = const [104, 101, 108, 108, 111, 44];
+const helloBytes = const [104, 101, 108, 108, 111, 44];
 
 // " world"
-const WORLD_BYTES = const [32, 119, 111, 114, 108, 100];
+const worldBytes = const [32, 119, 111, 114, 108, 100];
 
 /// A simple, synchronous handler for [Request].
 ///
@@ -31,6 +31,6 @@ Future<Response> asyncHandler(Request request) =>
 Future<Response> makeSimpleRequest(Handler handler) =>
     new Future.sync(() => handler(_request));
 
-final _request = new Request('GET', LOCALHOST_URI);
+final _request = new Request('GET', localhostUri);
 
-final LOCALHOST_URI = Uri.parse('http://localhost/');
+final localhostUri = Uri.parse('http://localhost/');

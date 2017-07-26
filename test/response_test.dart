@@ -18,7 +18,7 @@ void main() {
     });
 
     test("read", () {
-      var helloWorldBytes = new List.from(HELLO_BYTES)..addAll(WORLD_BYTES);
+      var helloWorldBytes = new List.from(helloBytes)..addAll(worldBytes);
 
       var response = new Response.ok("hello, world");
       expect(response.read().toList(), completion(equals([helloWorldBytes])));
@@ -103,10 +103,10 @@ void main() {
       expect(copy.encoding, request.encoding);
       expect(copy.context, same(request.context));
 
-      controller.add(HELLO_BYTES);
+      controller.add(helloBytes);
       return new Future(() {
         controller
-          ..add(WORLD_BYTES)
+          ..add(worldBytes)
           ..close();
       });
     });

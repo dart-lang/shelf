@@ -270,7 +270,7 @@ void main() {
       try {
         return await http.get('http://localhost:${server.port}');
       } finally {
-        server.close();
+        await server.close();
       }
     });
 

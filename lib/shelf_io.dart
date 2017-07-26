@@ -106,7 +106,7 @@ Future handleRequest(HttpRequest request, Handler handler) async {
     ..writeln("Got a response for hijacked request "
         "${shelfRequest.method} ${shelfRequest.requestedUri}:")
     ..writeln(response.statusCode);
-  response.headers.forEach((key, value) => message.writeln("${key}: ${value}"));
+  response.headers.forEach((key, value) => message.writeln("$key: $value"));
   throw new Exception(message.toString().trim());
 }
 

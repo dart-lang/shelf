@@ -85,10 +85,10 @@ void main() {
       var request = _createMessage(body: controller.stream);
       expect(request.readAsString(), completion(equals("hello, world")));
 
-      controller.add(HELLO_BYTES);
+      controller.add(helloBytes);
       return new Future(() {
         controller
-          ..add(WORLD_BYTES)
+          ..add(worldBytes)
           ..close();
       });
     });
@@ -130,19 +130,19 @@ void main() {
       var controller = new StreamController();
       var request = _createMessage(body: controller.stream);
       expect(request.read().toList(),
-          completion(equals([HELLO_BYTES, WORLD_BYTES])));
+          completion(equals([helloBytes, worldBytes])));
 
-      controller.add(HELLO_BYTES);
+      controller.add(helloBytes);
       return new Future(() {
         controller
-          ..add(WORLD_BYTES)
+          ..add(worldBytes)
           ..close();
       });
     });
 
     test("supports a List<int> body", () {
-      var request = _createMessage(body: HELLO_BYTES);
-      expect(request.read().toList(), completion(equals([HELLO_BYTES])));
+      var request = _createMessage(body: helloBytes);
+      expect(request.read().toList(), completion(equals([helloBytes])));
     });
 
     test("throws when calling read()/readAsString() multiple times", () {

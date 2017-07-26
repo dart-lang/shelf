@@ -51,7 +51,7 @@ class Request extends Message {
   ///
   /// [handlerPath] is always a root-relative URL path; that is, it always
   /// starts with `/`. It will also end with `/` whenever [url]'s path is
-  /// non-empty, or if [requestUri]'s path ends with `/`.
+  /// non-empty, or if [requestedUri]'s path ends with `/`.
   ///
   /// [handlerPath] and [url]'s path combine to create [requestedUri]'s path.
   final String handlerPath;
@@ -295,7 +295,7 @@ class _OnHijack {
 
 /// Computes `url` from the provided [Request] constructor arguments.
 ///
-/// If [url] is `null`, the value is inferred from [requestedUrl] and
+/// If [url] is `null`, the value is inferred from [requestedUri] and
 /// [handlerPath] if available. Otherwise [url] is returned.
 Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
   if (handlerPath != null &&
@@ -345,7 +345,7 @@ Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
 
 /// Computes `handlerPath` from the provided [Request] constructor arguments.
 ///
-/// If [handlerPath] is `null`, the value is inferred from [requestedUrl] and
+/// If [handlerPath] is `null`, the value is inferred from [requestedUri] and
 /// [url] if available. Otherwise [handlerPath] is returned.
 String _computeHandlerPath(Uri requestedUri, String handlerPath, Uri url) {
   if (handlerPath != null &&

@@ -53,7 +53,7 @@ String _formatQuery(String query) {
 
 String _getMessage(DateTime requestTime, int statusCode, Uri requestedUri,
     String method, Duration elapsedTime) {
-  return '${requestTime}\t$elapsedTime\t$method\t[${statusCode}]\t'
+  return '$requestTime\t$elapsedTime\t$method\t[$statusCode]\t'
       '${requestedUri.path}${_formatQuery(requestedUri.query)}';
 }
 
@@ -66,7 +66,7 @@ String _getErrorMessage(DateTime requestTime, Uri requestedUri, String method,
         .terse;
   }
 
-  var msg = '${requestTime}\t$elapsedTime\t$method\t${requestedUri.path}'
+  var msg = '$requestTime\t$elapsedTime\t$method\t${requestedUri.path}'
       '${_formatQuery(requestedUri.query)}\n$error';
   if (chain == null) return msg;
 

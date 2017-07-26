@@ -11,19 +11,19 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 Request _request({Map<String, String> headers, body, Encoding encoding}) {
-  return new Request("GET", LOCALHOST_URI,
+  return new Request("GET", localhostUri,
       headers: headers, body: body, encoding: encoding);
 }
 
 void main() {
   group('constructor', () {
     test('protocolVersion defaults to "1.1"', () {
-      var request = new Request('GET', LOCALHOST_URI);
+      var request = new Request('GET', localhostUri);
       expect(request.protocolVersion, '1.1');
     });
 
     test('provide non-default protocolVersion', () {
-      var request = new Request('GET', LOCALHOST_URI, protocolVersion: '1.0');
+      var request = new Request('GET', localhostUri, protocolVersion: '1.0');
       expect(request.protocolVersion, '1.0');
     });
 
@@ -229,10 +229,10 @@ void main() {
       expect(copy.context, same(request.context));
       expect(copy.readAsString(), completion('hello, world'));
 
-      controller.add(HELLO_BYTES);
+      controller.add(helloBytes);
       return new Future(() {
         controller
-          ..add(WORLD_BYTES)
+          ..add(worldBytes)
           ..close();
       });
     });
