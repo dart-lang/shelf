@@ -1,5 +1,5 @@
 name: shelf_packages_handler
-version: 1.0.0
+version: 1.0.1
 description: A shelf handler for serving a `packages/` directory.
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/shelf_packages_handler
@@ -10,7 +10,7 @@ environment:
 dependencies:
   async: '^1.1.0'
   path: '^1.0.0'
-  shelf: '^0.6.0'
+  shelf: '>=0.6.0 <0.8.0'
   shelf_static: '^0.2.0'
   package_resolver: '^1.0.0'
 
