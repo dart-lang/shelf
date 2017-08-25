@@ -230,7 +230,10 @@ void main() {
   });
 }
 
-_failHandler(Request request) => fail('should never get here');
+Response _failHandler(Request request) {
+  fail('should never get here');
+  return null;
+}
 
 final Response _middlewareResponse =
     new Response.ok('middleware content', headers: {'from': 'middleware'});
