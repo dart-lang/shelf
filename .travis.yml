@@ -4,9 +4,6 @@ dart:
   - dev
   - stable
   - 1.22.1
-  - 1.21.1
-  - 1.20.1
-  - 1.19.1
 
 dart_task:
   - test: --platform vm
@@ -27,18 +24,6 @@ matrix:
       dart_task: dartanalyzer
     - dart: stable
       dart_task: dartanalyzer
-  exclude:
-    # Exclude Firefox tests on SDKs before 1.22.0-dev.4 which are lacking fix
-    # https://github.com/dart-lang/sdk/commit/7c3c297a8ad907f12bf12b96a21777421067fd18
-    - dart: 1.21.1
-      dart_task:
-        test: --platform firefox -j 1
-    - dart: 1.20.1
-      dart_task:
-        test: --platform firefox -j 1
-    - dart: 1.19.1
-      dart_task:
-        test: --platform firefox -j 1
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
