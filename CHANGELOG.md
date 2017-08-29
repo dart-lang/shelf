@@ -3,6 +3,7 @@
 * Give a return type to the `Handler` typedef. This may cause static warnings
   where there previously were none, but all handlers should have already been
   returning a `Response` or `Future<Response>`.
+* Remove `HijackCallback` and `OnHijackCallback` typedefs.
 
 ## 0.6.8
 

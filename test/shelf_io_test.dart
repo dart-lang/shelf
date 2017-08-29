@@ -214,16 +214,16 @@ void main() {
     _scheduleServer((request) {
       expect(request.method, 'POST');
 
-      request.hijack(expectAsync2((stream, sink) {
-        expect(stream.first, completion(equals("Hello".codeUnits)));
+      request.hijack(expectAsync1((channel) {
+        expect(channel.stream.first, completion(equals("Hello".codeUnits)));
 
-        sink.add(("HTTP/1.1 404 Not Found\r\n"
+        channel.sink.add(("HTTP/1.1 404 Not Found\r\n"
                 "Date: Mon, 23 May 2005 22:38:34 GMT\r\n"
                 "Content-Length: 13\r\n"
                 "\r\n"
                 "Hello, world!")
             .codeUnits);
-        sink.close();
+        channel.sink.close();
       }));
     });
 

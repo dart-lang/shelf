@@ -13,14 +13,12 @@ import 'message.dart';
 import 'util.dart';
 
 /// A callback provided by a Shelf handler that's passed to [Request.hijack].
-@Deprecated("Will be removed in shelf 0.7.0.")
-typedef void HijackCallback(
+typedef void _HijackCallback(
     Stream<List<int>> stream, StreamSink<List<int>> sink);
 
 /// A callback provided by a Shelf adapter that's used by [Request.hijack] to
 /// provide a [HijackCallback] with a socket.
-@Deprecated("Will be removed in shelf 0.7.0.")
-typedef void OnHijackCallback(HijackCallback callback);
+typedef void _OnHijackCallback(_HijackCallback callback);
 
 /// Represents an HTTP request to be processed by a Shelf application.
 class Request extends Message {
@@ -247,26 +245,18 @@ class Request extends Message {
   /// [callback] is called with a [StreamChannel<List<int>>] that provides
   /// access to the underlying request socket.
   ///
-  /// For backwards compatibility, if the callback takes two arguments, it will
-  /// be passed a `Stream<List<int>>` and a `StreamSink<List<int>>` separately,
-  /// but this behavior is deprecated.
-  ///
   /// This may only be called when using a Shelf adapter that supports
   /// hijacking, such as the `dart:io` adapter. In addition, a given request may
   /// only be hijacked once. [canHijack] can be used to detect whether this
   /// request can be hijacked.
-  void hijack(Function callback) {
+  void hijack(void callback(StreamChannel<List<int>> channel)) {
     if (_onHijack == null) {
       throw new StateError("This request can't be hijacked.");
     }
 
-    if (callback is HijackCallback) {
-      _onHijack.run(callback);
-    } else {
-      _onHijack.run((Stream<List<int>> stream, StreamSink<List<int>> sink) {
-        callback(new StreamChannel<List<int>>(stream, sink));
-      });
-    }
+    _onHijack.run((Stream<List<int>> stream, StreamSink<List<int>> sink) {
+      callback(new StreamChannel<List<int>>(stream, sink));
+    });
 
     throw const HijackException();
   }
@@ -276,7 +266,7 @@ class Request extends Message {
 /// the callback has been called.
 class _OnHijack {
   /// The callback.
-  final OnHijackCallback _callback;
+  final _OnHijackCallback _callback;
 
   /// Whether [this] has been called.
   bool called = false;
@@ -286,7 +276,7 @@ class _OnHijack {
   /// Calls [this].
   ///
   /// Throws a [StateError] if [this] has already been called.
-  void run(HijackCallback callback) {
+  void run(_HijackCallback callback) {
     if (called) throw new StateError("This request has already been hijacked.");
     called = true;
     newFuture(() => _callback(callback));
