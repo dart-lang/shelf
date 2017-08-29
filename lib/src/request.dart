@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
@@ -13,8 +12,7 @@ import 'message.dart';
 import 'util.dart';
 
 /// A callback provided by a Shelf handler that's passed to [Request.hijack].
-typedef void _HijackCallback(
-    Stream<List<int>> stream, StreamSink<List<int>> sink);
+typedef void _HijackCallback(StreamChannel<List<int>> stream);
 
 /// A callback provided by a Shelf adapter that's used by [Request.hijack] to
 /// provide a [HijackCallback] with a socket.
@@ -113,11 +111,9 @@ class Request extends Message {
   /// the bidirectional socket underlying the HTTP connection stream.
   ///
   /// The [onHijack] callback will only be called once per request. It will be
-  /// passed another callback which takes a byte stream and a byte sink.
-  /// [onHijack] must pass the stream and sink for the connection stream to this
-  /// callback, although it may do so asynchronously. Both parameters may be the
-  /// same object. If the user closes the sink, the adapter should ensure that
-  /// the stream is closed as well.
+  /// passed another callback which takes a byte StreamChannel. [onHijack] must
+  /// pass the channel for the connection stream to this callback, although it
+  /// may do so asynchronously.
   ///
   /// If a request is hijacked, the adapter should expect to receive a
   /// [HijackException] from the handler. This is a special exception used to
@@ -140,8 +136,7 @@ class Request extends Message {
       body,
       Encoding encoding,
       Map<String, Object> context,
-      void onHijack(
-          void hijack(Stream<List<int>> stream, StreamSink<List<int>> sink))})
+      void onHijack(void hijack(StreamChannel<List<int>> channel))})
       : this._(method, requestedUri,
             protocolVersion: protocolVersion,
             headers: headers,
@@ -254,9 +249,7 @@ class Request extends Message {
       throw new StateError("This request can't be hijacked.");
     }
 
-    _onHijack.run((Stream<List<int>> stream, StreamSink<List<int>> sink) {
-      callback(new StreamChannel<List<int>>(stream, sink));
-    });
+    _onHijack.run(callback);
 
     throw const HijackException();
   }

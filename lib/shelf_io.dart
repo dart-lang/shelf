@@ -21,6 +21,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:stack_trace/stack_trace.dart';
+import 'package:stream_channel/stream_channel.dart';
 
 import 'shelf.dart';
 import 'src/util.dart';
@@ -122,10 +123,10 @@ Request _fromHttpRequest(HttpRequest request) {
   // Remove the Transfer-Encoding header per the adapter requirements.
   headers.remove(HttpHeaders.TRANSFER_ENCODING);
 
-  void onHijack(callback) {
+  void onHijack(void callback(StreamChannel<List<int>> channel)) {
     request.response
         .detachSocket(writeHeaders: false)
-        .then((socket) => callback(socket, socket));
+        .then((socket) => callback(new StreamChannel(socket, socket)));
   }
 
   return new Request(request.method, request.requestedUri,
