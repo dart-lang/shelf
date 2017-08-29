@@ -32,8 +32,7 @@ catchTopLevelErrors(callback(), void onError(error, StackTrace stackTrace)) {
 /// [updates] is used.
 ///
 /// If [updates] is `null` or empty, [original] is returned unchanged.
-Map/*<K, V>*/ updateMap/*<K, V>*/(
-    Map/*<K, V>*/ original, Map/*<K, V>*/ updates) {
+Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V> updates) {
   if (updates == null || updates.isEmpty) return original;
 
   return new Map.from(original)..addAll(updates);

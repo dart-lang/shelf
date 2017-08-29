@@ -501,7 +501,7 @@ void main() {
     var sslClient = new HttpClient(context: securityContext);
 
     Future<HttpClientRequest> _scheduleSecureGet() {
-      return schedule/*<Future<HttpClientRequest>>*/(() {
+      return schedule<Future<HttpClientRequest>>(() {
         return sslClient.getUrl(Uri.parse('https://localhost:$_serverPort/'));
       });
     }
@@ -550,13 +550,13 @@ Future _scheduleServer(Handler handler, {SecurityContext securityContext}) {
 Future<http.Response> _scheduleGet({Map<String, String> headers}) {
   if (headers == null) headers = {};
 
-  return schedule/*<Future<http.Response>>*/(
+  return schedule<Future<http.Response>>(
       () => http.get('http://localhost:$_serverPort/', headers: headers));
 }
 
 Future<http.StreamedResponse> _schedulePost(
     {Map<String, String> headers, String body}) {
-  return schedule/*<Future<http.StreamedResponse>>*/(() {
+  return schedule<Future<http.StreamedResponse>>(() {
     var request =
         new http.Request('POST', Uri.parse('http://localhost:$_serverPort/'));
 
