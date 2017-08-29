@@ -3,6 +3,9 @@
 * Give a return type to the `Handler` typedef. This may cause static warnings
   where there previously were none, but all handlers should have already been
   returning a `Response` or `Future<Response>`.
+* Remove `HijackCallback` and `OnHijackCallback` typedefs.
+* **Breaking**: Change type of `onHijack` in the `Request` constructor to take
+  an argument of `StreamChannel`.
 
 ## 0.6.8
 

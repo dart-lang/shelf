@@ -4,8 +4,9 @@
 
 import 'dart:async';
 
-import 'package:test/test.dart';
 import 'package:shelf/shelf.dart';
+import 'package:stream_channel/stream_channel.dart';
+import 'package:test/test.dart';
 
 import 'test_util.dart';
 
@@ -19,7 +20,7 @@ void main() {
       'hijacking a hijackable request throws a HijackException and calls '
       'onHijack', () {
     var request = new Request('GET', localhostUri,
-        onHijack: expectAsync1((void callback(a, b)) {
+        onHijack: expectAsync1((void callback(channel)) {
       var streamController = new StreamController<List<int>>();
       streamController.add([1, 2, 3]);
       streamController.close();
@@ -27,7 +28,7 @@ void main() {
       var sinkController = new StreamController();
       expect(sinkController.stream.first, completion(equals([4, 5, 6])));
 
-      callback(streamController.stream, sinkController);
+      callback(new StreamChannel(streamController.stream, sinkController));
     }));
 
     expect(
@@ -61,7 +62,7 @@ void main() {
         'hijacking a hijackable request throws a HijackException and calls '
         'onHijack', () {
       var request = new Request('GET', localhostUri,
-          onHijack: expectAsync1((callback(a, b)) {
+          onHijack: expectAsync1((callback(channel)) {
         var streamController = new StreamController<List<int>>();
         streamController.add([1, 2, 3]);
         streamController.close();
@@ -69,7 +70,7 @@ void main() {
         var sinkController = new StreamController();
         expect(sinkController.stream.first, completion(equals([4, 5, 6])));
 
-        callback(streamController.stream, sinkController);
+        callback(new StreamChannel(streamController.stream, sinkController));
       }));
 
       var newRequest = request.change();
