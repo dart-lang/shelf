@@ -11,12 +11,9 @@ import 'hijack_exception.dart';
 import 'message.dart';
 import 'util.dart';
 
-/// A callback provided by a Shelf handler that's passed to [Request.hijack].
-typedef void _HijackCallback(StreamChannel<List<int>> stream);
-
 /// A callback provided by a Shelf adapter that's used by [Request.hijack] to
 /// provide a [HijackCallback] with a socket.
-typedef void _OnHijackCallback(_HijackCallback callback);
+typedef void _OnHijackCallback(void callback(StreamChannel<List<int>> channel));
 
 /// Represents an HTTP request to be processed by a Shelf application.
 class Request extends Message {
@@ -269,7 +266,7 @@ class _OnHijack {
   /// Calls [this].
   ///
   /// Throws a [StateError] if [this] has already been called.
-  void run(_HijackCallback callback) {
+  void run(void callback(StreamChannel<List<int>> channel)) {
     if (called) throw new StateError("This request has already been hijacked.");
     called = true;
     newFuture(() => _callback(callback));
