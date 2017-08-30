@@ -4,6 +4,8 @@
 
 library shelf_packages_handler.dir_handler;
 
+import 'dart:async';
+
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
@@ -22,7 +24,7 @@ class DirHandler {
   DirHandler(this._name, this._inner);
 
   /// The callback for handling a single request.
-  call(Request request) {
+  FutureOr<Response> call(Request request) {
     var segments = request.url.pathSegments;
     for (var i = 0; i < segments.length; i++) {
       if (segments[i] != _name) continue;

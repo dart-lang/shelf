@@ -12,12 +12,13 @@ class AsyncHandler {
 
   AsyncHandler(Future<Handler> future) : _future = new ResultFuture(future);
 
-  call(Request request) {
+  FutureOr<Response> call(Request request) {
     if (_future.result == null) {
       return _future.then((handler) => handler(request));
     }
 
-    if (_future.result.isError) return _future;
+    if (_future.result.isError)
+      return new Future.error(_future.result.asError.error);
 
     return _future.result.asValue.value(request);
   }

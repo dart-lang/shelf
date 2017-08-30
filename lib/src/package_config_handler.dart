@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:package_resolver/package_resolver.dart';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
@@ -22,7 +24,7 @@ class PackageConfigHandler {
   PackageConfigHandler(this._resolver);
 
   /// The callback for handling a single request.
-  call(Request request) {
+  FutureOr<Response> call(Request request) {
     var segments = request.url.pathSegments;
     return _handlerFor(segments.first)(request.change(path: segments.first));
   }
