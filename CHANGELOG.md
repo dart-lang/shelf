@@ -1,4 +1,4 @@
-## 1.0.2-dev
+## 1.0.2
 
 - Fix Strong mode errors with `package:shelf` v0.7.x
 
