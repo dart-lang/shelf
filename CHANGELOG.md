@@ -1,3 +1,7 @@
+## 0.7.1
+
+* Update minimum Dart SDK to 1.23.0.
+
 ## 0.7.0
 
 * Give a return type to the `Handler` typedef. This may cause static warnings
