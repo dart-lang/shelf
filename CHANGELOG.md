@@ -1,3 +1,8 @@
+## 1.0.3
+
+- Require Dart SDK 1.22.0
+- Support `package:async` v2
+
 ## 1.0.2
 
 - Fix Strong mode errors with `package:shelf` v0.7.x
