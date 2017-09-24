@@ -16,6 +16,7 @@ import 'test_util.dart';
 void main() {
   var server;
   setUp(() async {
+    // Travis only supports IPv4 while other test platforms only support IPv6
     var address = Platform.environment.containsKey('TRAVIS')
         ? InternetAddress.LOOPBACK_IP_V4
         : InternetAddress.LOOPBACK_IP_V6;
