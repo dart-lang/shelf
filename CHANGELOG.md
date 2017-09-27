@@ -1,3 +1,7 @@
+## 0.2.2
+
+* Stop using comment-based generic syntax.
+
 ## 0.2.1
 
 * Fix all strong-mode warnings.
