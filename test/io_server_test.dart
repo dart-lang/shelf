@@ -14,12 +14,14 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  var server;
+  IOServer server;
+
   setUp(() async {
-    var address = Platform.environment.containsKey('TRAVIS')
-        ? InternetAddress.LOOPBACK_IP_V4
-        : InternetAddress.LOOPBACK_IP_V6;
-    server = await IOServer.bind(address, 0);
+    try {
+      server = await IOServer.bind(InternetAddress.LOOPBACK_IP_V6, 0);
+    } on SocketException catch (_) {
+      server = await IOServer.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+    }
   });
 
   tearDown(() => server.close());
