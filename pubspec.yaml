@@ -5,7 +5,7 @@ homepage: http://github.com/dart-lang/shelf_web_socket
 description: >
   A WebSocket handler for Shelf.
 dependencies:
-  shelf: ">=0.6.5 <0.8.0"
+  shelf: ">=0.7.0 <0.8.0"
   stream_channel: "^1.4.0"
   web_socket_channel: "^1.0.0"
 dev_dependencies:
