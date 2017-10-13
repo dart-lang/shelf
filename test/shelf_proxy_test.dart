@@ -35,10 +35,7 @@ void main() {
         return new shelf.Response.ok(':)');
       });
 
-      get(headers: {
-        'foo': 'bar',
-        'accept': '*/*'
-      });
+      get(headers: {'foo': 'bar', 'accept': '*/*'});
     });
 
     test("forwards request body", () {
@@ -55,23 +52,25 @@ void main() {
         return new shelf.Response(567);
       });
 
-      expect(get().then((response) {
-        expect(response.statusCode, equals(567));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.statusCode, equals(567));
+          }),
+          completes);
     });
 
     test("forwards response headers", () {
       createProxy((request) {
-        return new shelf.Response.ok(':)', headers: {
-          'foo': 'bar',
-          'accept': '*/*'
-        });
+        return new shelf.Response.ok(':)',
+            headers: {'foo': 'bar', 'accept': '*/*'});
       });
 
-      expect(get().then((response) {
-        expect(response.headers, containsPair('foo', 'bar'));
-        expect(response.headers, containsPair('accept', '*/*'));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.headers, containsPair('foo', 'bar'));
+            expect(response.headers, containsPair('accept', '*/*'));
+          }),
+          completes);
     });
 
     test("forwards response body", () {
@@ -116,9 +115,11 @@ void main() {
     test("adds a Via header to the response", () {
       createProxy((request) => new shelf.Response.ok(':)'));
 
-      expect(get().then((response) {
-        expect(response.headers, containsPair('via', '1.1 shelf_proxy'));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.headers, containsPair('via', '1.1 shelf_proxy'));
+          }),
+          completes);
     });
 
     test("adds to a response's existing Via header", () {
@@ -126,10 +127,12 @@ void main() {
         return new shelf.Response.ok(':)', headers: {'via': '1.0 something'});
       });
 
-      expect(get().then((response) {
-        expect(response.headers,
-            containsPair('via', '1.0 something, 1.1 shelf_proxy'));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.headers,
+                containsPair('via', '1.0 something, 1.1 shelf_proxy'));
+          }),
+          completes);
     });
 
     test("adds to a response's existing Via header", () {
@@ -137,10 +140,12 @@ void main() {
         return new shelf.Response.ok(':)', headers: {'via': '1.0 something'});
       });
 
-      expect(get().then((response) {
-        expect(response.headers,
-            containsPair('via', '1.0 something, 1.1 shelf_proxy'));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.headers,
+                containsPair('via', '1.0 something, 1.1 shelf_proxy'));
+          }),
+          completes);
     });
   });
 
@@ -150,10 +155,12 @@ void main() {
         return new shelf.Response.found('http://dartlang.org');
       });
 
-      expect(get().then((response) {
-        expect(response.headers,
-            containsPair('location', 'http://dartlang.org'));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.headers,
+                containsPair('location', 'http://dartlang.org'));
+          }),
+          completes);
     });
 
     test("relativizes a reachable root-relative Location", () {
@@ -161,9 +168,11 @@ void main() {
         return new shelf.Response.found('/foo/bar');
       }, targetPath: '/foo');
 
-      expect(get().then((response) {
-        expect(response.headers, containsPair('location', '/bar'));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.headers, containsPair('location', '/bar'));
+          }),
+          completes);
     });
 
     test("absolutizes an unreachable root-relative Location", () {
@@ -171,42 +180,45 @@ void main() {
         return new shelf.Response.found('/baz');
       }, targetPath: '/foo');
 
-      expect(get().then((response) {
-        expect(response.headers,
-            containsPair('location', targetUri.resolve('/baz').toString()));
-      }), completes);
+      expect(
+          get().then((response) {
+            expect(response.headers,
+                containsPair('location', targetUri.resolve('/baz').toString()));
+          }),
+          completes);
     });
   });
 
   test("removes a transfer-encoding header", () {
     var handler = mockHandler((request) {
-      return new http.Response('', 200, headers: {
-        'transfer-encoding': 'chunked'
-      });
+      return new http.Response('', 200,
+          headers: {'transfer-encoding': 'chunked'});
     });
 
-    expect(handler(new shelf.Request('GET', Uri.parse('http://localhost/')))
-        .then((response) {
-      expect(response.headers, isNot(contains("transfer-encoding")));
-    }), completes);
+    expect(
+        handler(new shelf.Request('GET', Uri.parse('http://localhost/')))
+            .then((response) {
+          expect(response.headers, isNot(contains("transfer-encoding")));
+        }),
+        completes);
   });
 
   test("removes content-length and content-encoding for a gzipped response",
       () {
     var handler = mockHandler((request) {
-      return new http.Response('', 200, headers: {
-        'content-encoding': 'gzip',
-        'content-length': '1234'
-      });
+      return new http.Response('', 200,
+          headers: {'content-encoding': 'gzip', 'content-length': '1234'});
     });
 
-    expect(handler(new shelf.Request('GET', Uri.parse('http://localhost/')))
-        .then((response) {
-      expect(response.headers, isNot(contains("content-encoding")));
-      expect(response.headers, isNot(contains("content-length")));
-      expect(response.headers,
-          containsPair('warning', '214 shelf_proxy "GZIP decoded"'));
-    }), completes);
+    expect(
+        handler(new shelf.Request('GET', Uri.parse('http://localhost/')))
+            .then((response) {
+          expect(response.headers, isNot(contains("content-encoding")));
+          expect(response.headers, isNot(contains("content-length")));
+          expect(response.headers,
+              containsPair('warning', '214 shelf_proxy "GZIP decoded"'));
+        }),
+        completes);
   });
 }
 
@@ -220,10 +232,11 @@ void createProxy(shelf.Handler handler, {String targetPath}) {
     return shelf_io.serve(handler, 'localhost', 0).then((targetServer) {
       targetUri = Uri.parse('http://localhost:${targetServer.port}');
       if (targetPath != null) targetUri = targetUri.resolve(targetPath);
-      var proxyServerHandler = expectAsync(
-          proxyHandler(targetUri), reason: 'proxy server handler');
+      var proxyServerHandler =
+          expectAsync(proxyHandler(targetUri), reason: 'proxy server handler');
 
-      return shelf_io.serve(proxyServerHandler, 'localhost', 0)
+      return shelf_io
+          .serve(proxyServerHandler, 'localhost', 0)
           .then((proxyServer) {
         proxyUri = Uri.parse('http://localhost:${proxyServer.port}');
 

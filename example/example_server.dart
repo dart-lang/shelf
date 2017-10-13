@@ -18,8 +18,8 @@ void main() {
   var apiHandler = (Request request) {
     if (request.url.path == '/api') {
       apiCount++;
-      var json = _encoder.convert({ 'count': apiCount});
-      var headers = { 'Content-Type' : 'application/json' };
+      var json = _encoder.convert({'count': apiCount});
+      var headers = {'Content-Type': 'application/json'};
       return new Response.ok(json, headers: headers);
     }
 
@@ -38,8 +38,8 @@ void main() {
   // Creates a pipeline handler which first logs requests and then sends them
   // to the cascade.
   //
-  var handler = const Pipeline().addMiddleware(logRequests())
-      .addHandler(cascade.handler);
+  var handler =
+      const Pipeline().addMiddleware(logRequests()).addHandler(cascade.handler);
 
   //
   // Serve the combined handler on localhost at port 8080.

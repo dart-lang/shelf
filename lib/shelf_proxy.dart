@@ -31,8 +31,8 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
     // TODO(nweiz): Handle TRACE requests correctly. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
     var requestUrl = url.resolve(serverRequest.url.toString());
-    var clientRequest = new http.StreamedRequest(
-        serverRequest.method, requestUrl);
+    var clientRequest =
+        new http.StreamedRequest(serverRequest.method, requestUrl);
     clientRequest.followRedirects = false;
     clientRequest.headers.addAll(serverRequest.headers);
     clientRequest.headers['Host'] = url.authority;
@@ -60,16 +60,16 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
 
         // Add a Warning header. See
         // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
-        _addHeader(clientResponse.headers, 'warning',
-            '214 $proxyName "GZIP decoded"');
+        _addHeader(
+            clientResponse.headers, 'warning', '214 $proxyName "GZIP decoded"');
       }
 
       // Make sure the Location header is pointing to the proxy server rather
       // than the destination server, if possible.
       if (clientResponse.isRedirect &&
           clientResponse.headers.containsKey('location')) {
-        var location = requestUrl.resolve(clientResponse.headers['location'])
-            .toString();
+        var location =
+            requestUrl.resolve(clientResponse.headers['location']).toString();
         if (p.url.isWithin(url.toString(), location)) {
           clientResponse.headers['location'] =
               '/' + p.url.relative(location, from: url.toString());
@@ -79,8 +79,7 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
       }
 
       return new Response(clientResponse.statusCode,
-          body: clientResponse.stream,
-          headers: clientResponse.headers);
+          body: clientResponse.stream, headers: clientResponse.headers);
     });
   };
 }
