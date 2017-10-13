@@ -189,36 +189,32 @@ void main() {
     });
   });
 
-  test("removes a transfer-encoding header", () {
+  test("removes a transfer-encoding header", () async {
     var handler = mockHandler((request) {
       return new http.Response('', 200,
           headers: {'transfer-encoding': 'chunked'});
     });
 
-    expect(
-        handler(new shelf.Request('GET', Uri.parse('http://localhost/')))
-            .then((response) {
-          expect(response.headers, isNot(contains("transfer-encoding")));
-        }),
-        completes);
+    var response =
+        await handler(new shelf.Request('GET', Uri.parse('http://localhost/')));
+
+    expect(response.headers, isNot(contains("transfer-encoding")));
   });
 
   test("removes content-length and content-encoding for a gzipped response",
-      () {
+      () async {
     var handler = mockHandler((request) {
       return new http.Response('', 200,
           headers: {'content-encoding': 'gzip', 'content-length': '1234'});
     });
 
-    expect(
-        handler(new shelf.Request('GET', Uri.parse('http://localhost/')))
-            .then((response) {
-          expect(response.headers, isNot(contains("content-encoding")));
-          expect(response.headers, isNot(contains("content-length")));
-          expect(response.headers,
-              containsPair('warning', '214 shelf_proxy "GZIP decoded"'));
-        }),
-        completes);
+    var response =
+        await handler(new shelf.Request('GET', Uri.parse('http://localhost/')));
+
+    expect(response.headers, isNot(contains("content-encoding")));
+    expect(response.headers, isNot(contains("content-length")));
+    expect(response.headers,
+        containsPair('warning', '214 shelf_proxy "GZIP decoded"'));
   });
 }
 
@@ -227,34 +223,29 @@ void main() {
 /// [targetPath] is the root-relative path on the target server to proxy to. It
 /// defaults to `/`.
 void createProxy(shelf.Handler handler, {String targetPath}) {
-  handler = expectAsync(handler, reason: 'target server handler');
-  schedule(() {
-    return shelf_io.serve(handler, 'localhost', 0).then((targetServer) {
-      targetUri = Uri.parse('http://localhost:${targetServer.port}');
-      if (targetPath != null) targetUri = targetUri.resolve(targetPath);
-      var proxyServerHandler =
-          expectAsync(proxyHandler(targetUri), reason: 'proxy server handler');
+  handler = expectAsync1(handler, reason: 'target server handler');
+  schedule(() async {
+    var targetServer = await shelf_io.serve(handler, 'localhost', 0);
+    targetUri = Uri.parse('http://localhost:${targetServer.port}');
+    if (targetPath != null) targetUri = targetUri.resolve(targetPath);
+    var proxyServerHandler =
+        expectAsync1(proxyHandler(targetUri), reason: 'proxy server handler');
 
-      return shelf_io
-          .serve(proxyServerHandler, 'localhost', 0)
-          .then((proxyServer) {
-        proxyUri = Uri.parse('http://localhost:${proxyServer.port}');
+    var proxyServer = await shelf_io.serve(proxyServerHandler, 'localhost', 0);
+    proxyUri = Uri.parse('http://localhost:${proxyServer.port}');
 
-        currentSchedule.onComplete.schedule(() {
-          proxyServer.close(force: true);
-          targetServer.close(force: true);
-        }, 'tear down servers');
-      });
-    });
+    currentSchedule.onComplete.schedule(() {
+      proxyServer.close(force: true);
+      targetServer.close(force: true);
+    }, 'tear down servers');
   }, 'spin up servers');
 }
 
 /// Creates a [shelf.Handler] that's backed by a [MockClient] running
 /// [callback].
-shelf.Handler mockHandler(callback(http.Request request)) {
-  var client = new MockClient((request) {
-    return new Future.sync(() => callback(request));
-  });
+shelf.Handler mockHandler(
+    FutureOr<http.Response> callback(http.Request request)) {
+  var client = new MockClient((request) async => await callback(request));
   return proxyHandler('http://dartlang.org', client: client);
 }
 

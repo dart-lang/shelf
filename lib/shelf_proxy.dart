@@ -15,27 +15,36 @@ import 'src/utils.dart';
 /// `http://example.com/docs`, a request to `/documentation/tutorials`
 /// will be proxied to `http://example.com/docs/tutorials`.
 ///
+/// [url] must be a [String] or [Uri].
+///
 /// [client] is used internally to make HTTP requests. It defaults to a
 /// `dart:io`-based client.
 ///
 /// [proxyName] is used in headers to identify this proxy. It should be a valid
 /// HTTP token or a hostname. It defaults to `shelf_proxy`.
 Handler proxyHandler(url, {http.Client client, String proxyName}) {
-  if (url is String) url = Uri.parse(url);
-  if (client == null) client = new http.Client();
-  if (proxyName == null) proxyName = 'shelf_proxy';
+  Uri uri;
+  if (url is String) {
+    uri = Uri.parse(url);
+  } else if (url is Uri) {
+    uri = url;
+  } else {
+    throw new ArgumentError.value(url, 'url', 'url must be a String or Uri.');
+  }
+  client ??= new http.Client();
+  proxyName ??= 'shelf_proxy';
 
-  return (serverRequest) {
+  return (serverRequest) async {
     // TODO(nweiz): Support WebSocket requests.
 
     // TODO(nweiz): Handle TRACE requests correctly. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
-    var requestUrl = url.resolve(serverRequest.url.toString());
+    var requestUrl = uri.resolve(serverRequest.url.toString());
     var clientRequest =
         new http.StreamedRequest(serverRequest.method, requestUrl);
     clientRequest.followRedirects = false;
     clientRequest.headers.addAll(serverRequest.headers);
-    clientRequest.headers['Host'] = url.authority;
+    clientRequest.headers['Host'] = uri.authority;
 
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
@@ -43,44 +52,43 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
         '${serverRequest.protocolVersion} $proxyName');
 
     store(serverRequest.read(), clientRequest.sink);
-    return client.send(clientRequest).then((clientResponse) {
-      // Add a Via header. See
-      // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-      _addHeader(clientResponse.headers, 'via', '1.1 $proxyName');
+    var clientResponse = await client.send(clientRequest);
+    // Add a Via header. See
+    // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+    _addHeader(clientResponse.headers, 'via', '1.1 $proxyName');
 
-      // Remove the transfer-encoding since the body has already been decoded by
-      // [client].
-      clientResponse.headers.remove('transfer-encoding');
+    // Remove the transfer-encoding since the body has already been decoded by
+    // [client].
+    clientResponse.headers.remove('transfer-encoding');
 
-      // If the original response was gzipped, it will be decoded by [client]
-      // and we'll have no way of knowing its actual content-length.
-      if (clientResponse.headers['content-encoding'] == 'gzip') {
-        clientResponse.headers.remove('content-encoding');
-        clientResponse.headers.remove('content-length');
+    // If the original response was gzipped, it will be decoded by [client]
+    // and we'll have no way of knowing its actual content-length.
+    if (clientResponse.headers['content-encoding'] == 'gzip') {
+      clientResponse.headers.remove('content-encoding');
+      clientResponse.headers.remove('content-length');
 
-        // Add a Warning header. See
-        // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
-        _addHeader(
-            clientResponse.headers, 'warning', '214 $proxyName "GZIP decoded"');
+      // Add a Warning header. See
+      // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
+      _addHeader(
+          clientResponse.headers, 'warning', '214 $proxyName "GZIP decoded"');
+    }
+
+    // Make sure the Location header is pointing to the proxy server rather
+    // than the destination server, if possible.
+    if (clientResponse.isRedirect &&
+        clientResponse.headers.containsKey('location')) {
+      var location =
+          requestUrl.resolve(clientResponse.headers['location']).toString();
+      if (p.url.isWithin(uri.toString(), location)) {
+        clientResponse.headers['location'] =
+            '/' + p.url.relative(location, from: uri.toString());
+      } else {
+        clientResponse.headers['location'] = location;
       }
+    }
 
-      // Make sure the Location header is pointing to the proxy server rather
-      // than the destination server, if possible.
-      if (clientResponse.isRedirect &&
-          clientResponse.headers.containsKey('location')) {
-        var location =
-            requestUrl.resolve(clientResponse.headers['location']).toString();
-        if (p.url.isWithin(url.toString(), location)) {
-          clientResponse.headers['location'] =
-              '/' + p.url.relative(location, from: url.toString());
-        } else {
-          clientResponse.headers['location'] = location;
-        }
-      }
-
-      return new Response(clientResponse.statusCode,
-          body: clientResponse.stream, headers: clientResponse.headers);
-    });
+    return new Response(clientResponse.statusCode,
+        body: clientResponse.stream, headers: clientResponse.headers);
   };
 }
 
