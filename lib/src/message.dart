@@ -106,7 +106,7 @@ abstract class Message {
   /// [headers].
   ///
   /// If [headers] doesn't have a Content-Type header or it specifies an
-  /// encoding that [dart:convert] doesn't support, this will be `null`.
+  /// encoding that `dart:convert` doesn't support, this will be `null`.
   Encoding get encoding {
     var contentType = _contentType;
     if (contentType == null) return null;

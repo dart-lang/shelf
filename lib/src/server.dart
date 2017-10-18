@@ -10,7 +10,7 @@ import 'handler.dart';
 ///
 /// [adapter]: https://github.com/dart-lang/shelf#adapters
 ///
-/// The most basic definiton of "adapter" includes any function that passes
+/// The most basic definition of "adapter" includes any function that passes
 /// incoming requests to a [Handler] and passes its responses to some external
 /// client. However, in practice, most adapters are also *servers*—that is,
 /// they're serving requests that are made to a certain well-known URL.
@@ -30,7 +30,7 @@ abstract class Server {
   ///
   /// Requests to this URL or any URL beneath it are handled by the handler
   /// passed to [mount]. If [mount] hasn't yet been called, the requests wait
-  /// until it is. If [close] has been called, [handler] will not be invoked;
+  /// until it is. If [close] has been called, the handler will not be invoked;
   /// otherwise, the behavior is implementation-dependent.
   Uri get url;
 
