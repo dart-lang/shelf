@@ -30,7 +30,7 @@ abstract class Server {
   ///
   /// Requests to this URL or any URL beneath it are handled by the handler
   /// passed to [mount]. If [mount] hasn't yet been called, the requests wait
-  /// until it is. If [close] has been called, [handler] will not be invoked;
+  /// until it is. If [close] has been called, `handler` will not be invoked;
   /// otherwise, the behavior is implementation-dependent.
   Uri get url;
 
