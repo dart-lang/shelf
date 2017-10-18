@@ -1,3 +1,7 @@
+## 0.2.6
+
+* Add a `createFileHandler()` function that serves a single static file.
+
 ## 0.2.5
 
 * Add an optional `contentTypeResolver` argument to `createStaticHandler`.
