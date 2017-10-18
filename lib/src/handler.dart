@@ -12,7 +12,7 @@ import 'response.dart';
 /// filesystem and return it as the body of the [Response].
 ///
 /// A [Handler] which wraps one or more other handlers to perform pre or post
-/// processing is knowns as a "middleware".
+/// processing is known as a "middleware".
 ///
 /// A [Handler] may receive a request directly from an HTTP server or it
 /// may have been touched by other middleware. Similarly the response may be

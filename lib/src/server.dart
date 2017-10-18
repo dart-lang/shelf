@@ -10,7 +10,7 @@ import 'handler.dart';
 ///
 /// [adapter]: https://github.com/dart-lang/shelf#adapters
 ///
-/// The most basic definiton of "adapter" includes any function that passes
+/// The most basic definition of "adapter" includes any function that passes
 /// incoming requests to a [Handler] and passes its responses to some external
 /// client. However, in practice, most adapters are also *servers*—that is,
 /// they're serving requests that are made to a certain well-known URL.
