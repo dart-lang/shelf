@@ -133,7 +133,8 @@ Request _fromHttpRequest(HttpRequest request) {
       protocolVersion: request.protocolVersion,
       headers: headers,
       body: request,
-      onHijack: onHijack);
+      onHijack: onHijack,
+      context: { 'HttpRequest': request });
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {

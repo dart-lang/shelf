@@ -455,6 +455,21 @@ void main() {
     expect(stream.hasNext, completion(isFalse));
   });
 
+  test('includes the dart:io HttpRequest in the request context', () async {
+    await _scheduleServer((request) {
+      expect(request.context.containsKey('HttpRequest'), isTrue);
+      expect(request.context['HttpRequest'], new isInstanceOf<HttpRequest>());
+
+      HttpRequest httpRequest = request.context['HttpRequest'] as HttpRequest;
+      expect(httpRequest.requestedUri, equals(request.requestedUri));
+
+      return syncHandler(request);
+    });
+
+    var response = await _get();
+    expect(response.statusCode, HttpStatus.OK);
+  });
+
   group('ssl tests', () {
     var securityContext = new SecurityContext()
       ..setTrustedCertificatesBytes(certChainBytes)
