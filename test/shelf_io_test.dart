@@ -457,10 +457,10 @@ void main() {
 
   test('includes the dart:io HttpRequest in the request context', () async {
     await _scheduleServer((request) {
-      expect(request.context.containsKey('HttpRequest'), isTrue);
-      expect(request.context['HttpRequest'], new isInstanceOf<HttpRequest>());
+      expect(request.context.containsKey('io.httprequest'), isTrue);
+      expect(request.context['io.httprequest'], new isInstanceOf<HttpRequest>());
 
-      HttpRequest httpRequest = request.context['HttpRequest'] as HttpRequest;
+      HttpRequest httpRequest = request.context['io.httprequest'] as HttpRequest;
       expect(httpRequest.requestedUri, equals(request.requestedUri));
 
       return syncHandler(request);
