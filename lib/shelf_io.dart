@@ -134,7 +134,7 @@ Request _fromHttpRequest(HttpRequest request) {
       headers: headers,
       body: request,
       onHijack: onHijack,
-      context: { 'io.httprequest': request });
+      context: {'io.httprequest': request});
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
