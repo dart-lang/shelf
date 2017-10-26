@@ -455,6 +455,25 @@ void main() {
     expect(stream.hasNext, completion(isFalse));
   });
 
+  test('includes the dart:io HttpConnectionInfo in request context', () async {
+    await _scheduleServer((request) {
+      expect(
+          request.context,
+          containsPair('shelf.io.connection_info',
+              new isInstanceOf<HttpConnectionInfo>()));
+
+      var connectionInfo =
+          request.context['shelf.io.connection_info'] as HttpConnectionInfo;
+      expect(connectionInfo.remoteAddress, equals(_server.address));
+      expect(connectionInfo.localPort, equals(_server.port));
+
+      return syncHandler(request);
+    });
+
+    var response = await _get();
+    expect(response.statusCode, HttpStatus.OK);
+  });
+
   group('ssl tests', () {
     var securityContext = new SecurityContext()
       ..setTrustedCertificatesBytes(certChainBytes)
