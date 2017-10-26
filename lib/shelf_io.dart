@@ -14,6 +14,10 @@
 /// wire as they're received. See [`HttpResponse.bufferOutput`][bufferOutput]
 /// for more information.
 ///
+/// `Request`s passed to a `Handler` will contain the
+/// `"shelf.io.connection_info"` `Request.context` property, which holds the
+/// `HttpConnectionInfo` object from the underlying `HttpRequest`.
+///
 /// [bufferOutput]: https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart:io.HttpResponse#id_bufferOutput
 import 'dart:async';
 import 'dart:io';
