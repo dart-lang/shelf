@@ -459,10 +459,10 @@ void main() {
     await _scheduleServer((request) {
       expect(
           request.context,
-          containsPair('io.httprequest.connectionInfo',
+          containsPair('shelf.io.connection_info',
               new isInstanceOf<HttpConnectionInfo>()));
 
-      var connectionInfo = request.context['io.httprequest.connectionInfo']
+      var connectionInfo = request.context['shelf.io.connection_info']
           as HttpConnectionInfo;
       expect(connectionInfo.remoteAddress, equals(_server.address));
       expect(connectionInfo.localPort, equals(_server.port));

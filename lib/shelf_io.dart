@@ -134,7 +134,7 @@ Request _fromHttpRequest(HttpRequest request) {
       headers: headers,
       body: request,
       onHijack: onHijack,
-      context: {'io.httprequest.connectionInfo': request.connectionInfo});
+      context: {'shelf.io.connection_info': request.connectionInfo});
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
