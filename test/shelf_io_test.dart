@@ -455,15 +455,17 @@ void main() {
     expect(stream.hasNext, completion(isFalse));
   });
 
-  test('includes the dart:io HttpRequest in the request context', () async {
+  test('includes the dart:io HttpConnectionInfo in request context', () async {
     await _scheduleServer((request) {
-      expect(request.context.containsKey('io.httprequest'), isTrue);
       expect(
-          request.context['io.httprequest'], new isInstanceOf<HttpRequest>());
+          request.context,
+          containsPair('io.httprequest.connectionInfo',
+              new isInstanceOf<HttpConnectionInfo>()));
 
-      HttpRequest httpRequest =
-          request.context['io.httprequest'] as HttpRequest;
-      expect(httpRequest.requestedUri, equals(request.requestedUri));
+      var connectionInfo = request.context['io.httprequest.connectionInfo']
+          as HttpConnectionInfo;
+      expect(connectionInfo.remoteAddress, equals(_server.address));
+      expect(connectionInfo.localPort, equals(_server.port));
 
       return syncHandler(request);
     });
