@@ -462,8 +462,8 @@ void main() {
           containsPair('shelf.io.connection_info',
               new isInstanceOf<HttpConnectionInfo>()));
 
-      var connectionInfo = request.context['shelf.io.connection_info']
-          as HttpConnectionInfo;
+      var connectionInfo =
+          request.context['shelf.io.connection_info'] as HttpConnectionInfo;
       expect(connectionInfo.remoteAddress, equals(_server.address));
       expect(connectionInfo.localPort, equals(_server.port));
 
