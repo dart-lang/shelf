@@ -1,3 +1,7 @@
+## 0.2.6-dev
+
+* Remove unused imports. 
+
 ## 0.2.6
 
 * Add a `createFileHandler()` function that serves a single static file.
