@@ -5,33 +5,20 @@
 import 'dart:io';
 //import 'package:http_parser/http_parser.dart';
 //import 'package:path/path.dart' as p;
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test/test.dart';
 
 import 'package:shelf_static/shelf_static.dart';
 import 'test_util.dart';
 
 void main() {
-  setUp(() {
-    var tempDir;
-    schedule(() {
-      return Directory.systemTemp.createTemp('shelf_static-test-').then((dir) {
-        tempDir = dir;
-        d.defaultRoot = tempDir.path;
-      });
-    });
-
-    d.file('index.html', '<html></html>').create();
-    d.file('root.txt', 'root txt').create();
-    d.dir('files', [
+  setUp(() async {
+    await d.file('index.html', '<html></html>').create();
+    await d.file('root.txt', 'root txt').create();
+    await d.dir('files', [
       d.file('index.html', '<html><body>files</body></html>'),
       d.file('with space.txt', 'with space content')
     ]).create();
-
-    currentSchedule.onComplete.schedule(() {
-      d.defaultRoot = null;
-      return tempDir.delete(recursive: true);
-    });
   });
 
   group('default document value', () {
@@ -45,111 +32,87 @@ void main() {
       ];
 
       for (var val in invalidValues) {
-        expect(() => createStaticHandler(d.defaultRoot, defaultDocument: val),
+        expect(() => createStaticHandler(d.sandbox, defaultDocument: val),
             throwsArgumentError);
       }
     });
   });
 
   group('no default document specified', () {
-    test('access "/index.html"', () {
-      schedule(() {
-        var handler = createStaticHandler(d.defaultRoot);
+    test('access "/index.html"', () async {
+      var handler = createStaticHandler(d.sandbox);
 
-        return makeRequest(handler, '/index.html').then((response) {
-          expect(response.statusCode, HttpStatus.OK);
-          expect(response.contentLength, 13);
-          expect(response.readAsString(), completion('<html></html>'));
-        });
-      });
+      var response = await makeRequest(handler, '/index.html');
+      expect(response.statusCode, HttpStatus.OK);
+      expect(response.contentLength, 13);
+      expect(response.readAsString(), completion('<html></html>'));
     });
 
-    test('access "/"', () {
-      schedule(() {
-        var handler = createStaticHandler(d.defaultRoot);
+    test('access "/"', () async {
+      var handler = createStaticHandler(d.sandbox);
 
-        return makeRequest(handler, '/').then((response) {
-          expect(response.statusCode, HttpStatus.NOT_FOUND);
-        });
-      });
+      var response = await makeRequest(handler, '/');
+      expect(response.statusCode, HttpStatus.NOT_FOUND);
     });
 
-    test('access "/files"', () {
-      schedule(() {
-        var handler = createStaticHandler(d.defaultRoot);
+    test('access "/files"', () async {
+      var handler = createStaticHandler(d.sandbox);
 
-        return makeRequest(handler, '/files').then((response) {
-          expect(response.statusCode, HttpStatus.NOT_FOUND);
-        });
-      });
+      var response = await makeRequest(handler, '/files');
+      expect(response.statusCode, HttpStatus.NOT_FOUND);
     });
 
-    test('access "/files/" dir', () {
-      schedule(() {
-        var handler = createStaticHandler(d.defaultRoot);
+    test('access "/files/" dir', () async {
+      var handler = createStaticHandler(d.sandbox);
 
-        return makeRequest(handler, '/files/').then((response) {
-          expect(response.statusCode, HttpStatus.NOT_FOUND);
-        });
-      });
+      var response = await makeRequest(handler, '/files/');
+      expect(response.statusCode, HttpStatus.NOT_FOUND);
     });
   });
 
   group('default document specified', () {
-    test('access "/index.html"', () {
-      schedule(() {
-        var handler =
-            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
+    test('access "/index.html"', () async {
+      var handler =
+          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-        return makeRequest(handler, '/index.html').then((response) {
-          expect(response.statusCode, HttpStatus.OK);
-          expect(response.contentLength, 13);
-          expect(response.readAsString(), completion('<html></html>'));
-          expect(response.mimeType, 'text/html');
-        });
-      });
+      var response = await makeRequest(handler, '/index.html');
+      expect(response.statusCode, HttpStatus.OK);
+      expect(response.contentLength, 13);
+      expect(response.readAsString(), completion('<html></html>'));
+      expect(response.mimeType, 'text/html');
     });
 
-    test('access "/"', () {
-      schedule(() {
-        var handler =
-            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
+    test('access "/"', () async {
+      var handler =
+          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-        return makeRequest(handler, '/').then((response) {
-          expect(response.statusCode, HttpStatus.OK);
-          expect(response.contentLength, 13);
-          expect(response.readAsString(), completion('<html></html>'));
-          expect(response.mimeType, 'text/html');
-        });
-      });
+      var response = await makeRequest(handler, '/');
+      expect(response.statusCode, HttpStatus.OK);
+      expect(response.contentLength, 13);
+      expect(response.readAsString(), completion('<html></html>'));
+      expect(response.mimeType, 'text/html');
     });
 
-    test('access "/files"', () {
-      schedule(() {
-        var handler =
-            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
+    test('access "/files"', () async {
+      var handler =
+          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-        return makeRequest(handler, '/files').then((response) {
-          expect(response.statusCode, HttpStatus.MOVED_PERMANENTLY);
-          expect(response.headers,
-              containsPair(HttpHeaders.LOCATION, 'http://localhost/files/'));
-        });
-      });
+      var response = await makeRequest(handler, '/files');
+      expect(response.statusCode, HttpStatus.MOVED_PERMANENTLY);
+      expect(response.headers,
+          containsPair(HttpHeaders.LOCATION, 'http://localhost/files/'));
     });
 
-    test('access "/files/" dir', () {
-      schedule(() {
-        var handler =
-            createStaticHandler(d.defaultRoot, defaultDocument: 'index.html');
+    test('access "/files/" dir', () async {
+      var handler =
+          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-        return makeRequest(handler, '/files/').then((response) {
-          expect(response.statusCode, HttpStatus.OK);
-          expect(response.contentLength, 31);
-          expect(response.readAsString(),
-              completion('<html><body>files</body></html>'));
-          expect(response.mimeType, 'text/html');
-        });
-      });
+      var response = await makeRequest(handler, '/files/');
+      expect(response.statusCode, HttpStatus.OK);
+      expect(response.contentLength, 31);
+      expect(response.readAsString(),
+          completion('<html><body>files</body></html>'));
+      expect(response.mimeType, 'text/html');
     });
   });
 }

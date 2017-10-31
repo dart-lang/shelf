@@ -1,14 +1,22 @@
 language: dart
-sudo: false
+
 dart:
   - dev
   - stable
-  - 1.23.0
-  - 1.22.1
-cache:
-  directories:
-    - $HOME/.pub-cache
+
 dart_task:
-  - test: --platform vm
-  - dartfmt
+  - test
   - dartanalyzer
+
+matrix:
+  include:
+    - dart: dev
+      dart_task: dartfmt
+
+# Only building master means that we don't run two builds for each pull request.
+branches:
+  only: [master]
+
+cache:
+ directories:
+   - $HOME/.pub-cache

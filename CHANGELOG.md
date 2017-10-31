@@ -1,6 +1,6 @@
-## 0.2.6-dev
+## 0.2.7
 
-* Remove unused imports. 
+* Require at least Dart SDK 1.24.0.
 
 ## 0.2.6
 
