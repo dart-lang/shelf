@@ -9,6 +9,11 @@ import 'package:test/test.dart';
 
 import 'test_util.dart';
 
+// TODO(kevmoo): remove this helper https://github.com/dart-lang/test/issues/740
+T _fail<T>(String message) {
+  fail(message);
+}
+
 void main() {
   test('forwards the request and response if both handlers are null', () {
     var handler = const Pipeline()
@@ -71,7 +76,7 @@ void main() {
       test('with sync result, responseHandler is not called', () {
         var middleware = createMiddleware(
             requestHandler: (request) => _middlewareResponse,
-            responseHandler: (response) => fail('should not be called'));
+            responseHandler: (response) => _fail('should not be called'));
 
         var handler =
             const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
@@ -84,7 +89,7 @@ void main() {
       test('with async result, responseHandler is not called', () {
         var middleware = createMiddleware(
             requestHandler: (request) => new Future.value(_middlewareResponse),
-            responseHandler: (response) => fail('should not be called'));
+            responseHandler: (response) => _fail('should not be called'));
         var handler =
             const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
 
@@ -151,7 +156,7 @@ void main() {
           responseHandler: (response) {
             throw 'middleware error';
           },
-          errorHandler: (e, s) => fail('should never get here'));
+          errorHandler: (e, s) => _fail('should never get here'));
 
       var handler =
           const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
@@ -164,7 +169,7 @@ void main() {
           requestHandler: (request) {
             throw 'middleware error';
           },
-          errorHandler: (e, s) => fail('should never get here'));
+          errorHandler: (e, s) => _fail('should never get here'));
 
       var handler =
           const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
@@ -230,10 +235,7 @@ void main() {
   });
 }
 
-Response _failHandler(Request request) {
-  fail('should never get here');
-  return null;
-}
+Response _failHandler(Request request) => _fail('should never get here');
 
 final Response _middlewareResponse =
     new Response.ok('middleware content', headers: {'from': 'middleware'});

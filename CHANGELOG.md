@@ -1,3 +1,14 @@
+## 0.8.0
+
+* Update `createMiddleware` arguments to use `FutureOr`.
+
+  * Note: this change is not breaking for the runtime behavior, but it might
+    cause new errors during static analysis due the the type changes. When
+    updating packages that depend on `shelf`, it is safe to include `0.7.1` in
+    your version range.
+
+      `shelf: '>=0.7.1 <0.9.0'`
+
 ## 0.7.1
 
 * The `shelf_io` server now adds a `shelf.io.connection_info` field to
