@@ -1,13 +1,11 @@
-## 0.8.0
+## 0.7.2
 
 * Update `createMiddleware` arguments to use `FutureOr`.
 
   * Note: this change is not breaking for the runtime behavior, but it might
-    cause new errors during static analysis due the the type changes. When
-    updating packages that depend on `shelf`, it is safe to include `0.7.1` in
-    your version range.
+    cause new errors during static analysis due the the type changes.
 
-      `shelf: '>=0.7.1 <0.9.0'`
+* Updated minimum Dart SDK to `1.24.0`, which added `FutureOr`.
 
 ## 0.7.1
 
