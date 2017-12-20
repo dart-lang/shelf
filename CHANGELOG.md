@@ -7,6 +7,8 @@
 
 * Updated minimum Dart SDK to `1.24.0`, which added `FutureOr`.
 
+* Improved formatting of the `logRequests` default logger.
+
 ## 0.7.1
 
 * The `shelf_io` server now adds a `shelf.io.connection_info` field to

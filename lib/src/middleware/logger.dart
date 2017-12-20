@@ -53,7 +53,9 @@ String _formatQuery(String query) {
 
 String _getMessage(DateTime requestTime, int statusCode, Uri requestedUri,
     String method, Duration elapsedTime) {
-  return '$requestTime\t$elapsedTime\t$method\t[$statusCode]\t'
+  return '${requestTime.toIso8601String()} '
+      '${elapsedTime.toString().padLeft(15)} '
+      '${method.padRight(7)} [$statusCode] ' // 7 - longest standard HTTP method
       '${requestedUri.path}${_formatQuery(requestedUri.query)}';
 }
 
