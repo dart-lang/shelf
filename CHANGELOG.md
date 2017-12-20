@@ -1,3 +1,12 @@
+## 0.7.2
+
+* Update `createMiddleware` arguments to use `FutureOr`.
+
+  * Note: this change is not breaking for the runtime behavior, but it might
+    cause new errors during static analysis due the the type changes.
+
+* Updated minimum Dart SDK to `1.24.0`, which added `FutureOr`.
+
 ## 0.7.1
 
 * The `shelf_io` server now adds a `shelf.io.connection_info` field to
