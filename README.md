@@ -16,7 +16,7 @@ the response is the return value.
 
 ## Example
 
-See `example/example_server.dart`
+See `example/example.dart`
 
 ```dart
 import 'package:shelf/shelf.dart' as shelf;
