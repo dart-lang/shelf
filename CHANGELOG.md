@@ -1,6 +1,7 @@
 ## 0.2.7
 
 * Require at least Dart SDK 1.24.0.
+* Other internal changes e.g. removing dep on `scheduled_test`.
 
 ## 0.2.6
 
