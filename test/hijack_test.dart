@@ -19,13 +19,13 @@ void main() {
   test(
       'hijacking a hijackable request throws a HijackException and calls '
       'onHijack', () {
-    var request = new Request('GET', localhostUri,
-        onHijack: expectAsync1((void callback(channel)) {
+    var request =
+        new Request('GET', localhostUri, onHijack: expectAsync1((callback) {
       var streamController = new StreamController<List<int>>();
       streamController.add([1, 2, 3]);
       streamController.close();
 
-      var sinkController = new StreamController();
+      var sinkController = new StreamController<List<int>>();
       expect(sinkController.stream.first, completion(equals([4, 5, 6])));
 
       callback(new StreamChannel(streamController.stream, sinkController));
@@ -61,13 +61,13 @@ void main() {
     test(
         'hijacking a hijackable request throws a HijackException and calls '
         'onHijack', () {
-      var request = new Request('GET', localhostUri,
-          onHijack: expectAsync1((callback(channel)) {
+      var request =
+          new Request('GET', localhostUri, onHijack: expectAsync1((callback) {
         var streamController = new StreamController<List<int>>();
         streamController.add([1, 2, 3]);
         streamController.close();
 
-        var sinkController = new StreamController();
+        var sinkController = new StreamController<List<int>>();
         expect(sinkController.stream.first, completion(equals([4, 5, 6])));
 
         callback(new StreamChannel(streamController.stream, sinkController));
