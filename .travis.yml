@@ -1,5 +1,5 @@
 language: dart
-sudo: false
+
 dart:
   - dev
   - stable
@@ -9,20 +9,13 @@ dart_task:
   # No parallelism on Firefox (-j 1)
   # Causes flakiness – need to investigate
   - test: --platform firefox -j 1
-  - test: --platform dartium
-    install_dartium: true
+  - dartanalyzer
 
 matrix:
   include:
     # Only validate formatting using the dev release
-    # Formatted with 1.23.0-dev.10.0 which has (good) changes since 1.22.1
     - dart: dev
       dart_task: dartfmt
-    # Only care about being analyzer clean for dev and stable
-    - dart: dev
-      dart_task: dartanalyzer
-    - dart: stable
-      dart_task: dartanalyzer
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
