@@ -1,16 +1,10 @@
 language: dart
 
-# Speed up builds by using containerization. Disable this if you need to use
-# sudo in your scripts.
-sudo: false
-
 dart:
  - dev
  - stable
 
 dart_task:
- - test: --platform dartium
-   install_dartium: true
  - test: --platform vm
  - test: --platform firefox
  - dartfmt
