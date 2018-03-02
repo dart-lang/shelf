@@ -10,11 +10,11 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:test/test.dart';
 
 Map<String, String> get _handshakeHeaders => {
-  "Upgrade": "websocket",
-  "Connection": "Upgrade",
-  "Sec-WebSocket-Key": "x3JJHMbDL1EzLkh9GBhXDw==",
-  "Sec-WebSocket-Version": "13"
-};
+      "Upgrade": "websocket",
+      "Connection": "Upgrade",
+      "Sec-WebSocket-Key": "x3JJHMbDL1EzLkh9GBhXDw==",
+      "Sec-WebSocket-Version": "13"
+    };
 
 void main() {
   test("can communicate with a dart:io WebSocket client", () async {
@@ -49,14 +49,16 @@ void main() {
   });
 
   test("negotiates the sub-protocol", () async {
-    var server = await shelf_io.serve(webSocketHandler((webSocket, protocol) {
-      expect(protocol, equals("two"));
-      webSocket.sink.close();
-    }, protocols: ["three", "two", "x"]), "localhost", 0);
+    var server = await shelf_io.serve(
+        webSocketHandler((webSocket, protocol) {
+          expect(protocol, equals("two"));
+          webSocket.sink.close();
+        }, protocols: ["three", "two", "x"]),
+        "localhost",
+        0);
 
     try {
-      var webSocket = await WebSocket.connect(
-          'ws://localhost:${server.port}',
+      var webSocket = await WebSocket.connect('ws://localhost:${server.port}',
           protocols: ["one", "two", "three"]);
       expect(webSocket.protocol, equals("two"));
       return webSocket.close();
@@ -69,9 +71,12 @@ void main() {
     var server;
     var url;
     setUp(() async {
-      server = await shelf_io.serve(webSocketHandler((webSocket) {
-        webSocket.sink.close();
-      }, allowedOrigins: ["pub.dartlang.org", "GoOgLe.CoM"]), "localhost", 0);
+      server = await shelf_io.serve(
+          webSocketHandler((webSocket) {
+            webSocket.sink.close();
+          }, allowedOrigins: ["pub.dartlang.org", "GoOgLe.CoM"]),
+          "localhost",
+          0);
       url = 'http://localhost:${server.port}/';
     });
 
@@ -173,7 +178,7 @@ void main() {
 }
 
 Matcher hasStatus(int status) => completion(predicate((response) {
-  expect(response, new isInstanceOf<http.Response>());
-  expect(response.statusCode, equals(status));
-  return true;
-}));
+      expect(response, new isInstanceOf<http.Response>());
+      expect(response.statusCode, equals(status));
+      return true;
+    }));

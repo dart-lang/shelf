@@ -38,12 +38,12 @@ typedef _BinaryFunction(arg1, arg2);
 /// See also the WebSocket spec's discussion of [origin considerations][].
 ///
 /// [origin considerations]: https://tools.ietf.org/html/rfc6455#section-10.2
-Handler webSocketHandler(Function onConnection, {Iterable<String> protocols,
-      Iterable<String> allowedOrigins}) {
+Handler webSocketHandler(Function onConnection,
+    {Iterable<String> protocols, Iterable<String> allowedOrigins}) {
   if (protocols != null) protocols = protocols.toSet();
   if (allowedOrigins != null) {
-    allowedOrigins = allowedOrigins
-        .map((origin) => origin.toLowerCase()).toSet();
+    allowedOrigins =
+        allowedOrigins.map((origin) => origin.toLowerCase()).toSet();
   }
 
   if (onConnection is! _BinaryFunction) {

@@ -26,8 +26,8 @@ class WebSocketHandler {
 
     var connection = request.headers['Connection'];
     if (connection == null) return _notFound();
-    var tokens = connection.toLowerCase().split(',')
-        .map((token) => token.trim());
+    var tokens =
+        connection.toLowerCase().split(',').map((token) => token.trim());
     if (!tokens.contains('upgrade')) return _notFound();
 
     var upgrade = request.headers['Upgrade'];
@@ -58,7 +58,8 @@ class WebSocketHandler {
     // unexpected origins, we ensure that malicious JavaScript is unable to fake
     // a WebSocket handshake.
     var origin = request.headers['Origin'];
-    if (origin != null && _allowedOrigins != null &&
+    if (origin != null &&
+        _allowedOrigins != null &&
         !_allowedOrigins.contains(origin.toLowerCase())) {
       return _forbidden('invalid origin "$origin".');
     }
@@ -66,8 +67,7 @@ class WebSocketHandler {
     var protocol = _chooseProtocol(request);
     request.hijack((channel) {
       var sink = UTF8.encoder.startChunkedConversion(channel.sink);
-      sink.add(
-          "HTTP/1.1 101 Switching Protocols\r\n"
+      sink.add("HTTP/1.1 101 Switching Protocols\r\n"
           "Upgrade: websocket\r\n"
           "Connection: Upgrade\r\n"
           "Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n");
@@ -97,20 +97,20 @@ class WebSocketHandler {
   }
 
   /// Returns a 404 Not Found response.
-  Response _notFound() => _htmlResponse(404, "404 Not Found",
-      "Only WebSocket connections are supported.");
+  Response _notFound() => _htmlResponse(
+      404, "404 Not Found", "Only WebSocket connections are supported.");
 
   /// Returns a 400 Bad Request response.
   ///
   /// [message] will be HTML-escaped before being included in the response body.
-  Response _badRequest(String message) => _htmlResponse(400, "400 Bad Request",
-      "Invalid WebSocket upgrade request: $message");
+  Response _badRequest(String message) => _htmlResponse(
+      400, "400 Bad Request", "Invalid WebSocket upgrade request: $message");
 
   /// Returns a 403 Forbidden response.
   ///
   /// [message] will be HTML-escaped before being included in the response body.
-  Response _forbidden(String message) => _htmlResponse(403, "403 Forbidden",
-      "WebSocket upgrade refused: $message");
+  Response _forbidden(String message) => _htmlResponse(
+      403, "403 Forbidden", "WebSocket upgrade refused: $message");
 
   /// Creates an HTTP response with the given [statusCode] and an HTML body with
   /// [title] and [message].
