@@ -29,7 +29,7 @@ void main() {
       () async {
     var serverHandler = new ServerHandler(localhostUri);
     var future = makeSimpleRequest(serverHandler.handler);
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
 
     serverHandler.server.mount(syncHandler);
     var response = await future;
@@ -58,11 +58,11 @@ void main() {
       closeDone = true;
     });
     expect(onCloseCalled, isTrue);
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
 
     expect(closeDone, isFalse);
     completer.complete();
-    await new Future.delayed(Duration.ZERO);
+    await new Future.delayed(Duration.zero);
 
     expect(closeDone, isTrue);
   });

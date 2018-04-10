@@ -435,7 +435,7 @@ void main() {
     await _scheduleServer((request) {
       controller.add("Hello, ");
 
-      return new Response.ok(UTF8.encoder.bind(controller.stream),
+      return new Response.ok(utf8.encoder.bind(controller.stream),
           context: {"shelf.io.buffer_output": false});
     });
 
@@ -443,7 +443,7 @@ void main() {
         new http.Request("GET", Uri.parse('http://localhost:$_serverPort/'));
 
     var response = await request.send();
-    var stream = new StreamQueue(UTF8.decoder.bind(response.stream));
+    var stream = new StreamQueue(utf8.decoder.bind(response.stream));
 
     var data = await stream.next;
     expect(data, equals("Hello, "));
@@ -492,7 +492,7 @@ void main() {
 
       var response = await req.close();
       expect(response.statusCode, HttpStatus.OK);
-      expect(await response.transform(UTF8.decoder).single, 'Hello from /');
+      expect(await response.transform(utf8.decoder).single, 'Hello from /');
     });
 
     test('secure async handler returns a value to the client', () async {
@@ -501,7 +501,7 @@ void main() {
       var req = await _scheduleSecureGet();
       var response = await req.close();
       expect(response.statusCode, HttpStatus.OK);
-      expect(await response.transform(UTF8.decoder).single, 'Hello from /');
+      expect(await response.transform(utf8.decoder).single, 'Hello from /');
     });
   });
 }
