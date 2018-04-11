@@ -186,7 +186,7 @@ void main() {
   test('post with request content', () async {
     await _scheduleServer((request) async {
       expect(request.mimeType, 'text/plain');
-      expect(request.encoding, UTF8);
+      expect(request.encoding, utf8);
       expect(request.method, 'POST');
       expect(request.contentLength, 9);
 
@@ -280,7 +280,7 @@ void main() {
     }
 
     expect(
-        await UTF8.decodeStream(socket), contains('500 Internal Server Error'));
+        await utf8.decodeStream(socket), contains('500 Internal Server Error'));
   });
 
   group('date header', () {

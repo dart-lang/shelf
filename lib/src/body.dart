@@ -47,7 +47,7 @@ class Body {
         var encoded = utf8.encode(body);
         // If the text is plain ASCII, don't modify the encoding. This means
         // that an encoding of "text/plain" will stay put.
-        if (!_isPlainAscii(encoded, body.length)) encoding = UTF8;
+        if (!_isPlainAscii(encoded, body.length)) encoding = utf8;
         contentLength = encoded.length;
         stream = new Stream.fromIterable([encoded]);
       } else {
