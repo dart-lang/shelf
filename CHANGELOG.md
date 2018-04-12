@@ -1,3 +1,7 @@
+## 0.7.2+1
+
+- Updated SDK version to 2.0.0-dev.17.0
+
 ## 0.7.2
 
 * Update `createMiddleware` arguments to use `FutureOr`.
