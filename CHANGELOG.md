@@ -1,3 +1,7 @@
+## 0.7.3
+
+* Fix some Dart 2 runtime errors.
+
 ## 0.7.2
 
 * Update `createMiddleware` arguments to use `FutureOr`.
