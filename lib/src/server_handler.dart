@@ -8,6 +8,7 @@ import 'package:async/async.dart';
 
 import 'handler.dart';
 import 'request.dart';
+import 'response.dart';
 import 'server.dart';
 
 /// A connected pair of a [Server] and a [Handler].
@@ -41,7 +42,7 @@ class ServerHandler {
       : _server = new _HandlerServer(url, onClose);
 
   /// Pipes requests to [server]'s handler.
-  _onRequest(Request request) {
+  FutureOr<Response> _onRequest(Request request) {
     if (_server._closeMemo.hasRun) {
       throw new StateError("Request received after the server was closed.");
     }
