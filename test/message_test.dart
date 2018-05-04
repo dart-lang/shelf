@@ -116,7 +116,7 @@ void main() {
           body: new Stream.fromIterable([
             [195, 168]
           ]));
-      expect(request.readAsString(LATIN1), completion(equals("Ã¨")));
+      expect(request.readAsString(latin1), completion(equals("Ã¨")));
     });
   });
 
@@ -186,7 +186,7 @@ void main() {
       var request = _createMessage(body: 'fööbär');
       expect(request.contentLength, 9);
 
-      request = _createMessage(body: 'fööbär', encoding: LATIN1);
+      request = _createMessage(body: 'fööbär', encoding: latin1);
       expect(request.contentLength, 6);
     });
 
@@ -267,7 +267,7 @@ void main() {
           _createMessage(
                   headers: {'content-type': 'text/plain; charset=iso-8859-1'})
               .encoding,
-          equals(LATIN1));
+          equals(latin1));
     });
 
     test("comes from the content-type charset parameter with a different case",
@@ -276,7 +276,7 @@ void main() {
           _createMessage(
                   headers: {'Content-Type': 'text/plain; charset=iso-8859-1'})
               .encoding,
-          equals(LATIN1));
+          equals(latin1));
     });
 
     test("defaults to encoding a String as UTF-8", () {
@@ -289,7 +289,7 @@ void main() {
 
     test("uses the explicit encoding if available", () {
       expect(
-          _createMessage(body: "è", encoding: LATIN1).read().toList(),
+          _createMessage(body: "è", encoding: latin1).read().toList(),
           completion(equals([
             [232]
           ])));
@@ -297,7 +297,7 @@ void main() {
 
     test("adds an explicit encoding to the content-type", () {
       var request = _createMessage(
-          body: "è", encoding: LATIN1, headers: {'content-type': 'text/plain'});
+          body: "è", encoding: latin1, headers: {'content-type': 'text/plain'});
       expect(request.headers,
           containsPair('content-type', 'text/plain; charset=iso-8859-1'));
     });
@@ -305,7 +305,7 @@ void main() {
     test("adds an explicit encoding to the content-type with a different case",
         () {
       var request = _createMessage(
-          body: "è", encoding: LATIN1, headers: {'Content-Type': 'text/plain'});
+          body: "è", encoding: latin1, headers: {'Content-Type': 'text/plain'});
       expect(request.headers,
           containsPair('Content-Type', 'text/plain; charset=iso-8859-1'));
     });
@@ -313,7 +313,7 @@ void main() {
     test(
         "sets an absent content-type to application/octet-stream in order to "
         "set the charset", () {
-      var request = _createMessage(body: "è", encoding: LATIN1);
+      var request = _createMessage(body: "è", encoding: latin1);
       expect(
           request.headers,
           containsPair(
@@ -323,7 +323,7 @@ void main() {
     test("overwrites an existing charset if given an explicit encoding", () {
       var request = _createMessage(
           body: "è",
-          encoding: LATIN1,
+          encoding: latin1,
           headers: {'content-type': 'text/plain; charset=whatever'});
       expect(request.headers,
           containsPair('content-type', 'text/plain; charset=iso-8859-1'));

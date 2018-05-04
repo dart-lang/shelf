@@ -140,7 +140,7 @@ abstract class Message {
   /// This calls [read] internally, which can only be called once.
   Future<String> readAsString([Encoding encoding]) {
     if (encoding == null) encoding = this.encoding;
-    if (encoding == null) encoding = UTF8;
+    if (encoding == null) encoding = utf8;
     return encoding.decodeStream(read());
   }
 

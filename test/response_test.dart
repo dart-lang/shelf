@@ -91,7 +91,7 @@ void main() {
 
       var request = new Response(345,
           body: 'hèllo, world',
-          encoding: LATIN1,
+          encoding: latin1,
           headers: {'header1': 'header value 1'},
           context: {'context1': 'context value 1'});
 
