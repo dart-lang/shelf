@@ -1,3 +1,7 @@
+## 0.2.7+1
+
+* Updated SDK version to 2.0.0-dev.17.0
+
 ## 0.2.7
 
 * Require at least Dart SDK 1.24.0.

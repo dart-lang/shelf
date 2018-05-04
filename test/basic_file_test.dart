@@ -34,8 +34,8 @@ void main() {
     await d.dir('files', [
       d.file('test.txt', 'test txt content'),
       d.file('with space.txt', 'with space content'),
-      d.file('header_bytes_test_image', BASE64.decode(pngBytesContent)),
-      d.file('header_bytes_test_webp', BASE64.decode(webpBytesContent))
+      d.file('header_bytes_test_image', base64Decode(pngBytesContent)),
+      d.file('header_bytes_test_webp', base64Decode(webpBytesContent))
     ]).create();
   });
 
