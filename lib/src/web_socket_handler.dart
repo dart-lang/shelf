@@ -66,7 +66,7 @@ class WebSocketHandler {
 
     var protocol = _chooseProtocol(request);
     request.hijack((channel) {
-      var sink = UTF8.encoder.startChunkedConversion(channel.sink);
+      var sink = utf8.encoder.startChunkedConversion(channel.sink);
       sink.add("HTTP/1.1 101 Switching Protocols\r\n"
           "Upgrade: websocket\r\n"
           "Connection: Upgrade\r\n"
