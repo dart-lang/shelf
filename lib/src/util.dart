@@ -18,7 +18,7 @@ Future newFuture(callback()) => new Future.value().then((_) => callback());
 /// and return the result. Otherwise, it will capture any errors using
 /// [runZoned] and pass them to [onError].
 catchTopLevelErrors(callback(), void onError(error, StackTrace stackTrace)) {
-  if (Zone.current.inSameErrorZone(Zone.ROOT)) {
+  if (Zone.current.inSameErrorZone(Zone.root)) {
     return runZoned(callback, onError: onError);
   } else {
     return callback();

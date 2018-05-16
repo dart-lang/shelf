@@ -25,7 +25,7 @@ class IOServer implements Server {
 
     // IPv6 addresses in URLs need to be enclosed in square brackets to avoid
     // URL ambiguity with the ":" in the address.
-    if (server.address.type == InternetAddressType.IP_V6) {
+    if (server.address.type == InternetAddressType.IPv6) {
       return new Uri(
           scheme: "http",
           host: "[${server.address.address}]",

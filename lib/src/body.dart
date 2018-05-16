@@ -57,9 +57,9 @@ class Body {
       }
     } else if (body is List) {
       contentLength = body.length;
-      stream = new Stream.fromIterable([DelegatingList.typed(body)]);
+      stream = new Stream.fromIterable([body.cast()]);
     } else if (body is Stream) {
-      stream = DelegatingStream.typed(body);
+      stream = body.cast();
     } else {
       throw new ArgumentError('Response body "$body" must be a String or a '
           'Stream.');

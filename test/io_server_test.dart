@@ -18,9 +18,9 @@ void main() {
 
   setUp(() async {
     try {
-      server = await IOServer.bind(InternetAddress.LOOPBACK_IP_V6, 0);
+      server = await IOServer.bind(InternetAddress.loopbackIPv6, 0);
     } on SocketException catch (_) {
-      server = await IOServer.bind(InternetAddress.LOOPBACK_IP_V4, 0);
+      server = await IOServer.bind(InternetAddress.loopbackIPv4, 0);
     }
   });
 
