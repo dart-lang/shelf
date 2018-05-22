@@ -70,9 +70,9 @@ Handler createStaticHandler(String fileSystemPath,
 
     File file;
 
-    if (entityType == FileSystemEntityType.FILE) {
+    if (entityType == FileSystemEntityType.file) {
       file = new File(fsPath);
-    } else if (entityType == FileSystemEntityType.DIRECTORY) {
+    } else if (entityType == FileSystemEntityType.directory) {
       file = _tryDefaultFile(fsPath, defaultDocument);
       if (file == null && listDirectories) {
         var uri = request.requestedUri;
@@ -97,7 +97,7 @@ Handler createStaticHandler(String fileSystemPath,
     // when serving the default document for a directory, if the requested
     // path doesn't end with '/', redirect to the path with a trailing '/'
     var uri = request.requestedUri;
-    if (entityType == FileSystemEntityType.DIRECTORY &&
+    if (entityType == FileSystemEntityType.directory &&
         !uri.path.endsWith('/')) {
       return _redirectToAddTrailingSlash(uri);
     }
