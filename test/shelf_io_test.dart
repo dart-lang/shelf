@@ -249,7 +249,7 @@ void main() {
   });
 
   test("doesn't pass asynchronous exceptions to the root error zone", () async {
-    var response = await Zone.ROOT.run(() async {
+    var response = await Zone.root.run(() async {
       var server = await shelf_io.serve((request) {
         new Future(() => throw 'oh no');
         return syncHandler(request);
