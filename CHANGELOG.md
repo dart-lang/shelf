@@ -1,3 +1,7 @@
+## 0.2.2+2
+
+* Stopped using deprected `HTML_ESCAPE` constant name.
+
 ## 0.2.2+1
 
 * Updated SDK version to 2.0.0-dev.17.0

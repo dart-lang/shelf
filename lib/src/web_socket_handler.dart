@@ -117,8 +117,8 @@ class WebSocketHandler {
   ///
   /// [title] and [message] will be automatically HTML-escaped.
   Response _htmlResponse(int statusCode, String title, String message) {
-    title = HTML_ESCAPE.convert(title);
-    message = HTML_ESCAPE.convert(message);
+    title = htmlEscape.convert(title);
+    message = htmlEscape.convert(message);
     return new Response(statusCode, body: """
       <!doctype html>
       <html>
