@@ -1,3 +1,7 @@
+## 1.0.2
+
+* Support test `1.x.x`.
+
 ## 1.0.1
 
 * Support latest `pkg/shelf`.
