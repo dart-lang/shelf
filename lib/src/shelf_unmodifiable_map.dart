@@ -54,7 +54,7 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
 class _EmptyShelfUnmodifiableMap<V> extends MapView<String, V>
     implements ShelfUnmodifiableMap<V> {
   bool get _ignoreKeyCase => true;
-  const _EmptyShelfUnmodifiableMap() : super(const {});
+  const _EmptyShelfUnmodifiableMap() : super(const <String,Null>{});
 
   // Override modifier methods that care about the type of key they use so that
   // when V is Null, they throw UnsupportedErrors instead of type errors.
