@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:test/test.dart';
 import 'package:shelf/shelf.dart';
 
 // "hello,"
@@ -11,6 +12,9 @@ const helloBytes = const [104, 101, 108, 108, 111, 44];
 
 // " world"
 const worldBytes = const [32, 119, 111, 114, 108, 100];
+
+final Matcher throwsHijackException =
+    throwsA(new TypeMatcher<HijackException>());
 
 /// A simple, synchronous handler for [Request].
 ///

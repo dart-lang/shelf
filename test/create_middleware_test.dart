@@ -229,8 +229,7 @@ void main() {
           .addMiddleware(middleware)
           .addHandler((request) => throw const HijackException());
 
-      expect(makeSimpleRequest(handler),
-          throwsA(new isInstanceOf<HijackException>()));
+      expect(makeSimpleRequest(handler), throwsHijackException);
     });
   });
 }

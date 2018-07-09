@@ -462,7 +462,7 @@ void main() {
       expect(
           request.context,
           containsPair('shelf.io.connection_info',
-              new isInstanceOf<HttpConnectionInfo>()));
+              new TypeMatcher<HttpConnectionInfo>()));
 
       var connectionInfo =
           request.context['shelf.io.connection_info'] as HttpConnectionInfo;

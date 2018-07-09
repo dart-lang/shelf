@@ -66,6 +66,6 @@ void main() {
         makeSimpleRequest(handler).whenComplete(() {
           expect(gotLog, isFalse);
         }),
-        throwsA(new isInstanceOf<HijackException>()));
+        throwsHijackException);
   });
 }

@@ -37,7 +37,7 @@ void main() {
               channel.sink.add([4, 5, 6]);
               channel.sink.close();
             })),
-        throwsA(new isInstanceOf<HijackException>()));
+        throwsHijackException);
   });
 
   test('hijacking a hijackable request twice throws a StateError', () {
@@ -45,8 +45,7 @@ void main() {
     var request = new Request('GET', localhostUri,
         onHijack: expectAsync1((_) => null, count: 1));
 
-    expect(() => request.hijack((_) => null),
-        throwsA(new isInstanceOf<HijackException>()));
+    expect(() => request.hijack((_) => null), throwsHijackException);
 
     expect(() => request.hijack((_) => null), throwsStateError);
   });
@@ -81,7 +80,7 @@ void main() {
                 channel.sink.add([4, 5, 6]);
                 channel.sink.close();
               })),
-          throwsA(new isInstanceOf<HijackException>()));
+          throwsHijackException);
     });
 
     test(
@@ -93,8 +92,7 @@ void main() {
 
       var newRequest = request.change();
 
-      expect(() => newRequest.hijack((_) => null),
-          throwsA(new isInstanceOf<HijackException>()));
+      expect(() => newRequest.hijack((_) => null), throwsHijackException);
 
       expect(() => request.hijack((_) => null), throwsStateError);
     });
