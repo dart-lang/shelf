@@ -125,7 +125,7 @@ Request _fromHttpRequest(HttpRequest request) {
   });
 
   // Remove the Transfer-Encoding header per the adapter requirements.
-  headers.remove(HttpHeaders.TRANSFER_ENCODING);
+  headers.remove(HttpHeaders.transferEncodingHeader);
 
   void onHijack(void callback(StreamChannel<List<int>> channel)) {
     request.response
@@ -167,7 +167,7 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
     // TODO(nweiz): Do this more cleanly when sdk#27886 is fixed.
     response =
         response.change(body: chunkedCoding.decoder.bind(response.read()));
-    httpResponse.headers.set(HttpHeaders.TRANSFER_ENCODING, 'chunked');
+    httpResponse.headers.set(HttpHeaders.transferEncodingHeader, 'chunked');
   } else if (response.statusCode >= 200 &&
       response.statusCode != 204 &&
       response.statusCode != 304 &&
@@ -175,14 +175,14 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
       response.mimeType != 'multipart/byteranges') {
     // If the response isn't chunked yet and there's no other way to tell its
     // length, enable `dart:io`'s chunked encoding.
-    httpResponse.headers.set(HttpHeaders.TRANSFER_ENCODING, 'chunked');
+    httpResponse.headers.set(HttpHeaders.transferEncodingHeader, 'chunked');
   }
 
-  if (!response.headers.containsKey(HttpHeaders.SERVER)) {
-    httpResponse.headers.set(HttpHeaders.SERVER, 'dart:io with Shelf');
+  if (!response.headers.containsKey(HttpHeaders.serverHeader)) {
+    httpResponse.headers.set(HttpHeaders.serverHeader, 'dart:io with Shelf');
   }
 
-  if (!response.headers.containsKey(HttpHeaders.DATE)) {
+  if (!response.headers.containsKey(HttpHeaders.dateHeader)) {
     httpResponse.headers.date = new DateTime.now().toUtc();
   }
 

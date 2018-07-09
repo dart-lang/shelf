@@ -30,7 +30,7 @@ void main() {
     await _scheduleServer(syncHandler);
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
@@ -38,7 +38,7 @@ void main() {
     await _scheduleServer(asyncHandler);
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
@@ -46,7 +46,7 @@ void main() {
     await _scheduleServer((request) => null);
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.INTERNAL_SERVER_ERROR);
+    expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
@@ -54,7 +54,7 @@ void main() {
     await _scheduleServer((request) => new Future.value(null));
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.INTERNAL_SERVER_ERROR);
+    expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
@@ -64,7 +64,7 @@ void main() {
     });
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.INTERNAL_SERVER_ERROR);
+    expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
@@ -74,7 +74,7 @@ void main() {
     });
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.INTERNAL_SERVER_ERROR);
+    expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
@@ -98,7 +98,7 @@ void main() {
     });
 
     var response = await http.get('http://localhost:$_serverPort$path');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /foo/bar');
   });
 
@@ -106,7 +106,8 @@ void main() {
     await _scheduleServer(expectAsync1((request) {
       expect(request.contentLength, isNull);
       expect(request.method, 'POST');
-      expect(request.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+      expect(
+          request.headers, isNot(contains(HttpHeaders.transferEncodingHeader)));
       expect(
           request.read().toList(),
           completion(equals([
@@ -121,7 +122,7 @@ void main() {
     request.sink.close();
 
     var response = await request.send();
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
   });
 
   test('custom response headers are received by the client', () async {
@@ -131,7 +132,7 @@ void main() {
     });
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.headers['test-header'], 'test-value');
     expect(response.body, 'Hello from /');
   });
@@ -162,7 +163,7 @@ void main() {
     };
 
     var response = await _get(headers: headers);
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
@@ -179,7 +180,7 @@ void main() {
     });
 
     var response = await _post();
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.stream.bytesToString(), completion('Hello from /'));
   });
 
@@ -196,7 +197,7 @@ void main() {
     });
 
     var response = await _post(body: 'test body');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.stream.bytesToString(), completion('Hello from /'));
   });
 
@@ -218,7 +219,7 @@ void main() {
     });
 
     var response = await _post(body: "Hello");
-    expect(response.statusCode, HttpStatus.NOT_FOUND);
+    expect(response.statusCode, HttpStatus.notFound);
     expect(response.headers["date"], "Mon, 23 May 2005 22:38:34 GMT");
     expect(
         response.stream.bytesToString(), completion(equals("Hello, world!")));
@@ -229,7 +230,7 @@ void main() {
     await _scheduleServer((request) => throw const HijackException());
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.INTERNAL_SERVER_ERROR);
+    expect(response.statusCode, HttpStatus.internalServerError);
   });
 
   test('passes asynchronous exceptions to the parent error zone', () async {
@@ -240,7 +241,7 @@ void main() {
       }, 'localhost', 0);
 
       var response = await http.get('http://localhost:${server.port}');
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.body, 'Hello from /');
       await server.close();
     }, onError: expectAsync1((error) {
@@ -262,7 +263,7 @@ void main() {
       }
     });
 
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
@@ -304,7 +305,7 @@ void main() {
       var date = new DateTime.utc(1981, 6, 5);
       await _scheduleServer((request) {
         return new Response.ok('test',
-            headers: {HttpHeaders.DATE: parser.formatHttpDate(date)});
+            headers: {HttpHeaders.dateHeader: parser.formatHttpDate(date)});
       });
 
       var response = await _get();
@@ -320,17 +321,18 @@ void main() {
 
       var response = await _get();
       expect(response.headers,
-          containsPair(HttpHeaders.SERVER, 'dart:io with Shelf'));
+          containsPair(HttpHeaders.serverHeader, 'dart:io with Shelf'));
     });
 
     test('defers to header in response', () async {
       await _scheduleServer((request) {
         return new Response.ok('test',
-            headers: {HttpHeaders.SERVER: 'myServer'});
+            headers: {HttpHeaders.serverHeader: 'myServer'});
       });
 
       var response = await _get();
-      expect(response.headers, containsPair(HttpHeaders.SERVER, 'myServer'));
+      expect(
+          response.headers, containsPair(HttpHeaders.serverHeader, 'myServer'));
     });
   });
 
@@ -345,7 +347,7 @@ void main() {
 
         var response = await _get();
         expect(response.headers,
-            containsPair(HttpHeaders.TRANSFER_ENCODING, 'chunked'));
+            containsPair(HttpHeaders.transferEncodingHeader, 'chunked'));
         expect(response.bodyBytes, equals([1, 2, 3, 4]));
       });
 
@@ -355,12 +357,12 @@ void main() {
               new Stream.fromIterable([
                 [1, 2, 3, 4]
               ]),
-              headers: {HttpHeaders.TRANSFER_ENCODING: 'identity'});
+              headers: {HttpHeaders.transferEncodingHeader: 'identity'});
         });
 
         var response = await _get();
         expect(response.headers,
-            containsPair(HttpHeaders.TRANSFER_ENCODING, 'chunked'));
+            containsPair(HttpHeaders.transferEncodingHeader, 'chunked'));
         expect(response.bodyBytes, equals([1, 2, 3, 4]));
       });
     });
@@ -370,12 +372,12 @@ void main() {
       await _scheduleServer((request) {
         return new Response.ok(
             new Stream.fromIterable(["2\r\nhi\r\n0\r\n\r\n".codeUnits]),
-            headers: {HttpHeaders.TRANSFER_ENCODING: 'chunked'});
+            headers: {HttpHeaders.transferEncodingHeader: 'chunked'});
       });
 
       var response = await _get();
       expect(response.headers,
-          containsPair(HttpHeaders.TRANSFER_ENCODING, 'chunked'));
+          containsPair(HttpHeaders.transferEncodingHeader, 'chunked'));
       expect(response.body, equals("hi"));
     });
 
@@ -386,12 +388,12 @@ void main() {
               new Stream.fromIterable([
                 [1, 2, 3, 4]
               ]),
-              headers: {HttpHeaders.CONTENT_LENGTH: '4'});
+              headers: {HttpHeaders.contentLengthHeader: '4'});
         });
 
         var response = await _get();
-        expect(
-            response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+        expect(response.headers,
+            isNot(contains(HttpHeaders.transferEncodingHeader)));
         expect(response.bodyBytes, equals([1, 2, 3, 4]));
       });
 
@@ -401,8 +403,8 @@ void main() {
         });
 
         var response = await _get();
-        expect(
-            response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+        expect(response.headers,
+            isNot(contains(HttpHeaders.transferEncodingHeader)));
         expect(response.body, isEmpty);
       });
 
@@ -412,8 +414,8 @@ void main() {
         });
 
         var response = await _get();
-        expect(
-            response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+        expect(response.headers,
+            isNot(contains(HttpHeaders.transferEncodingHeader)));
         expect(response.body, isEmpty);
       });
 
@@ -423,8 +425,8 @@ void main() {
         });
 
         var response = await _get();
-        expect(
-            response.headers, isNot(contains(HttpHeaders.TRANSFER_ENCODING)));
+        expect(response.headers,
+            isNot(contains(HttpHeaders.transferEncodingHeader)));
         expect(response.body, isEmpty);
       });
     });
@@ -471,7 +473,7 @@ void main() {
     });
 
     var response = await _get();
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
   });
 
   group('ssl tests', () {
@@ -491,7 +493,7 @@ void main() {
       var req = await _scheduleSecureGet();
 
       var response = await req.close();
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(await response.transform(utf8.decoder).single, 'Hello from /');
     });
 
@@ -500,7 +502,7 @@ void main() {
 
       var req = await _scheduleSecureGet();
       var response = await req.close();
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(await response.transform(utf8.decoder).single, 'Hello from /');
     });
   });

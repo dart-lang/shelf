@@ -2,6 +2,8 @@
 
 * Fix constant evaluation analyzer error in `shelf_unmodifiable_map.dart`.
 
+* Update usage of HTTP constants from the Dart SDK. Now require 2.0.0-dev.61.
+
 ## 0.7.3+1
 
 * Updated SDK version to 2.0.0-dev.55.0.
