@@ -23,7 +23,7 @@ void main() {
 
     var response =
         await makeRequest(handler, '/static/root.txt', handlerPath: 'static');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 8);
     expect(response.readAsString(), completion('root txt'));
   });
@@ -33,7 +33,7 @@ void main() {
 
     var response = await makeRequest(handler, '/static/files/with%20space.txt',
         handlerPath: 'static');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
     expect(response.readAsString(), completion('with space content'));
   });
@@ -43,7 +43,7 @@ void main() {
 
     var response = await makeRequest(handler, '/static/files/with%20space.txt',
         handlerPath: 'static');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
     expect(response.readAsString(), completion('with space content'));
   });
@@ -53,7 +53,7 @@ void main() {
 
     var response = await makeRequest(handler, '/static/files/test.txt',
         handlerPath: 'static');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 16);
     expect(response.readAsString(), completion('test txt content'));
   });
@@ -63,6 +63,6 @@ void main() {
 
     var response = await makeRequest(handler, '/static/not_here.txt',
         handlerPath: 'static');
-    expect(response.statusCode, HttpStatus.NOT_FOUND);
+    expect(response.statusCode, HttpStatus.notFound);
   });
 }

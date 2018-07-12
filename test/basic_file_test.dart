@@ -43,7 +43,7 @@ void main() {
     var handler = createStaticHandler(d.sandbox);
 
     var response = await makeRequest(handler, '/root.txt');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 8);
     expect(response.readAsString(), completion('root txt'));
   });
@@ -52,7 +52,7 @@ void main() {
     var handler = createStaticHandler(d.sandbox);
 
     var response = await makeRequest(handler, '/files/with%20space.txt');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
     expect(response.readAsString(), completion('with space content'));
   });
@@ -61,7 +61,7 @@ void main() {
     var handler = createStaticHandler(d.sandbox);
 
     var response = await makeRequest(handler, '/files/with%20space.txt');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
     expect(response.readAsString(), completion('with space content'));
   });
@@ -70,7 +70,7 @@ void main() {
     var handler = createStaticHandler(d.sandbox);
 
     var response = await makeRequest(handler, '/files/test.txt');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 16);
     expect(response.readAsString(), completion('test txt content'));
   });
@@ -79,7 +79,7 @@ void main() {
     var handler = createStaticHandler(d.sandbox);
 
     var response = await makeRequest(handler, '/not_here.txt');
-    expect(response.statusCode, HttpStatus.NOT_FOUND);
+    expect(response.statusCode, HttpStatus.notFound);
   });
 
   test('last modified', () async {
@@ -99,10 +99,12 @@ void main() {
       var rootPath = p.join(d.sandbox, 'root.txt');
       var modified = new File(rootPath).statSync().changed.toUtc();
 
-      var headers = {HttpHeaders.IF_MODIFIED_SINCE: formatHttpDate(modified)};
+      var headers = {
+        HttpHeaders.ifModifiedSinceHeader: formatHttpDate(modified)
+      };
 
       var response = await makeRequest(handler, '/root.txt', headers: headers);
-      expect(response.statusCode, HttpStatus.NOT_MODIFIED);
+      expect(response.statusCode, HttpStatus.notModified);
       expect(response.contentLength, 0);
     });
 
@@ -113,12 +115,12 @@ void main() {
       var modified = new File(rootPath).statSync().changed.toUtc();
 
       var headers = {
-        HttpHeaders.IF_MODIFIED_SINCE:
+        HttpHeaders.ifModifiedSinceHeader:
             formatHttpDate(modified.subtract(const Duration(seconds: 1)))
       };
 
       var response = await makeRequest(handler, '/root.txt', headers: headers);
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.lastModified, atSameTimeToSecond(modified));
     });
 
@@ -129,12 +131,12 @@ void main() {
       var modified = new File(rootPath).statSync().changed.toUtc();
 
       var headers = {
-        HttpHeaders.IF_MODIFIED_SINCE:
+        HttpHeaders.ifModifiedSinceHeader:
             formatHttpDate(modified.add(const Duration(seconds: 1)))
       };
 
       var response = await makeRequest(handler, '/root.txt', headers: headers);
-      expect(response.statusCode, HttpStatus.NOT_MODIFIED);
+      expect(response.statusCode, HttpStatus.notModified);
       expect(response.contentLength, 0);
     });
   });

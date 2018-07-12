@@ -1,3 +1,9 @@
+## 0.2.8
+
+* Update SDK constraint to `>=2.0.0-dev.61 <3.0.0`.
+
+* Directory listings are now sorted.
+
 ## 0.2.7+1
 
 * Updated SDK version to 2.0.0-dev.17.0

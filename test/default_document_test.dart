@@ -43,7 +43,7 @@ void main() {
       var handler = createStaticHandler(d.sandbox);
 
       var response = await makeRequest(handler, '/index.html');
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
     });
@@ -52,21 +52,21 @@ void main() {
       var handler = createStaticHandler(d.sandbox);
 
       var response = await makeRequest(handler, '/');
-      expect(response.statusCode, HttpStatus.NOT_FOUND);
+      expect(response.statusCode, HttpStatus.notFound);
     });
 
     test('access "/files"', () async {
       var handler = createStaticHandler(d.sandbox);
 
       var response = await makeRequest(handler, '/files');
-      expect(response.statusCode, HttpStatus.NOT_FOUND);
+      expect(response.statusCode, HttpStatus.notFound);
     });
 
     test('access "/files/" dir', () async {
       var handler = createStaticHandler(d.sandbox);
 
       var response = await makeRequest(handler, '/files/');
-      expect(response.statusCode, HttpStatus.NOT_FOUND);
+      expect(response.statusCode, HttpStatus.notFound);
     });
   });
 
@@ -76,7 +76,7 @@ void main() {
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
       var response = await makeRequest(handler, '/index.html');
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
       expect(response.mimeType, 'text/html');
@@ -87,7 +87,7 @@ void main() {
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
       var response = await makeRequest(handler, '/');
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
       expect(response.mimeType, 'text/html');
@@ -98,9 +98,9 @@ void main() {
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
       var response = await makeRequest(handler, '/files');
-      expect(response.statusCode, HttpStatus.MOVED_PERMANENTLY);
+      expect(response.statusCode, HttpStatus.movedPermanently);
       expect(response.headers,
-          containsPair(HttpHeaders.LOCATION, 'http://localhost/files/'));
+          containsPair(HttpHeaders.locationHeader, 'http://localhost/files/'));
     });
 
     test('access "/files/" dir', () async {
@@ -108,7 +108,7 @@ void main() {
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
       var response = await makeRequest(handler, '/files/');
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 31);
       expect(response.readAsString(),
           completion('<html><body>files</body></html>'));

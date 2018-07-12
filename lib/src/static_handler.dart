@@ -189,12 +189,12 @@ Future<Response> _handleFile(
   }
 
   var headers = {
-    HttpHeaders.CONTENT_LENGTH: stat.size.toString(),
-    HttpHeaders.LAST_MODIFIED: formatHttpDate(stat.changed)
+    HttpHeaders.contentLengthHeader: stat.size.toString(),
+    HttpHeaders.lastModifiedHeader: formatHttpDate(stat.changed)
   };
 
   var contentType = await getContentType();
-  if (contentType != null) headers[HttpHeaders.CONTENT_TYPE] = contentType;
+  if (contentType != null) headers[HttpHeaders.contentTypeHeader] = contentType;
 
   return new Response.ok(file.openRead(), headers: headers);
 }

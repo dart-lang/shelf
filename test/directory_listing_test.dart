@@ -25,7 +25,7 @@ void main() {
     var handler = createStaticHandler(d.sandbox, listDirectories: true);
 
     var response = await makeRequest(handler, '/');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.readAsString(), completes);
   });
 
@@ -33,16 +33,16 @@ void main() {
     var handler = createStaticHandler(d.sandbox, listDirectories: true);
 
     var response = await makeRequest(handler, '/files');
-    expect(response.statusCode, HttpStatus.MOVED_PERMANENTLY);
+    expect(response.statusCode, HttpStatus.movedPermanently);
     expect(response.headers,
-        containsPair(HttpHeaders.LOCATION, 'http://localhost/files/'));
+        containsPair(HttpHeaders.locationHeader, 'http://localhost/files/'));
   });
 
   test('access "/files/"', () async {
     var handler = createStaticHandler(d.sandbox, listDirectories: true);
 
     var response = await makeRequest(handler, '/files/');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.readAsString(), completes);
   });
 
@@ -50,18 +50,18 @@ void main() {
     var handler = createStaticHandler(d.sandbox, listDirectories: true);
 
     var response = await makeRequest(handler, '/files/empty subfolder');
-    expect(response.statusCode, HttpStatus.MOVED_PERMANENTLY);
+    expect(response.statusCode, HttpStatus.movedPermanently);
     expect(
         response.headers,
-        containsPair(
-            HttpHeaders.LOCATION, 'http://localhost/files/empty%20subfolder/'));
+        containsPair(HttpHeaders.locationHeader,
+            'http://localhost/files/empty%20subfolder/'));
   });
 
   test('access "/files/empty subfolder/"', () async {
     var handler = createStaticHandler(d.sandbox, listDirectories: true);
 
     var response = await makeRequest(handler, '/files/empty subfolder/');
-    expect(response.statusCode, HttpStatus.OK);
+    expect(response.statusCode, HttpStatus.ok);
     expect(response.readAsString(), completes);
   });
 }

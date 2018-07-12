@@ -20,7 +20,7 @@ void main() {
   test('serves the file contents', () async {
     var handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
     var response = await makeRequest(handler, '/file.txt');
-    expect(response.statusCode, equals(HttpStatus.OK));
+    expect(response.statusCode, equals(HttpStatus.ok));
     expect(response.contentLength, equals(8));
     expect(response.readAsString(), completion(equals('contents')));
   });
@@ -28,14 +28,14 @@ void main() {
   test('serves a 404 for a non-matching URL', () async {
     var handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
     var response = await makeRequest(handler, '/foo/file.txt');
-    expect(response.statusCode, equals(HttpStatus.NOT_FOUND));
+    expect(response.statusCode, equals(HttpStatus.notFound));
   });
 
   test('serves the file contents under a custom URL', () async {
     var handler =
         createFileHandler(p.join(d.sandbox, 'file.txt'), url: 'foo/bar');
     var response = await makeRequest(handler, '/foo/bar');
-    expect(response.statusCode, equals(HttpStatus.OK));
+    expect(response.statusCode, equals(HttpStatus.ok));
     expect(response.contentLength, equals(8));
     expect(response.readAsString(), completion(equals('contents')));
   });
@@ -44,21 +44,21 @@ void main() {
     var handler =
         createFileHandler(p.join(d.sandbox, 'file.txt'), url: 'foo/bar');
     var response = await makeRequest(handler, '/file.txt');
-    expect(response.statusCode, equals(HttpStatus.NOT_FOUND));
+    expect(response.statusCode, equals(HttpStatus.notFound));
   });
 
   group('the content type header', () {
     test('is inferred from the file path', () async {
       var handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
       var response = await makeRequest(handler, '/file.txt');
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.mimeType, equals('text/plain'));
     });
 
     test("is omitted if it can't be inferred", () async {
       var handler = createFileHandler(p.join(d.sandbox, 'random.unknown'));
       var response = await makeRequest(handler, '/random.unknown');
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.mimeType, isNull);
     });
 
@@ -66,7 +66,7 @@ void main() {
       var handler = createFileHandler(p.join(d.sandbox, 'file.txt'),
           contentType: 'something/weird');
       var response = await makeRequest(handler, '/file.txt');
-      expect(response.statusCode, equals(HttpStatus.OK));
+      expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.mimeType, equals('something/weird'));
     });
   });

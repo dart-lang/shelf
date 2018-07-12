@@ -37,7 +37,7 @@ void main() {
       var handler = createStaticHandler(d.sandbox);
 
       var response = await makeRequest(handler, '/originals/index.html');
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
     });
@@ -47,7 +47,7 @@ void main() {
         var handler = createStaticHandler(d.sandbox);
 
         var response = await makeRequest(handler, '/link_index.html');
-        expect(response.statusCode, HttpStatus.OK);
+        expect(response.statusCode, HttpStatus.ok);
         expect(response.contentLength, 13);
         expect(response.readAsString(), completion('<html></html>'));
       });
@@ -56,7 +56,7 @@ void main() {
         var handler = createStaticHandler(d.sandbox);
 
         var response = await makeRequest(handler, '/link_dir/index.html');
-        expect(response.statusCode, HttpStatus.OK);
+        expect(response.statusCode, HttpStatus.ok);
         expect(response.contentLength, 13);
         expect(response.readAsString(), completion('<html></html>'));
       });
@@ -67,14 +67,14 @@ void main() {
         var handler = createStaticHandler(p.join(d.sandbox, 'alt_root'));
 
         var response = await makeRequest(handler, '/link_index.html');
-        expect(response.statusCode, HttpStatus.NOT_FOUND);
+        expect(response.statusCode, HttpStatus.notFound);
       });
 
       test('access file in sym linked dir', () async {
         var handler = createStaticHandler(p.join(d.sandbox, 'alt_root'));
 
         var response = await makeRequest(handler, '/link_dir/index.html');
-        expect(response.statusCode, HttpStatus.NOT_FOUND);
+        expect(response.statusCode, HttpStatus.notFound);
       });
     });
   });
@@ -84,7 +84,7 @@ void main() {
       var handler = createStaticHandler(d.sandbox, serveFilesOutsidePath: true);
 
       var response = await makeRequest(handler, '/originals/index.html');
-      expect(response.statusCode, HttpStatus.OK);
+      expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
     });
@@ -95,7 +95,7 @@ void main() {
             createStaticHandler(d.sandbox, serveFilesOutsidePath: true);
 
         var response = await makeRequest(handler, '/link_index.html');
-        expect(response.statusCode, HttpStatus.OK);
+        expect(response.statusCode, HttpStatus.ok);
         expect(response.contentLength, 13);
         expect(response.readAsString(), completion('<html></html>'));
       });
@@ -105,7 +105,7 @@ void main() {
             createStaticHandler(d.sandbox, serveFilesOutsidePath: true);
 
         var response = await makeRequest(handler, '/link_dir/index.html');
-        expect(response.statusCode, HttpStatus.OK);
+        expect(response.statusCode, HttpStatus.ok);
         expect(response.contentLength, 13);
         expect(response.readAsString(), completion('<html></html>'));
       });
@@ -117,7 +117,7 @@ void main() {
             serveFilesOutsidePath: true);
 
         var response = await makeRequest(handler, '/link_index.html');
-        expect(response.statusCode, HttpStatus.OK);
+        expect(response.statusCode, HttpStatus.ok);
         expect(response.contentLength, 13);
         expect(response.readAsString(), completion('<html></html>'));
       });
@@ -127,7 +127,7 @@ void main() {
             serveFilesOutsidePath: true);
 
         var response = await makeRequest(handler, '/link_dir/index.html');
-        expect(response.statusCode, HttpStatus.OK);
+        expect(response.statusCode, HttpStatus.ok);
         expect(response.contentLength, 13);
         expect(response.readAsString(), completion('<html></html>'));
       });
