@@ -23,37 +23,21 @@ String _getHeader(String sanitizedHeading) {
     font-family: sans-serif;
   }
   h1 {
-    background-color: #607D8B;
-    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.37);
+    background-color: #4078c0;
     color: white;
-    font-size: 56px;
     font-weight: normal;
-    line-height: 1.5;
-    margin: 0;
-    padding: 115px 30px 56px 30px;
+    margin: 0 0 10px 0;
+    padding: 16px 32px;
     white-space: nowrap;
   }
   ul {
-    list-style-type: none;
     margin: 0;
-    padding: 0;
   }
   li {
-    margin: 0;
     padding: 0;
   }
   a {
-    color: #212121;
-    text-decoration: none;
-    display: block;
-    font-size: 16px;
-    height: 48px;
-    line-height: 48px;
-    padding-left: 16px;
-    transition: background-color 200ms ease-in-out;
-  }
-  a:hover {
-    background-color: #EEEEEE;
+    line-height: 1.4em;
   }
   </style>
 </head>
@@ -85,15 +69,30 @@ Response listDirectory(String fileSystemPath, String dirPath) {
   }
 
   add(_getHeader(sanitizer.convert(heading)));
-  new Directory(dirPath).list().listen((FileSystemEntity entity) {
-    String name = path.relative(entity.path, from: dirPath);
-    if (entity is Directory) name += '/';
-    String sanitizedName = sanitizer.convert(name);
-    add('    <li><a href="$sanitizedName">$sanitizedName</a></li>\n');
-  }, onDone: () {
+
+  // Return a sorted listing of the directory contents asynchronously.
+  new Directory(dirPath).list().toList().then((entities) {
+    entities.sort((e1, e2) {
+      if (e1 is Directory && e2 is! Directory) {
+        return -1;
+      }
+      if (e1 is! Directory && e2 is Directory) {
+        return 1;
+      }
+      return e1.path.compareTo(e2.path);
+    });
+
+    for (var entity in entities) {
+      String name = path.relative(entity.path, from: dirPath);
+      if (entity is Directory) name += '/';
+      String sanitizedName = sanitizer.convert(name);
+      add('    <li><a href="$sanitizedName">$sanitizedName</a></li>\n');
+    }
+
     add(_trailer);
     controller.close();
   });
+
   return new Response.ok(controller.stream,
       encoding: encoding, headers: {HttpHeaders.CONTENT_TYPE: 'text/html'});
 }
