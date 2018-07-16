@@ -1,3 +1,7 @@
+## 0.7.3+3
+
+* Set max SDK version to `<3.0.0`, and adjust other dependencies.
+
 ## 0.7.3+2
 
 * Fix constant evaluation analyzer error in `shelf_unmodifiable_map.dart`.
