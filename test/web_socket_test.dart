@@ -178,7 +178,7 @@ void main() {
 }
 
 Matcher hasStatus(int status) => completion(predicate((response) {
-      expect(response, new isInstanceOf<http.Response>());
+      expect(response, new TypeMatcher<http.Response>());
       expect(response.statusCode, equals(status));
       return true;
     }));

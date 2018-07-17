@@ -3,15 +3,10 @@ language: dart
 dart:
   - dev
 dart_task:
+  # TODO: Only run dartfmt and dartanalyzer over dev release once Dart 2 stable is out
+  - dartfmt
+  - dartanalyzer
   - test
-
-matrix:
-  include:
-    # Only validate formatting using the dev release
-    - dart: dev
-      dart_task: dartfmt
-    - dart: dev
-      dart_task: analyzer
 
 # Only building master means that we don't run two builds for each pull request.
 branches:
