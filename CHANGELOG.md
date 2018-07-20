@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Support Dart 2 stable releases.
+
 ## 1.0.2
 
 * Support test `1.x.x`.
