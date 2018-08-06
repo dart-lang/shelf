@@ -1,5 +1,5 @@
 name: shelf_web_socket
-version: 0.2.2+3
+version: 0.2.2+4
 
 description: A WebSocket handler for Shelf.
 author: Dart Team <misc@dartlang.org>

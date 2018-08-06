@@ -1,3 +1,8 @@
+## 0.2.2+4
+
+* Fix the check for `onConnection` to check the number of arguments  and not
+  that the arguments are `dynamic`.
+
 ## 0.2.2+3
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.

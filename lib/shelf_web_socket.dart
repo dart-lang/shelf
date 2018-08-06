@@ -7,8 +7,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'src/web_socket_handler.dart';
 
-/// A typedef used to determine if a function takes two arguments or not.
-typedef _BinaryFunction(arg1, arg2);
+typedef _BinaryFunction = void Function(Null, Null);
 
 /// Creates a Shelf handler that upgrades HTTP requests to WebSocket
 /// connections.
