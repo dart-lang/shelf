@@ -1,3 +1,7 @@
+## 0.1.0+4
+
+* Support Dart 2.
+
 ## 0.1.0+3
 
 * Support version `0.7.0` of `shelf`.
