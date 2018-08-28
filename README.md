@@ -19,7 +19,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 
 void main() {
   var handler = webSocketHandler((webSocket) {
-    webSocket.listen((message) {
+    webSocket.stream.listen((message) {
       webSocket.add("echo $message");
     });
   });
