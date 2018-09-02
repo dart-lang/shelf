@@ -9,7 +9,7 @@ connection that's established.
 
 [WebSocket]: https://tools.ietf.org/html/rfc6455
 
-[webSocketHandler]: https://api.dartlang.org/apidocs/channels/be/dartdoc-viewer/shelf_web_socket/shelf_web_socket.webSocketHandler
+[webSocketHandler]: https://pub.dartlang.org/documentation/shelf_web_socket/latest/shelf_web_socket/webSocketHandler.html
 
 [CompatibleWebSocket]: https://api.dartlang.org/apidocs/channels/be/dartdoc-viewer/http_parser/http_parser.CompatibleWebSocket
 
