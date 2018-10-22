@@ -453,7 +453,7 @@ void main() {
 
     data = await stream.next;
     expect(data, equals("world!"));
-    controller.close();
+    await controller.close();
     expect(stream.hasNext, completion(isFalse));
   });
 
