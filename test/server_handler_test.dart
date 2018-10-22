@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -54,9 +55,9 @@ void main() {
     });
 
     var closeDone = false;
-    serverHandler.server.close().then((_) {
+    unawaited(serverHandler.server.close().then((_) {
       closeDone = true;
-    });
+    }));
     expect(onCloseCalled, isTrue);
     await new Future.delayed(Duration.zero);
 
