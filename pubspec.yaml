@@ -1,7 +1,7 @@
 name: shelf
 version: 0.7.4-dev
-
-description: Web Server Middleware for Dart
+description: >-
+  A model for web server middleware that encourages composition and easy reuse
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/shelf
 
