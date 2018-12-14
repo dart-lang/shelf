@@ -1,3 +1,7 @@
+## 0.7.4
+
+* Allow passing `shared` parameter to underlying `HttpServer.bind` calls via `shelf_io.serve`
+
 ## 0.7.3+3
 
 * Set max SDK version to `<3.0.0`, and adjust other dependencies.
