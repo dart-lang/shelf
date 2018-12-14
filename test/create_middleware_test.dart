@@ -40,8 +40,8 @@ void main() {
 
     test('async null response forwards to inner handler', () {
       var handler = const Pipeline()
-          .addMiddleware(createMiddleware(
-              requestHandler: (request) => new Future.value(null)))
+          .addMiddleware(
+              createMiddleware(requestHandler: (request) => Future.value(null)))
           .addHandler(syncHandler);
 
       return makeSimpleRequest(handler).then((response) {
@@ -63,8 +63,7 @@ void main() {
     test('async response is returned', () {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(
-              requestHandler: (request) =>
-                  new Future.value(_middlewareResponse)))
+              requestHandler: (request) => Future.value(_middlewareResponse)))
           .addHandler(_failHandler);
 
       return makeSimpleRequest(handler).then((response) {
@@ -88,7 +87,7 @@ void main() {
 
       test('with async result, responseHandler is not called', () {
         var middleware = createMiddleware(
-            requestHandler: (request) => new Future.value(_middlewareResponse),
+            requestHandler: (request) => Future.value(_middlewareResponse),
             responseHandler: (response) => _fail('should not be called'));
         var handler =
             const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
@@ -119,10 +118,9 @@ void main() {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(responseHandler: (response) {
         expect(response.headers['from'], 'handler');
-        return new Future.value(_middlewareResponse);
+        return Future.value(_middlewareResponse);
       })).addHandler((request) {
-        return new Future(
-            () => syncHandler(request, headers: {'from': 'handler'}));
+        return Future(() => syncHandler(request, headers: {'from': 'handler'}));
       });
 
       return makeSimpleRequest(handler).then((response) {
@@ -144,8 +142,7 @@ void main() {
     test('async error thrown by requestHandler bubbles down', () {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(
-              requestHandler: (request) =>
-                  new Future.error('middleware error')))
+              requestHandler: (request) => Future.error('middleware error')))
           .addHandler(_failHandler);
 
       expect(makeSimpleRequest(handler), throwsA('middleware error'));
@@ -237,4 +234,4 @@ void main() {
 Response _failHandler(Request request) => _fail('should never get here');
 
 final Response _middlewareResponse =
-    new Response.ok('middleware content', headers: {'from': 'middleware'});
+    Response.ok('middleware content', headers: {'from': 'middleware'});

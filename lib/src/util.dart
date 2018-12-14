@@ -10,7 +10,7 @@ import 'shelf_unmodifiable_map.dart';
 
 /// Like [new Future], but avoids around issue 11911 by using [new Future.value]
 /// under the covers.
-Future newFuture(callback()) => new Future.value().then((_) => callback());
+Future newFuture(callback()) => Future.value().then((_) => callback());
 
 /// Run [callback] and capture any errors that would otherwise be top-leveled.
 ///
@@ -35,7 +35,7 @@ catchTopLevelErrors(callback(), void onError(error, StackTrace stackTrace)) {
 Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V> updates) {
   if (updates == null || updates.isEmpty) return original;
 
-  return new Map.from(original)..addAll(updates);
+  return Map.from(original)..addAll(updates);
 }
 
 /// Adds a header with [name] and [value] to [headers], which may be null.
@@ -43,7 +43,7 @@ Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V> updates) {
 /// Returns a new map without modifying [headers].
 Map<String, String> addHeader(
     Map<String, String> headers, String name, String value) {
-  headers = headers == null ? {} : new Map.from(headers);
+  headers = headers == null ? {} : Map.from(headers);
   headers[name] = value;
   return headers;
 }

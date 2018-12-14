@@ -24,10 +24,10 @@ Middleware logRequests({void logger(String msg, bool isError)}) =>
       if (logger == null) logger = _defaultLogger;
 
       return (request) {
-        var startTime = new DateTime.now();
-        var watch = new Stopwatch()..start();
+        var startTime = DateTime.now();
+        var watch = Stopwatch()..start();
 
-        return new Future.sync(() => innerHandler(request)).then((response) {
+        return Future.sync(() => innerHandler(request)).then((response) {
           var msg = _getMessage(startTime, response.statusCode,
               request.requestedUri, request.method, watch.elapsed);
 
@@ -61,9 +61,9 @@ String _getMessage(DateTime requestTime, int statusCode, Uri requestedUri,
 
 String _getErrorMessage(DateTime requestTime, Uri requestedUri, String method,
     Duration elapsedTime, Object error, StackTrace stack) {
-  var chain = new Chain.current();
+  var chain = Chain.current();
   if (stack != null) {
-    chain = new Chain.forTrace(stack)
+    chain = Chain.forTrace(stack)
         .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
         .terse;
   }

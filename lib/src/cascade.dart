@@ -8,7 +8,7 @@ import 'handler.dart';
 import 'response.dart';
 
 /// A typedef for [Cascade._shouldCascade].
-typedef bool _ShouldCascade(Response response);
+typedef _ShouldCascade = bool Function(Response response);
 
 /// A helper that calls several handlers in sequence and returns the first
 /// acceptable response.
@@ -44,7 +44,7 @@ class Cascade {
         _parent = null,
         _handler = null {
     if (statusCodes != null && shouldCascade != null) {
-      throw new ArgumentError("statusCodes and shouldCascade may not both be "
+      throw ArgumentError("statusCodes and shouldCascade may not both be "
           "passed.");
     }
   }
@@ -55,7 +55,7 @@ class Cascade {
   ///
   /// [handler] will only be called if all previous handlers in the cascade
   /// return unacceptable responses.
-  Cascade add(Handler handler) => new Cascade._(this, handler, _shouldCascade);
+  Cascade add(Handler handler) => Cascade._(this, handler, _shouldCascade);
 
   /// Exposes this cascade as a single handler.
   ///
@@ -64,13 +64,13 @@ class Cascade {
   /// acceptable response, this will return the final response.
   Handler get handler {
     if (_handler == null) {
-      throw new StateError("Can't get a handler for a cascade with no inner "
+      throw StateError("Can't get a handler for a cascade with no inner "
           "handlers.");
     }
 
     return (request) {
       if (_parent._handler == null) return _handler(request);
-      return new Future.sync(() => _parent.handler(request)).then((response) {
+      return Future.sync(() => _parent.handler(request)).then((response) {
         if (_shouldCascade(response)) return _handler(request);
         return response;
       });

@@ -107,12 +107,12 @@ Future handleRequest(HttpRequest request, Handler handler) async {
     return;
   }
 
-  var message = new StringBuffer()
+  var message = StringBuffer()
     ..writeln("Got a response for hijacked request "
         "${shelfRequest.method} ${shelfRequest.requestedUri}:")
     ..writeln(response.statusCode);
   response.headers.forEach((key, value) => message.writeln("$key: $value"));
-  throw new Exception(message.toString().trim());
+  throw Exception(message.toString().trim());
 }
 
 /// Creates a new [Request] from the provided [HttpRequest].
@@ -130,10 +130,10 @@ Request _fromHttpRequest(HttpRequest request) {
   void onHijack(void callback(StreamChannel<List<int>> channel)) {
     request.response
         .detachSocket(writeHeaders: false)
-        .then((socket) => callback(new StreamChannel(socket, socket)));
+        .then((socket) => callback(StreamChannel(socket, socket)));
   }
 
-  return new Request(request.method, request.requestedUri,
+  return Request(request.method, request.requestedUri,
       protocolVersion: request.protocolVersion,
       headers: headers,
       body: request,
@@ -183,7 +183,7 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
   }
 
   if (!response.headers.containsKey(HttpHeaders.dateHeader)) {
-    httpResponse.headers.date = new DateTime.now().toUtc();
+    httpResponse.headers.date = DateTime.now().toUtc();
   }
 
   return httpResponse
@@ -195,7 +195,7 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
 // TODO(kevmoo) Make error output plugable. stderr, logging, etc
 Response _logError(Request request, String message, [StackTrace stackTrace]) {
   // Add information about the request itself.
-  var buffer = new StringBuffer();
+  var buffer = StringBuffer();
   buffer.write("${request.method} ${request.requestedUri.path}");
   if (request.requestedUri.query.isNotEmpty) {
     buffer.write("?${request.requestedUri.query}");
@@ -207,16 +207,16 @@ Response _logError(Request request, String message, [StackTrace stackTrace]) {
 }
 
 Response _logTopLevelError(String message, [StackTrace stackTrace]) {
-  var chain = new Chain.current();
+  var chain = Chain.current();
   if (stackTrace != null) {
-    chain = new Chain.forTrace(stackTrace);
+    chain = Chain.forTrace(stackTrace);
   }
   chain = chain
       .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
       .terse;
 
-  stderr.writeln('ERROR - ${new DateTime.now()}');
+  stderr.writeln('ERROR - ${DateTime.now()}');
   stderr.writeln(message);
   stderr.writeln(chain);
-  return new Response.internalServerError();
+  return Response.internalServerError();
 }

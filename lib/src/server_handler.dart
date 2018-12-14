@@ -38,13 +38,12 @@ class ServerHandler {
   ///
   /// If [onClose] is passed, it's called when [server] is closed. It may return
   /// a [Future] or `null`; its return value is returned by [Server.close].
-  ServerHandler(Uri url, {onClose()})
-      : _server = new _HandlerServer(url, onClose);
+  ServerHandler(Uri url, {onClose()}) : _server = _HandlerServer(url, onClose);
 
   /// Pipes requests to [server]'s handler.
   FutureOr<Response> _onRequest(Request request) {
     if (_server._closeMemo.hasRun) {
-      throw new StateError("Request received after the server was closed.");
+      throw StateError("Request received after the server was closed.");
     }
 
     if (_server._handler != null) return _server._handler(request);
@@ -69,13 +68,13 @@ class _HandlerServer implements Server {
 
   /// A future that fires once [mount] has been called.
   Future get _onMounted => _onMountedCompleter.future;
-  final _onMountedCompleter = new Completer();
+  final _onMountedCompleter = Completer();
 
   _HandlerServer(this.url, this._onClose);
 
   void mount(Handler handler) {
     if (_handler != null) {
-      throw new StateError("Can't mount two handlers for the same server.");
+      throw StateError("Can't mount two handlers for the same server.");
     }
 
     _handler = handler;
@@ -85,5 +84,5 @@ class _HandlerServer implements Server {
   Future close() => _closeMemo.runOnce(() {
         return _onClose == null ? null : _onClose();
       });
-  final _closeMemo = new AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer();
 }

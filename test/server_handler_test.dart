@@ -12,13 +12,13 @@ import 'test_util.dart';
 
 void main() {
   test("passes the URL to the server", () {
-    var serverHandler = new ServerHandler(localhostUri);
+    var serverHandler = ServerHandler(localhostUri);
     expect(serverHandler.server.url, equals(localhostUri));
   });
 
   test("pipes a request from ServerHandler.handler to a mounted handler",
       () async {
-    var serverHandler = new ServerHandler(localhostUri);
+    var serverHandler = ServerHandler(localhostUri);
     serverHandler.server.mount(asyncHandler);
 
     var response = await makeSimpleRequest(serverHandler.handler);
@@ -28,9 +28,9 @@ void main() {
 
   test("waits until the server's handler is mounted to service a request",
       () async {
-    var serverHandler = new ServerHandler(localhostUri);
+    var serverHandler = ServerHandler(localhostUri);
     var future = makeSimpleRequest(serverHandler.handler);
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
 
     serverHandler.server.mount(syncHandler);
     var response = await future;
@@ -39,7 +39,7 @@ void main() {
   });
 
   test("stops servicing requests after Server.close is called", () {
-    var serverHandler = new ServerHandler(localhostUri);
+    var serverHandler = ServerHandler(localhostUri);
     serverHandler.server.mount(expectAsync1((_) {}, count: 0));
     serverHandler.server.close();
 
@@ -48,8 +48,8 @@ void main() {
 
   test("calls onClose when Server.close is called", () async {
     var onCloseCalled = false;
-    var completer = new Completer();
-    var serverHandler = new ServerHandler(localhostUri, onClose: () {
+    var completer = Completer();
+    var serverHandler = ServerHandler(localhostUri, onClose: () {
       onCloseCalled = true;
       return completer.future;
     });
@@ -59,17 +59,17 @@ void main() {
       closeDone = true;
     }));
     expect(onCloseCalled, isTrue);
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
 
     expect(closeDone, isFalse);
     completer.complete();
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
 
     expect(closeDone, isTrue);
   });
 
   test("doesn't allow Server.mount to be called multiple times", () {
-    var serverHandler = new ServerHandler(localhostUri);
+    var serverHandler = ServerHandler(localhostUri);
     serverHandler.server.mount((_) {});
     expect(() => serverHandler.server.mount((_) {}), throwsStateError);
     expect(() => serverHandler.server.mount((_) {}), throwsStateError);

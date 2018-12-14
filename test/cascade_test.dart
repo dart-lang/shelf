@@ -13,23 +13,23 @@ void main() {
   group('a cascade with several handlers', () {
     Handler handler;
     setUp(() {
-      handler = new Cascade().add((request) {
+      handler = Cascade().add((request) {
         if (request.headers['one'] == 'false') {
-          return new Response.notFound('handler 1');
+          return Response.notFound('handler 1');
         } else {
-          return new Response.ok('handler 1');
+          return Response.ok('handler 1');
         }
       }).add((request) {
         if (request.headers['two'] == 'false') {
-          return new Response.notFound('handler 2');
+          return Response.notFound('handler 2');
         } else {
-          return new Response.ok('handler 2');
+          return Response.ok('handler 2');
         }
       }).add((request) {
         if (request.headers['three'] == 'false') {
-          return new Response.notFound('handler 3');
+          return Response.notFound('handler 3');
         } else {
-          return new Response.ok('handler 3');
+          return Response.ok('handler 3');
         }
       }).handler;
     });
@@ -43,9 +43,8 @@ void main() {
     test(
         "the second response should be returned if it matches and the first "
         "doesn't", () {
-      return new Future.sync(() {
-        return handler(
-            new Request('GET', localhostUri, headers: {'one': 'false'}));
+      return Future.sync(() {
+        return handler(Request('GET', localhostUri, headers: {'one': 'false'}));
       }).then((response) {
         expect(response.statusCode, equals(200));
         expect(response.readAsString(), completion(equals('handler 2')));
@@ -55,8 +54,8 @@ void main() {
     test(
         "the third response should be returned if it matches and the first "
         "two don't", () {
-      return new Future.sync(() {
-        return handler(new Request('GET', localhostUri,
+      return Future.sync(() {
+        return handler(Request('GET', localhostUri,
             headers: {'one': 'false', 'two': 'false'}));
       }).then((response) {
         expect(response.statusCode, equals(200));
@@ -65,8 +64,8 @@ void main() {
     });
 
     test("the third response should be returned if no response matches", () {
-      return new Future.sync(() {
-        return handler(new Request('GET', localhostUri,
+      return Future.sync(() {
+        return handler(Request('GET', localhostUri,
             headers: {'one': 'false', 'two': 'false', 'three': 'false'}));
       }).then((response) {
         expect(response.statusCode, equals(404));
@@ -76,9 +75,9 @@ void main() {
   });
 
   test('a 404 response triggers a cascade by default', () {
-    var handler = new Cascade()
-        .add((_) => new Response.notFound('handler 1'))
-        .add((_) => new Response.ok('handler 2'))
+    var handler = Cascade()
+        .add((_) => Response.notFound('handler 1'))
+        .add((_) => Response.ok('handler 2'))
         .handler;
 
     return makeSimpleRequest(handler).then((response) {
@@ -88,9 +87,9 @@ void main() {
   });
 
   test('a 405 response triggers a cascade by default', () {
-    var handler = new Cascade()
-        .add((_) => new Response(405))
-        .add((_) => new Response.ok('handler 2'))
+    var handler = Cascade()
+        .add((_) => Response(405))
+        .add((_) => Response.ok('handler 2'))
         .handler;
 
     return makeSimpleRequest(handler).then((response) {
@@ -100,11 +99,11 @@ void main() {
   });
 
   test('[statusCodes] controls which statuses cause cascading', () {
-    var handler = new Cascade(statusCodes: [302, 403])
-        .add((_) => new Response.found('/'))
-        .add((_) => new Response.forbidden('handler 2'))
-        .add((_) => new Response.notFound('handler 3'))
-        .add((_) => new Response.ok('handler 4'))
+    var handler = Cascade(statusCodes: [302, 403])
+        .add((_) => Response.found('/'))
+        .add((_) => Response.forbidden('handler 2'))
+        .add((_) => Response.notFound('handler 3'))
+        .add((_) => Response.ok('handler 4'))
         .handler;
 
     return makeSimpleRequest(handler).then((response) {
@@ -115,11 +114,11 @@ void main() {
 
   test('[shouldCascade] controls which responses cause cascading', () {
     var handler =
-        new Cascade(shouldCascade: (response) => response.statusCode % 2 == 1)
-            .add((_) => new Response.movedPermanently('/'))
-            .add((_) => new Response.forbidden('handler 2'))
-            .add((_) => new Response.notFound('handler 3'))
-            .add((_) => new Response.ok('handler 4'))
+        Cascade(shouldCascade: (response) => response.statusCode % 2 == 1)
+            .add((_) => Response.movedPermanently('/'))
+            .add((_) => Response.forbidden('handler 2'))
+            .add((_) => Response.notFound('handler 3'))
+            .add((_) => Response.ok('handler 4'))
             .handler;
 
     return makeSimpleRequest(handler).then((response) {
@@ -130,14 +129,13 @@ void main() {
 
   group('errors', () {
     test('getting the handler for an empty cascade fails', () {
-      expect(() => new Cascade().handler, throwsStateError);
+      expect(() => Cascade().handler, throwsStateError);
     });
 
     test('passing [statusCodes] and [shouldCascade] at the same time fails',
         () {
       expect(
-          () =>
-              new Cascade(statusCodes: [404, 405], shouldCascade: (_) => false),
+          () => Cascade(statusCodes: [404, 405], shouldCascade: (_) => false),
           throwsArgumentError);
     });
   });

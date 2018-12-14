@@ -18,4 +18,4 @@ import 'response.dart';
 /// may have been touched by other middleware. Similarly the response may be
 /// directly returned by an HTTP server or have further processing done by other
 /// middleware.
-typedef FutureOr<Response> Handler(Request request);
+typedef Handler = FutureOr<Response> Function(Request request);

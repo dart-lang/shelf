@@ -16,9 +16,8 @@ Body getBody(Message message) => message._body;
 
 /// The default set of headers for a message created with no body and no
 /// explicit headers.
-final _defaultHeaders = new ShelfUnmodifiableMap<String>(
-    {"content-length": "0"},
-    ignoreKeyCase: true);
+final _defaultHeaders =
+    ShelfUnmodifiableMap<String>({"content-length": "0"}, ignoreKeyCase: true);
 
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
@@ -66,15 +65,13 @@ abstract class Message {
       {Encoding encoding,
       Map<String, String> headers,
       Map<String, Object> context})
-      : this._(new Body(body, encoding), headers, context);
+      : this._(Body(body, encoding), headers, context);
 
   Message._(Body body, Map<String, String> headers, Map<String, Object> context)
       : _body = body,
-        headers = new ShelfUnmodifiableMap<String>(
-            _adjustHeaders(headers, body),
+        headers = ShelfUnmodifiableMap<String>(_adjustHeaders(headers, body),
             ignoreKeyCase: true),
-        context =
-            new ShelfUnmodifiableMap<Object>(context, ignoreKeyCase: false);
+        context = ShelfUnmodifiableMap<Object>(context, ignoreKeyCase: false);
 
   /// The contents of the content-length field in [headers].
   ///
@@ -120,7 +117,7 @@ abstract class Message {
   MediaType get _contentType {
     if (_contentTypeCache != null) return _contentTypeCache;
     if (!headers.containsKey('content-type')) return null;
-    _contentTypeCache = new MediaType.parse(headers['content-type']);
+    _contentTypeCache = MediaType.parse(headers['content-type']);
     return _contentTypeCache;
   }
 
@@ -166,15 +163,15 @@ Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
   }
 
   var newHeaders = headers == null
-      ? new CaseInsensitiveMap<String>()
-      : new CaseInsensitiveMap<String>.from(headers);
+      ? CaseInsensitiveMap<String>()
+      : CaseInsensitiveMap<String>.from(headers);
 
   if (!sameEncoding) {
     if (newHeaders['content-type'] == null) {
       newHeaders['content-type'] =
           'application/octet-stream; charset=${body.encoding.name}';
     } else {
-      var contentType = new MediaType.parse(newHeaders['content-type'])
+      var contentType = MediaType.parse(newHeaders['content-type'])
           .change(parameters: {'charset': body.encoding.name});
       newHeaders['content-type'] = contentType.toString();
     }
@@ -197,6 +194,6 @@ bool _sameEncoding(Map<String, String> headers, Body body) {
   var contentType = getHeader(headers, 'content-type');
   if (contentType == null) return false;
 
-  var charset = new MediaType.parse(contentType).parameters['charset'];
+  var charset = MediaType.parse(contentType).parameters['charset'];
   return Encoding.getByName(charset) == body.encoding;
 }

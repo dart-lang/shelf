@@ -13,32 +13,32 @@ import 'test_util.dart';
 void main() {
   group("supports a String body", () {
     test("readAsString", () {
-      var response = new Response.ok("hello, world");
+      var response = Response.ok("hello, world");
       expect(response.readAsString(), completion(equals("hello, world")));
     });
 
     test("read", () {
-      var helloWorldBytes = new List.from(helloBytes)..addAll(worldBytes);
+      var helloWorldBytes = List.from(helloBytes)..addAll(worldBytes);
 
-      var response = new Response.ok("hello, world");
+      var response = Response.ok("hello, world");
       expect(response.read().toList(), completion(equals([helloWorldBytes])));
     });
   });
 
   group("new Response.internalServerError without a body", () {
     test('sets the body to "Internal Server Error"', () {
-      var response = new Response.internalServerError();
+      var response = Response.internalServerError();
       expect(
           response.readAsString(), completion(equals("Internal Server Error")));
     });
 
     test('sets the content-type header to text/plain', () {
-      var response = new Response.internalServerError();
+      var response = Response.internalServerError();
       expect(response.headers, containsPair('content-type', 'text/plain'));
     });
 
     test('preserves content-type parameters', () {
-      var response = new Response.internalServerError(headers: {
+      var response = Response.internalServerError(headers: {
         'content-type': 'application/octet-stream; param=whatever'
       });
       expect(response.headers,
@@ -48,24 +48,24 @@ void main() {
 
   group("Response redirect", () {
     test("sets the location header for a String", () {
-      var response = new Response.found('/foo');
+      var response = Response.found('/foo');
       expect(response.headers, containsPair('location', '/foo'));
     });
 
     test("sets the location header for a Uri", () {
-      var response = new Response.found(new Uri(path: '/foo'));
+      var response = Response.found(Uri(path: '/foo'));
       expect(response.headers, containsPair('location', '/foo'));
     });
   });
 
   group("expires", () {
     test("is null without an Expires header", () {
-      expect(new Response.ok("okay!").expires, isNull);
+      expect(Response.ok("okay!").expires, isNull);
     });
 
     test("comes from the Expires header", () {
       expect(
-          new Response.ok("okay!",
+          Response.ok("okay!",
               headers: {'expires': 'Sun, 06 Nov 1994 08:49:37 GMT'}).expires,
           equals(DateTime.parse("1994-11-06 08:49:37z")));
     });
@@ -73,12 +73,12 @@ void main() {
 
   group("lastModified", () {
     test("is null without a Last-Modified header", () {
-      expect(new Response.ok("okay!").lastModified, isNull);
+      expect(Response.ok("okay!").lastModified, isNull);
     });
 
     test("comes from the Last-Modified header", () {
       expect(
-          new Response.ok("okay!",
+          Response.ok("okay!",
                   headers: {'last-modified': 'Sun, 06 Nov 1994 08:49:37 GMT'})
               .lastModified,
           equals(DateTime.parse("1994-11-06 08:49:37z")));
@@ -87,9 +87,9 @@ void main() {
 
   group('change', () {
     test('with no arguments returns instance with equal values', () {
-      var controller = new StreamController();
+      var controller = StreamController();
 
-      var request = new Response(345,
+      var request = Response(345,
           body: 'hèllo, world',
           encoding: latin1,
           headers: {'header1': 'header value 1'},
@@ -104,7 +104,7 @@ void main() {
       expect(copy.context, same(request.context));
 
       controller.add(helloBytes);
-      return new Future(() {
+      return Future(() {
         controller
           ..add(worldBytes)
           ..close();
@@ -112,7 +112,7 @@ void main() {
     });
 
     test("allows the original response to be read", () {
-      var response = new Response.ok(null);
+      var response = Response.ok(null);
       var changed = response.change();
 
       expect(response.read().toList(), completion(isEmpty));
@@ -120,7 +120,7 @@ void main() {
     });
 
     test("allows the changed response to be read", () {
-      var response = new Response.ok(null);
+      var response = Response.ok(null);
       var changed = response.change();
 
       expect(changed.read().toList(), completion(isEmpty));
@@ -128,7 +128,7 @@ void main() {
     });
 
     test("allows another changed response to be read", () {
-      var response = new Response.ok(null);
+      var response = Response.ok(null);
       var changed1 = response.change();
       var changed2 = response.change();
 

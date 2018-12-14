@@ -20,34 +20,33 @@ class IOServer implements Server {
 
   Uri get url {
     if (server.address.isLoopback) {
-      return new Uri(scheme: "http", host: "localhost", port: server.port);
+      return Uri(scheme: "http", host: "localhost", port: server.port);
     }
 
     // IPv6 addresses in URLs need to be enclosed in square brackets to avoid
     // URL ambiguity with the ":" in the address.
     if (server.address.type == InternetAddressType.IPv6) {
-      return new Uri(
+      return Uri(
           scheme: "http",
           host: "[${server.address.address}]",
           port: server.port);
     }
 
-    return new Uri(
-        scheme: "http", host: server.address.address, port: server.port);
+    return Uri(scheme: "http", host: server.address.address, port: server.port);
   }
 
   /// Calls [HttpServer.bind] and wraps the result in an [IOServer].
   static Future<IOServer> bind(address, int port, {int backlog}) async {
     backlog ??= 0;
     var server = await HttpServer.bind(address, port, backlog: backlog);
-    return new IOServer(server);
+    return IOServer(server);
   }
 
   IOServer(this.server);
 
   void mount(Handler handler) {
     if (_mounted) {
-      throw new StateError("Can't mount two handlers for the same server.");
+      throw StateError("Can't mount two handlers for the same server.");
     }
     _mounted = true;
 

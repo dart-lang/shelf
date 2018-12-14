@@ -8,13 +8,12 @@ import 'package:test/test.dart';
 import 'package:shelf/shelf.dart';
 
 // "hello,"
-const helloBytes = const [104, 101, 108, 108, 111, 44];
+const helloBytes = [104, 101, 108, 108, 111, 44];
 
 // " world"
-const worldBytes = const [32, 119, 111, 114, 108, 100];
+const worldBytes = [32, 119, 111, 114, 108, 100];
 
-final Matcher throwsHijackException =
-    throwsA(new TypeMatcher<HijackException>());
+final Matcher throwsHijackException = throwsA(TypeMatcher<HijackException>());
 
 /// A simple, synchronous handler for [Request].
 ///
@@ -23,18 +22,18 @@ final Matcher throwsHijackException =
 Response syncHandler(Request request,
     {int statusCode, Map<String, String> headers}) {
   if (statusCode == null) statusCode = 200;
-  return new Response(statusCode,
+  return Response(statusCode,
       headers: headers, body: 'Hello from ${request.requestedUri.path}');
 }
 
 /// Calls [syncHandler] and wraps the response in a [Future].
 Future<Response> asyncHandler(Request request) =>
-    new Future(() => syncHandler(request));
+    Future(() => syncHandler(request));
 
 /// Makes a simple GET request to [handler] and returns the result.
 Future<Response> makeSimpleRequest(Handler handler) =>
-    new Future.sync(() => handler(_request));
+    Future.sync(() => handler(_request));
 
-final _request = new Request('GET', localhostUri);
+final _request = Request('GET', localhostUri);
 
 final localhostUri = Uri.parse('http://localhost/');

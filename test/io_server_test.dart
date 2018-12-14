@@ -33,7 +33,7 @@ void main() {
 
   test("delays HTTP requests until a handler is mounted", () async {
     expect(http.read(server.url), completion(equals('Hello from /')));
-    await new Future.delayed(Duration.zero);
+    await Future.delayed(Duration.zero);
 
     server.mount(asyncHandler);
   });

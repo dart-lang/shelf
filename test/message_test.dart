@@ -17,7 +17,7 @@ class _TestMessage extends Message {
 
   Message change(
       {Map<String, String> headers, Map<String, Object> context, body}) {
-    throw new UnimplementedError();
+    throw UnimplementedError();
   }
 }
 
@@ -26,7 +26,7 @@ Message _createMessage(
     Map<String, Object> context,
     body,
     Encoding encoding}) {
-  return new _TestMessage(headers, context, body, encoding);
+  return _TestMessage(headers, context, body, encoding);
 }
 
 void main() {
@@ -81,12 +81,12 @@ void main() {
     });
 
     test("supports a Stream<List<int>> body", () {
-      var controller = new StreamController();
+      var controller = StreamController();
       var request = _createMessage(body: controller.stream);
       expect(request.readAsString(), completion(equals("hello, world")));
 
       controller.add(helloBytes);
-      return new Future(() {
+      return Future(() {
         controller
           ..add(worldBytes)
           ..close();
@@ -95,7 +95,7 @@ void main() {
 
     test("defaults to UTF-8", () {
       var request = _createMessage(
-          body: new Stream.fromIterable([
+          body: Stream.fromIterable([
         [195, 168]
       ]));
       expect(request.readAsString(), completion(equals("è")));
@@ -104,7 +104,7 @@ void main() {
     test("the content-type header overrides the default", () {
       var request = _createMessage(
           headers: {'content-type': 'text/plain; charset=iso-8859-1'},
-          body: new Stream.fromIterable([
+          body: Stream.fromIterable([
             [195, 168]
           ]));
       expect(request.readAsString(), completion(equals("Ã¨")));
@@ -113,7 +113,7 @@ void main() {
     test("an explicit encoding overrides the content-type header", () {
       var request = _createMessage(
           headers: {'content-type': 'text/plain; charset=iso-8859-1'},
-          body: new Stream.fromIterable([
+          body: Stream.fromIterable([
             [195, 168]
           ]));
       expect(request.readAsString(latin1), completion(equals("Ã¨")));
@@ -127,13 +127,13 @@ void main() {
     });
 
     test("supports a Stream<List<int>> body", () {
-      var controller = new StreamController();
+      var controller = StreamController();
       var request = _createMessage(body: controller.stream);
       expect(request.read().toList(),
           completion(equals([helloBytes, worldBytes])));
 
       controller.add(helloBytes);
-      return new Future(() {
+      return Future(() {
         controller
           ..add(worldBytes)
           ..close();
@@ -191,13 +191,13 @@ void main() {
     });
 
     test("is null for a stream body", () {
-      var request = _createMessage(body: new Stream.empty());
+      var request = _createMessage(body: Stream.empty());
       expect(request.contentLength, isNull);
     });
 
     test("uses the content-length header for a stream body", () {
       var request = _createMessage(
-          body: new Stream.empty(), headers: {'content-length': '42'});
+          body: Stream.empty(), headers: {'content-length': '42'});
       expect(request.contentLength, 42);
     });
 

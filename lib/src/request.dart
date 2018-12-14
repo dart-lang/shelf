@@ -13,7 +13,8 @@ import 'util.dart';
 
 /// A callback provided by a Shelf adapter that's used by [Request.hijack] to
 /// provide a [HijackCallback] with a socket.
-typedef void _OnHijackCallback(void callback(StreamChannel<List<int>> channel));
+typedef _OnHijackCallback = void Function(
+    void Function(StreamChannel<List<int>> channel) callback);
 
 /// Represents an HTTP request to be processed by a Shelf application.
 class Request extends Message {
@@ -142,7 +143,7 @@ class Request extends Message {
             body: body,
             encoding: encoding,
             context: context,
-            onHijack: onHijack == null ? null : new _OnHijack(onHijack));
+            onHijack: onHijack == null ? null : _OnHijack(onHijack));
 
   /// This constructor has the same signature as [new Request] except that
   /// accepts [onHijack] as [_OnHijack].
@@ -166,20 +167,20 @@ class Request extends Message {
         this.handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
         this._onHijack = onHijack,
         super(body, encoding: encoding, headers: headers, context: context) {
-    if (method.isEmpty) throw new ArgumentError('method cannot be empty.');
+    if (method.isEmpty) throw ArgumentError('method cannot be empty.');
 
     if (!requestedUri.isAbsolute) {
-      throw new ArgumentError(
+      throw ArgumentError(
           'requestedUri "$requestedUri" must be an absolute URL.');
     }
 
     if (requestedUri.fragment.isNotEmpty) {
-      throw new ArgumentError(
+      throw ArgumentError(
           'requestedUri "$requestedUri" may not have a fragment.');
     }
 
     if (this.handlerPath + this.url.path != this.requestedUri.path) {
-      throw new ArgumentError('handlerPath "$handlerPath" and url "$url" must '
+      throw ArgumentError('handlerPath "$handlerPath" and url "$url" must '
           'combine to equal requestedUri path "${requestedUri.path}".');
     }
   }
@@ -221,7 +222,7 @@ class Request extends Message {
     var handlerPath = this.handlerPath;
     if (path != null) handlerPath += path;
 
-    return new Request._(this.method, this.requestedUri,
+    return Request._(this.method, this.requestedUri,
         protocolVersion: this.protocolVersion,
         headers: headers,
         handlerPath: handlerPath,
@@ -243,7 +244,7 @@ class Request extends Message {
   /// request can be hijacked.
   void hijack(void callback(StreamChannel<List<int>> channel)) {
     if (_onHijack == null) {
-      throw new StateError("This request can't be hijacked.");
+      throw StateError("This request can't be hijacked.");
     }
 
     _onHijack.run(callback);
@@ -267,7 +268,7 @@ class _OnHijack {
   ///
   /// Throws a [StateError] if [this] has already been called.
   void run(void callback(StreamChannel<List<int>> channel)) {
-    if (called) throw new StateError("This request has already been hijacked.");
+    if (called) throw StateError("This request has already been hijacked.");
     called = true;
     newFuture(() => _callback(callback));
   }
@@ -286,40 +287,40 @@ Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
 
   if (url != null) {
     if (url.scheme.isNotEmpty || url.hasAuthority || url.fragment.isNotEmpty) {
-      throw new ArgumentError('url "$url" may contain only a path and query '
+      throw ArgumentError('url "$url" may contain only a path and query '
           'parameters.');
     }
 
     if (!requestedUri.path.endsWith(url.path)) {
-      throw new ArgumentError('url "$url" must be a suffix of requestedUri '
+      throw ArgumentError('url "$url" must be a suffix of requestedUri '
           '"$requestedUri".');
     }
 
     if (requestedUri.query != url.query) {
-      throw new ArgumentError('url "$url" must have the same query parameters '
+      throw ArgumentError('url "$url" must have the same query parameters '
           'as requestedUri "$requestedUri".');
     }
 
     if (url.path.startsWith('/')) {
-      throw new ArgumentError('url "$url" must be relative.');
+      throw ArgumentError('url "$url" must be relative.');
     }
 
     var startOfUrl = requestedUri.path.length - url.path.length;
     if (url.path.isNotEmpty &&
         requestedUri.path.substring(startOfUrl - 1, startOfUrl) != '/') {
-      throw new ArgumentError('url "$url" must be on a path boundary in '
+      throw ArgumentError('url "$url" must be on a path boundary in '
           'requestedUri "$requestedUri".');
     }
 
     return url;
   } else if (handlerPath != null) {
-    return new Uri(
+    return Uri(
         path: requestedUri.path.substring(handlerPath.length),
         query: requestedUri.query);
   } else {
     // Skip the initial "/".
     var path = requestedUri.path.substring(1);
-    return new Uri(path: path, query: requestedUri.query);
+    return Uri(path: path, query: requestedUri.query);
   }
 }
 
@@ -336,13 +337,12 @@ String _computeHandlerPath(Uri requestedUri, String handlerPath, Uri url) {
 
   if (handlerPath != null) {
     if (!requestedUri.path.startsWith(handlerPath)) {
-      throw new ArgumentError('handlerPath "$handlerPath" must be a prefix of '
+      throw ArgumentError('handlerPath "$handlerPath" must be a prefix of '
           'requestedUri path "${requestedUri.path}"');
     }
 
     if (!handlerPath.startsWith('/')) {
-      throw new ArgumentError(
-          'handlerPath "$handlerPath" must be root-relative.');
+      throw ArgumentError('handlerPath "$handlerPath" must be root-relative.');
     }
 
     return handlerPath;

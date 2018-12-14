@@ -38,7 +38,7 @@ class Body {
     int contentLength;
     if (body == null) {
       contentLength = 0;
-      stream = new Stream.fromIterable([]);
+      stream = Stream.fromIterable([]);
     } else if (body is String) {
       if (encoding == null) {
         var encoded = utf8.encode(body);
@@ -46,23 +46,23 @@ class Body {
         // that an encoding of "text/plain" will stay put.
         if (!_isPlainAscii(encoded, body.length)) encoding = utf8;
         contentLength = encoded.length;
-        stream = new Stream.fromIterable([encoded]);
+        stream = Stream.fromIterable([encoded]);
       } else {
         var encoded = encoding.encode(body);
         contentLength = encoded.length;
-        stream = new Stream.fromIterable([encoded]);
+        stream = Stream.fromIterable([encoded]);
       }
     } else if (body is List) {
       contentLength = body.length;
-      stream = new Stream.fromIterable([body.cast()]);
+      stream = Stream.fromIterable([body.cast()]);
     } else if (body is Stream) {
       stream = body.cast();
     } else {
-      throw new ArgumentError('Response body "$body" must be a String or a '
+      throw ArgumentError('Response body "$body" must be a String or a '
           'Stream.');
     }
 
-    return new Body._(stream, encoding, contentLength);
+    return Body._(stream, encoding, contentLength);
   }
 
   /// Returns whether [bytes] is plain ASCII.
@@ -83,7 +83,7 @@ class Body {
   /// Can only be called once.
   Stream<List<int>> read() {
     if (_stream == null) {
-      throw new StateError("The 'read' method can only be called once on a "
+      throw StateError("The 'read' method can only be called once on a "
           "shelf.Request/shelf.Response object.");
     }
     var stream = _stream;

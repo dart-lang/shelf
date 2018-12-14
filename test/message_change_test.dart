@@ -15,14 +15,14 @@ import 'test_util.dart';
 void main() {
   group('Request', () {
     _testChange(({body, headers, context}) {
-      return new Request('GET', localhostUri,
+      return Request('GET', localhostUri,
           body: body, headers: headers, context: context);
     });
   });
 
   group('Response', () {
     _testChange(({body, headers, context}) {
-      return new Response.ok(body, headers: headers, context: context);
+      return Response.ok(body, headers: headers, context: context);
     });
   });
 }
@@ -45,8 +45,8 @@ void _testChange(
     test('with Stream', () async {
       var request = factory(body: 'Hello, world');
       var copy = request.change(
-          body: new Stream.fromIterable(['Goodbye, world'])
-              .transform(utf8.encoder));
+          body:
+              Stream.fromIterable(['Goodbye, world']).transform(utf8.encoder));
 
       var newBody = await copy.readAsString();
 

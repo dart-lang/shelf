@@ -51,7 +51,7 @@ void main() {
   });
 
   test('async null response leads to a 500', () async {
-    await _scheduleServer((request) => new Future.value(null));
+    await _scheduleServer((request) => Future.value(null));
 
     var response = await _get();
     expect(response.statusCode, HttpStatus.internalServerError);
@@ -60,7 +60,7 @@ void main() {
 
   test('thrown error leads to a 500', () async {
     await _scheduleServer((request) {
-      throw new UnsupportedError('test');
+      throw UnsupportedError('test');
     });
 
     var response = await _get();
@@ -70,7 +70,7 @@ void main() {
 
   test('async error leads to a 500', () async {
     await _scheduleServer((request) {
-      return new Future.error('test');
+      return Future.error('test');
     });
 
     var response = await _get();
@@ -113,10 +113,10 @@ void main() {
           completion(equals([
             [1, 2, 3, 4]
           ])));
-      return new Response.ok(null);
+      return Response.ok(null);
     }));
 
-    var request = new http.StreamedRequest(
+    var request = http.StreamedRequest(
         'POST', Uri.parse('http://localhost:$_serverPort'));
     request.sink.add([1, 2, 3, 4]);
     request.sink.close();
@@ -127,7 +127,7 @@ void main() {
 
   test('custom response headers are received by the client', () async {
     await _scheduleServer((request) {
-      return new Response.ok('Hello from /',
+      return Response.ok('Hello from /',
           headers: {'test-header': 'test-value', 'test-list': 'a, b, c'});
     });
 
@@ -139,7 +139,7 @@ void main() {
 
   test('custom status code is received by the client', () async {
     await _scheduleServer((request) {
-      return new Response(299, body: 'Hello from /');
+      return Response(299, body: 'Hello from /');
     });
 
     var response = await _get();
@@ -236,7 +236,7 @@ void main() {
   test('passes asynchronous exceptions to the parent error zone', () async {
     await runZoned(() async {
       var server = await shelf_io.serve((request) {
-        new Future(() => throw 'oh no');
+        Future(() => throw 'oh no');
         return syncHandler(request);
       }, 'localhost', 0);
 
@@ -252,7 +252,7 @@ void main() {
   test("doesn't pass asynchronous exceptions to the root error zone", () async {
     var response = await Zone.root.run(() async {
       var server = await shelf_io.serve((request) {
-        new Future(() => throw 'oh no');
+        Future(() => throw 'oh no');
         return syncHandler(request);
       }, 'localhost', 0);
 
@@ -291,20 +291,20 @@ void main() {
       // Update beforeRequest to be one second earlier. HTTP dates only have
       // second-level granularity and the request will likely take less than a
       // second.
-      var beforeRequest = new DateTime.now().subtract(new Duration(seconds: 1));
+      var beforeRequest = DateTime.now().subtract(Duration(seconds: 1));
 
       var response = await _get();
       expect(response.headers, contains('date'));
       var responseDate = parser.parseHttpDate(response.headers['date']);
 
       expect(responseDate.isAfter(beforeRequest), isTrue);
-      expect(responseDate.isBefore(new DateTime.now()), isTrue);
+      expect(responseDate.isBefore(DateTime.now()), isTrue);
     });
 
     test('defers to header in response', () async {
-      var date = new DateTime.utc(1981, 6, 5);
+      var date = DateTime.utc(1981, 6, 5);
       await _scheduleServer((request) {
-        return new Response.ok('test',
+        return Response.ok('test',
             headers: {HttpHeaders.dateHeader: parser.formatHttpDate(date)});
       });
 
@@ -326,7 +326,7 @@ void main() {
 
     test('defers to header in response', () async {
       await _scheduleServer((request) {
-        return new Response.ok('test',
+        return Response.ok('test',
             headers: {HttpHeaders.serverHeader: 'myServer'});
       });
 
@@ -340,7 +340,7 @@ void main() {
     group('is added when the transfer-encoding header is', () {
       test('unset', () async {
         await _scheduleServer((request) {
-          return new Response.ok(new Stream.fromIterable([
+          return Response.ok(Stream.fromIterable([
             [1, 2, 3, 4]
           ]));
         });
@@ -353,8 +353,8 @@ void main() {
 
       test('"identity"', () async {
         await _scheduleServer((request) {
-          return new Response.ok(
-              new Stream.fromIterable([
+          return Response.ok(
+              Stream.fromIterable([
                 [1, 2, 3, 4]
               ]),
               headers: {HttpHeaders.transferEncodingHeader: 'identity'});
@@ -370,8 +370,8 @@ void main() {
     test('is preserved when the transfer-encoding header is "chunked"',
         () async {
       await _scheduleServer((request) {
-        return new Response.ok(
-            new Stream.fromIterable(["2\r\nhi\r\n0\r\n\r\n".codeUnits]),
+        return Response.ok(
+            Stream.fromIterable(["2\r\nhi\r\n0\r\n\r\n".codeUnits]),
             headers: {HttpHeaders.transferEncodingHeader: 'chunked'});
       });
 
@@ -384,8 +384,8 @@ void main() {
     group('is not added when', () {
       test('content-length is set', () async {
         await _scheduleServer((request) {
-          return new Response.ok(
-              new Stream.fromIterable([
+          return Response.ok(
+              Stream.fromIterable([
                 [1, 2, 3, 4]
               ]),
               headers: {HttpHeaders.contentLengthHeader: '4'});
@@ -399,7 +399,7 @@ void main() {
 
       test('status code is 1xx', () async {
         await _scheduleServer((request) {
-          return new Response(123, body: new Stream.empty());
+          return Response(123, body: Stream.empty());
         });
 
         var response = await _get();
@@ -410,7 +410,7 @@ void main() {
 
       test('status code is 204', () async {
         await _scheduleServer((request) {
-          return new Response(204, body: new Stream.empty());
+          return Response(204, body: Stream.empty());
         });
 
         var response = await _get();
@@ -421,7 +421,7 @@ void main() {
 
       test('status code is 304', () async {
         await _scheduleServer((request) {
-          return new Response(304, body: new Stream.empty());
+          return Response(304, body: Stream.empty());
         });
 
         var response = await _get();
@@ -433,19 +433,19 @@ void main() {
   });
 
   test('respects the "shelf.io.buffer_output" context parameter', () async {
-    var controller = new StreamController<String>();
+    var controller = StreamController<String>();
     await _scheduleServer((request) {
       controller.add("Hello, ");
 
-      return new Response.ok(utf8.encoder.bind(controller.stream),
+      return Response.ok(utf8.encoder.bind(controller.stream),
           context: {"shelf.io.buffer_output": false});
     });
 
     var request =
-        new http.Request("GET", Uri.parse('http://localhost:$_serverPort/'));
+        http.Request("GET", Uri.parse('http://localhost:$_serverPort/'));
 
     var response = await request.send();
-    var stream = new StreamQueue(utf8.decoder.bind(response.stream));
+    var stream = StreamQueue(utf8.decoder.bind(response.stream));
 
     var data = await stream.next;
     expect(data, equals("Hello, "));
@@ -461,8 +461,8 @@ void main() {
     await _scheduleServer((request) {
       expect(
           request.context,
-          containsPair('shelf.io.connection_info',
-              new TypeMatcher<HttpConnectionInfo>()));
+          containsPair(
+              'shelf.io.connection_info', TypeMatcher<HttpConnectionInfo>()));
 
       var connectionInfo =
           request.context['shelf.io.connection_info'] as HttpConnectionInfo;
@@ -477,12 +477,12 @@ void main() {
   });
 
   group('ssl tests', () {
-    var securityContext = new SecurityContext()
+    var securityContext = SecurityContext()
       ..setTrustedCertificatesBytes(certChainBytes)
       ..useCertificateChainBytes(certChainBytes)
       ..usePrivateKeyBytes(certKeyBytes, password: 'dartdart');
 
-    var sslClient = new HttpClient(context: securityContext);
+    var sslClient = HttpClient(context: securityContext);
 
     Future<HttpClientRequest> _scheduleSecureGet() =>
         sslClient.getUrl(Uri.parse('https://localhost:${_server.port}/'));
@@ -525,7 +525,7 @@ Future<http.Response> _get({Map<String, String> headers}) =>
 Future<http.StreamedResponse> _post(
     {Map<String, String> headers, String body}) {
   var request =
-      new http.Request('POST', Uri.parse('http://localhost:$_serverPort/'));
+      http.Request('POST', Uri.parse('http://localhost:$_serverPort/'));
 
   if (headers != null) request.headers.addAll(headers);
   if (body != null) request.body = body;

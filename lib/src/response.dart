@@ -171,8 +171,7 @@ class Response extends Message {
   Response.notModified(
       {Map<String, String> headers, Map<String, Object> context})
       : this(304,
-            headers:
-                addHeader(headers, 'date', formatHttpDate(new DateTime.now())),
+            headers: addHeader(headers, 'date', formatHttpDate(DateTime.now())),
             context: context);
 
   /// Constructs a 403 Forbidden response.
@@ -284,7 +283,7 @@ class Response extends Message {
       Map<String, Object> context})
       : super(body, encoding: encoding, headers: headers, context: context) {
     if (statusCode < 100) {
-      throw new ArgumentError("Invalid status code: $statusCode.");
+      throw ArgumentError("Invalid status code: $statusCode.");
     }
   }
 
@@ -310,7 +309,7 @@ class Response extends Message {
 
     if (body == null) body = getBody(this);
 
-    return new Response(this.statusCode,
+    return Response(this.statusCode,
         body: body, headers: headers, context: context);
   }
 }
@@ -324,8 +323,8 @@ Map<String, String> _adjustErrorHeaders(Map<String, String> headers) {
     return addHeader(headers, 'content-type', 'text/plain');
   }
 
-  var contentType = new MediaType.parse(headers['content-type'])
-      .change(mimeType: 'text/plain');
+  var contentType =
+      MediaType.parse(headers['content-type']).change(mimeType: 'text/plain');
   return addHeader(headers, 'content-type', contentType.toString());
 }
 
@@ -336,6 +335,6 @@ String _locationToString(location) {
   if (location is String) return location;
   if (location is Uri) return location.toString();
 
-  throw new ArgumentError('Response location must be a String or Uri, was '
+  throw ArgumentError('Response location must be a String or Uri, was '
       '"$location".');
 }
