@@ -1,6 +1,9 @@
 ## 0.7.4
 
-* Allow passing `shared` parameter to underlying `HttpServer.bind` calls via `shelf_io.serve`
+* Allow passing `shared` parameter to underlying `HttpServer.bind` calls via
+  `shelf_io.serve`.
+* Correctly pass `encoding` in `Response` constructors `forbidden`, `notFound`,
+  and `internalServerError`.
 
 ## 0.7.3+3
 

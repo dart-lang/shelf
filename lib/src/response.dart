@@ -199,7 +199,8 @@ class Response extends Message {
       : this(403,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
             body: body == null ? 'Forbidden' : body,
-            context: context);
+            context: context,
+            encoding: encoding);
 
   /// Constructs a 404 Not Found response.
   ///
@@ -227,7 +228,8 @@ class Response extends Message {
       : this(404,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
             body: body == null ? 'Not Found' : body,
-            context: context);
+            context: context,
+            encoding: encoding);
 
   /// Constructs a 500 Internal Server Error response.
   ///
@@ -256,7 +258,8 @@ class Response extends Message {
       : this(500,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
             body: body == null ? 'Internal Server Error' : body,
-            context: context);
+            context: context,
+            encoding: encoding);
 
   /// Constructs an HTTP response with the given [statusCode].
   ///
