@@ -44,11 +44,11 @@ static file server that looks up the requested URI on the filesystem--or it can
 do some processing and forward it to another handler--for example, a logger that
 prints information about requests and responses to the command line.
 
-[handler]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf@id_Handler
+[handler]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Handler.html
 
-[shelf.Request]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request
+[shelf.Request]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Request-class.html
 
-[shelf.Response]:  http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Response
+[shelf.Response]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Response-class.html
 
 The latter kind of handler is called "[middleware][]", since it sits in the
 middle of the server stack. Middleware can be thought of as a function that
@@ -57,9 +57,9 @@ functionality. A Shelf application is usually composed of many layers of
 middleware with one or more handlers at the very center; the [shelf.Pipeline][]
 class makes this sort of application easy to construct.
 
-[middleware]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf@id_Middleware
+[middleware]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Middleware.html
 
-[shelf.Pipeline]:  http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Pipeline
+[shelf.Pipeline]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Pipeline-class.html
 
 Some middleware can also take multiple handlers and call one or more of them for
 each request. For example, a routing middleware might choose which handler to
@@ -72,9 +72,9 @@ handlers to know where they are in the application so they can do their own
 routing correctly. This can be easily accomplished using
 [`Request.change()`][change]:
 
-[handlerPath]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_handlerPath
-[url]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_url
-[change]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_change
+[handlerPath]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Request/handlerPath.html
+[url]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Request/url.html
+[change]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Request/change.html
 
 ```dart
 // In an imaginary routing middleware...
@@ -96,7 +96,7 @@ adapters forward requests from and responses to an underlying HTTP server;
 HTTP requests within the browser using `window.location` and `window.history`,
 or it might pipe requests directly from an HTTP client to a Shelf handler.
 
-[shelf_io.serve]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf-io@id_serve
+[shelf_io.serve]: https://pub.dartlang.org/documentation/shelf/latest/shelf_io/serve.html
 
 ### API Requirements
 
@@ -134,7 +134,7 @@ catchTopLevelErrors(callback(), void onError(error, StackTrace stackTrace)) {
 An adapter that knows its own URL should provide an implementation of the
 [`Server`][server] interface.
 
-[server]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf@id_Server
+[server]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Server-class.html
 
 ### Request Requirements
 
@@ -145,7 +145,7 @@ begin with the adapter's package name followed by a period. If multiple headers
 with the same name are received, the adapter must collapse them into a single
 header separated by commas as per [RFC 2616 section 4.2][].
 
-[new shelf.Request]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_Request-
+[new shelf.Request]: https://pub.dartlang.org/documentation/shelf/latest/shelf/Request/Request.html
 
 [RFC 2616 section 4.2]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
 

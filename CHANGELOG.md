@@ -4,6 +4,7 @@
   `shelf_io.serve`.
 * Correctly pass `encoding` in `Response` constructors `forbidden`, `notFound`,
   and `internalServerError`.
+* Update `README.md` to point to latest docs on `pub.dartlang.org`.
 
 ## 0.7.3+3
 
