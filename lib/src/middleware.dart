@@ -54,7 +54,7 @@ Middleware createMiddleware(
 
   if (responseHandler == null) responseHandler = (response) => response;
 
-  var onError;
+  void Function(Object, StackTrace) onError;
   if (errorHandler != null) {
     onError = (error, stackTrace) {
       if (error is HijackException) throw error;

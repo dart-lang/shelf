@@ -34,7 +34,7 @@ Middleware logRequests({void logger(String msg, bool isError)}) =>
           logger(msg, false);
 
           return response;
-        }, onError: (error, stackTrace) {
+        }, onError: (error, StackTrace stackTrace) {
           if (error is HijackException) throw error;
 
           var msg = _getErrorMessage(startTime, request.requestedUri,

@@ -60,5 +60,5 @@ void main() {
   });
 }
 
-Future<Response> _chunkResponse(Response response) =>
+FutureOr<Response> _chunkResponse(Response response) =>
     addChunkedEncoding((_) => response)(null);

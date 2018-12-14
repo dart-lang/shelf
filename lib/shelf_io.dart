@@ -71,7 +71,7 @@ void serveRequests(Stream<HttpRequest> requests, Handler handler) {
 ///
 /// Returns a [Future] which completes when the request has been handled.
 Future handleRequest(HttpRequest request, Handler handler) async {
-  var shelfRequest;
+  Request shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
   } catch (error, stackTrace) {
@@ -83,7 +83,7 @@ Future handleRequest(HttpRequest request, Handler handler) async {
 
   // TODO(nweiz): abstract out hijack handling to make it easier to implement an
   // adapter.
-  var response;
+  Response response;
   try {
     response = await handler(shelfRequest);
   } on HijackException catch (error, stackTrace) {
@@ -143,7 +143,8 @@ Request _fromHttpRequest(HttpRequest request) {
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
   if (response.context.containsKey("shelf.io.buffer_output")) {
-    httpResponse.bufferOutput = response.context["shelf.io.buffer_output"];
+    httpResponse.bufferOutput =
+        response.context["shelf.io.buffer_output"] as bool;
   }
 
   httpResponse.statusCode = response.statusCode;
