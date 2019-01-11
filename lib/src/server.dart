@@ -32,11 +32,11 @@ class ShelfTestServer {
   /// The [description] is used in debugging output for this handler. It
   /// defaults to "ShelfTestHandler".
   static Future<ShelfTestServer> create(
-      {bool log: true, String description}) async {
+      {bool log = true, String description}) async {
     var server = await HttpMultiServer.loopback(0);
-    var handler = new ShelfTestHandler(log: log, description: description);
+    var handler = ShelfTestHandler(log: log, description: description);
     serveRequests(server, handler);
-    return new ShelfTestServer._(server, handler);
+    return ShelfTestServer._(server, handler);
   }
 
   ShelfTestServer._(this._server, this.handler);
@@ -44,5 +44,5 @@ class ShelfTestServer {
   /// Closes the server.
   ///
   /// If [force] is `true`, all active connections will be closed immediately.
-  Future close({bool force: false}) => _server.close(force: force);
+  Future close({bool force = false}) => _server.close(force: force);
 }

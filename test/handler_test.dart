@@ -13,19 +13,19 @@ void main() {
   group("invokes the handler(s)", () {
     ShelfTestHandler handler;
     setUp(() {
-      handler = new ShelfTestHandler();
+      handler = ShelfTestHandler();
     });
 
     test("with the expected method and path", () async {
-      handler.expect("GET", "/", expectAsync1((_) => new Response.ok("")));
+      handler.expect("GET", "/", expectAsync1((_) => Response.ok("")));
       var response = await handler(_get("/"));
       expect(response.statusCode, equals(200));
     });
 
     test("in queue order", () async {
-      handler.expect("GET", "/", expectAsync1((_) => new Response.ok("1")));
-      handler.expect("GET", "/", expectAsync1((_) => new Response.ok("2")));
-      handler.expect("GET", "/", expectAsync1((_) => new Response.ok("3")));
+      handler.expect("GET", "/", expectAsync1((_) => Response.ok("1")));
+      handler.expect("GET", "/", expectAsync1((_) => Response.ok("2")));
+      handler.expect("GET", "/", expectAsync1((_) => Response.ok("3")));
 
       expect(await (await handler(_get("/"))).readAsString(), equals("1"));
       expect(await (await handler(_get("/"))).readAsString(), equals("2"));
@@ -33,13 +33,13 @@ void main() {
     });
 
     test("interleaved with requests", () async {
-      handler.expect("GET", "/", expectAsync1((_) => new Response.ok("1")));
+      handler.expect("GET", "/", expectAsync1((_) => Response.ok("1")));
       expect(await (await handler(_get("/"))).readAsString(), equals("1"));
 
-      handler.expect("GET", "/", expectAsync1((_) => new Response.ok("2")));
+      handler.expect("GET", "/", expectAsync1((_) => Response.ok("2")));
       expect(await (await handler(_get("/"))).readAsString(), equals("2"));
 
-      handler.expect("GET", "/", expectAsync1((_) => new Response.ok("3")));
+      handler.expect("GET", "/", expectAsync1((_) => Response.ok("3")));
       expect(await (await handler(_get("/"))).readAsString(), equals("3"));
     });
 
@@ -47,7 +47,7 @@ void main() {
       handler.expectAnything(expectAsync1((request) {
         expect(request.method, equals("GET"));
         expect(request.url.path, equals("foo/bar"));
-        return new Response.ok("");
+        return Response.ok("");
       }));
 
       var response = await handler(_get("/foo/bar"));
@@ -58,15 +58,15 @@ void main() {
   group("throws a TestFailure", () {
     test("without any expectations", () {
       _expectZoneFailure(() async {
-        var handler = new ShelfTestHandler();
+        var handler = ShelfTestHandler();
         await handler(_get("/"));
       });
     });
 
     test("when all expectations are exhausted", () {
       _expectZoneFailure(() async {
-        var handler = new ShelfTestHandler();
-        handler.expect("GET", "/", expectAsync1((_) => new Response.ok("")));
+        var handler = ShelfTestHandler();
+        handler.expect("GET", "/", expectAsync1((_) => Response.ok("")));
         await handler(_get("/"));
         await handler(_get("/"));
       });
@@ -74,7 +74,7 @@ void main() {
 
     test("when the method doesn't match the expectation", () {
       _expectZoneFailure(() async {
-        var handler = new ShelfTestHandler();
+        var handler = ShelfTestHandler();
         handler.expect("POST", "/", expectAsync1((_) {}, count: 0));
         await handler(_get("/"));
       });
@@ -82,7 +82,7 @@ void main() {
 
     test("when the path doesn't match the expectation", () {
       _expectZoneFailure(() async {
-        var handler = new ShelfTestHandler();
+        var handler = ShelfTestHandler();
         handler.expect("GET", "/foo", expectAsync1((_) {}, count: 0));
         await handler(_get("/"));
       });
@@ -90,7 +90,7 @@ void main() {
 
     test("if the handler returns null", () {
       _expectZoneFailure(() async {
-        var handler = new ShelfTestHandler();
+        var handler = ShelfTestHandler();
         handler.expect("GET", "/", (_) => null);
         await handler(_get("/"));
       });
@@ -99,7 +99,7 @@ void main() {
 
   test("doesn't swallow handler errors", () {
     runZoned(() async {
-      var handler = new ShelfTestHandler();
+      var handler = ShelfTestHandler();
       handler.expect("GET", "/", (_) => throw "oh heck");
       await handler(_get("/"));
     }, onError: expectAsync1((error) {
@@ -110,9 +110,9 @@ void main() {
 
 void _expectZoneFailure(Future callback()) {
   runZoned(callback, onError: expectAsync1((error) {
-    expect(error, new TypeMatcher<TestFailure>());
+    expect(error, TypeMatcher<TestFailure>());
   }));
 }
 
 Request _get(String path) =>
-    new Request("GET", Uri.parse("http://localhost:80$path"));
+    Request("GET", Uri.parse("http://localhost:80$path"));
