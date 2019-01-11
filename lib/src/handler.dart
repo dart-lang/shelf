@@ -92,6 +92,7 @@ class ShelfTestHandler {
       rethrow;
     } catch (error, stackTrace) {
       _zone.handleUncaughtError(error, stackTrace);
+      return null;
     }
   }
 }

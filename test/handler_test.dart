@@ -110,7 +110,7 @@ void main() {
 
 void _expectZoneFailure(Future callback()) {
   runZoned(callback, onError: expectAsync1((error) {
-    expect(error, new isInstanceOf<TestFailure>());
+    expect(error, new TypeMatcher<TestFailure>());
   }));
 }
 
