@@ -22,7 +22,7 @@ class ShelfTestHandler {
   final Zone _zone;
 
   /// The queue of expected requests to this handler.
-  final _expectations = new Queue<Expectation>();
+  final _expectations = Queue<Expectation>();
 
   /// Creates a new handler that handles requests using handlers provided by
   /// [expect] and [expectAnything].
@@ -32,7 +32,7 @@ class ShelfTestHandler {
   ///
   /// The [description] is used in debugging output for this handler. It
   /// defaults to "ShelfTestHandler".
-  ShelfTestHandler({bool log: true, String description})
+  ShelfTestHandler({bool log = true, String description})
       : _log = log,
         description = description ?? "ShelfTestHandler",
         _zone = Zone.current;
@@ -47,7 +47,7 @@ class ShelfTestHandler {
   /// If this and/or [expectAnything] are called multiple times, the requests
   /// are expected to occur in the same order.
   void expect(String method, String path, Handler handler) {
-    _expectations.add(new Expectation(method, path, handler));
+    _expectations.add(Expectation(method, path, handler));
   }
 
   /// Expects that a single HTTP request will be made to [this].
@@ -57,7 +57,7 @@ class ShelfTestHandler {
   /// If this and/or [expect] are called multiple times, the requests are
   /// expected to occur in the same order.
   void expectAnything(Handler handler) {
-    _expectations.add(new Expectation.anything(handler));
+    _expectations.add(Expectation.anything(handler));
   }
 
   /// The implementation of [Handler].
@@ -67,8 +67,8 @@ class ShelfTestHandler {
 
     try {
       if (_expectations.isEmpty) {
-        throw new TestFailure(
-            "$description received unexpected request ${requestInfo}.");
+        throw TestFailure(
+            "$description received unexpected request $requestInfo.");
       }
 
       var expectation = _expectations.removeFirst();
@@ -80,18 +80,18 @@ class ShelfTestHandler {
         if (expectation.method != null) {
           message += "\nExpected ${expectation.method} ${expectation.path}.";
         }
-        throw new TestFailure(message);
+        throw TestFailure(message);
       }
 
       var response = await expectation.handler(request);
       if (response != null) return response;
 
-      throw new TestFailure(
-          "$description handler returned null for $requestInfo.");
+      throw TestFailure("$description handler returned null for $requestInfo.");
     } on HijackException catch (_) {
       rethrow;
     } catch (error, stackTrace) {
       _zone.handleUncaughtError(error, stackTrace);
+      return null;
     }
   }
 }

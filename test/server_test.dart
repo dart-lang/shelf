@@ -18,7 +18,7 @@ void main() {
     var server = await ShelfTestServer.create();
     addTearDown(server.close);
 
-    server.handler.expect("GET", "/", expectAsync1((_) => new Response.ok("")));
+    server.handler.expect("GET", "/", expectAsync1((_) => Response.ok("")));
     var response = await http.get(server.url);
     expect(response.statusCode, equals(200));
   });
