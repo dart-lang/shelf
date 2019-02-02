@@ -29,9 +29,9 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
   } else if (url is Uri) {
     uri = url;
   } else {
-    throw new ArgumentError.value(url, 'url', 'url must be a String or Uri.');
+    throw ArgumentError.value(url, 'url', 'url must be a String or Uri.');
   }
-  client ??= new http.Client();
+  client ??= http.Client();
   proxyName ??= 'shelf_proxy';
 
   return (serverRequest) async {
@@ -40,8 +40,7 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
     // TODO(nweiz): Handle TRACE requests correctly. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
     var requestUrl = uri.resolve(serverRequest.url.toString());
-    var clientRequest =
-        new http.StreamedRequest(serverRequest.method, requestUrl);
+    var clientRequest = http.StreamedRequest(serverRequest.method, requestUrl);
     clientRequest.followRedirects = false;
     clientRequest.headers.addAll(serverRequest.headers);
     clientRequest.headers['Host'] = uri.authority;
@@ -87,7 +86,7 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
       }
     }
 
-    return new Response(clientResponse.statusCode,
+    return Response(clientResponse.statusCode,
         body: clientResponse.stream, headers: clientResponse.headers);
   };
 }

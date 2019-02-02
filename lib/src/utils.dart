@@ -16,9 +16,9 @@ import 'dart:async';
 /// [cancelOnError] and [closeSink] are both true, [sink] will then be
 /// closed.
 Future store(Stream stream, EventSink sink,
-    {bool cancelOnError: true, bool closeSink: true}) {
-  var completer = new Completer();
-  stream.listen(sink.add, onError: (e, stackTrace) {
+    {bool cancelOnError = true, bool closeSink = true}) {
+  var completer = Completer();
+  stream.listen(sink.add, onError: (e, StackTrace stackTrace) {
     sink.addError(e, stackTrace);
     if (cancelOnError) {
       completer.complete();

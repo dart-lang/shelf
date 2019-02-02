@@ -6,33 +6,33 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_proxy/shelf_proxy.dart';
 
-const _PUB_PORT = 7777;
-final _encoder = new JsonEncoder.withIndent('  ');
+const _pubPort = 7777;
+final _encoder = const JsonEncoder.withIndent('  ');
 
 void main() {
   //
   // The api handler responds to requests to '/api' with a JSON document
   // containing an incrementing 'count' value.
   //
-  int apiCount = 0;
+  var apiCount = 0;
   var apiHandler = (Request request) {
     if (request.url.path == '/api') {
       apiCount++;
       var json = _encoder.convert({'count': apiCount});
       var headers = {'Content-Type': 'application/json'};
-      return new Response.ok(json, headers: headers);
+      return Response.ok(json, headers: headers);
     }
 
-    return new Response.notFound('');
+    return Response.notFound('');
   };
 
   //
   // Cascade sends requests to `apiHandler` first. If that handler returns a
   // 404, the request is next sent to the proxy handler pointing at pub
   //
-  var cascade = new Cascade()
+  var cascade = Cascade()
       .add(apiHandler)
-      .add(proxyHandler(Uri.parse('http://localhost:$_PUB_PORT')));
+      .add(proxyHandler(Uri.parse('http://localhost:$_pubPort')));
 
   //
   // Creates a pipeline handler which first logs requests and then sends them
@@ -46,8 +46,8 @@ void main() {
   //
   io.serve(handler, 'localhost', 8080).then((server) {
     print('Serving at http://${server.address.host}:${server.port}');
-    print('`pub serve` should be running at port $_PUB_PORT '
+    print('`pub serve` should be running at port $_pubPort '
         'on the example dir.');
-    print('  command: pub serve --port $_PUB_PORT example/');
+    print('  command: pub serve --port $_pubPort example/');
   });
 }
