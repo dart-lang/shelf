@@ -1,3 +1,7 @@
+## 0.1.0+6
+
+* Support the latest version of `package:http`.
+
 ## 0.1.0+5
 
 * Support Dart 2.
