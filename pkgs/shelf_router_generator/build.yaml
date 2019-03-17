@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      shelf_router_generator|shelf_router:
+        enabled: true
+
+builders:
+  shelf_router:
+    import: "package:shelf_router_generator/builder.dart"
+    builder_factories: ["shelfRouter"]
+    build_extensions: {".dart": [".shelf_router.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
