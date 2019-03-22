@@ -1,11 +1,10 @@
 name: shelf_router
-version: 0.7.0
+version: 0.7.0+1
 authors:
   - Jonas Finnemann Jensen <jonasfj@google.com>
 description: |
   A convinent request router for the shelf web-framework, with support for
-  URL-parameters, nested routers and routers generated from source annotations
-  using the shelf_router_generator package.
+  URL-parameters, nested routers and routers generated from source annotations.
 homepage: https://github.com/google/dart-neats/tree/master/shelf_router
 repository: https://github.com/google/dart-neats.git
 issue_tracker: https://github.com/google/dart-neats/labels/pkg:shelf_router
