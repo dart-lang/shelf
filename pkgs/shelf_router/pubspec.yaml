@@ -15,8 +15,6 @@ dependencies:
 dev_dependencies:
   test: ^1.5.1
   pedantic: ^1.4.0
-dependency_overrides:
-  http_methods:
-    path: ../http_methods
+  http: ^0.12.0+1
 environment:
   sdk: '>=2.0.0 <3.0.0'
