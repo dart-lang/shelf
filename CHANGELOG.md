@@ -1,3 +1,7 @@
+## 0.2.2+5
+
+* Allow `stream_channel` version 2.x
+
 ## 0.2.2+4
 
 * Fix the check for `onConnection` to check the number of arguments  and not
