@@ -1,3 +1,7 @@
+## 0.7.4+1
+
+* Allow `stream_channel` version 2.x
+
 ## 0.7.4
 
 * Allow passing `shared` parameter to underlying `HttpServer.bind` calls via

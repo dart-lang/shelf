@@ -1,12 +1,12 @@
 name: shelf
-version: 0.7.4
+version: 0.7.4+1
 description: >-
   A model for web server middleware that encourages composition and easy reuse
 author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/shelf
 
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: ">=2.0.0 <3.0.0"
 
 dependencies:
   async: ^2.0.7
@@ -14,7 +14,7 @@ dependencies:
   http_parser: ^3.1.0
   path: ^1.0.0
   stack_trace: ^1.0.0
-  stream_channel: ^1.0.0
+  stream_channel: ">=1.0.0 <3.0.0"
 
 dev_dependencies:
   http: ^0.12.0
