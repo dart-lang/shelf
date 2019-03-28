@@ -167,20 +167,20 @@ class Request extends Message {
         this.handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
         this._onHijack = onHijack,
         super(body, encoding: encoding, headers: headers, context: context) {
-    if (method.isEmpty) throw ArgumentError('method cannot be empty.');
+    if (method.isEmpty) throw UriArgumentError('method cannot be empty.');
 
     if (!requestedUri.isAbsolute) {
-      throw ArgumentError(
+      throw UriArgumentError(
           'requestedUri "$requestedUri" must be an absolute URL.');
     }
 
     if (requestedUri.fragment.isNotEmpty) {
-      throw ArgumentError(
+      throw UriArgumentError(
           'requestedUri "$requestedUri" may not have a fragment.');
     }
 
     if (this.handlerPath + this.url.path != this.requestedUri.path) {
-      throw ArgumentError('handlerPath "$handlerPath" and url "$url" must '
+      throw UriArgumentError('handlerPath "$handlerPath" and url "$url" must '
           'combine to equal requestedUri path "${requestedUri.path}".');
     }
   }
@@ -354,4 +354,9 @@ String _computeHandlerPath(Uri requestedUri, String handlerPath, Uri url) {
   } else {
     return '/';
   }
+}
+
+/// [ArgumentError] for [Uri] parsing and validation.
+class UriArgumentError extends ArgumentError {
+  UriArgumentError(String message) : super(message);
 }

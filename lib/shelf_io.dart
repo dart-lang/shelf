@@ -73,11 +73,16 @@ Future handleRequest(HttpRequest request, Handler handler) async {
   Request shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
-  } catch (error, stackTrace) {
+  } on UriArgumentError catch (error, stackTrace) {
     _logTopLevelError('Error parsing request.\n$error', stackTrace);
     final response = Response(400,
         body: 'Bad Request',
         headers: {HttpHeaders.contentTypeHeader: 'text/plain'});
+    await _writeResponse(response, request.response);
+    return;
+  } catch (error, stackTrace) {
+    _logTopLevelError('Error parsing request.\n$error', stackTrace);
+    final response = Response.internalServerError();
     await _writeResponse(response, request.response);
     return;
   }
