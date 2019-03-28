@@ -1,3 +1,7 @@
+## 0.7.5.
+
+* Return the correct HTTP status code for badly formatted requests.
+
 ## 0.7.4+1
 
 * Allow `stream_channel` version 2.x
