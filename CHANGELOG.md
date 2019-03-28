@@ -1,4 +1,4 @@
-## 0.7.5.
+## 0.7.5
 
 * Return the correct HTTP status code for badly formatted requests.
 
