@@ -73,9 +73,23 @@ Future handleRequest(HttpRequest request, Handler handler) async {
   Request shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
+  } on ArgumentError catch (error, stackTrace) {
+    if (error.name == 'method' || error.name == 'requestedUri') {
+      // TODO: use a reduced log level when using package:logging
+      _logTopLevelError('Error parsing request.\n$error', stackTrace);
+      final response = Response(400,
+          body: 'Bad Request',
+          headers: {HttpHeaders.contentTypeHeader: 'text/plain'});
+      await _writeResponse(response, request.response);
+    } else {
+      _logTopLevelError('Error parsing request.\n$error', stackTrace);
+      final response = Response.internalServerError();
+      await _writeResponse(response, request.response);
+    }
+    return;
   } catch (error, stackTrace) {
-    var response =
-        _logTopLevelError('Error parsing request.\n$error', stackTrace);
+    _logTopLevelError('Error parsing request.\n$error', stackTrace);
+    final response = Response.internalServerError();
     await _writeResponse(response, request.response);
     return;
   }
@@ -203,10 +217,11 @@ Response _logError(Request request, String message, [StackTrace stackTrace]) {
   buffer.writeln();
   buffer.write(message);
 
-  return _logTopLevelError(buffer.toString(), stackTrace);
+  _logTopLevelError(buffer.toString(), stackTrace);
+  return Response.internalServerError();
 }
 
-Response _logTopLevelError(String message, [StackTrace stackTrace]) {
+void _logTopLevelError(String message, [StackTrace stackTrace]) {
   var chain = Chain.current();
   if (stackTrace != null) {
     chain = Chain.forTrace(stackTrace);
@@ -218,5 +233,4 @@ Response _logTopLevelError(String message, [StackTrace stackTrace]) {
   stderr.writeln('ERROR - ${DateTime.now()}');
   stderr.writeln(message);
   stderr.writeln(chain);
-  return Response.internalServerError();
 }

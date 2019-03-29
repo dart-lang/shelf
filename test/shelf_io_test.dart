@@ -267,7 +267,7 @@ void main() {
     expect(response.body, 'Hello from /');
   });
 
-  test('a bad HTTP request results in a 500 response', () async {
+  test('a bad HTTP host request results in a 500 response', () async {
     await _scheduleServer(syncHandler);
 
     var socket = await Socket.connect('localhost', _serverPort);
@@ -282,6 +282,21 @@ void main() {
 
     expect(
         await utf8.decodeStream(socket), contains('500 Internal Server Error'));
+  });
+
+  test('a bad HTTP URL request results in a 400 response', () async {
+    await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', _serverPort);
+
+    try {
+      socket.write('GET /#/ HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    expect(await utf8.decodeStream(socket), contains('400 Bad Request'));
   });
 
   group('date header', () {
