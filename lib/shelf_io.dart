@@ -73,15 +73,22 @@ Future handleRequest(HttpRequest request, Handler handler) async {
   Request shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
+  } on ArgumentError catch (error, stackTrace) {
+    if (error.name == 'method' || error.name == 'requestedUri') {
+      // TODO: use a reduced log level when using package:logging
+      _logTopLevelError('Error parsing request.\n$error', stackTrace);
+      final response = Response(400,
+          body: 'Bad Request',
+          headers: {HttpHeaders.contentTypeHeader: 'text/plain'});
+      await _writeResponse(response, request.response);
+    } else {
+      _logTopLevelError('Error parsing request.\n$error', stackTrace);
+      final response = Response.internalServerError();
+      await _writeResponse(response, request.response);
+    }
   } catch (error, stackTrace) {
-    final isClientError = error is ArgumentError &&
-        (error.name == 'method' || error.name == 'requestedUri');
     _logTopLevelError('Error parsing request.\n$error', stackTrace);
-    final response = isClientError
-        ? Response(400,
-            body: 'Bad Request',
-            headers: {HttpHeaders.contentTypeHeader: 'text/plain'})
-        : Response.internalServerError();
+    final response = Response.internalServerError();
     await _writeResponse(response, request.response);
     return;
   }
