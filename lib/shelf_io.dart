@@ -86,6 +86,7 @@ Future handleRequest(HttpRequest request, Handler handler) async {
       final response = Response.internalServerError();
       await _writeResponse(response, request.response);
     }
+    return;
   } catch (error, stackTrace) {
     _logTopLevelError('Error parsing request.\n$error', stackTrace);
     final response = Response.internalServerError();
