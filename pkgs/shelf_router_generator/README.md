@@ -8,13 +8,31 @@ offers a request router for Shelf. this package enables generating a
 
 **Disclaimer:** This is not an officially supported Google product.
 
+This package should be a _development dependency_ along with
+[package `build_runner`](https://pub.dartlang.org/packages/build_runner), and
+used with [package `shelf`](https://pub.dartlang.org/packages/shelf) and
+[package `shelf_router`](https://pub.dartlang.org/packages/shelf_router) as
+dependencies.
+
+```yaml
+dependencies:
+  shelf: ^0.7.5
+  shelf_router: ^0.7.0+1
+dev_dependencies:
+  shelf_router_generator: ^0.7.0+1
+  build_runner: ^1.3.1
+```
+
+Once your code have been annotated as illustrated in the example below the
+generated part can be created with `pub run build_runner build`.
+
 ## Example
 
 ```dart
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-part 'userservice.g.dart';
+part 'userservice.g.dart'; // generated with 'pub run build_runner build'
 
 class UserService {
   final DatabaseConnection connection;
