@@ -1,6 +1,7 @@
 language: dart
 
 dart:
+  - 2.0.0
   - dev
 
 dart_task:
@@ -8,7 +9,7 @@ dart_task:
   # No parallelism on Firefox (-j 1)
   # Causes flakiness – need to investigate
   - test: --platform firefox -j 1
-  - dartanalyzer
+  - dartanalyzer: --fatal-infos --fatal-warnings .
 
 matrix:
   include:
