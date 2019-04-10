@@ -185,7 +185,7 @@ class Request extends Message {
           requestedUri,
           'requestedUri',
           'handlerPath "$handlerPath" and url "$url" must '
-          'combine to equal requestedUri path "${requestedUri.path}".');
+              'combine to equal requestedUri path "${requestedUri.path}".');
     }
   }
 
