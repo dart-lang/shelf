@@ -2,25 +2,26 @@
 
 `shelf_web_socket` is a [Shelf][] handler for establishing [WebSocket][]
 connections. It exposes a single function, [webSocketHandler][], which calls an
-`onConnection` callback with a [CompatibleWebSocket][] object for every
+`onConnection` callback with a [WebSocketChannel][] object for every
 connection that's established.
 
 [Shelf]: https://pub.dartlang.org/packages/shelf
 
 [WebSocket]: https://tools.ietf.org/html/rfc6455
 
-[webSocketHandler]: https://api.dartlang.org/apidocs/channels/be/dartdoc-viewer/shelf_web_socket/shelf_web_socket.webSocketHandler
+[webSocketHandler]: https://pub.dartlang.org/documentation/shelf_web_socket/latest/shelf_web_socket/webSocketHandler.html
 
-[CompatibleWebSocket]: https://api.dartlang.org/apidocs/channels/be/dartdoc-viewer/http_parser/http_parser.CompatibleWebSocket
+[WebSocketChannel]: https://pub.dartlang.org/documentation/web_socket_channel/latest/web_socket_channel/WebSocketChannel-class.html
 
 ```dart
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
   var handler = webSocketHandler((webSocket) {
     webSocket.stream.listen((message) {
-      webSocket.add("echo $message");
+      webSocket.sink.add("echo $message");
     });
   });
 
