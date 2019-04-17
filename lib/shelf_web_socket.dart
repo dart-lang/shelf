@@ -37,8 +37,14 @@ typedef _BinaryFunction = void Function(Null, Null);
 /// See also the WebSocket spec's discussion of [origin considerations][].
 ///
 /// [origin considerations]: https://tools.ietf.org/html/rfc6455#section-10.2
+///
+/// If [pingInterval] is specified, it will get passed to the created
+/// channel instance, enabling round-trip disconnect detection.
+/// See [WebSocketChannel] for more details.
 Handler webSocketHandler(Function onConnection,
-    {Iterable<String> protocols, Iterable<String> allowedOrigins}) {
+    {Iterable<String> protocols,
+    Iterable<String> allowedOrigins,
+    Duration pingInterval}) {
   if (protocols != null) protocols = protocols.toSet();
   if (allowedOrigins != null) {
     allowedOrigins =
@@ -55,5 +61,7 @@ Handler webSocketHandler(Function onConnection,
     onConnection = (webSocket, _) => innerOnConnection(webSocket);
   }
 
-  return new WebSocketHandler(onConnection, protocols, allowedOrigins).handle;
+  return new WebSocketHandler(
+          onConnection, protocols, allowedOrigins, pingInterval)
+      .handle;
 }

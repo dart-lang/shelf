@@ -18,7 +18,11 @@ class WebSocketHandler {
   /// The set of allowed browser origin connections, or `null`..
   final Set<String> _allowedOrigins;
 
-  WebSocketHandler(this._onConnection, this._protocols, this._allowedOrigins);
+  /// The ping interval used for verifying connection, or `null`.
+  final Duration _pingInterval;
+
+  WebSocketHandler(this._onConnection, this._protocols, this._allowedOrigins,
+      this._pingInterval);
 
   /// The [Handler].
   Response handle(Request request) {
@@ -74,7 +78,8 @@ class WebSocketHandler {
       if (protocol != null) sink.add("Sec-WebSocket-Protocol: $protocol\r\n");
       sink.add("\r\n");
 
-      _onConnection(new WebSocketChannel(channel), protocol);
+      _onConnection(
+          new WebSocketChannel(channel, pingInterval: _pingInterval), protocol);
     });
 
     // [request.hijack] is guaranteed to throw a [HijackException], so we'll

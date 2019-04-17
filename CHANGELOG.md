@@ -1,3 +1,8 @@
+## 0.2.3
+
+* Add `pingInterval` argument to `webSocketHandler`, to be passed through
+  to the created channel.
+
 ## 0.2.2+5
 
 * Allow `stream_channel` version 2.x

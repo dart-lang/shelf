@@ -1,5 +1,5 @@
 name: shelf_web_socket
-version: 0.2.2+5
+version: 0.2.3
 
 description: >-
   A shelf handler that wires up a listener for every connection.
