@@ -5,10 +5,7 @@ dart:
   - dev
 
 dart_task:
-  - test: --platform vm
-  # No parallelism on Firefox (-j 1)
-  # Causes flakiness – need to investigate
-  - test: --platform firefox -j 1
+  - test: --platform vm,firefox
   - dartanalyzer: --fatal-infos --fatal-warnings .
 
 matrix:
