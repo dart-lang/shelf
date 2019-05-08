@@ -167,8 +167,9 @@ class Request extends Message {
         this.handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
         this._onHijack = onHijack,
         super(body, encoding: encoding, headers: headers, context: context) {
-    if (method.isEmpty)
+    if (method.isEmpty) {
       throw ArgumentError.value(method, 'method', 'cannot be empty.');
+    }
 
     if (!requestedUri.isAbsolute) {
       throw ArgumentError.value(
