@@ -40,7 +40,7 @@ void main() {
 
   test("stops servicing requests after Server.close is called", () {
     var serverHandler = ServerHandler(localhostUri);
-    serverHandler.server.mount(expectAsync1((_) {}, count: 0));
+    serverHandler.server.mount(expectAsync1((_) => null, count: 0));
     serverHandler.server.close();
 
     expect(makeSimpleRequest(serverHandler.handler), throwsStateError);
@@ -70,8 +70,8 @@ void main() {
 
   test("doesn't allow Server.mount to be called multiple times", () {
     var serverHandler = ServerHandler(localhostUri);
-    serverHandler.server.mount((_) {});
-    expect(() => serverHandler.server.mount((_) {}), throwsStateError);
-    expect(() => serverHandler.server.mount((_) {}), throwsStateError);
+    serverHandler.server.mount((_) => null);
+    expect(() => serverHandler.server.mount((_) => null), throwsStateError);
+    expect(() => serverHandler.server.mount((_) => null), throwsStateError);
   });
 }

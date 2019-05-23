@@ -39,8 +39,8 @@ void main() {
   });
 
   test("disallows more than one handler from being mounted", () async {
-    server.mount((_) {});
-    expect(() => server.mount((_) {}), throwsStateError);
-    expect(() => server.mount((_) {}), throwsStateError);
+    server.mount((_) => null);
+    expect(() => server.mount((_) => null), throwsStateError);
+    expect(() => server.mount((_) => null), throwsStateError);
   });
 }
