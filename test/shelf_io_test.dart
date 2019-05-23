@@ -216,6 +216,7 @@ void main() {
             .codeUnits);
         channel.sink.close();
       }));
+      return null;
     });
 
     var response = await _post(body: "Hello");
