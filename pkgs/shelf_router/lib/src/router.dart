@@ -77,7 +77,7 @@ class Router {
   final List<RouterEntry> _routes = [];
 
   /// Add [handler] for [verb] requests to [route].
-  void add(String verb, String route, dynamic handler) {
+  void add(String verb, String route, Function handler) {
     ArgumentError.checkNotNull(verb, 'verb');
     if (!isHttpMethod(verb)) {
       throw ArgumentError.value(verb, 'verb', 'expected a valid HTTP method');
@@ -88,7 +88,7 @@ class Router {
   }
 
   /// Handle all request to [route] using [handler].
-  void all(String route, dynamic handler) {
+  void all(String route, Function handler) {
     _routes.add(RouterEntry('ALL', route, handler));
   }
 
@@ -135,29 +135,31 @@ class Router {
   // Handlers for all methods
 
   /// Handle `GET` request to [route] using [handler].
-  void get(String route, dynamic handler) => add('GET', route, handler);
+  void get(String route, Function handler) => add('GET', route, handler);
 
   /// Handle `HEAD` request to [route] using [handler].
-  void head(String route, dynamic handler) => add('HEAD', route, handler);
+  void head(String route, Function handler) => add('HEAD', route, handler);
 
   /// Handle `POST` request to [route] using [handler].
-  void post(String route, dynamic handler) => add('POST', route, handler);
+  void post(String route, Function handler) => add('POST', route, handler);
 
   /// Handle `PUT` request to [route] using [handler].
-  void put(String route, dynamic handler) => add('PUT', route, handler);
+  void put(String route, Function handler) => add('PUT', route, handler);
 
   /// Handle `DELETE` request to [route] using [handler].
-  void delete(String route, dynamic handler) => add('DELETE', route, handler);
+  void delete(String route, Function handler) => add('DELETE', route, handler);
 
   /// Handle `CONNECT` request to [route] using [handler].
-  void connect(String route, dynamic handler) => add('CONNECT', route, handler);
+  void connect(String route, Function handler) =>
+      add('CONNECT', route, handler);
 
   /// Handle `OPTIONS` request to [route] using [handler].
-  void options(String route, dynamic handler) => add('OPTIONS', route, handler);
+  void options(String route, Function handler) =>
+      add('OPTIONS', route, handler);
 
   /// Handle `TRACE` request to [route] using [handler].
-  void trace(String route, dynamic handler) => add('TRACE', route, handler);
+  void trace(String route, Function handler) => add('TRACE', route, handler);
 
   /// Handle `PATCH` request to [route] using [handler].
-  void patch(String route, dynamic handler) => add('PATCH', route, handler);
+  void patch(String route, Function handler) => add('PATCH', route, handler);
 }
