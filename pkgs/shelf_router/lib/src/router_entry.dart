@@ -32,7 +32,7 @@ class RouterEntry {
   static final RegExp _parser = RegExp(r'([^<]*)(?:<([^>|]+)(?:\|([^>]*))?>)?');
 
   final String verb, route;
-  final dynamic _handler;
+  final Function _handler;
 
   /// Expression that the request path must match.
   ///
