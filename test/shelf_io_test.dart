@@ -510,7 +510,8 @@ void main() {
 
       var response = await req.close();
       expect(response.statusCode, HttpStatus.ok);
-      expect(await response.transform(utf8.decoder).single, 'Hello from /');
+      expect(await response.cast<List<int>>().transform(utf8.decoder).single,
+          'Hello from /');
     });
 
     test('secure async handler returns a value to the client', () async {
@@ -519,7 +520,8 @@ void main() {
       var req = await _scheduleSecureGet();
       var response = await req.close();
       expect(response.statusCode, HttpStatus.ok);
-      expect(await response.transform(utf8.decoder).single, 'Hello from /');
+      expect(await response.cast<List<int>>().transform(utf8.decoder).single,
+          'Hello from /');
     });
   });
 }
