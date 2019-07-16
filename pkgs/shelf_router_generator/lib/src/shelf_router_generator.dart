@@ -86,18 +86,18 @@ code.Code _buildAddHandlerCode({
   switch (handler.verb) {
     case r'$mount':
       return router.property('mount').call([
-        code.literal(handler.route),
+        code.literalString(handler.route, raw: true),
         service.property(handler.element.name),
       ]).statement;
     case r'$all':
       return router.property('all').call([
-        code.literal(handler.route),
+        code.literalString(handler.route, raw: true),
         service.property(handler.element.name),
       ]).statement;
     default:
       return router.property('add').call([
-        code.literal(handler.verb.toUpperCase()),
-        code.literal(handler.route),
+        code.literalString(handler.verb.toUpperCase()),
+        code.literalString(handler.route, raw: true),
         service.property(handler.element.name),
       ]).statement;
   }
