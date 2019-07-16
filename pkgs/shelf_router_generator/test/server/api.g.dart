@@ -8,7 +8,8 @@ part of 'api.dart';
 
 Router _$ApiRouter(Api service) {
   final router = Router();
-  router.add('GET', '/time', service._time);
-  router.add('GET', '/to-uppercase/<word|.*>', service._toUpperCase);
+  router.add('GET', r'/time', service._time);
+  router.add('GET', r'/to-uppercase/<word|.*>', service._toUpperCase);
+  router.add('GET', r'/$string-escape', service._stringEscapingWorks);
   return router;
 }

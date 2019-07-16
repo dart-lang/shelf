@@ -8,18 +8,18 @@ part of 'main.dart';
 
 Router _$ServiceRouter(Service service) {
   final router = Router();
-  router.add('GET', '/say-hi/<name>', service._hi);
-  router.add('GET', '/user/<userId|[0-9]+>', service._user);
-  router.add('GET', '/wave', service._wave);
-  router.mount('/api/', service._api);
-  router.all('/<ignored|.*>', service._404);
+  router.add('GET', r'/say-hi/<name>', service._hi);
+  router.add('GET', r'/user/<userId|[0-9]+>', service._user);
+  router.add('GET', r'/wave', service._wave);
+  router.mount(r'/api/', service._api);
+  router.all(r'/<ignored|.*>', service._404);
   return router;
 }
 
 Router _$ApiRouter(Api service) {
   final router = Router();
-  router.add('GET', '/messages', service._messages);
-  router.add('GET', '/messages/', service._messages);
-  router.all('/<ignored|.*>', service._404);
+  router.add('GET', r'/messages', service._messages);
+  router.add('GET', r'/messages/', service._messages);
+  router.all(r'/<ignored|.*>', service._404);
   return router;
 }
