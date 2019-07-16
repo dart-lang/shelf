@@ -29,5 +29,10 @@ class Api {
     return Response.ok(word.toUpperCase());
   }
 
+  @Route.get(r'/$string-escape')
+  Response _stringEscapingWorks(Request request) {
+    return Response.ok('Just testing string escaping');
+  }
+
   Router get router => _$ApiRouter(this);
 }
