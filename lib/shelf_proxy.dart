@@ -4,6 +4,7 @@
 
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
+import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart';
 
 import 'src/utils.dart';
@@ -50,7 +51,7 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
     _addHeader(clientRequest.headers, 'via',
         '${serverRequest.protocolVersion} $proxyName');
 
-    store(serverRequest.read(), clientRequest.sink);
+    unawaited(store(serverRequest.read(), clientRequest.sink));
     var clientResponse = await client.send(clientRequest);
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
