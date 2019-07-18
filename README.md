@@ -12,10 +12,13 @@ mounted within a larger application to proxy only certain URLs.
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_proxy/shelf_proxy.dart';
 
-void main() {
-  shelf_io.serve(proxyHandler("https://www.dartlang.org"), 'localhost', 8080)
-      .then((server) {
-    print('Proxying at http://${server.address.host}:${server.port}');
-  });
+void main() async {
+  var server = await shelf_io.serve(
+    proxyHandler("https://dart.dev"),
+    'localhost',
+    8080,
+  );
+
+  print('Proxying at http://${server.address.host}:${server.port}');
 }
 ```
