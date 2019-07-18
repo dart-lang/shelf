@@ -1,3 +1,8 @@
+## 0.1.0+7
+
+* Added example.
+* Fixed links in README.
+
 ## 0.1.0+6
 
 * Support the latest version of `package:http`.
