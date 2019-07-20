@@ -39,15 +39,12 @@
   `web_socket_channel` package, rather than the deprecated class defined in
   `http_parser`.
 
-[WebSocketChannel]: https://www.dartdocs.org/documentation/web_socket_channel/latest/web_socket_channel/WebSocketChannel-class.html
+[WebSocketChannel]: https://pub.dev/documentation/web_socket_channel/latest/web_socket_channel/WebSocketChannel-class.html
 
 ## 0.1.0
 
-* **Breaking change**: `webSocketHandler()` now passes a
-  [`WebSocketChannel`][WebSocketChannel] to the `onConnection()` callback,
-  rather than a deprecated `CompatibleWebSocket`.
-
-[WebSocketChannel]: https://www.dartdocs.org/documentation/http_parser/2.1.0/http_parser/WebSocketChannel-class.html
+* **Breaking change**: `webSocketHandler()` now passes a `WebSocketChannel` to
+  the `onConnection()` callback, rather than a deprecated `CompatibleWebSocket`.
 
 ## 0.0.1+5
 
