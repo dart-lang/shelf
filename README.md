@@ -5,13 +5,13 @@ connections. It exposes a single function, [webSocketHandler][], which calls an
 `onConnection` callback with a [WebSocketChannel][] object for every
 connection that's established.
 
-[Shelf]: https://pub.dartlang.org/packages/shelf
+[Shelf]: https://pub.dev/packages/shelf
 
 [WebSocket]: https://tools.ietf.org/html/rfc6455
 
-[webSocketHandler]: https://pub.dartlang.org/documentation/shelf_web_socket/latest/shelf_web_socket/webSocketHandler.html
+[webSocketHandler]: https://pub.dev/documentation/shelf_web_socket/latest/shelf_web_socket/webSocketHandler.html
 
-[WebSocketChannel]: https://pub.dartlang.org/documentation/web_socket_channel/latest/web_socket_channel/WebSocketChannel-class.html
+[WebSocketChannel]: https://pub.dev/documentation/web_socket_channel/latest/web_socket_channel/WebSocketChannel-class.html
 
 ```dart
 import 'package:shelf/shelf_io.dart' as shelf_io;
