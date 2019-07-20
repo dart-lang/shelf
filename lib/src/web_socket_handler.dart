@@ -54,7 +54,7 @@ class WebSocketHandler {
     if (key == null) return _badRequest('missing Sec-WebSocket-Key header.');
 
     if (!request.canHijack) {
-      throw new ArgumentError("webSocketHandler may only be used with a server "
+      throw ArgumentError("webSocketHandler may only be used with a server "
           "that supports request hijacking.");
     }
 
@@ -79,7 +79,7 @@ class WebSocketHandler {
       sink.add("\r\n");
 
       _onConnection(
-          new WebSocketChannel(channel, pingInterval: _pingInterval), protocol);
+          WebSocketChannel(channel, pingInterval: _pingInterval), protocol);
     });
 
     // [request.hijack] is guaranteed to throw a [HijackException], so we'll
@@ -124,7 +124,7 @@ class WebSocketHandler {
   Response _htmlResponse(int statusCode, String title, String message) {
     title = htmlEscape.convert(title);
     message = htmlEscape.convert(message);
-    return new Response(statusCode, body: """
+    return Response(statusCode, body: """
       <!doctype html>
       <html>
         <head><title>$title</title></head>

@@ -45,15 +45,9 @@ Handler webSocketHandler(Function onConnection,
     {Iterable<String> protocols,
     Iterable<String> allowedOrigins,
     Duration pingInterval}) {
-  if (protocols != null) protocols = protocols.toSet();
-  if (allowedOrigins != null) {
-    allowedOrigins =
-        allowedOrigins.map((origin) => origin.toLowerCase()).toSet();
-  }
-
   if (onConnection is! _BinaryFunction) {
     if (protocols != null) {
-      throw new ArgumentError("If protocols is non-null, onConnection must "
+      throw ArgumentError("If protocols is non-null, onConnection must "
           "take two arguments, the WebSocket and the protocol.");
     }
 
@@ -61,7 +55,10 @@ Handler webSocketHandler(Function onConnection,
     onConnection = (webSocket, _) => innerOnConnection(webSocket);
   }
 
-  return new WebSocketHandler(
-          onConnection, protocols, allowedOrigins, pingInterval)
-      .handle;
+  return WebSocketHandler(
+    onConnection,
+    protocols?.toSet(),
+    allowedOrigins?.map((origin) => origin.toLowerCase())?.toSet(),
+    pingInterval,
+  ).handle;
 }
