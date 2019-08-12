@@ -16,6 +16,7 @@ import 'dart:async' show Future, FutureOr;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'api.dart';
+import 'unrelatedannotation.dart';
 
 part 'service.g.dart';
 
@@ -50,4 +51,11 @@ class Service {
   Response _index(Request request) => Response.ok('nothing-here');
 
   Router get router => _$ServiceRouter(this);
+}
+
+class UnrelatedThing {
+  @EndPoint.put('/api/test')
+  Future<Response> unrelatedMethod(Request request) async {
+    return Response.ok('hello world');
+  }
 }
