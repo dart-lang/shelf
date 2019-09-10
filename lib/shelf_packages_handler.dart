@@ -22,12 +22,12 @@ import 'src/package_config_handler.dart';
 /// This can only serve assets from `file:` URIs.
 Handler packagesHandler({PackageResolver resolver}) {
   resolver ??= PackageResolver.current;
-  return new AsyncHandler(resolver.packageRoot.then((packageRoot) {
+  return AsyncHandler(resolver.packageRoot.then((packageRoot) {
     if (packageRoot != null) {
       return createStaticHandler(p.fromUri(packageRoot),
           serveFilesOutsidePath: true);
     } else {
-      return new PackageConfigHandler(resolver);
+      return PackageConfigHandler(resolver);
     }
   }));
 }
@@ -41,4 +41,4 @@ Handler packagesHandler({PackageResolver resolver}) {
 /// This is useful for ensuring that `package:` imports work for all entrypoints
 /// in Dartium.
 Handler packagesDirHandler({PackageResolver resolver}) =>
-    new DirHandler("packages", packagesHandler(resolver: resolver));
+    DirHandler("packages", packagesHandler(resolver: resolver));

@@ -9,10 +9,12 @@ import 'dart:async';
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 
+import 'package_config_handler.dart';
+
 /// A utility handler that mounts a sub-handler beneath a directory name,
 /// wherever that directory name appears in a URL.
 ///
-/// In practice, this is used to mount a [PackagesHandler] underneath
+/// In practice, this is used to mount a [PackageConfigHandler] underneath
 /// `packages/` directories.
 class DirHandler {
   /// The directory name to look for.
@@ -31,6 +33,6 @@ class DirHandler {
       return _inner(request.change(path: p.url.joinAll(segments.take(i + 1))));
     }
 
-    return new Response.notFound("Not found.");
+    return Response.notFound("Not found.");
   }
 }

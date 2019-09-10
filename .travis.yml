@@ -1,14 +1,18 @@
 language: dart
-sudo: false
+
 dart:
+  - 2.0.0
   - dev
-  - stable
-  - 1.22.1
 
 dart_task:
   - test
-  - dartfmt
-  - dartanalyzer
+  - dartanalyzer: --fatal-infos --fatal-warnings .
+
+matrix:
+  include:
+    # Only validate formatting using the dev release
+    - dart: dev
+      dart_task: dartfmt
 
 # Only building master means that we don't run two builds for each pull request.
 branches:

@@ -16,10 +16,10 @@ import 'async_handler.dart';
 class PackageConfigHandler {
   /// The static handlers for serving entries in the package config, indexed by
   /// name.
-  final _packageHandlers = new Map<String, Handler>();
+  final _packageHandlers = <String, Handler>{};
 
   /// The information specifying how to do package resolution.
-  PackageResolver _resolver;
+  final PackageResolver _resolver;
 
   PackageConfigHandler(this._resolver);
 
@@ -29,12 +29,12 @@ class PackageConfigHandler {
     return _handlerFor(segments.first)(request.change(path: segments.first));
   }
 
-  /// Creates a handler for [package] based on the package map in [resolver].
+  /// Creates a handler for [package] based on the package map in [_resolver].
   Handler _handlerFor(String package) {
     return _packageHandlers.putIfAbsent(package, () {
-      return new AsyncHandler(_resolver.urlFor(package).then((url) {
+      return AsyncHandler(_resolver.urlFor(package).then((url) {
         var handler = url == null
-            ? (_) => new Response.notFound("Package $package not found.")
+            ? (_) => Response.notFound("Package $package not found.")
             : createStaticHandler(p.fromUri(url), serveFilesOutsidePath: true);
 
         return handler;
