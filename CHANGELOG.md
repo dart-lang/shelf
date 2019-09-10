@@ -12,7 +12,7 @@
   `shelf_io.serve`.
 * Correctly pass `encoding` in `Response` constructors `forbidden`, `notFound`,
   and `internalServerError`.
-* Update `README.md` to point to latest docs on `pub.dartlang.org`.
+* Update `README.md` to point to latest docs.
 
 ## 0.7.3+3
 
@@ -200,8 +200,8 @@ path to the current handler, while `url`'s path is the relative path from the
 current handler to the requested. The new semantics are easier to describe and
 to understand.
 
-[url]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_url
-[handlerPath]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_handlerPath
+[url]: https://pub.dev/documentation/shelf/latest/shelf/Request/url.html
+[handlerPath]: https://pub.dev/documentation/shelf/latest/shelf/Request/handlerPath.html
 
 Practically speaking, the main difference is that the `/` at the beginning of
 `url`'s path has been moved to the end of `handlerPath`. This makes `url`'s path
@@ -214,7 +214,7 @@ user manually maintain all the associated guarantees, it now takes a single
 `handlerPath` to the next one, and sets both `handlerPath` and `url` on the new
 `Request` accordingly.
 
-[change]: http://www.dartdocs.org/documentation/shelf/latest/index.html#shelf/shelf.Request@id_change
+[change]: https://pub.dev/documentation/shelf/latest/shelf/Request/change.html
 
 ## 0.5.7
 
@@ -239,7 +239,7 @@ user manually maintain all the associated guarantees, it now takes a single
 
 * Clarified documentation on a number of `Response` constructors.
 
-* Updated `README` links to point to latest docs on `www.dartdocs.org`.
+* Updated `README` links to point to latest docs.
 
 ## 0.5.4+3
 
