@@ -75,7 +75,15 @@ void main() {
     test("when the method doesn't match the expectation", () {
       _expectZoneFailure(() async {
         var handler = ShelfTestHandler();
-        handler.expect("POST", "/", expectAsync1((_) {}, count: 0));
+        handler.expect(
+            "POST",
+            "/",
+            expectAsync1(
+              (_) {
+                fail('should never get here');
+              },
+              count: 0,
+            ));
         await handler(_get("/"));
       });
     });
@@ -83,7 +91,12 @@ void main() {
     test("when the path doesn't match the expectation", () {
       _expectZoneFailure(() async {
         var handler = ShelfTestHandler();
-        handler.expect("GET", "/foo", expectAsync1((_) {}, count: 0));
+        handler.expect(
+            "GET",
+            "/foo",
+            expectAsync1((_) {
+              fail('should never get here');
+            }, count: 0));
         await handler(_get("/"));
       });
     });
