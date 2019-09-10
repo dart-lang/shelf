@@ -1,3 +1,7 @@
+## v0.7.2+1
+
+ * Relax dependency constraint on `analyzer`.
+
 ## v0.7.2
 
  * Use `literalString('...', raw: true)` from `package:code_builder` to ensure
