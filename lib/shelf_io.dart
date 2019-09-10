@@ -12,7 +12,7 @@
 /// property is `true` (the default), streamed responses will be buffered to
 /// improve performance; if it's `false`, all chunks will be pushed over the
 /// wire as they're received. See
-/// [`HttpResponse.bufferOutput`](https://api.dartlang.org/stable/dart-io/HttpResponse/bufferOutput.html)
+/// [`HttpResponse.bufferOutput`](https://api.dart.dev/stable/dart-io/HttpResponse/bufferOutput.html)
 /// for more information.
 ///
 /// `Request`s passed to a `Handler` will contain the
