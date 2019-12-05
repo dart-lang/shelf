@@ -12,7 +12,7 @@ import 'body.dart';
 import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
 
-Body getBody(Message message) => message._body;
+Body extractBody(Message message) => message._body;
 
 /// The default set of headers for a message created with no body and no
 /// explicit headers.
@@ -153,7 +153,7 @@ Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
   var sameEncoding = _sameEncoding(headers, body);
   if (sameEncoding) {
     if (body.contentLength == null ||
-        getHeader(headers, 'content-length') == body.contentLength.toString()) {
+        findHeader(headers, 'content-length') == body.contentLength.toString()) {
       return headers ?? const ShelfUnmodifiableMap.empty();
     } else if (body.contentLength == 0 &&
         (headers == null || headers.isEmpty)) {
@@ -190,7 +190,7 @@ Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
 bool _sameEncoding(Map<String, String> headers, Body body) {
   if (body.encoding == null) return true;
 
-  var contentType = getHeader(headers, 'content-type');
+  var contentType = findHeader(headers, 'content-type');
   if (contentType == null) return false;
 
   var charset = MediaType.parse(contentType).parameters['charset'];

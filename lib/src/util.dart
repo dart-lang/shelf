@@ -49,7 +49,7 @@ Map<String, String> addHeader(
 ///
 /// This works even if [headers] is `null`, or if it's not yet a
 /// case-insensitive map.
-String getHeader(Map<String, String> headers, String name) {
+String findHeader(Map<String, String> headers, String name) {
   if (headers == null) return null;
   if (headers is ShelfUnmodifiableMap) return headers[name];
 
