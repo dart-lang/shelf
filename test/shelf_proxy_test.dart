@@ -18,8 +18,8 @@ Uri targetUri;
 Uri proxyUri;
 
 void main() {
-  group("forwarding", () {
-    test("forwards request method", () async {
+  group('forwarding', () {
+    test('forwards request method', () async {
       await createProxy((request) {
         expect(request.method, equals('DELETE'));
         return shelf.Response.ok(':)');
@@ -28,7 +28,7 @@ void main() {
       await http.delete(proxyUri);
     });
 
-    test("forwards request headers", () async {
+    test('forwards request headers', () async {
       await createProxy((request) {
         expect(request.headers, containsPair('foo', 'bar'));
         expect(request.headers, containsPair('accept', '*/*'));
@@ -38,7 +38,7 @@ void main() {
       await get(headers: {'foo': 'bar', 'accept': '*/*'});
     });
 
-    test("forwards request body", () async {
+    test('forwards request body', () async {
       await createProxy((request) {
         expect(request.readAsString(), completion(equals('hello, server')));
         return shelf.Response.ok(':)');
@@ -47,7 +47,7 @@ void main() {
       await http.post(proxyUri, body: 'hello, server');
     });
 
-    test("forwards response status", () async {
+    test('forwards response status', () async {
       await createProxy((request) {
         return shelf.Response(567);
       });
@@ -56,7 +56,7 @@ void main() {
       expect(response.statusCode, equals(567));
     });
 
-    test("forwards response headers", () async {
+    test('forwards response headers', () async {
       await createProxy((request) {
         return shelf.Response.ok(':)',
             headers: {'foo': 'bar', 'accept': '*/*'});
@@ -68,7 +68,7 @@ void main() {
       expect(response.headers, containsPair('accept', '*/*'));
     });
 
-    test("forwards response body", () async {
+    test('forwards response body', () async {
       await createProxy((request) {
         return shelf.Response.ok('hello, client');
       });
@@ -76,7 +76,7 @@ void main() {
       expect(await http.read(proxyUri), equals('hello, client'));
     });
 
-    test("adjusts the Host header for the target server", () async {
+    test('adjusts the Host header for the target server', () async {
       await createProxy((request) {
         expect(request.headers, containsPair('host', targetUri.authority));
         return shelf.Response.ok(':)');
@@ -86,8 +86,8 @@ void main() {
     });
   });
 
-  group("via", () {
-    test("adds a Via header to the request", () async {
+  group('via', () {
+    test('adds a Via header to the request', () async {
       await createProxy((request) {
         expect(request.headers, containsPair('via', '1.1 shelf_proxy'));
         return shelf.Response.ok(':)');
@@ -106,7 +106,7 @@ void main() {
       await get(headers: {'via': '1.0 something'});
     });
 
-    test("adds a Via header to the response", () async {
+    test('adds a Via header to the response', () async {
       await createProxy((request) => shelf.Response.ok(':)'));
 
       var response = await get();
@@ -124,7 +124,7 @@ void main() {
     });
   });
 
-  group("redirects", () {
+  group('redirects', () {
     test("doesn't modify a Location for a foreign server", () async {
       await createProxy((request) {
         return shelf.Response.found('http://dartlang.org');
@@ -134,7 +134,7 @@ void main() {
       expect(response.headers, containsPair('location', 'http://dartlang.org'));
     });
 
-    test("relativizes a reachable root-relative Location", () async {
+    test('relativizes a reachable root-relative Location', () async {
       await createProxy((request) {
         return shelf.Response.found('/foo/bar');
       }, targetPath: '/foo');
@@ -143,7 +143,7 @@ void main() {
       expect(response.headers, containsPair('location', '/bar'));
     });
 
-    test("absolutizes an unreachable root-relative Location", () async {
+    test('absolutizes an unreachable root-relative Location', () async {
       await createProxy((request) {
         return shelf.Response.found('/baz');
       }, targetPath: '/foo');
@@ -154,7 +154,7 @@ void main() {
     });
   });
 
-  test("removes a transfer-encoding header", () async {
+  test('removes a transfer-encoding header', () async {
     var handler = mockHandler((request) {
       return http.Response('', 200, headers: {'transfer-encoding': 'chunked'});
     });
@@ -162,10 +162,10 @@ void main() {
     var response =
         await handler(shelf.Request('GET', Uri.parse('http://localhost/')));
 
-    expect(response.headers, isNot(contains("transfer-encoding")));
+    expect(response.headers, isNot(contains('transfer-encoding')));
   });
 
-  test("removes content-length and content-encoding for a gzipped response",
+  test('removes content-length and content-encoding for a gzipped response',
       () async {
     var handler = mockHandler((request) {
       return http.Response('', 200,
@@ -175,8 +175,8 @@ void main() {
     var response =
         await handler(shelf.Request('GET', Uri.parse('http://localhost/')));
 
-    expect(response.headers, isNot(contains("content-encoding")));
-    expect(response.headers, isNot(contains("content-length")));
+    expect(response.headers, isNot(contains('content-encoding')));
+    expect(response.headers, isNot(contains('content-length')));
     expect(response.headers,
         containsPair('warning', '214 shelf_proxy "GZIP decoded"'));
   });

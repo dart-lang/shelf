@@ -7,7 +7,7 @@ import 'package:shelf_proxy/shelf_proxy.dart';
 
 void main() async {
   var server = await shelf_io.serve(
-    proxyHandler("https://dart.dev"),
+    proxyHandler('https://dart.dev'),
     'localhost',
     8080,
   );
