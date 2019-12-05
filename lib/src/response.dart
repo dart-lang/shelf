@@ -311,7 +311,7 @@ class Response extends Message {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    body ??= getBody(this);
+    body ??= extractBody(this);
 
     return Response(statusCode, body: body, headers: headers, context: context);
   }

@@ -11,12 +11,7 @@ import 'hijack_exception.dart';
 import 'message.dart';
 import 'util.dart';
 
-/// A callback provided by a Shelf adapter that's used by [Request.hijack] to
-/// provide a [HijackCallback] with a socket.
-typedef _OnHijackCallback = void Function(
-    void Function(StreamChannel<List<int>> channel) callback);
-
-/// Represents an HTTP request to be processed by a Shelf application.
+/// An HTTP request to be processed by a Shelf application.
 class Request extends Message {
   /// The URL path from the current handler to the requested resource, relative
   /// to [handlerPath], plus any query parameters.
@@ -222,7 +217,7 @@ class Request extends Message {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    body ??= getBody(this);
+    body ??= extractBody(this);
 
     var handlerPath = this.handlerPath;
     if (path != null) handlerPath += path;
@@ -258,13 +253,10 @@ class Request extends Message {
   }
 }
 
-/// A class containing a callback for [Request.hijack] that also tracks whether
-/// the callback has been called.
+/// A callback for [Request.hijack] and tracking of whether it has been called.
 class _OnHijack {
-  /// The callback.
-  final _OnHijackCallback _callback;
+  final void Function(void Function(StreamChannel<List<int>>)) _callback;
 
-  /// Whether [this] has been called.
   bool called = false;
 
   _OnHijack(this._callback);

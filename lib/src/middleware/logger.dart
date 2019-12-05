@@ -28,7 +28,7 @@ Middleware logRequests({void Function(String message, bool isError) logger}) =>
         var watch = Stopwatch()..start();
 
         return Future.sync(() => innerHandler(request)).then((response) {
-          var msg = _getMessage(startTime, response.statusCode,
+          var msg = _message(startTime, response.statusCode,
               request.requestedUri, request.method, watch.elapsed);
 
           logger(msg, false);
@@ -37,7 +37,7 @@ Middleware logRequests({void Function(String message, bool isError) logger}) =>
         }, onError: (error, StackTrace stackTrace) {
           if (error is HijackException) throw error;
 
-          var msg = _getErrorMessage(startTime, request.requestedUri,
+          var msg = _errorMessage(startTime, request.requestedUri,
               request.method, watch.elapsed, error, stackTrace);
 
           logger(msg, true);
@@ -51,7 +51,7 @@ String _formatQuery(String query) {
   return query == '' ? '' : '?$query';
 }
 
-String _getMessage(DateTime requestTime, int statusCode, Uri requestedUri,
+String _message(DateTime requestTime, int statusCode, Uri requestedUri,
     String method, Duration elapsedTime) {
   return '${requestTime.toIso8601String()} '
       '${elapsedTime.toString().padLeft(15)} '
@@ -59,7 +59,7 @@ String _getMessage(DateTime requestTime, int statusCode, Uri requestedUri,
       '${requestedUri.path}${_formatQuery(requestedUri.query)}';
 }
 
-String _getErrorMessage(DateTime requestTime, Uri requestedUri, String method,
+String _errorMessage(DateTime requestTime, Uri requestedUri, String method,
     Duration elapsedTime, Object error, StackTrace stack) {
   var chain = Chain.current();
   if (stack != null) {
