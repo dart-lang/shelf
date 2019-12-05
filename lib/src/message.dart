@@ -153,7 +153,7 @@ Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
   var sameEncoding = _sameEncoding(headers, body);
   if (sameEncoding) {
     if (body.contentLength == null ||
-        findHeader(headers, 'content-length') == body.contentLength.toString()) {
+        findHeader(headers, 'content-length') == '${body.contentLength}') {
       return headers ?? const ShelfUnmodifiableMap.empty();
     } else if (body.contentLength == 0 &&
         (headers == null || headers.isEmpty)) {
