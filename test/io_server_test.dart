@@ -26,19 +26,19 @@ void main() {
 
   tearDown(() => server.close());
 
-  test("serves HTTP requests with the mounted handler", () async {
+  test('serves HTTP requests with the mounted handler', () async {
     server.mount(syncHandler);
     expect(await http.read(server.url), equals('Hello from /'));
   });
 
-  test("delays HTTP requests until a handler is mounted", () async {
+  test('delays HTTP requests until a handler is mounted', () async {
     expect(http.read(server.url), completion(equals('Hello from /')));
     await Future.delayed(Duration.zero);
 
     server.mount(asyncHandler);
   });
 
-  test("disallows more than one handler from being mounted", () async {
+  test('disallows more than one handler from being mounted', () async {
     server.mount((_) => null);
     expect(() => server.mount((_) => null), throwsStateError);
     expect(() => server.mount((_) => null), throwsStateError);

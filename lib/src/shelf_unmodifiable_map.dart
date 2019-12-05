@@ -53,13 +53,17 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
 /// A const implementation of an empty [ShelfUnmodifiableMap].
 class _EmptyShelfUnmodifiableMap<V> extends MapView<String, V>
     implements ShelfUnmodifiableMap<V> {
+  @override
   bool get _ignoreKeyCase => true;
   const _EmptyShelfUnmodifiableMap() : super(const <String, Null>{});
 
   // Override modifier methods that care about the type of key they use so that
   // when V is Null, they throw UnsupportedErrors instead of type errors.
+  @override
   void operator []=(String key, Object value) => super[key] = null;
+  @override
   void addAll(Map<String, Object> other) => super.addAll({});
-  V putIfAbsent(String key, Object ifAbsent()) =>
+  @override
+  V putIfAbsent(String key, Object Function() ifAbsent) =>
       super.putIfAbsent(key, () => null);
 }

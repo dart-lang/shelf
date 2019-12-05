@@ -41,7 +41,7 @@ export 'src/io_server.dart';
 Future<HttpServer> serve(Handler handler, address, int port,
     {SecurityContext securityContext, int backlog, bool shared = false}) async {
   backlog ??= 0;
-  HttpServer server = await (securityContext == null
+  var server = await (securityContext == null
       ? HttpServer.bind(address, port, backlog: backlog, shared: shared)
       : HttpServer.bindSecure(address, port, securityContext,
           backlog: backlog, shared: shared));
@@ -121,10 +121,10 @@ Future handleRequest(HttpRequest request, Handler handler) async {
   }
 
   var message = StringBuffer()
-    ..writeln("Got a response for hijacked request "
-        "${shelfRequest.method} ${shelfRequest.requestedUri}:")
+    ..writeln('Got a response for hijacked request '
+        '${shelfRequest.method} ${shelfRequest.requestedUri}:')
     ..writeln(response.statusCode);
-  response.headers.forEach((key, value) => message.writeln("$key: $value"));
+  response.headers.forEach((key, value) => message.writeln('$key: $value'));
   throw Exception(message.toString().trim());
 }
 
@@ -140,7 +140,7 @@ Request _fromHttpRequest(HttpRequest request) {
   // Remove the Transfer-Encoding header per the adapter requirements.
   headers.remove(HttpHeaders.transferEncodingHeader);
 
-  void onHijack(void callback(StreamChannel<List<int>> channel)) {
+  void onHijack(void Function(StreamChannel<List<int>>) callback) {
     request.response
         .detachSocket(writeHeaders: false)
         .then((socket) => callback(StreamChannel(socket, socket)));
@@ -155,9 +155,9 @@ Request _fromHttpRequest(HttpRequest request) {
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
-  if (response.context.containsKey("shelf.io.buffer_output")) {
+  if (response.context.containsKey('shelf.io.buffer_output')) {
     httpResponse.bufferOutput =
-        response.context["shelf.io.buffer_output"] as bool;
+        response.context['shelf.io.buffer_output'] as bool;
   }
 
   httpResponse.statusCode = response.statusCode;
@@ -210,9 +210,9 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
 Response _logError(Request request, String message, [StackTrace stackTrace]) {
   // Add information about the request itself.
   var buffer = StringBuffer();
-  buffer.write("${request.method} ${request.requestedUri.path}");
+  buffer.write('${request.method} ${request.requestedUri.path}');
   if (request.requestedUri.query.isNotEmpty) {
-    buffer.write("?${request.requestedUri.query}");
+    buffer.write('?${request.requestedUri.query}');
   }
   buffer.writeln();
   buffer.write(message);

@@ -134,7 +134,7 @@ class Request extends Message {
       body,
       Encoding encoding,
       Map<String, Object> context,
-      void onHijack(void hijack(StreamChannel<List<int>> channel))})
+      void Function(void Function(StreamChannel<List<int>>)) onHijack})
       : this._(method, requestedUri,
             protocolVersion: protocolVersion,
             headers: headers,
@@ -160,12 +160,11 @@ class Request extends Message {
       Encoding encoding,
       Map<String, Object> context,
       _OnHijack onHijack})
-      : this.requestedUri = requestedUri,
-        this.protocolVersion =
-            protocolVersion == null ? '1.1' : protocolVersion,
-        this.url = _computeUrl(requestedUri, handlerPath, url),
-        this.handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
-        this._onHijack = onHijack,
+      : requestedUri = requestedUri,
+        protocolVersion = protocolVersion ?? '1.1',
+        url = _computeUrl(requestedUri, handlerPath, url),
+        handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
+        _onHijack = onHijack,
         super(body, encoding: encoding, headers: headers, context: context) {
     if (method.isEmpty) {
       throw ArgumentError.value(method, 'method', 'cannot be empty.');
@@ -214,6 +213,7 @@ class Request extends Message {
   ///     request = request.change(path: "dir");
   ///     print(request.handlerPath); // => /static/dir/
   ///     print(request.url);        // => file.html
+  @override
   Request change(
       {Map<String, String> headers,
       Map<String, Object> context,
@@ -222,13 +222,13 @@ class Request extends Message {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    if (body == null) body = getBody(this);
+    body ??= getBody(this);
 
     var handlerPath = this.handlerPath;
     if (path != null) handlerPath += path;
 
-    return Request._(this.method, this.requestedUri,
-        protocolVersion: this.protocolVersion,
+    return Request._(method, requestedUri,
+        protocolVersion: protocolVersion,
         headers: headers,
         handlerPath: handlerPath,
         body: body,
@@ -247,7 +247,7 @@ class Request extends Message {
   /// hijacking, such as the `dart:io` adapter. In addition, a given request may
   /// only be hijacked once. [canHijack] can be used to detect whether this
   /// request can be hijacked.
-  void hijack(void callback(StreamChannel<List<int>> channel)) {
+  void hijack(void Function(StreamChannel<List<int>>) callback) {
     if (_onHijack == null) {
       throw StateError("This request can't be hijacked.");
     }
@@ -272,8 +272,8 @@ class _OnHijack {
   /// Calls [this].
   ///
   /// Throws a [StateError] if [this] has already been called.
-  void run(void callback(StreamChannel<List<int>> channel)) {
-    if (called) throw StateError("This request has already been hijacked.");
+  void run(void Function(StreamChannel<List<int>>) callback) {
+    if (called) throw StateError('This request has already been hijacked.');
     called = true;
     newFuture(() => _callback(callback));
   }
@@ -286,8 +286,8 @@ class _OnHijack {
 Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
   if (handlerPath != null &&
       handlerPath != requestedUri.path &&
-      !handlerPath.endsWith("/")) {
-    handlerPath += "/";
+      !handlerPath.endsWith('/')) {
+    handlerPath += '/';
   }
 
   if (url != null) {
@@ -336,8 +336,8 @@ Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
 String _computeHandlerPath(Uri requestedUri, String handlerPath, Uri url) {
   if (handlerPath != null &&
       handlerPath != requestedUri.path &&
-      !handlerPath.endsWith("/")) {
-    handlerPath += "/";
+      !handlerPath.endsWith('/')) {
+    handlerPath += '/';
   }
 
   if (handlerPath != null) {

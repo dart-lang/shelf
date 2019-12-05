@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 Request _request({Map<String, String> headers, body, Encoding encoding}) {
-  return Request("GET", localhostUri,
+  return Request('GET', localhostUri,
       headers: headers, body: body, encoding: encoding);
 }
 
@@ -27,65 +27,65 @@ void main() {
       expect(request.protocolVersion, '1.0');
     });
 
-    group("url", () {
+    group('url', () {
       test("defaults to the requestedUri's relativized path and query", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar?q=1"));
-        expect(request.url, equals(Uri.parse("foo/bar?q=1")));
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'));
+        expect(request.url, equals(Uri.parse('foo/bar?q=1')));
       });
 
-      test("is inferred from handlerPath if possible", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar?q=1"),
+      test('is inferred from handlerPath if possible', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'),
             handlerPath: '/foo/');
-        expect(request.url, equals(Uri.parse("bar?q=1")));
+        expect(request.url, equals(Uri.parse('bar?q=1')));
       });
 
-      test("uses the given value if passed", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar?q=1"),
-            url: Uri.parse("bar?q=1"));
-        expect(request.url, equals(Uri.parse("bar?q=1")));
+      test('uses the given value if passed', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'),
+            url: Uri.parse('bar?q=1'));
+        expect(request.url, equals(Uri.parse('bar?q=1')));
       });
 
-      test("may be empty", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar"),
-            url: Uri.parse(""));
-        expect(request.url, equals(Uri.parse("")));
+      test('may be empty', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar'),
+            url: Uri.parse(''));
+        expect(request.url, equals(Uri.parse('')));
       });
     });
 
-    group("handlerPath", () {
+    group('handlerPath', () {
       test("defaults to '/'", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar"));
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar'));
         expect(request.handlerPath, equals('/'));
       });
 
-      test("is inferred from url if possible", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar?q=1"),
-            url: Uri.parse("bar?q=1"));
-        expect(request.handlerPath, equals("/foo/"));
+      test('is inferred from url if possible', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'),
+            url: Uri.parse('bar?q=1'));
+        expect(request.handlerPath, equals('/foo/'));
       });
 
-      test("uses the given value if passed", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar?q=1"),
+      test('uses the given value if passed', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'),
             handlerPath: '/foo/');
-        expect(request.handlerPath, equals("/foo/"));
+        expect(request.handlerPath, equals('/foo/'));
       });
 
-      test("adds a trailing slash to the given value if necessary", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar?q=1"),
+      test('adds a trailing slash to the given value if necessary', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'),
             handlerPath: '/foo');
-        expect(request.handlerPath, equals("/foo/"));
-        expect(request.url, equals(Uri.parse("bar?q=1")));
+        expect(request.handlerPath, equals('/foo/'));
+        expect(request.url, equals(Uri.parse('bar?q=1')));
       });
 
-      test("may be a single slash", () {
-        var request = Request('GET', Uri.parse("http://localhost/foo/bar?q=1"),
+      test('may be a single slash', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'),
             handlerPath: '/');
-        expect(request.handlerPath, equals("/"));
-        expect(request.url, equals(Uri.parse("foo/bar?q=1")));
+        expect(request.handlerPath, equals('/'));
+        expect(request.url, equals(Uri.parse('foo/bar?q=1')));
       });
     });
 
-    group("errors", () {
+    group('errors', () {
       group('requestedUri', () {
         test('must be absolute', () {
           expect(() => Request('GET', Uri.parse('/path')), throwsArgumentError);
@@ -182,17 +182,17 @@ void main() {
     });
   });
 
-  group("ifModifiedSince", () {
-    test("is null without an If-Modified-Since header", () {
+  group('ifModifiedSince', () {
+    test('is null without an If-Modified-Since header', () {
       var request = _request();
       expect(request.ifModifiedSince, isNull);
     });
 
-    test("comes from the Last-Modified header", () {
+    test('comes from the Last-Modified header', () {
       var request = _request(
           headers: {'if-modified-since': 'Sun, 06 Nov 1994 08:49:37 GMT'});
       expect(request.ifModifiedSince,
-          equals(DateTime.parse("1994-11-06 08:49:37z")));
+          equals(DateTime.parse('1994-11-06 08:49:37z')));
     });
   });
 
@@ -267,7 +267,7 @@ void main() {
       });
     });
 
-    test("allows the original request to be read", () {
+    test('allows the original request to be read', () {
       var request = _request();
       var changed = request.change();
 
@@ -275,7 +275,7 @@ void main() {
       expect(changed.read, throwsStateError);
     });
 
-    test("allows the changed request to be read", () {
+    test('allows the changed request to be read', () {
       var request = _request();
       var changed = request.change();
 
@@ -283,7 +283,7 @@ void main() {
       expect(request.read, throwsStateError);
     });
 
-    test("allows another changed request to be read", () {
+    test('allows another changed request to be read', () {
       var request = _request();
       var changed1 = request.change();
       var changed2 = request.change();

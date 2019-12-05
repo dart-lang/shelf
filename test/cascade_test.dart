@@ -41,7 +41,7 @@ void main() {
     });
 
     test(
-        "the second response should be returned if it matches and the first "
+        'the second response should be returned if it matches and the first '
         "doesn't", () {
       return Future.sync(() {
         return handler(Request('GET', localhostUri, headers: {'one': 'false'}));
@@ -52,7 +52,7 @@ void main() {
     });
 
     test(
-        "the third response should be returned if it matches and the first "
+        'the third response should be returned if it matches and the first '
         "two don't", () {
       return Future.sync(() {
         return handler(Request('GET', localhostUri,
@@ -63,7 +63,7 @@ void main() {
       });
     });
 
-    test("the third response should be returned if no response matches", () {
+    test('the third response should be returned if no response matches', () {
       return Future.sync(() {
         return handler(Request('GET', localhostUri,
             headers: {'one': 'false', 'two': 'false', 'three': 'false'}));

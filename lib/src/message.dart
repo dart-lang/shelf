@@ -17,7 +17,7 @@ Body getBody(Message message) => message._body;
 /// The default set of headers for a message created with no body and no
 /// explicit headers.
 final _defaultHeaders =
-    ShelfUnmodifiableMap<String>({"content-length": "0"}, ignoreKeyCase: true);
+    ShelfUnmodifiableMap<String>({'content-length': '0'}, ignoreKeyCase: true);
 
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
@@ -136,8 +136,7 @@ abstract class Message {
   ///
   /// This calls [read] internally, which can only be called once.
   Future<String> readAsString([Encoding encoding]) {
-    if (encoding == null) encoding = this.encoding;
-    if (encoding == null) encoding = utf8;
+    encoding ??= this.encoding ?? utf8;
     return encoding.decodeStream(read());
   }
 

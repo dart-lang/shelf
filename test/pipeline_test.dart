@@ -9,7 +9,7 @@ import 'test_util.dart';
 
 void main() {
   test('compose middleware with Pipeline', () {
-    int accessLocation = 0;
+    var accessLocation = 0;
 
     var middlewareA = createMiddleware(requestHandler: (request) {
       expect(accessLocation, 0);
@@ -47,7 +47,7 @@ void main() {
   });
 
   test('Pipeline can be used as middleware', () {
-    int accessLocation = 0;
+    var accessLocation = 0;
 
     var middlewareA = createMiddleware(requestHandler: (request) {
       expect(accessLocation, 0);

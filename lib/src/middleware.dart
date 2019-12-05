@@ -47,12 +47,11 @@ typedef Middleware = Handler Function(Handler innerHandler);
 /// does it receive [HijackException]s. It can either return a new response or
 /// throw an error.
 Middleware createMiddleware(
-    {FutureOr<Response> requestHandler(Request request),
-    FutureOr<Response> responseHandler(Response response),
-    FutureOr<Response> errorHandler(error, StackTrace stackTrace)}) {
-  if (requestHandler == null) requestHandler = (request) => null;
-
-  if (responseHandler == null) responseHandler = (response) => response;
+    {FutureOr<Response> Function(Request) requestHandler,
+    FutureOr<Response> Function(Response) responseHandler,
+    FutureOr<Response> Function(dynamic error, StackTrace) errorHandler}) {
+  requestHandler ??= (request) => null;
+  responseHandler ??= (response) => response;
 
   void Function(Object, StackTrace) onError;
   if (errorHandler != null) {

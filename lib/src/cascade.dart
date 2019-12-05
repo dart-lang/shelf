@@ -39,13 +39,13 @@ class Cascade {
   /// considered unacceptable. If [shouldCascade] is passed, responses for which
   /// it returns `true` are considered unacceptable. [statusCodes] and
   /// [shouldCascade] may not both be passed.
-  Cascade({Iterable<int> statusCodes, bool shouldCascade(Response response)})
+  Cascade({Iterable<int> statusCodes, bool Function(Response) shouldCascade})
       : _shouldCascade = _computeShouldCascade(statusCodes, shouldCascade),
         _parent = null,
         _handler = null {
     if (statusCodes != null && shouldCascade != null) {
-      throw ArgumentError("statusCodes and shouldCascade may not both be "
-          "passed.");
+      throw ArgumentError('statusCodes and shouldCascade may not both be '
+          'passed.');
     }
   }
 
@@ -65,7 +65,7 @@ class Cascade {
   Handler get handler {
     if (_handler == null) {
       throw StateError("Can't get a handler for a cascade with no inner "
-          "handlers.");
+          'handlers.');
     }
 
     return (request) {
@@ -81,9 +81,9 @@ class Cascade {
 /// Computes the [Cascade._shouldCascade] function based on the user's
 /// parameters.
 _ShouldCascade _computeShouldCascade(
-    Iterable<int> statusCodes, bool shouldCascade(Response response)) {
+    Iterable<int> statusCodes, bool Function(Response) shouldCascade) {
   if (shouldCascade != null) return shouldCascade;
-  if (statusCodes == null) statusCodes = [404, 405];
+  statusCodes ??= [404, 405];
   statusCodes = statusCodes.toSet();
   return (response) => statusCodes.contains(response.statusCode);
 }

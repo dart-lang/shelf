@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-List<int> certChainBytes = utf8.encode("""
+List<int> certChainBytes = utf8.encode('''
 -----BEGIN CERTIFICATE-----
 MIIDZDCCAkygAwIBAgIBATANBgkqhkiG9w0BAQsFADAgMR4wHAYDVQQDDBVpbnRl
 cm1lZGlhdGVhdXRob3JpdHkwHhcNMTUxMDI3MTAyNjM1WhcNMjUxMDI0MTAyNjM1
@@ -64,9 +64,9 @@ kdZ+aPQUCBaLrTWwlCDqzSVIULWUQvveRWbToMFKPNID58NtEpymAx3Pgir7YjV9
 UnlU2l5vZrh1PTCqZxvC/IdRESUfW80LdHaeyizRUP+6vKxGgSz2MRuYINjbd6GO
 hGiCpWlwziW2xLV1l2qSRLko2kIafLZP18N0ThM9zKbU5ps9NgFOf//wqSGtLaE=
 -----END CERTIFICATE-----
-""");
+''');
 
-List<int> certKeyBytes = utf8.encode("""
+List<int> certKeyBytes = utf8.encode('''
 -----BEGIN ENCRYPTED PRIVATE KEY-----
 MIIE4zAcBgoqhkiG9w0BDAEBMA4ECBMCjlg8JYZ4AgIIAASCBMFd9cBoZ5xcTock
 AVQcg/HzYJtMceKn1gtMDdC7mmXuyN0shoxhG4BpQInHkFARL+nenesXFxEm4X5e
@@ -96,4 +96,4 @@ XEszNZSK5LB0y+f3A6Kdx/hkZzHVvMONA70OyrkoZzGyWENhcB0c7ntTJyPPD2qM
 s0HRA2VwF/0ypU3OKERM1Ua5NSkTgvnnVTlV9GO90Tkn5v4fxdl8NzIuJLyGguTP
 Xc0tRM34Lg==
 -----END ENCRYPTED PRIVATE KEY-----
-""");
+''');
