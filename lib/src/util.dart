@@ -8,11 +8,6 @@ import 'package:collection/collection.dart';
 
 import 'shelf_unmodifiable_map.dart';
 
-/// Like [new Future], but avoids around issue 11911 by using [new Future.value]
-/// under the covers.
-Future newFuture(void Function() callback) =>
-    Future.value().then((_) => callback());
-
 /// Run [callback] and capture any errors that would otherwise be top-leveled.
 ///
 /// If [this] is called in a non-root error zone, it will just run [callback]
