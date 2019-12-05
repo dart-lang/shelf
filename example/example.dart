@@ -5,7 +5,7 @@
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as io;
 
-main() async {
+void main() async {
   var handler = const shelf.Pipeline()
       .addMiddleware(shelf.logRequests())
       .addHandler(_echoRequest);

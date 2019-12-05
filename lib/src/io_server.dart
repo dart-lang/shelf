@@ -18,21 +18,22 @@ class IOServer implements Server {
   /// Whether [mount] has been called.
   bool _mounted = false;
 
+  @override
   Uri get url {
     if (server.address.isLoopback) {
-      return Uri(scheme: "http", host: "localhost", port: server.port);
+      return Uri(scheme: 'http', host: 'localhost', port: server.port);
     }
 
     // IPv6 addresses in URLs need to be enclosed in square brackets to avoid
     // URL ambiguity with the ":" in the address.
     if (server.address.type == InternetAddressType.IPv6) {
       return Uri(
-          scheme: "http",
-          host: "[${server.address.address}]",
+          scheme: 'http',
+          host: '[${server.address.address}]',
           port: server.port);
     }
 
-    return Uri(scheme: "http", host: server.address.address, port: server.port);
+    return Uri(scheme: 'http', host: server.address.address, port: server.port);
   }
 
   /// Calls [HttpServer.bind] and wraps the result in an [IOServer].
@@ -44,6 +45,7 @@ class IOServer implements Server {
 
   IOServer(this.server);
 
+  @override
   void mount(Handler handler) {
     if (_mounted) {
       throw StateError("Can't mount two handlers for the same server.");
@@ -53,5 +55,6 @@ class IOServer implements Server {
     serveRequests(server, handler);
   }
 
+  @override
   Future close() => server.close();
 }

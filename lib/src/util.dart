@@ -10,14 +10,16 @@ import 'shelf_unmodifiable_map.dart';
 
 /// Like [new Future], but avoids around issue 11911 by using [new Future.value]
 /// under the covers.
-Future newFuture(callback()) => Future.value().then((_) => callback());
+Future newFuture(void Function() callback) =>
+    Future.value().then((_) => callback());
 
 /// Run [callback] and capture any errors that would otherwise be top-leveled.
 ///
 /// If [this] is called in a non-root error zone, it will just run [callback]
 /// and return the result. Otherwise, it will capture any errors using
 /// [runZoned] and pass them to [onError].
-catchTopLevelErrors(callback(), void onError(error, StackTrace stackTrace)) {
+void catchTopLevelErrors(void Function() callback,
+    void Function(dynamic error, StackTrace) onError) {
   if (Zone.current.inSameErrorZone(Zone.root)) {
     return runZoned(callback, onError: onError);
   } else {

@@ -10,23 +10,23 @@ import 'package:test/test.dart';
 void main() {
   test('adds chunked encoding with no transfer-encoding header', () async {
     var response = await _chunkResponse(
-        Response.ok(Stream.fromIterable(["hi".codeUnits])));
+        Response.ok(Stream.fromIterable(['hi'.codeUnits])));
     expect(response.headers, containsPair('transfer-encoding', 'chunked'));
-    expect(response.readAsString(), completion(equals("2\r\nhi\r\n0\r\n\r\n")));
+    expect(response.readAsString(), completion(equals('2\r\nhi\r\n0\r\n\r\n')));
   });
 
   test('adds chunked encoding with transfer-encoding: identity', () async {
     var response = await _chunkResponse(Response.ok(
-        Stream.fromIterable(["hi".codeUnits]),
+        Stream.fromIterable(['hi'.codeUnits]),
         headers: {'transfer-encoding': 'identity'}));
     expect(response.headers, containsPair('transfer-encoding', 'chunked'));
-    expect(response.readAsString(), completion(equals("2\r\nhi\r\n0\r\n\r\n")));
+    expect(response.readAsString(), completion(equals('2\r\nhi\r\n0\r\n\r\n')));
   });
 
   test("doesn't add chunked encoding with content length", () async {
-    var response = await _chunkResponse(Response.ok("hi"));
+    var response = await _chunkResponse(Response.ok('hi'));
     expect(response.headers, isNot(contains('transfer-encoding')));
-    expect(response.readAsString(), completion(equals("hi")));
+    expect(response.readAsString(), completion(equals('hi')));
   });
 
   test("doesn't add chunked encoding with status 1xx", () async {

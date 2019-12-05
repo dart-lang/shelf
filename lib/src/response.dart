@@ -198,7 +198,7 @@ class Response extends Message {
       Map<String, Object> context})
       : this(403,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
-            body: body == null ? 'Forbidden' : body,
+            body: body ?? 'Forbidden',
             context: context,
             encoding: encoding);
 
@@ -227,7 +227,7 @@ class Response extends Message {
       Map<String, Object> context})
       : this(404,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
-            body: body == null ? 'Not Found' : body,
+            body: body ?? 'Not Found',
             context: context,
             encoding: encoding);
 
@@ -257,7 +257,7 @@ class Response extends Message {
       Map<String, Object> context})
       : this(500,
             headers: body == null ? _adjustErrorHeaders(headers) : headers,
-            body: body == null ? 'Internal Server Error' : body,
+            body: body ?? 'Internal Server Error',
             context: context,
             encoding: encoding);
 
@@ -286,7 +286,7 @@ class Response extends Message {
       Map<String, Object> context})
       : super(body, encoding: encoding, headers: headers, context: context) {
     if (statusCode < 100) {
-      throw ArgumentError("Invalid status code: $statusCode.");
+      throw ArgumentError('Invalid status code: $statusCode.');
     }
   }
 
@@ -305,15 +305,15 @@ class Response extends Message {
   ///
   /// [body] is the request body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null` to indicate no body.
+  @override
   Response change(
       {Map<String, String> headers, Map<String, Object> context, body}) {
     headers = updateMap(this.headers, headers);
     context = updateMap(this.context, context);
 
-    if (body == null) body = getBody(this);
+    body ??= getBody(this);
 
-    return Response(this.statusCode,
-        body: body, headers: headers, context: context);
+    return Response(statusCode, body: body, headers: headers, context: context);
   }
 }
 

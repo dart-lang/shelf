@@ -11,12 +11,12 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  test("passes the URL to the server", () {
+  test('passes the URL to the server', () {
     var serverHandler = ServerHandler(localhostUri);
     expect(serverHandler.server.url, equals(localhostUri));
   });
 
-  test("pipes a request from ServerHandler.handler to a mounted handler",
+  test('pipes a request from ServerHandler.handler to a mounted handler',
       () async {
     var serverHandler = ServerHandler(localhostUri);
     serverHandler.server.mount(asyncHandler);
@@ -38,7 +38,7 @@ void main() {
     expect(response.readAsString(), completion(equals('Hello from /')));
   });
 
-  test("stops servicing requests after Server.close is called", () {
+  test('stops servicing requests after Server.close is called', () {
     var serverHandler = ServerHandler(localhostUri);
     serverHandler.server.mount(expectAsync1((_) => null, count: 0));
     serverHandler.server.close();
@@ -46,7 +46,7 @@ void main() {
     expect(makeSimpleRequest(serverHandler.handler), throwsStateError);
   });
 
-  test("calls onClose when Server.close is called", () async {
+  test('calls onClose when Server.close is called', () async {
     var onCloseCalled = false;
     var completer = Completer();
     var serverHandler = ServerHandler(localhostUri, onClose: () {

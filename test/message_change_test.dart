@@ -30,8 +30,11 @@ void main() {
 /// Shared test method used by [Request] and [Response] tests to validate
 /// the behavior of `change` with different `headers` and `context` values.
 void _testChange(
-    Message factory(
-        {body, Map<String, String> headers, Map<String, Object> context})) {
+    Message Function(
+            {dynamic body,
+            Map<String, String> headers,
+            Map<String, Object> context})
+        factory) {
   group('body', () {
     test('with String', () async {
       var request = factory(body: 'Hello, world');

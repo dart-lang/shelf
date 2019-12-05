@@ -19,9 +19,9 @@ import '../middleware.dart';
 /// The `isError` parameter indicates whether the message is caused by an error.
 ///
 /// If [logger] is not passed, the message is just passed to [print].
-Middleware logRequests({void logger(String msg, bool isError)}) =>
+Middleware logRequests({void Function(String message, bool isError) logger}) =>
     (innerHandler) {
-      if (logger == null) logger = _defaultLogger;
+      logger ??= _defaultLogger;
 
       return (request) {
         var startTime = DateTime.now();

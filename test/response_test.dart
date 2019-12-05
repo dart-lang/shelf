@@ -11,25 +11,25 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  group("supports a String body", () {
-    test("readAsString", () {
-      var response = Response.ok("hello, world");
-      expect(response.readAsString(), completion(equals("hello, world")));
+  group('supports a String body', () {
+    test('readAsString', () {
+      var response = Response.ok('hello, world');
+      expect(response.readAsString(), completion(equals('hello, world')));
     });
 
-    test("read", () {
+    test('read', () {
       var helloWorldBytes = List.from(helloBytes)..addAll(worldBytes);
 
-      var response = Response.ok("hello, world");
+      var response = Response.ok('hello, world');
       expect(response.read().toList(), completion(equals([helloWorldBytes])));
     });
   });
 
-  group("new Response.internalServerError without a body", () {
+  group('new Response.internalServerError without a body', () {
     test('sets the body to "Internal Server Error"', () {
       var response = Response.internalServerError();
       expect(
-          response.readAsString(), completion(equals("Internal Server Error")));
+          response.readAsString(), completion(equals('Internal Server Error')));
     });
 
     test('sets the content-type header to text/plain', () {
@@ -46,42 +46,42 @@ void main() {
     });
   });
 
-  group("Response redirect", () {
-    test("sets the location header for a String", () {
+  group('Response redirect', () {
+    test('sets the location header for a String', () {
       var response = Response.found('/foo');
       expect(response.headers, containsPair('location', '/foo'));
     });
 
-    test("sets the location header for a Uri", () {
+    test('sets the location header for a Uri', () {
       var response = Response.found(Uri(path: '/foo'));
       expect(response.headers, containsPair('location', '/foo'));
     });
   });
 
-  group("expires", () {
-    test("is null without an Expires header", () {
-      expect(Response.ok("okay!").expires, isNull);
+  group('expires', () {
+    test('is null without an Expires header', () {
+      expect(Response.ok('okay!').expires, isNull);
     });
 
-    test("comes from the Expires header", () {
+    test('comes from the Expires header', () {
       expect(
-          Response.ok("okay!",
+          Response.ok('okay!',
               headers: {'expires': 'Sun, 06 Nov 1994 08:49:37 GMT'}).expires,
-          equals(DateTime.parse("1994-11-06 08:49:37z")));
+          equals(DateTime.parse('1994-11-06 08:49:37z')));
     });
   });
 
-  group("lastModified", () {
-    test("is null without a Last-Modified header", () {
-      expect(Response.ok("okay!").lastModified, isNull);
+  group('lastModified', () {
+    test('is null without a Last-Modified header', () {
+      expect(Response.ok('okay!').lastModified, isNull);
     });
 
-    test("comes from the Last-Modified header", () {
+    test('comes from the Last-Modified header', () {
       expect(
-          Response.ok("okay!",
+          Response.ok('okay!',
                   headers: {'last-modified': 'Sun, 06 Nov 1994 08:49:37 GMT'})
               .lastModified,
-          equals(DateTime.parse("1994-11-06 08:49:37z")));
+          equals(DateTime.parse('1994-11-06 08:49:37z')));
     });
   });
 
@@ -111,7 +111,7 @@ void main() {
       });
     });
 
-    test("allows the original response to be read", () {
+    test('allows the original response to be read', () {
       var response = Response.ok(null);
       var changed = response.change();
 
@@ -119,7 +119,7 @@ void main() {
       expect(changed.read, throwsStateError);
     });
 
-    test("allows the changed response to be read", () {
+    test('allows the changed response to be read', () {
       var response = Response.ok(null);
       var changed = response.change();
 
@@ -127,7 +127,7 @@ void main() {
       expect(response.read, throwsStateError);
     });
 
-    test("allows another changed response to be read", () {
+    test('allows another changed response to be read', () {
       var response = Response.ok(null);
       var changed1 = response.change();
       var changed2 = response.change();

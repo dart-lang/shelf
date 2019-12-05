@@ -206,24 +206,24 @@ void main() {
       expect(request.method, 'POST');
 
       request.hijack(expectAsync1((channel) {
-        expect(channel.stream.first, completion(equals("Hello".codeUnits)));
+        expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
 
-        channel.sink.add(("HTTP/1.1 404 Not Found\r\n"
-                "Date: Mon, 23 May 2005 22:38:34 GMT\r\n"
-                "Content-Length: 13\r\n"
-                "\r\n"
-                "Hello, world!")
+        channel.sink.add(('HTTP/1.1 404 Not Found\r\n'
+                'Date: Mon, 23 May 2005 22:38:34 GMT\r\n'
+                'Content-Length: 13\r\n'
+                '\r\n'
+                'Hello, world!')
             .codeUnits);
         channel.sink.close();
       }));
       return null;
     });
 
-    var response = await _post(body: "Hello");
+    var response = await _post(body: 'Hello');
     expect(response.statusCode, HttpStatus.notFound);
-    expect(response.headers["date"], "Mon, 23 May 2005 22:38:34 GMT");
+    expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
     expect(
-        response.stream.bytesToString(), completion(equals("Hello, world!")));
+        response.stream.bytesToString(), completion(equals('Hello, world!')));
   });
 
   test('reports an error if a HijackException is thrown without hijacking',
@@ -387,14 +387,14 @@ void main() {
         () async {
       await _scheduleServer((request) {
         return Response.ok(
-            Stream.fromIterable(["2\r\nhi\r\n0\r\n\r\n".codeUnits]),
+            Stream.fromIterable(['2\r\nhi\r\n0\r\n\r\n'.codeUnits]),
             headers: {HttpHeaders.transferEncodingHeader: 'chunked'});
       });
 
       var response = await _get();
       expect(response.headers,
           containsPair(HttpHeaders.transferEncodingHeader, 'chunked'));
-      expect(response.body, equals("hi"));
+      expect(response.body, equals('hi'));
     });
 
     group('is not added when', () {
@@ -451,24 +451,24 @@ void main() {
   test('respects the "shelf.io.buffer_output" context parameter', () async {
     var controller = StreamController<String>();
     await _scheduleServer((request) {
-      controller.add("Hello, ");
+      controller.add('Hello, ');
 
       return Response.ok(utf8.encoder.bind(controller.stream),
-          context: {"shelf.io.buffer_output": false});
+          context: {'shelf.io.buffer_output': false});
     });
 
     var request =
-        http.Request("GET", Uri.parse('http://localhost:$_serverPort/'));
+        http.Request('GET', Uri.parse('http://localhost:$_serverPort/'));
 
     var response = await request.send();
     var stream = StreamQueue(utf8.decoder.bind(response.stream));
 
     var data = await stream.next;
-    expect(data, equals("Hello, "));
-    controller.add("world!");
+    expect(data, equals('Hello, '));
+    controller.add('world!');
 
     data = await stream.next;
-    expect(data, equals("world!"));
+    expect(data, equals('world!'));
     await controller.close();
     expect(stream.hasNext, completion(isFalse));
   });

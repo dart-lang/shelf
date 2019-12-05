@@ -21,8 +21,7 @@ final Matcher throwsHijackException = throwsA(TypeMatcher<HijackException>());
 /// `Hello from ${request.url.path}`.
 Response syncHandler(Request request,
     {int statusCode, Map<String, String> headers}) {
-  if (statusCode == null) statusCode = 200;
-  return Response(statusCode,
+  return Response(statusCode ?? 200,
       headers: headers, body: 'Hello from ${request.requestedUri.path}');
 }
 

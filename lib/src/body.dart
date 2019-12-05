@@ -84,7 +84,7 @@ class Body {
   Stream<List<int>> read() {
     if (_stream == null) {
       throw StateError("The 'read' method can only be called once on a "
-          "shelf.Request/shelf.Response object.");
+          'shelf.Request/shelf.Response object.');
     }
     var stream = _stream;
     _stream = null;
