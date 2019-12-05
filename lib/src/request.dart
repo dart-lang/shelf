@@ -275,7 +275,7 @@ class _OnHijack {
   void run(void Function(StreamChannel<List<int>>) callback) {
     if (called) throw StateError('This request has already been hijacked.');
     called = true;
-    newFuture(() => _callback(callback));
+    Future.microtask(() => _callback(callback));
   }
 }
 
