@@ -54,8 +54,8 @@ class WebSocketHandler {
     if (key == null) return _badRequest('missing Sec-WebSocket-Key header.');
 
     if (!request.canHijack) {
-      throw ArgumentError("webSocketHandler may only be used with a server "
-          "that supports request hijacking.");
+      throw ArgumentError('webSocketHandler may only be used with a server '
+          'that supports request hijacking.');
     }
 
     // The Origin header is always set by browser connections. By filtering out
@@ -71,12 +71,12 @@ class WebSocketHandler {
     var protocol = _chooseProtocol(request);
     request.hijack((channel) {
       var sink = utf8.encoder.startChunkedConversion(channel.sink);
-      sink.add("HTTP/1.1 101 Switching Protocols\r\n"
-          "Upgrade: websocket\r\n"
-          "Connection: Upgrade\r\n"
-          "Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n");
-      if (protocol != null) sink.add("Sec-WebSocket-Protocol: $protocol\r\n");
-      sink.add("\r\n");
+      sink.add('HTTP/1.1 101 Switching Protocols\r\n'
+          'Upgrade: websocket\r\n'
+          'Connection: Upgrade\r\n'
+          'Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n');
+      if (protocol != null) sink.add('Sec-WebSocket-Protocol: $protocol\r\n');
+      sink.add('\r\n');
 
       _onConnection(
           WebSocketChannel(channel, pingInterval: _pingInterval), protocol);
@@ -103,19 +103,19 @@ class WebSocketHandler {
 
   /// Returns a 404 Not Found response.
   Response _notFound() => _htmlResponse(
-      404, "404 Not Found", "Only WebSocket connections are supported.");
+      404, '404 Not Found', 'Only WebSocket connections are supported.');
 
   /// Returns a 400 Bad Request response.
   ///
   /// [message] will be HTML-escaped before being included in the response body.
   Response _badRequest(String message) => _htmlResponse(
-      400, "400 Bad Request", "Invalid WebSocket upgrade request: $message");
+      400, '400 Bad Request', 'Invalid WebSocket upgrade request: $message');
 
   /// Returns a 403 Forbidden response.
   ///
   /// [message] will be HTML-escaped before being included in the response body.
   Response _forbidden(String message) => _htmlResponse(
-      403, "403 Forbidden", "WebSocket upgrade refused: $message");
+      403, '403 Forbidden', 'WebSocket upgrade refused: $message');
 
   /// Creates an HTTP response with the given [statusCode] and an HTML body with
   /// [title] and [message].
@@ -124,7 +124,7 @@ class WebSocketHandler {
   Response _htmlResponse(int statusCode, String title, String message) {
     title = htmlEscape.convert(title);
     message = htmlEscape.convert(message);
-    return Response(statusCode, body: """
+    return Response(statusCode, body: '''
       <!doctype html>
       <html>
         <head><title>$title</title></head>
@@ -133,6 +133,6 @@ class WebSocketHandler {
           <p>$message</p>
         </body>
       </html>
-    """, headers: {'content-type': 'text/html'});
+    ''', headers: {'content-type': 'text/html'});
   }
 }
