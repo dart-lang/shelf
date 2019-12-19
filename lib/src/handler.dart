@@ -34,7 +34,7 @@ class ShelfTestHandler {
   /// defaults to "ShelfTestHandler".
   ShelfTestHandler({bool log = true, String description})
       : _log = log,
-        description = description ?? "ShelfTestHandler",
+        description = description ?? 'ShelfTestHandler',
         _zone = Zone.current;
 
   /// Expects that a single HTTP request with the given [method] and [path] will
@@ -62,23 +62,23 @@ class ShelfTestHandler {
 
   /// The implementation of [Handler].
   FutureOr<Response> call(Request request) async {
-    var requestInfo = "${request.method} /${request.url}";
-    if (_log) printOnFailure("[$description] $requestInfo");
+    var requestInfo = '${request.method} /${request.url}';
+    if (_log) printOnFailure('[$description] $requestInfo');
 
     try {
       if (_expectations.isEmpty) {
         throw TestFailure(
-            "$description received unexpected request $requestInfo.");
+            '$description received unexpected request $requestInfo.');
       }
 
       var expectation = _expectations.removeFirst();
       if ((expectation.method != null &&
               expectation.method != request.method) ||
-          (expectation.path != "/${request.url.path}" &&
+          (expectation.path != '/${request.url.path}' &&
               expectation.path != null)) {
-        var message = "$description received unexpected request $requestInfo.";
+        var message = '$description received unexpected request $requestInfo.';
         if (expectation.method != null) {
-          message += "\nExpected ${expectation.method} ${expectation.path}.";
+          message += '\nExpected ${expectation.method} ${expectation.path}.';
         }
         throw TestFailure(message);
       }
@@ -86,7 +86,7 @@ class ShelfTestHandler {
       var response = await expectation.handler(request);
       if (response != null) return response;
 
-      throw TestFailure("$description handler returned null for $requestInfo.");
+      throw TestFailure('$description handler returned null for $requestInfo.');
     } on HijackException catch (_) {
       rethrow;
     } catch (error, stackTrace) {

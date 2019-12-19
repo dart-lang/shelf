@@ -22,7 +22,7 @@ class ShelfTestServer {
   final ShelfTestHandler handler;
 
   /// The URL of this server.
-  Uri get url => Uri.parse("http://localhost:${_server.port}");
+  Uri get url => Uri.parse('http://localhost:${_server.port}');
 
   /// Creates a server serving a [ShelfTestHandler].
   ///
