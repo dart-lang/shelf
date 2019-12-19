@@ -33,6 +33,6 @@ class DirHandler {
       return _inner(request.change(path: p.url.joinAll(segments.take(i + 1))));
     }
 
-    return Response.notFound("Not found.");
+    return Response.notFound('Not found.');
   }
 }

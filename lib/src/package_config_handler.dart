@@ -34,7 +34,7 @@ class PackageConfigHandler {
     return _packageHandlers.putIfAbsent(package, () {
       return AsyncHandler(_resolver.urlFor(package).then((url) {
         var handler = url == null
-            ? (_) => Response.notFound("Package $package not found.")
+            ? (_) => Response.notFound('Package $package not found.')
             : createStaticHandler(p.fromUri(url), serveFilesOutsidePath: true);
 
         return handler;

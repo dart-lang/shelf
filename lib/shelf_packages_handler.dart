@@ -41,4 +41,4 @@ Handler packagesHandler({PackageResolver resolver}) {
 /// This is useful for ensuring that `package:` imports work for all entrypoints
 /// in Dartium.
 Handler packagesDirHandler({PackageResolver resolver}) =>
-    DirHandler("packages", packagesHandler(resolver: resolver));
+    DirHandler('packages', packagesHandler(resolver: resolver));
