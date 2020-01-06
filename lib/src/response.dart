@@ -304,7 +304,7 @@ class Response extends Message {
   /// in the copied [Response] unchanged.
   ///
   /// [body] is the request body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
+  /// [Stream<List<int>>], or `<int>[]` (empty list) to indicate no body.
   @override
   Response change(
       {Map<String, String> headers, Map<String, Object> context, body}) {
