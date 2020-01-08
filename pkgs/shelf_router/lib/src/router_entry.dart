@@ -33,6 +33,7 @@ class RouterEntry {
 
   final String verb, route;
   final Function _handler;
+  final Middleware _middleware;
 
   /// Expression that the request path must match.
   ///
@@ -45,7 +46,12 @@ class RouterEntry {
   /// List of parameter names in the route pattern.
   List<String> get params => _params.toList(); // exposed for using generator.
 
-  RouterEntry(this.verb, this.route, this._handler) {
+  RouterEntry(
+    this.verb,
+    this.route,
+    this._handler, {
+    Middleware middleware,
+  }) : _middleware = middleware ?? ((Handler fn) => fn) {
     ArgumentError.checkNotNull(verb, 'verb');
     ArgumentError.checkNotNull(route, 'route');
     ArgumentError.checkNotNull(_handler, 'handler');
@@ -92,10 +98,13 @@ class RouterEntry {
   // invoke handler with given request and params
   Future<Response> invoke(Request request, Map<String, String> params) async {
     request = request.change(context: {'shelf_router/params': params});
-    if (_handler is Handler || _params.isEmpty) {
-      return await _handler(request);
-    }
-    return await Function.apply(
-        _handler, [request]..addAll(_params.map((n) => params[n])));
+
+    return await _middleware((request) async {
+      if (_handler is Handler || _params.isEmpty) {
+        return await _handler(request);
+      }
+      return await Function.apply(
+          _handler, [request]..addAll(_params.map((n) => params[n])));
+    })(request);
   }
 }

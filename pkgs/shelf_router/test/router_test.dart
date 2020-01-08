@@ -39,6 +39,8 @@ void main() {
   tearDown(() => server.close());
 
   Future<String> get(String path) => http.read(server.url.toString() + path);
+  Future<int> head(String path) async =>
+      (await http.head(server.url.toString() + path)).statusCode;
 
   test('get sync/async handler', () async {
     var app = Router();
@@ -63,6 +65,10 @@ void main() {
     expect(await get('/sync-hello'), 'hello-world');
     expect(await get('/async-hello'), 'hello-world');
     expect(await get('/wrong-path'), 'not-found');
+
+    expect(await head('/sync-hello'), 200);
+    expect(await head('/async-hello'), 200);
+    expect(await head('/wrong-path'), 200);
   });
 
   test('params', () async {

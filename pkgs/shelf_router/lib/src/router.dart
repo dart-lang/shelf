@@ -32,6 +32,17 @@ String params(Request request, String name) {
   return value;
 }
 
+/// Middleware to remove body from request.
+final _removeBody = createMiddleware(responseHandler: (r) {
+  if (r == null) {
+    return null;
+  }
+  if (r.headers.containsKey('content-length')) {
+    r = r.change(headers: {'content-length': '0'});
+  }
+  return r.change(body: <int>[]);
+});
+
 /// A shelf [Router] routes requests to handlers based on HTTP verb and route
 /// pattern.
 ///
@@ -77,6 +88,11 @@ class Router {
   final List<RouterEntry> _routes = [];
 
   /// Add [handler] for [verb] requests to [route].
+  ///
+  /// If [verb] is `GET` the [handler] will also be called for `HEAD` requests
+  /// matching [route]. This is because handling `GET` requests without handling
+  /// `HEAD` is always wrong. To explicitely implement a `HEAD` handler it must
+  /// be registered before the `GET` handler.
   void add(String verb, String route, Function handler) {
     ArgumentError.checkNotNull(verb, 'verb');
     if (!isHttpMethod(verb)) {
@@ -84,6 +100,11 @@ class Router {
     }
     verb = verb.toUpperCase();
 
+    if (verb == 'GET') {
+      // Handling in a 'GET' request without handling a 'HEAD' request is always
+      // wrong, thus, we add a default implementation that discards the body.
+      _routes.add(RouterEntry('HEAD', route, handler, middleware: _removeBody));
+    }
     _routes.add(RouterEntry(verb, route, handler));
   }
 
@@ -135,6 +156,9 @@ class Router {
   // Handlers for all methods
 
   /// Handle `GET` request to [route] using [handler].
+  ///
+  /// If no matching handler for `HEAD` requests is registered, such requests
+  /// will also be routed to the [handler] registered here.
   void get(String route, Function handler) => add('GET', route, handler);
 
   /// Handle `HEAD` request to [route] using [handler].
