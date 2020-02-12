@@ -4,8 +4,6 @@
 
 import 'dart:io';
 
-import 'package:package_resolver/package_resolver.dart';
-import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:test/test.dart';
@@ -38,36 +36,16 @@ void main() {
           await response.readAsString(), contains('Handler packagesHandler'));
     });
 
-    group('with a package root', () {
-      PackageResolver resolver;
-      setUp(() => resolver = PackageResolver.root(p.toUri(dir)));
+    group('with a package map', () {
+      Handler handler;
 
-      test('looks up a real file', () async {
-        var handler = packagesHandler(resolver: resolver);
-        var request =
-            Request('GET', Uri.parse('http://example.com/foo/foo.dart'));
-        var response = await handler(request);
-        expect(response.statusCode, equals(200));
-        expect(await response.readAsString(), contains('in foo'));
-      });
-
-      test('404s for a nonexistent file', () async {
-        var handler = packagesHandler(resolver: resolver);
-        var request =
-            Request('GET', Uri.parse('http://example.com/foo/bar.dart'));
-        var response = await handler(request);
-        expect(response.statusCode, equals(404));
-      });
-    });
-
-    group('with a package config', () {
-      PackageResolver resolver;
       setUp(() {
-        resolver = PackageResolver.config({'foo': p.toUri('$dir/foo')});
+        handler = packagesHandler(packageMap: {
+          'foo': Uri.file('$dir/foo/'),
+        });
       });
 
       test('looks up a real file', () async {
-        var handler = packagesHandler(resolver: resolver);
         var request =
             Request('GET', Uri.parse('http://example.com/foo/foo.dart'));
         var response = await handler(request);
@@ -76,15 +54,15 @@ void main() {
       });
 
       test('404s for a nonexistent package', () async {
-        var handler = packagesHandler(resolver: resolver);
         var request =
             Request('GET', Uri.parse('http://example.com/bar/foo.dart'));
         var response = await handler(request);
         expect(response.statusCode, equals(404));
+        expect(
+            await response.readAsString(), contains('Package bar not found'));
       });
 
       test('404s for a nonexistent file', () async {
-        var handler = packagesHandler(resolver: resolver);
         var request =
             Request('GET', Uri.parse('http://example.com/foo/bar.dart'));
         var response = await handler(request);
