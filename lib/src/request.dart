@@ -68,6 +68,9 @@ class Request extends Message {
   ///
   /// This is parsed from the If-Modified-Since header in [headers]. If
   /// [headers] doesn't have an If-Modified-Since header, this will be `null`.
+  ///
+  /// Throws [FormatException], if incoming HTTP request has an invalid
+  /// If-Modified-Since header.
   DateTime get ifModifiedSince {
     if (_ifModifiedSinceCache != null) return _ifModifiedSinceCache;
     if (!headers.containsKey('if-modified-since')) return null;
