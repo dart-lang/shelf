@@ -178,11 +178,17 @@ class Request extends Message {
           requestedUri, 'requestedUri', 'may not have a fragment.');
     }
 
-    if (this.handlerPath + this.url.path != this.requestedUri.path) {
+    // Notice that because relative paths must encode colon (':') as %3A we
+    // cannot actually combine this.handlerPath and this.url.path, but we can
+    // compare the pathSegments. In practice exposing this.url.path as a Uri
+    // and not a String is probably the underlying flaw here.
+    final pathSegments = Uri(path: this.handlerPath).pathSegments.join('/') +
+        this.url.pathSegments.join('/');
+    if (pathSegments != this.requestedUri.pathSegments.join('/')) {
       throw ArgumentError.value(
           requestedUri,
           'requestedUri',
-          'handlerPath "$handlerPath" and url "$url" must '
+          'handlerPath "${this.handlerPath}" and url "${this.url}" must '
               'combine to equal requestedUri path "${requestedUri.path}".');
     }
   }

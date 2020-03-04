@@ -33,6 +33,22 @@ void main() {
         expect(request.url, equals(Uri.parse('foo/bar?q=1')));
       });
 
+      test('may contain colon', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo/bar:42'));
+        expect(request.url, equals(Uri.parse('foo/bar:42')));
+      });
+
+      test('may contain colon in first segment', () {
+        var request = Request('GET', Uri.parse('http://localhost/foo:bar/42'));
+        expect(request.url, equals(Uri.parse('foo%3Abar/42')));
+      });
+
+      test('may contain slash', () {
+        var request =
+            Request('GET', Uri.parse('http://localhost/foo/bar%2f42'));
+        expect(request.url, equals(Uri.parse('foo/bar%2f42')));
+      });
+
       test('is inferred from handlerPath if possible', () {
         var request = Request('GET', Uri.parse('http://localhost/foo/bar?q=1'),
             handlerPath: '/foo/');
