@@ -209,7 +209,7 @@ void main() {
         expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
 
         channel.sink.add(('HTTP/1.1 404 Not Found\r\n'
-                'Date: Mon, 23 May 2005 22:38:34 GMT\r\n'
+                'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
                 'Content-Length: 13\r\n'
                 '\r\n'
                 'Hello, world!')
@@ -221,9 +221,7 @@ void main() {
 
     var response = await _post(body: 'Hello');
     expect(response.statusCode, HttpStatus.notFound);
-    // TODO: after https://dart-review.googlesource.com/c/sdk/+/143081 lands,
-    // uncomment the following line.
-    // expect(response.headers['Date'], 'Mon, 23 May 2005 22:38:34 GMT');
+    expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
     expect(
         response.stream.bytesToString(), completion(equals('Hello, world!')));
   });
