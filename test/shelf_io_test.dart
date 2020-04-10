@@ -209,7 +209,7 @@ void main() {
         expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
 
         channel.sink.add(('HTTP/1.1 404 Not Found\r\n'
-                'Date: Mon, 23 May 2005 22:38:34 GMT\r\n'
+                'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
                 'Content-Length: 13\r\n'
                 '\r\n'
                 'Hello, world!')
