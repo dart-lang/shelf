@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http_parser/http_parser.dart';
 
@@ -40,6 +41,11 @@ class Response extends Message {
   }
 
   DateTime _lastModifiedCache;
+
+  Cookie getNamedCookie(String name) => cookies[name];
+  set cookie(Cookie c) => cookies[c.name] = c;
+
+  Map<String, Cookie> cookies;
 
   /// Constructs a 200 OK response.
   ///

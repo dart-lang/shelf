@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http_parser/http_parser.dart';
 import 'package:stream_channel/stream_channel.dart';
@@ -79,6 +80,10 @@ class Request extends Message {
   }
 
   DateTime _ifModifiedSinceCache;
+
+  void addCookies(List<Cookie> requestCookies) => cookies = requestCookies;
+
+  List<Cookie> cookies;
 
   /// Creates a new [Request].
   ///

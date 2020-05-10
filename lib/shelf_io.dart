@@ -146,12 +146,14 @@ Request _fromHttpRequest(HttpRequest request) {
         .then((socket) => callback(StreamChannel(socket, socket)));
   }
 
-  return Request(request.method, request.requestedUri,
+  var req = Request(request.method, request.requestedUri,
       protocolVersion: request.protocolVersion,
       headers: headers,
       body: request,
       onHijack: onHijack,
       context: {'shelf.io.connection_info': request.connectionInfo});
+  req.addCookies(request.cookies);
+  return req;
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
@@ -172,6 +174,11 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
     if (value == null) return;
     httpResponse.headers.set(header, value);
   });
+
+  // Add cookies from Response
+  if (response.cookies != null) {
+    httpResponse.cookies.addAll(response.cookies.values.toList());
+  }
 
   var coding = response.headers['transfer-encoding'];
   if (coding != null && !equalsIgnoreAsciiCase(coding, 'identity')) {
