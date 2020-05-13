@@ -125,6 +125,7 @@ Future handleRequest(HttpRequest request, Handler handler) async {
         '${shelfRequest.method} ${shelfRequest.requestedUri}:')
     ..writeln(response.statusCode);
   response.headers.forEach((key, value) => message.writeln('$key: $value'));
+  response.cookies.forEach((cookie) => message.writeln(cookie));
   throw Exception(message.toString().trim());
 }
 

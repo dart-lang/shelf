@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
 
+import 'cookie.dart';
 import 'message.dart';
 import 'util.dart';
 
@@ -40,6 +41,11 @@ class Response extends Message {
   }
 
   DateTime _lastModifiedCache;
+
+  /// Cookie management
+  List<Cookie> get cookies => _cookies;
+  void addCookie(Cookie cookie) => _cookies.add(cookie);
+  List<Cookie> _cookies;
 
   /// Constructs a 200 OK response.
   ///
