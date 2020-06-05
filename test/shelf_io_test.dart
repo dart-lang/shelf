@@ -137,6 +137,22 @@ void main() {
     expect(response.body, 'Hello from /');
   });
 
+  test('multiple headers are received from the client', () async {
+    await _scheduleServer((request) {
+      return Response.ok('Hello from /', headers: {
+        'requested-values': request.headersAll['request-values'],
+        'requested-values-length':
+            request.headersAll['request-values'].length.toString(),
+      });
+    });
+
+    // TODO: update test once `package:http` is able to send multiple header values
+    final response = await _get(headers: {'request-values': 'a, b'});
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.headers['requested-values'], 'a, b');
+    expect(response.headers['requested-values-length'], '1');
+  });
+
   test('custom status code is received by the client', () async {
     await _scheduleServer((request) {
       return Response(299, body: 'Hello from /');

@@ -11,8 +11,8 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 class _TestMessage extends Message {
-  _TestMessage(Map<String, String> headers, Map<String, Object> context, body,
-      Encoding encoding)
+  _TestMessage(Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, Object> context, body, Encoding encoding)
       : super(body, headers: headers, context: context, encoding: encoding);
 
   @override
@@ -23,7 +23,7 @@ class _TestMessage extends Message {
 }
 
 Message _createMessage(
-    {Map<String, String> headers,
+    {Map<String, /* String | List<String> */ dynamic> headers,
     Map<String, Object> context,
     body,
     Encoding encoding}) {
@@ -38,6 +38,9 @@ void main() {
       expect(message.headers, containsPair('foo', 'bar'));
       expect(message.headers, containsPair('Foo', 'bar'));
       expect(message.headers, containsPair('FOO', 'bar'));
+      expect(message.headersAll, containsPair('foo', ['bar']));
+      expect(message.headersAll, containsPair('Foo', ['bar']));
+      expect(message.headersAll, containsPair('FOO', ['bar']));
     });
 
     test('null header value becomes default', () {
@@ -46,6 +49,8 @@ void main() {
       expect(message.headers, containsPair('CoNtEnT-lEnGtH', '0'));
       expect(message.headers, same(_createMessage().headers));
       expect(() => message.headers['h1'] = 'value1', throwsUnsupportedError);
+      expect(
+          () => message.headersAll['h1'] = ['value1'], throwsUnsupportedError);
     });
 
     test('headers are immutable', () {
@@ -53,6 +58,29 @@ void main() {
       expect(() => message.headers['h1'] = 'value1', throwsUnsupportedError);
       expect(() => message.headers['h1'] = 'value2', throwsUnsupportedError);
       expect(() => message.headers['h2'] = 'value2', throwsUnsupportedError);
+      expect(
+          () => message.headersAll['h1'] = ['value1'], throwsUnsupportedError);
+      expect(
+          () => message.headersAll['h1'] = ['value2'], throwsUnsupportedError);
+      expect(
+          () => message.headersAll['h2'] = ['value2'], throwsUnsupportedError);
+    });
+
+    test('headers with multiple values', () {
+      final message = _createMessage(headers: {
+        'a': 'A',
+        'b': ['B1', 'B2'],
+      });
+      expect(message.headers, {
+        'a': 'A',
+        'b': 'B1,B2',
+        'content-length': '0',
+      });
+      expect(message.headersAll, {
+        'a': ['A'],
+        'b': ['B1', 'B2'],
+        'content-length': ['0'],
+      });
     });
   });
 

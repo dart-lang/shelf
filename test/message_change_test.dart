@@ -62,6 +62,7 @@ void _testChange(
     var copy = request.change(headers: {});
 
     expect(copy.headers, same(request.headers));
+    expect(copy.headersAll, same(request.headersAll));
   });
 
   test('with empty context returns identical instance', () {

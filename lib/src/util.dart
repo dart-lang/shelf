@@ -38,8 +38,8 @@ Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V> updates) {
 /// Adds a header with [name] and [value] to [headers], which may be null.
 ///
 /// Returns a new map without modifying [headers].
-Map<String, String> addHeader(
-    Map<String, String> headers, String name, String value) {
+Map<String, dynamic> addHeader(
+    Map<String, dynamic> headers, String name, String value) {
   headers = headers == null ? {} : Map.from(headers);
   headers[name] = value;
   return headers;
@@ -49,12 +49,46 @@ Map<String, String> addHeader(
 ///
 /// This works even if [headers] is `null`, or if it's not yet a
 /// case-insensitive map.
-String findHeader(Map<String, String> headers, String name) {
+String findHeader(Map<String, List<String>> headers, String name) {
   if (headers == null) return null;
-  if (headers is ShelfUnmodifiableMap) return headers[name];
+  if (headers is ShelfUnmodifiableMap) {
+    return joinHeaderValues(headers[name]);
+  }
 
   for (var key in headers.keys) {
-    if (equalsIgnoreAsciiCase(key, name)) return headers[key];
+    if (equalsIgnoreAsciiCase(key, name)) {
+      return joinHeaderValues(headers[key]);
+    }
   }
   return null;
+}
+
+Map<String, List<String>> expandToHeadersAll(
+    Map<String, /* String | List<String> */ dynamic> headers) {
+  if (headers is Map<String, List<String>>) return headers;
+  if (headers == null || headers.isEmpty) return null;
+
+  return Map<String, List<String>>.fromEntries(headers.entries.map((e) {
+    return MapEntry<String, List<String>>(e.key, expandHeaderValue(e.value));
+  }));
+}
+
+List<String> expandHeaderValue(dynamic v) {
+  if (v is String) {
+    return [v];
+  } else if (v is List<String>) {
+    return v;
+  } else if (v == null) {
+    return null;
+  } else {
+    throw ArgumentError('Expected String or List<String>, got: `$v`.');
+  }
+}
+
+/// Multiple header values are joined with commas.
+/// See http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-21#page-22
+String joinHeaderValues(List<String> values) {
+  if (values == null || values.isEmpty) return null;
+  if (values.length == 1) return values.single;
+  return values.join(',');
 }
