@@ -79,7 +79,7 @@ abstract class Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Message(body,
       {Encoding encoding,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Map<String, Object> context})
       : this._withBody(Body(body, encoding), headers, context);
 

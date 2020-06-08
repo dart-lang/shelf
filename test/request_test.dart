@@ -240,14 +240,6 @@ void main() {
           body: '',
           context: {'context1': 'context value 1'});
 
-      test('delete value with null', () {
-        final r = request.change(headers: {'header1': null});
-        expect(r.headers, {'content-length': '0'});
-        expect(r.headersAll, {
-          'content-length': ['0'],
-        });
-      });
-
       test('delete value with empty list', () {
         final r = request.change(headers: {'header1': <String>[]});
         expect(r.headers, {'content-length': '0'});

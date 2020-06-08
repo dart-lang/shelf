@@ -60,7 +60,7 @@ class Response extends Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.ok(body,
-      {Map<String, /* String | List<String> */ dynamic> headers,
+      {Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : this(200,
@@ -88,7 +88,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.movedPermanently(location,
       {body,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : this._redirect(301, location, body, headers, encoding,
@@ -116,7 +116,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.found(location,
       {body,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : this._redirect(302, location, body, headers, encoding,
@@ -145,7 +145,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.seeOther(location,
       {body,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : this._redirect(303, location, body, headers, encoding,
@@ -156,7 +156,7 @@ class Response extends Message {
       int statusCode,
       location,
       body,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       {Map<String, Object> context})
       : this(statusCode,
@@ -173,7 +173,7 @@ class Response extends Message {
   /// since the last request. It indicates that the resource has not changed and
   /// the old value should be used.
   Response.notModified(
-      {Map<String, /* String | List<String> */ dynamic> headers,
+      {Map<String, /* String | List<String> */ Object> headers,
       Map<String, Object> context})
       : this(304,
             headers: addHeader(headers, 'date', formatHttpDate(DateTime.now())),
@@ -198,7 +198,7 @@ class Response extends Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.forbidden(body,
-      {Map<String, /* String | List<String> */ dynamic> headers,
+      {Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : this(403,
@@ -227,7 +227,7 @@ class Response extends Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.notFound(body,
-      {Map<String, /* String | List<String> */ dynamic> headers,
+      {Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : this(404,
@@ -257,7 +257,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.internalServerError(
       {body,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : this(500,
@@ -286,7 +286,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response(this.statusCode,
       {body,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Encoding encoding,
       Map<String, Object> context})
       : super(body, encoding: encoding, headers: headers, context: context) {
@@ -312,7 +312,7 @@ class Response extends Message {
   /// [Stream<List<int>>], or `<int>[]` (empty list) to indicate no body.
   @override
   Response change(
-      {Map<String, /* String | List<String> */ dynamic> headers,
+      {Map<String, /* String | List<String> */ Object> headers,
       Map<String, Object> context,
       body}) {
     final headersAll = updateMap(this.headersAll, expandToHeadersAll(headers));
@@ -330,7 +330,7 @@ class Response extends Message {
 /// Returns a new map without modifying [headers]. This is used to add
 /// content-type information when creating a 500 response with a default body.
 Map<String, dynamic> _adjustErrorHeaders(
-    Map<String, /* String | List<String> */ dynamic> headers) {
+    Map<String, /* String | List<String> */ Object> headers) {
   if (headers == null || headers['content-type'] == null) {
     return addHeader(headers, 'content-type', 'text/plain');
   }

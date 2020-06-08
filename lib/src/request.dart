@@ -126,7 +126,7 @@ class Request extends Message {
   // TODO(kevmoo) finish documenting the rest of the arguments.
   Request(String method, Uri requestedUri,
       {String protocolVersion,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       String handlerPath,
       Uri url,
       body,
@@ -151,7 +151,7 @@ class Request extends Message {
   /// from a changed [Request].
   Request._(this.method, Uri requestedUri,
       {String protocolVersion,
-      Map<String, /* String | List<String> */ dynamic> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       String handlerPath,
       Uri url,
       body,
@@ -213,7 +213,7 @@ class Request extends Message {
   ///     print(request.url);        // => file.html
   @override
   Request change(
-      {Map<String, /* String | List<String> */ dynamic> headers,
+      {Map<String, /* String | List<String> */ Object> headers,
       Map<String, Object> context,
       String path,
       body}) {
