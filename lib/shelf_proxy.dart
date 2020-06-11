@@ -7,8 +7,6 @@ import 'package:path/path.dart' as p;
 import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart';
 
-import 'src/utils.dart';
-
 /// A handler that proxies requests to [url].
 ///
 /// To generate the proxy request, this concatenates [url] and [Request.url].
@@ -51,7 +49,11 @@ Handler proxyHandler(url, {http.Client client, String proxyName}) {
     _addHeader(clientRequest.headers, 'via',
         '${serverRequest.protocolVersion} $proxyName');
 
-    unawaited(store(serverRequest.read(), clientRequest.sink));
+    unawaited(serverRequest
+        .read()
+        .forEach(clientRequest.sink.add)
+        .catchError(clientRequest.sink.addError)
+        .whenComplete(clientRequest.sink.close));
     var clientResponse = await client.send(clientRequest);
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
