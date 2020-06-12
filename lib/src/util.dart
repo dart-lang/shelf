@@ -78,6 +78,8 @@ List<String> expandHeaderValue(dynamic v) {
     return [v];
   } else if (v is List<String>) {
     return v;
+  } else if (v == null) {
+    return null;
   } else {
     throw ArgumentError('Expected String or List<String>, got: `$v`.');
   }
