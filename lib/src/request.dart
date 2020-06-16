@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:stream_channel/stream_channel.dart';
 
@@ -178,11 +179,29 @@ class Request extends Message {
           requestedUri, 'requestedUri', 'may not have a fragment.');
     }
 
-    if (this.handlerPath + this.url.path != this.requestedUri.path) {
+    // Notice that because relative paths must encode colon (':') as %3A we
+    // cannot actually combine this.handlerPath and this.url.path, but we can
+    // compare the pathSegments. In practice exposing this.url.path as a Uri
+    // and not a String is probably the underlying flaw here.
+    final handlerPathSegments = Uri(path: this.handlerPath).pathSegments;
+    // If there is a last pathSegment and it is empty we remove it because it
+    // is only present to retain a trailing slash.
+    Iterable<String> pathSegments = handlerPathSegments;
+    if (handlerPathSegments.isNotEmpty && handlerPathSegments.last.isEmpty) {
+      pathSegments = handlerPathSegments.getRange(
+        0,
+        handlerPathSegments.length - 1,
+      );
+    }
+    pathSegments = pathSegments.followedBy(this.url.pathSegments);
+    if (!IterableEquality().equals(
+      pathSegments,
+      this.requestedUri.pathSegments,
+    )) {
       throw ArgumentError.value(
           requestedUri,
           'requestedUri',
-          'handlerPath "$handlerPath" and url "$url" must '
+          'handlerPath "${this.handlerPath}" and url "${this.url}" must '
               'combine to equal requestedUri path "${requestedUri.path}".');
     }
   }

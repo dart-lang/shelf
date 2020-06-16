@@ -103,6 +103,14 @@ void main() {
     expect(response.body, 'Hello from /foo/bar');
   });
 
+  test('Request can handle colon in first path segment', () async {
+    await _scheduleServer(syncHandler);
+
+    var response = await _get(path: 'user:42');
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.body, 'Hello from /user:42');
+  });
+
   test('chunked requests are un-chunked', () async {
     await _scheduleServer(expectAsync1((request) {
       expect(request.contentLength, isNull);
@@ -563,11 +571,13 @@ Future _scheduleServer(Handler handler,
 
 Future<http.Response> _get({
   Map<String, /* String | List<String> */ Object> headers,
+  String path = '',
 }) async {
   // TODO: use http.Client once it supports sending and receiving multiple headers.
   final client = HttpClient();
   try {
-    final rq = await client.getUrl(Uri.parse('http://localhost:$_serverPort/'));
+    final rq =
+        await client.getUrl(Uri.parse('http://localhost:$_serverPort/$path'));
     headers?.forEach((key, value) {
       rq.headers.add(key, value);
     });
