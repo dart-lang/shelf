@@ -25,8 +25,7 @@ final _defaultHeaders = Headers.from({
 abstract class Message {
   final Headers _headers;
 
-  /// The HTTP headers.
-  /// The keys in this Map are normalized, and access is case-insensitive.
+  /// The HTTP headers with case-insensitive keys.
   ///
   /// If a header occurs more than once in the query string, they are mapped to
   /// by concatenating them with a comma.
@@ -34,8 +33,7 @@ abstract class Message {
   /// The returned map is unmodifiable.
   Map<String, String> get headers => _headers.singleValues;
 
-  /// The HTTP headers with multiple values.
-  /// The keys in this Map are normalized, and access is case-insensitive.
+  /// The HTTP headers with multiple values with case-insensitive keys.
   ///
   /// If a header occurs only once, its value is a singleton list.
   /// If a header occurs with no value, the empty string is used as the value

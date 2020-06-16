@@ -11,7 +11,7 @@ final _emptyHeaders = Headers._empty();
 
 /// Unmodifiable, key-insensitive header map.
 class Headers extends UnmodifiableMapView<String, List<String>> {
-  Map<String, String> _singeValues;
+  Map<String, String> _singleValues;
 
   factory Headers.from(Map<String, List<String>> values) {
     if (values == null || values.isEmpty) {
@@ -24,34 +24,15 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
   }
 
   Headers._(Map<String, List<String>> values)
-      : super(
-          CaseInsensitiveMap<List<String>>.from(
-            Map<String, List<String>>.fromEntries(
-              values.entries
-                  .where((e) => e.value != null && e.value.isNotEmpty)
-                  .map(
-                    (e) => MapEntry<String, List<String>>(
-                      e.key,
-                      List.unmodifiable(e.value),
-                    ),
-                  ),
-            ),
-          ),
-        );
+      : super(CaseInsensitiveMap.from(Map.fromEntries(values.entries
+            .where((e) => e.value?.isNotEmpty ?? false)
+            .map((e) => MapEntry(e.key, List.unmodifiable(e.value))))));
 
-  Headers._empty() : super(<String, List<String>>{});
+  Headers._empty() : super(const {});
   factory Headers.empty() => _emptyHeaders;
 
-  Map<String, String> get singleValues {
-    return _singeValues ??= _SingleValueHeaders(
-      CaseInsensitiveMap<String>.from(
-        map((key, value) =>
-            MapEntry<String, String>(key, joinHeaderValues(value))),
-      ),
-    );
-  }
-}
-
-class _SingleValueHeaders extends UnmodifiableMapView<String, String> {
-  _SingleValueHeaders(Map<String, String> map) : super(map);
+  Map<String, String> get singleValues => _singleValues ??= UnmodifiableMapView(
+        CaseInsensitiveMap.from(
+            map((key, value) => MapEntry(key, joinHeaderValues(value)))),
+      );
 }
