@@ -1,10 +1,11 @@
 ## 0.7.6-dev
 
-* Supports multiple header values in `Request` and `Response`:
-  * `headersAll` field contains all the header values 
-  * `headers` field contains the same values as previously (appending values with `,`)
-  * `headers` parameter in the constructor and in the `.change()` method accepts
-    both `String` and `List<String>` values.
+*   Supports multiple header values in `Request` and `Response`:
+    *   `headersAll` field contains all the header values
+    *   `headers` field contains the same values as previously (appending values
+        with `,`)
+    *   `headers` parameter in the constructor and in the `.change()` method
+        accepts both `String` and `List<String>` values.
 
 ## 0.7.5
 
