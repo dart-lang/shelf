@@ -9,6 +9,7 @@ import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 
 import 'body.dart';
+import 'headers.dart';
 import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
 
@@ -16,15 +17,32 @@ Body extractBody(Message message) => message._body;
 
 /// The default set of headers for a message created with no body and no
 /// explicit headers.
-final _defaultHeaders =
-    ShelfUnmodifiableMap<String>({'content-length': '0'}, ignoreKeyCase: true);
+final _defaultHeaders = Headers.from({
+  'content-length': ['0'],
+});
 
 /// Represents logic shared between [Request] and [Response].
 abstract class Message {
+  final Headers _headers;
+
   /// The HTTP headers.
+  /// The keys in this Map are normalized, and access is case-insensitive.
   ///
-  /// The value is immutable.
-  final Map<String, String> headers;
+  /// If a header occurs more than once in the query string, they are mapped to
+  /// by concatenating them with a comma.
+  ///
+  /// The returned map is unmodifiable.
+  Map<String, String> get headers => _headers.singleValues;
+
+  /// The HTTP headers with multiple values.
+  /// The keys in this Map are normalized, and access is case-insensitive.
+  ///
+  /// If a header occurs only once, its value is a singleton list.
+  /// If a header occurs with no value, the empty string is used as the value
+  /// for that occurrence.
+  ///
+  /// The returned map and the lists it contains are unmodifiable.
+  Map<String, List<String>> get headersAll => _headers;
 
   /// Extra context that can be used by for middleware and handlers.
   ///
@@ -63,14 +81,21 @@ abstract class Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Message(body,
       {Encoding encoding,
-      Map<String, String> headers,
+      Map<String, /* String | List<String> */ Object> headers,
       Map<String, Object> context})
-      : this._(Body(body, encoding), headers, context);
+      : this._withBody(Body(body, encoding), headers, context);
 
-  Message._(Body body, Map<String, String> headers, Map<String, Object> context)
+  Message._withBody(
+      Body body, Map<String, dynamic> headers, Map<String, Object> context)
+      : this._withHeadersAll(
+            body,
+            Headers.from(_adjustHeaders(expandToHeadersAll(headers), body)),
+            context);
+
+  Message._withHeadersAll(
+      Body body, Headers headers, Map<String, Object> context)
       : _body = body,
-        headers = ShelfUnmodifiableMap<String>(_adjustHeaders(headers, body),
-            ignoreKeyCase: true),
+        _headers = headers,
         context = ShelfUnmodifiableMap<Object>(context, ignoreKeyCase: false);
 
   /// The contents of the content-length field in [headers].
@@ -149,12 +174,13 @@ abstract class Message {
 /// Adds information about [encoding] to [headers].
 ///
 /// Returns a new map without modifying [headers].
-Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
+Map<String, List<String>> _adjustHeaders(
+    Map<String, List<String>> headers, Body body) {
   var sameEncoding = _sameEncoding(headers, body);
   if (sameEncoding) {
     if (body.contentLength == null ||
         findHeader(headers, 'content-length') == '${body.contentLength}') {
-      return headers ?? const ShelfUnmodifiableMap.empty();
+      return headers ?? Headers.empty();
     } else if (body.contentLength == 0 &&
         (headers == null || headers.isEmpty)) {
       return _defaultHeaders;
@@ -162,24 +188,26 @@ Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
   }
 
   var newHeaders = headers == null
-      ? CaseInsensitiveMap<String>()
-      : CaseInsensitiveMap<String>.from(headers);
+      ? CaseInsensitiveMap<List<String>>()
+      : CaseInsensitiveMap<List<String>>.from(headers);
 
   if (!sameEncoding) {
     if (newHeaders['content-type'] == null) {
-      newHeaders['content-type'] =
-          'application/octet-stream; charset=${body.encoding.name}';
+      newHeaders['content-type'] = [
+        'application/octet-stream; charset=${body.encoding.name}'
+      ];
     } else {
-      var contentType = MediaType.parse(newHeaders['content-type'])
-          .change(parameters: {'charset': body.encoding.name});
-      newHeaders['content-type'] = contentType.toString();
+      final contentType =
+          MediaType.parse(joinHeaderValues(newHeaders['content-type']))
+              .change(parameters: {'charset': body.encoding.name});
+      newHeaders['content-type'] = [contentType.toString()];
     }
   }
 
   if (body.contentLength != null) {
-    var coding = newHeaders['transfer-encoding'];
+    final coding = joinHeaderValues(newHeaders['transfer-encoding']);
     if (coding == null || equalsIgnoreAsciiCase(coding, 'identity')) {
-      newHeaders['content-length'] = body.contentLength.toString();
+      newHeaders['content-length'] = [body.contentLength.toString()];
     }
   }
 
@@ -187,7 +215,7 @@ Map<String, String> _adjustHeaders(Map<String, String> headers, Body body) {
 }
 
 /// Returns whether [headers] declares the same encoding as [body].
-bool _sameEncoding(Map<String, String> headers, Body body) {
+bool _sameEncoding(Map<String, List<String>> headers, Body body) {
   if (body.encoding == null) return true;
 
   var contentType = findHeader(headers, 'content-type');

@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as parser;
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf/src/util.dart';
 import 'package:test/test.dart';
 
 import 'ssl_certs.dart';
@@ -135,6 +136,29 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
     expect(response.headers['test-header'], 'test-value');
     expect(response.body, 'Hello from /');
+  });
+
+  test('multiple headers are received from the client', () async {
+    await _scheduleServer((request) {
+      return Response.ok('Hello from /', headers: {
+        'requested-values': request.headersAll['request-values'],
+        'requested-values-length':
+            request.headersAll['request-values'].length.toString(),
+        'set-cookie-values': request.headersAll['set-cookie'],
+        'set-cookie-values-length':
+            request.headersAll['set-cookie'].length.toString(),
+      });
+    });
+
+    final response = await _get(headers: {
+      'request-values': ['a', 'b'],
+      'set-cookie': ['c', 'd'],
+    });
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.headers['requested-values'], 'a, b');
+    expect(response.headers['requested-values-length'], '1');
+    expect(response.headers['set-cookie-values'], 'c, d');
+    expect(response.headers['set-cookie-values-length'], '2');
   });
 
   test('custom status code is received by the client', () async {
@@ -537,8 +561,30 @@ Future _scheduleServer(Handler handler,
       securityContext: securityContext);
 }
 
-Future<http.Response> _get({Map<String, String> headers}) =>
-    http.get('http://localhost:$_serverPort/', headers: headers ?? {});
+Future<http.Response> _get({
+  Map<String, /* String | List<String> */ Object> headers,
+}) async {
+  // TODO: use http.Client once it supports sending and receiving multiple headers.
+  final client = HttpClient();
+  try {
+    final rq = await client.getUrl(Uri.parse('http://localhost:$_serverPort/'));
+    headers?.forEach((key, value) {
+      rq.headers.add(key, value);
+    });
+    final rs = await rq.close();
+    final rsHeaders = <String, String>{};
+    rs.headers.forEach((name, values) {
+      rsHeaders[name] = joinHeaderValues(values);
+    });
+    return http.Response.fromStream(http.StreamedResponse(
+      rs,
+      rs.statusCode,
+      headers: rsHeaders,
+    ));
+  } finally {
+    client.close(force: true);
+  }
+}
 
 Future<http.StreamedResponse> _post(
     {Map<String, String> headers, String body}) {

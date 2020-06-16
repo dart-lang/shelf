@@ -216,6 +216,7 @@ void main() {
       expect(copy.requestedUri, request.requestedUri);
       expect(copy.protocolVersion, request.protocolVersion);
       expect(copy.headers, same(request.headers));
+      expect(copy.headersAll, same(request.headersAll));
       expect(copy.url, request.url);
       expect(copy.handlerPath, request.handlerPath);
       expect(copy.context, same(request.context));
@@ -226,6 +227,94 @@ void main() {
         controller
           ..add(worldBytes)
           ..close();
+      });
+    });
+
+    group('change headers', () {
+      final request = Request(
+          'GET', Uri.parse('http://localhost:8080/static/file.html'),
+          protocolVersion: '2.0',
+          headers: {'header1': 'header value 1'},
+          url: Uri.parse('file.html'),
+          handlerPath: '/static/',
+          body: '',
+          context: {'context1': 'context value 1'});
+
+      test('delete value with null', () {
+        final r = request.change(headers: {'header1': null});
+        expect(r.headers, {'content-length': '0'});
+        expect(r.headersAll, {
+          'content-length': ['0'],
+        });
+      });
+
+      test('delete value with empty list', () {
+        final r = request.change(headers: {'header1': <String>[]});
+        expect(r.headers, {'content-length': '0'});
+        expect(r.headersAll, {
+          'content-length': ['0'],
+        });
+      });
+
+      test('override value with new String', () {
+        final r = request.change(headers: {'header1': 'new header value'});
+        expect(r.headers, {
+          'header1': 'new header value',
+          'content-length': '0',
+        });
+        expect(r.headersAll, {
+          'header1': ['new header value'],
+          'content-length': ['0'],
+        });
+      });
+
+      test('override value with new single-item List', () {
+        final r = request.change(headers: {
+          'header1': ['new header value']
+        });
+        expect(r.headers, {
+          'header1': 'new header value',
+          'content-length': '0',
+        });
+        expect(r.headersAll, {
+          'header1': ['new header value'],
+          'content-length': ['0'],
+        });
+      });
+
+      test('override value with new multi-item List', () {
+        final r = request.change(headers: {
+          'header1': ['new header value', 'other value']
+        });
+        expect(r.headers, {
+          'header1': 'new header value,other value',
+          'content-length': '0',
+        });
+        expect(r.headersAll, {
+          'header1': ['new header value', 'other value'],
+          'content-length': ['0'],
+        });
+      });
+
+      test('adding a new values', () {
+        final r = request.change(headers: {
+          'a': 'A',
+          'b': ['B1', 'B2'],
+        }).change(headers: {'c': 'C'});
+        expect(r.headers, {
+          'header1': 'header value 1',
+          'content-length': '0',
+          'a': 'A',
+          'b': 'B1,B2',
+          'c': 'C'
+        });
+        expect(r.headersAll, {
+          'header1': ['header value 1'],
+          'content-length': ['0'],
+          'a': ['A'],
+          'b': ['B1', 'B2'],
+          'c': ['C'],
+        });
       });
     });
 

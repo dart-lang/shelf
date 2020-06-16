@@ -130,11 +130,9 @@ Future handleRequest(HttpRequest request, Handler handler) async {
 
 /// Creates a new [Request] from the provided [HttpRequest].
 Request _fromHttpRequest(HttpRequest request) {
-  var headers = <String, String>{};
+  var headers = <String, List<String>>{};
   request.headers.forEach((k, v) {
-    // Multiple header values are joined with commas.
-    // See http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-21#page-22
-    headers[k] = v.join(',');
+    headers[k] = v;
   });
 
   // Remove the Transfer-Encoding header per the adapter requirements.
@@ -168,7 +166,7 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
   // necessary.
   httpResponse.headers.chunkedTransferEncoding = false;
 
-  response.headers.forEach((header, value) {
+  response.headersAll.forEach((header, value) {
     if (value == null) return;
     httpResponse.headers.set(header, value);
   });
