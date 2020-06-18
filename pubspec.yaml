@@ -1,5 +1,5 @@
 name: shelf
-version: 0.7.6-dev
+version: 0.7.6
 description: >-
   A model for web server middleware that encourages composition and easy reuse
 homepage: https://github.com/dart-lang/shelf

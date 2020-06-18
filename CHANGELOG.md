@@ -1,4 +1,4 @@
-## 0.7.6-dev
+## 0.7.6
 
 *   Supports multiple header values in `Request` and `Response`:
     *   `headersAll` field contains all the header values
