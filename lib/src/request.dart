@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:stream_channel/stream_channel.dart';
 
