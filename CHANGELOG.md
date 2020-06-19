@@ -1,4 +1,4 @@
-## 0.7.7-dev
+## 0.7.7
 
 * Fix internal error in `Request` when `.change()` matches the full path.
 
