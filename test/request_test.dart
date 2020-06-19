@@ -355,6 +355,16 @@ void main() {
         expect(copy.url, Uri.parse('file.html'));
       });
 
+      test('regression test for Issue #142', () {
+        var uri = Uri.parse('https://test.example.com/static/dir/');
+        var request = Request('GET', uri,
+            handlerPath: '/static/', url: Uri.parse('dir/'));
+
+        var copy = request.change(path: 'dir');
+        expect(copy.handlerPath, '/static/dir/');
+        expect(copy.url, Uri.parse(''));
+      });
+
       test('throws if path does not match existing uri', () {
         var uri = Uri.parse('https://test.example.com/static/dir/file.html');
         var request = Request('GET', uri,

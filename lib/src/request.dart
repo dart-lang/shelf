@@ -183,21 +183,9 @@ class Request extends Message {
     // cannot actually combine this.handlerPath and this.url.path, but we can
     // compare the pathSegments. In practice exposing this.url.path as a Uri
     // and not a String is probably the underlying flaw here.
-    final handlerPathSegments = Uri(path: this.handlerPath).pathSegments;
-    // If there is a last pathSegment and it is empty we remove it because it
-    // is only present to retain a trailing slash.
-    Iterable<String> pathSegments = handlerPathSegments;
-    if (handlerPathSegments.isNotEmpty && handlerPathSegments.last.isEmpty) {
-      pathSegments = handlerPathSegments.getRange(
-        0,
-        handlerPathSegments.length - 1,
-      );
-    }
-    pathSegments = pathSegments.followedBy(this.url.pathSegments);
-    if (!IterableEquality().equals(
-      pathSegments,
-      this.requestedUri.pathSegments,
-    )) {
+    final pathSegments = Uri(path: this.handlerPath).pathSegments.join('/') +
+        this.url.pathSegments.join('/');
+    if (pathSegments != this.requestedUri.pathSegments.join('/')) {
       throw ArgumentError.value(
           requestedUri,
           'requestedUri',
