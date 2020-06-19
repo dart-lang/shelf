@@ -1,3 +1,7 @@
+## 0.7.7
+
+* Fix internal error in `Request` when `.change()` matches the full path.
+
 ## 0.7.6
 
 *   Supports multiple header values in `Request` and `Response`:
