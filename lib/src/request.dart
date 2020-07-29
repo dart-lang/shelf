@@ -168,6 +168,16 @@ class Request extends Message {
       throw ArgumentError.value(method, 'method', 'cannot be empty.');
     }
 
+    try {
+      // Trigger URI parsing methods that may throw format exception (in Request
+      // constructor or in handlers / routing).
+      requestedUri.pathSegments;
+      requestedUri.queryParametersAll;
+    } on FormatException catch (e) {
+      throw ArgumentError.value(
+          requestedUri, 'requestedUri', 'URI parsing failed: $e');
+    }
+
     if (!requestedUri.isAbsolute) {
       throw ArgumentError.value(
           requestedUri, 'requestedUri', 'must be an absolute URL.');

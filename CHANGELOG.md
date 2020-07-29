@@ -1,3 +1,7 @@
+## 0.7.8
+
+* Handle malformed URLs (400 instead of 500).
+
 ## 0.7.7
 
 * Fix internal error in `Request` when `.change()` matches the full path.

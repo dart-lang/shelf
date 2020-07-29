@@ -31,6 +31,14 @@ void main() {
     expect(await http.read(server.url), equals('Hello from /'));
   });
 
+  test('Handles malformed requests gracefully.', () async {
+    server.mount(syncHandler);
+    final rs =
+        await http.get('${server.url}/%D0%C2%BD%A8%CE%C4%BC%FE%BC%D0.zip');
+    expect(rs.statusCode, 400);
+    expect(rs.body, 'Bad Request');
+  });
+
   test('delays HTTP requests until a handler is mounted', () async {
     expect(http.read(server.url), completion(equals('Hello from /')));
     await Future.delayed(Duration.zero);
