@@ -149,7 +149,7 @@ class Request extends Message {
   /// Any [Request] created by calling [change] will pass [_onHijack] from the
   /// source [Request] to ensure that [hijack] can only be called once, even
   /// from a changed [Request].
-  Request._(this.method, Uri requestedUri,
+  Request._(this.method, this.requestedUri,
       {String protocolVersion,
       Map<String, /* String | List<String> */ Object> headers,
       String handlerPath,
@@ -158,14 +158,23 @@ class Request extends Message {
       Encoding encoding,
       Map<String, Object> context,
       _OnHijack onHijack})
-      : requestedUri = requestedUri,
-        protocolVersion = protocolVersion ?? '1.1',
+      : protocolVersion = protocolVersion ?? '1.1',
         url = _computeUrl(requestedUri, handlerPath, url),
         handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
         _onHijack = onHijack,
         super(body, encoding: encoding, headers: headers, context: context) {
     if (method.isEmpty) {
       throw ArgumentError.value(method, 'method', 'cannot be empty.');
+    }
+
+    try {
+      // Trigger URI parsing methods that may throw format exception (in Request
+      // constructor or in handlers / routing).
+      requestedUri.pathSegments;
+      requestedUri.queryParametersAll;
+    } on FormatException catch (e) {
+      throw ArgumentError.value(
+          requestedUri, 'requestedUri', 'URI parsing failed: $e');
     }
 
     if (!requestedUri.isAbsolute) {
@@ -184,7 +193,7 @@ class Request extends Message {
     // and not a String is probably the underlying flaw here.
     final pathSegments = Uri(path: this.handlerPath).pathSegments.join('/') +
         this.url.pathSegments.join('/');
-    if (pathSegments != this.requestedUri.pathSegments.join('/')) {
+    if (pathSegments != requestedUri.pathSegments.join('/')) {
       throw ArgumentError.value(
           requestedUri,
           'requestedUri',
