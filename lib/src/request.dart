@@ -191,8 +191,10 @@ class Request extends Message {
     // cannot actually combine this.handlerPath and this.url.path, but we can
     // compare the pathSegments. In practice exposing this.url.path as a Uri
     // and not a String is probably the underlying flaw here.
-    final pathSegments = Uri(path: this.handlerPath).pathSegments.join('/') +
-        this.url.pathSegments.join('/');
+    final handlerPart = Uri(path: this.handlerPath).pathSegments.join('/');
+    final rest = this.url.pathSegments.join('/');
+    final join = this.url.path.startsWith('/') ? '/' : '';
+    final pathSegments = '$handlerPart$join$rest';
     if (pathSegments != requestedUri.pathSegments.join('/')) {
       throw ArgumentError.value(
           requestedUri,
