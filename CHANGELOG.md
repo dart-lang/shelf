@@ -1,3 +1,7 @@
+## 0.7.9
+
+* Allow a `handlerPath` to lead up to a double `//` in a URI.
+
 ## 0.7.8
 
 * Handle malformed URLs (400 instead of 500).

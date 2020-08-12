@@ -365,6 +365,16 @@ void main() {
         expect(copy.url, Uri.parse(''));
       });
 
+      test('allows changing pth to URL leading to double //', () {
+        var uri = Uri.parse('https://test.example.com/some_base//more');
+        var request = Request('GET', uri,
+            handlerPath: '', url: Uri.parse('some_base//more'));
+
+        var copy = request.change(path: 'some_base');
+        expect(copy.handlerPath, '/some_base/');
+        expect(copy.url, Uri.parse('/more'));
+      });
+
       test('throws if path does not match existing uri', () {
         var uri = Uri.parse('https://test.example.com/static/dir/file.html');
         var request = Request('GET', uri,
