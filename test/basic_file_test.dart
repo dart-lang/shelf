@@ -86,7 +86,7 @@ void main() {
     var handler = createStaticHandler(d.sandbox);
 
     var rootPath = p.join(d.sandbox, 'root.txt');
-    var modified = new File(rootPath).statSync().changed.toUtc();
+    var modified = new File(rootPath).statSync().modified.toUtc();
 
     var response = await makeRequest(handler, '/root.txt');
     expect(response.lastModified, atSameTimeToSecond(modified));
@@ -97,7 +97,7 @@ void main() {
       var handler = createStaticHandler(d.sandbox);
 
       var rootPath = p.join(d.sandbox, 'root.txt');
-      var modified = new File(rootPath).statSync().changed.toUtc();
+      var modified = new File(rootPath).statSync().modified.toUtc();
 
       var headers = {
         HttpHeaders.ifModifiedSinceHeader: formatHttpDate(modified)
@@ -112,7 +112,7 @@ void main() {
       var handler = createStaticHandler(d.sandbox);
 
       var rootPath = p.join(d.sandbox, 'root.txt');
-      var modified = new File(rootPath).statSync().changed.toUtc();
+      var modified = new File(rootPath).statSync().modified.toUtc();
 
       var headers = {
         HttpHeaders.ifModifiedSinceHeader:
@@ -128,7 +128,7 @@ void main() {
       var handler = createStaticHandler(d.sandbox);
 
       var rootPath = p.join(d.sandbox, 'root.txt');
-      var modified = new File(rootPath).statSync().changed.toUtc();
+      var modified = new File(rootPath).statSync().modified.toUtc();
 
       var headers = {
         HttpHeaders.ifModifiedSinceHeader:

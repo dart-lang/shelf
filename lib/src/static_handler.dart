@@ -182,7 +182,7 @@ Future<Response> _handleFile(
   var ifModifiedSince = request.ifModifiedSince;
 
   if (ifModifiedSince != null) {
-    var fileChangeAtSecResolution = toSecondResolution(stat.changed);
+    var fileChangeAtSecResolution = toSecondResolution(stat.modified);
     if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
       return new Response.notModified();
     }
@@ -190,7 +190,7 @@ Future<Response> _handleFile(
 
   var headers = {
     HttpHeaders.contentLengthHeader: stat.size.toString(),
-    HttpHeaders.lastModifiedHeader: formatHttpDate(stat.changed)
+    HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified)
   };
 
   var contentType = await getContentType();
