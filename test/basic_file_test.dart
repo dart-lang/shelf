@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -138,6 +139,33 @@ void main() {
       var response = await makeRequest(handler, '/root.txt', headers: headers);
       expect(response.statusCode, HttpStatus.notModified);
       expect(response.contentLength, 0);
+    });
+
+    test('after file modification', () async {
+      // This test updates a file on disk to ensure the file stamp is updated
+      // which was previously not the case on Windows due to the files "changed"
+      // date being the creation date.
+      // https://github.com/dart-lang/shelf_static/issues/37
+
+      var handler = createStaticHandler(d.sandbox);
+      var rootPath = p.join(d.sandbox, 'root.txt');
+
+      var response1 = await makeRequest(handler, '/root.txt');
+      var originalModificationDate = response1.lastModified;
+
+      // Ensure the timestamp change is > 1s.
+      await Future<void>.delayed(Duration(seconds: 2));
+      new File(rootPath).writeAsStringSync('updated root txt');
+
+      var headers = {
+        HttpHeaders.ifModifiedSinceHeader:
+            formatHttpDate(originalModificationDate)
+      };
+
+      var response2 = await makeRequest(handler, '/root.txt', headers: headers);
+      expect(response2.statusCode, HttpStatus.ok);
+      expect(response2.lastModified.millisecondsSinceEpoch,
+          greaterThan(originalModificationDate.millisecondsSinceEpoch));
     });
   });
 
