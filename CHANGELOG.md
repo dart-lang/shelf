@@ -1,3 +1,8 @@
+## 0.2.9
+
+* Use file `modified` dates instead of `changed` for `304 Not Modified` checks
+  as `changed` returns creation dates on Windows.
+
 ## 0.2.8
 
 * Update SDK constraint to `>=2.0.0-dev.61 <3.0.0`.

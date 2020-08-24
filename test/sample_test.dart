@@ -62,7 +62,7 @@ Future _testFileContents(String filename) async {
 
   var response = await _requestFile(filename);
   expect(response.contentLength, fileStat.size);
-  expect(response.lastModified, atSameTimeToSecond(fileStat.changed.toUtc()));
+  expect(response.lastModified, atSameTimeToSecond(fileStat.modified.toUtc()));
   await _expectCompletesWithBytes(response, fileContents);
 }
 
