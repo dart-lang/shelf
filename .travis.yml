@@ -1,15 +1,22 @@
 language: dart
 
+os:
+- linux
+- windows
+
 dart:
+  - 2.3.0
   - dev
+
 dart_task:
   - test
-  - dartanalyzer
+  - dartanalyzer: --fatal-infos --fatal-warnings .
 
 matrix:
   include:
-    - dart: dev
-      dart_task: dartfmt
+  # Only validate formatting using the dev release
+  - dart: dev
+    dart_task: dartfmt
 
 # Only building master means that we don't run two builds for each pull request.
 branches:

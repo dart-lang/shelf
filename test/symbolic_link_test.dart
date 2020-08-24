@@ -11,6 +11,10 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'test_util.dart';
 
+const _skipSymlinksOnWindows = {
+  'windows': Skip('Skip tests for sym-linked files on Windows'),
+};
+
 void main() {
   setUp(() async {
     await d.dir('originals', [
@@ -43,14 +47,18 @@ void main() {
     });
 
     group('links under root dir', () {
-      test('access sym linked file in real dir', () async {
-        final handler = createStaticHandler(d.sandbox);
+      test(
+        'access sym linked file in real dir',
+        () async {
+          final handler = createStaticHandler(d.sandbox);
 
-        final response = await makeRequest(handler, '/link_index.html');
-        expect(response.statusCode, HttpStatus.ok);
-        expect(response.contentLength, 13);
-        expect(response.readAsString(), completion('<html></html>'));
-      });
+          final response = await makeRequest(handler, '/link_index.html');
+          expect(response.statusCode, HttpStatus.ok);
+          expect(response.contentLength, 13);
+          expect(response.readAsString(), completion('<html></html>'));
+        },
+        onPlatform: _skipSymlinksOnWindows,
+      );
 
       test('access file in sym linked dir', () async {
         final handler = createStaticHandler(d.sandbox);
@@ -91,15 +99,19 @@ void main() {
     });
 
     group('links under root dir', () {
-      test('access sym linked file in real dir', () async {
-        final handler =
-            createStaticHandler(d.sandbox, serveFilesOutsidePath: true);
+      test(
+        'access sym linked file in real dir',
+        () async {
+          final handler =
+              createStaticHandler(d.sandbox, serveFilesOutsidePath: true);
 
-        final response = await makeRequest(handler, '/link_index.html');
-        expect(response.statusCode, HttpStatus.ok);
-        expect(response.contentLength, 13);
-        expect(response.readAsString(), completion('<html></html>'));
-      });
+          final response = await makeRequest(handler, '/link_index.html');
+          expect(response.statusCode, HttpStatus.ok);
+          expect(response.contentLength, 13);
+          expect(response.readAsString(), completion('<html></html>'));
+        },
+        onPlatform: _skipSymlinksOnWindows,
+      );
 
       test('access file in sym linked dir', () async {
         final handler =
@@ -113,15 +125,19 @@ void main() {
     });
 
     group('links not under root dir', () {
-      test('access sym linked file in real dir', () async {
-        final handler = createStaticHandler(p.join(d.sandbox, 'alt_root'),
-            serveFilesOutsidePath: true);
+      test(
+        'access sym linked file in real dir',
+        () async {
+          final handler = createStaticHandler(p.join(d.sandbox, 'alt_root'),
+              serveFilesOutsidePath: true);
 
-        final response = await makeRequest(handler, '/link_index.html');
-        expect(response.statusCode, HttpStatus.ok);
-        expect(response.contentLength, 13);
-        expect(response.readAsString(), completion('<html></html>'));
-      });
+          final response = await makeRequest(handler, '/link_index.html');
+          expect(response.statusCode, HttpStatus.ok);
+          expect(response.contentLength, 13);
+          expect(response.readAsString(), completion('<html></html>'));
+        },
+        onPlatform: _skipSymlinksOnWindows,
+      );
 
       test('access file in sym linked dir', () async {
         final handler = createStaticHandler(p.join(d.sandbox, 'alt_root'),
