@@ -16,7 +16,7 @@ import 'directory_listing.dart';
 import 'util.dart';
 
 /// The default resolver for MIME types based on file extensions.
-final _defaultMimeTypeResolver = new MimeTypeResolver();
+final _defaultMimeTypeResolver = MimeTypeResolver();
 
 // TODO option to exclude hidden files?
 
@@ -40,14 +40,14 @@ final _defaultMimeTypeResolver = new MimeTypeResolver();
 /// Specify a custom [contentTypeResolver] to customize automatic content type
 /// detection.
 Handler createStaticHandler(String fileSystemPath,
-    {bool serveFilesOutsidePath: false,
+    {bool serveFilesOutsidePath = false,
     String defaultDocument,
-    bool listDirectories: false,
-    bool useHeaderBytesForContentType: false,
+    bool listDirectories = false,
+    bool useHeaderBytesForContentType = false,
     MimeTypeResolver contentTypeResolver}) {
-  var rootDir = new Directory(fileSystemPath);
+  final rootDir = Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
-    throw new ArgumentError('A directory corresponding to fileSystemPath '
+    throw ArgumentError('A directory corresponding to fileSystemPath '
         '"$fileSystemPath" could not be found');
   }
 
@@ -55,48 +55,48 @@ Handler createStaticHandler(String fileSystemPath,
 
   if (defaultDocument != null) {
     if (defaultDocument != p.basename(defaultDocument)) {
-      throw new ArgumentError('defaultDocument must be a file name.');
+      throw ArgumentError('defaultDocument must be a file name.');
     }
   }
 
   contentTypeResolver ??= _defaultMimeTypeResolver;
 
   return (Request request) {
-    var segs = [fileSystemPath]..addAll(request.url.pathSegments);
+    final segs = [fileSystemPath, ...request.url.pathSegments];
 
-    var fsPath = p.joinAll(segs);
+    final fsPath = p.joinAll(segs);
 
-    var entityType = FileSystemEntity.typeSync(fsPath, followLinks: true);
+    final entityType = FileSystemEntity.typeSync(fsPath, followLinks: true);
 
     File file;
 
     if (entityType == FileSystemEntityType.file) {
-      file = new File(fsPath);
+      file = File(fsPath);
     } else if (entityType == FileSystemEntityType.directory) {
       file = _tryDefaultFile(fsPath, defaultDocument);
       if (file == null && listDirectories) {
-        var uri = request.requestedUri;
+        final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
         return listDirectory(fileSystemPath, fsPath);
       }
     }
 
     if (file == null) {
-      return new Response.notFound('Not Found');
+      return Response.notFound('Not Found');
     }
 
     if (!serveFilesOutsidePath) {
-      var resolvedPath = file.resolveSymbolicLinksSync();
+      final resolvedPath = file.resolveSymbolicLinksSync();
 
       // Do not serve a file outside of the original fileSystemPath
       if (!p.isWithin(fileSystemPath, resolvedPath)) {
-        return new Response.notFound('Not Found');
+        return Response.notFound('Not Found');
       }
     }
 
     // when serving the default document for a directory, if the requested
     // path doesn't end with '/', redirect to the path with a trailing '/'
-    var uri = request.requestedUri;
+    final uri = request.requestedUri;
     if (entityType == FileSystemEntityType.directory &&
         !uri.path.endsWith('/')) {
       return _redirectToAddTrailingSlash(uri);
@@ -104,10 +104,10 @@ Handler createStaticHandler(String fileSystemPath,
 
     return _handleFile(request, file, () async {
       if (useHeaderBytesForContentType) {
-        var length = math.min(
+        final length = math.min(
             contentTypeResolver.magicNumbersMaxLength, file.lengthSync());
 
-        var byteSink = new ByteAccumulatorSink();
+        final byteSink = ByteAccumulatorSink();
 
         await file.openRead(0, length).listen(byteSink.add).asFuture();
 
@@ -121,23 +121,23 @@ Handler createStaticHandler(String fileSystemPath,
 }
 
 Response _redirectToAddTrailingSlash(Uri uri) {
-  var location = new Uri(
+  final location = Uri(
       scheme: uri.scheme,
       userInfo: uri.userInfo,
       host: uri.host,
       port: uri.port,
-      path: uri.path + '/',
+      path: '${uri.path}/',
       query: uri.query);
 
-  return new Response.movedPermanently(location.toString());
+  return Response.movedPermanently(location.toString());
 }
 
 File _tryDefaultFile(String dirPath, String defaultFile) {
   if (defaultFile == null) return null;
 
-  var filePath = p.join(dirPath, defaultFile);
+  final filePath = p.join(dirPath, defaultFile);
 
-  var file = new File(filePath);
+  final file = File(filePath);
 
   if (file.existsSync()) {
     return file;
@@ -155,18 +155,18 @@ File _tryDefaultFile(String dirPath, String defaultFile) {
 /// to looking up a content type based on [path]'s file extension, and failing
 /// that doesn't sent a [contentType] header at all.
 Handler createFileHandler(String path, {String url, String contentType}) {
-  var file = new File(path);
+  final file = File(path);
   if (!file.existsSync()) {
-    throw new ArgumentError.value(path, 'path', 'does not exist.');
+    throw ArgumentError.value(path, 'path', 'does not exist.');
   } else if (url != null && !p.url.isRelative(url)) {
-    throw new ArgumentError.value(url, 'url', 'must be relative.');
+    throw ArgumentError.value(url, 'url', 'must be relative.');
   }
 
   contentType ??= _defaultMimeTypeResolver.lookup(path);
   url ??= p.toUri(p.basename(path)).toString();
 
   return (request) {
-    if (request.url.path != url) return new Response.notFound('Not Found');
+    if (request.url.path != url) return Response.notFound('Not Found');
     return _handleFile(request, file, () => contentType);
   };
 }
@@ -176,25 +176,25 @@ Handler createFileHandler(String path, {String url, String contentType}) {
 /// This handles caching, and sends a 304 Not Modified response if the request
 /// indicates that it has the latest version of a file. Otherwise, it calls
 /// [getContentType] and uses it to populate the Content-Type header.
-Future<Response> _handleFile(
-    Request request, File file, FutureOr<String> getContentType()) async {
-  var stat = file.statSync();
-  var ifModifiedSince = request.ifModifiedSince;
+Future<Response> _handleFile(Request request, File file,
+    FutureOr<String> Function() getContentType) async {
+  final stat = file.statSync();
+  final ifModifiedSince = request.ifModifiedSince;
 
   if (ifModifiedSince != null) {
-    var fileChangeAtSecResolution = toSecondResolution(stat.modified);
+    final fileChangeAtSecResolution = toSecondResolution(stat.modified);
     if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
-      return new Response.notModified();
+      return Response.notModified();
     }
   }
 
-  var headers = {
+  final headers = {
     HttpHeaders.contentLengthHeader: stat.size.toString(),
     HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified)
   };
 
-  var contentType = await getContentType();
+  final contentType = await getContentType();
   if (contentType != null) headers[HttpHeaders.contentTypeHeader] = contentType;
 
-  return new Response.ok(file.openRead(), headers: headers);
+  return Response.ok(file.openRead(), headers: headers);
 }

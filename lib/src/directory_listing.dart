@@ -9,8 +9,7 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:shelf/shelf.dart';
 
-String _getHeader(String sanitizedHeading) {
-  return '''<!DOCTYPE html>
+String _getHeader(String sanitizedHeading) => '''<!DOCTYPE html>
 <html>
 <head>
   <title>Directory listing for $sanitizedHeading</title>
@@ -45,7 +44,6 @@ String _getHeader(String sanitizedHeading) {
   <h1>$sanitizedHeading</h1>
   <ul>
 ''';
-}
 
 const String _trailer = '''  </ul>
 </body>
@@ -53,9 +51,9 @@ const String _trailer = '''  </ul>
 ''';
 
 Response listDirectory(String fileSystemPath, String dirPath) {
-  StreamController<List<int>> controller = new StreamController<List<int>>();
-  Encoding encoding = new Utf8Codec();
-  HtmlEscape sanitizer = const HtmlEscape();
+  final controller = StreamController<List<int>>();
+  const encoding = Utf8Codec();
+  const sanitizer = HtmlEscape();
 
   void add(String string) {
     controller.add(encoding.encode(string));
@@ -71,7 +69,7 @@ Response listDirectory(String fileSystemPath, String dirPath) {
   add(_getHeader(sanitizer.convert(heading)));
 
   // Return a sorted listing of the directory contents asynchronously.
-  new Directory(dirPath).list().toList().then((entities) {
+  Directory(dirPath).list().toList().then((entities) {
     entities.sort((e1, e2) {
       if (e1 is Directory && e2 is! Directory) {
         return -1;
@@ -83,9 +81,9 @@ Response listDirectory(String fileSystemPath, String dirPath) {
     });
 
     for (var entity in entities) {
-      String name = path.relative(entity.path, from: dirPath);
+      var name = path.relative(entity.path, from: dirPath);
       if (entity is Directory) name += '/';
-      String sanitizedName = sanitizer.convert(name);
+      final sanitizedName = sanitizer.convert(name);
       add('    <li><a href="$sanitizedName">$sanitizedName</a></li>\n');
     }
 
@@ -93,7 +91,9 @@ Response listDirectory(String fileSystemPath, String dirPath) {
     controller.close();
   });
 
-  return new Response.ok(controller.stream,
-      encoding: encoding,
-      headers: {HttpHeaders.contentTypeHeader: 'text/html'});
+  return Response.ok(
+    controller.stream,
+    encoding: encoding,
+    headers: {HttpHeaders.contentTypeHeader: 'text/html'},
+  );
 }

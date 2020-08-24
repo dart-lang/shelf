@@ -14,12 +14,12 @@ final p.Context _ctx = p.url;
 /// Makes a simple GET request to [handler] and returns the result.
 Future<Response> makeRequest(Handler handler, String path,
     {String handlerPath, Map<String, String> headers}) {
-  var rootedHandler = _rootHandler(handlerPath, handler);
-  return new Future.sync(() => rootedHandler(_fromPath(path, headers)));
+  final rootedHandler = _rootHandler(handlerPath, handler);
+  return Future.sync(() => rootedHandler(_fromPath(path, headers)));
 }
 
 Request _fromPath(String path, Map<String, String> headers) =>
-    new Request('GET', Uri.parse('http://localhost' + path), headers: headers);
+    Request('GET', Uri.parse('http://localhost$path'), headers: headers);
 
 Handler _rootHandler(String path, Handler handler) {
   if (path == null || path.isEmpty) {
@@ -27,37 +27,38 @@ Handler _rootHandler(String path, Handler handler) {
   }
 
   return (Request request) {
-    if (!_ctx.isWithin("/$path", request.requestedUri.path)) {
-      return new Response.notFound('not found');
+    if (!_ctx.isWithin('/$path', request.requestedUri.path)) {
+      return Response.notFound('not found');
     }
     assert(request.handlerPath == '/');
 
-    var relativeRequest = request.change(path: path);
+    final relativeRequest = request.change(path: path);
 
     return handler(relativeRequest);
   };
 }
 
-Matcher atSameTimeToSecond(value) =>
-    new _SecondResolutionDateTimeMatcher(value);
+Matcher atSameTimeToSecond(DateTime value) =>
+    _SecondResolutionDateTimeMatcher(value);
 
 class _SecondResolutionDateTimeMatcher extends Matcher {
   final DateTime _target;
 
   _SecondResolutionDateTimeMatcher(DateTime target)
-      : this._target = toSecondResolution(target);
+      : _target = toSecondResolution(target);
 
-  bool matches(item, Map matchState) {
+  @override
+  bool matches(dynamic item, Map matchState) {
     if (item is! DateTime) return false;
 
-    return datesEqualToSecond(_target, item);
+    return _datesEqualToSecond(_target, item as DateTime);
   }
 
+  @override
   Description describe(Description description) =>
       description.add('Must be at the same moment as $_target with resolution '
           'to the second.');
 }
 
-bool datesEqualToSecond(DateTime d1, DateTime d2) {
-  return toSecondResolution(d1).isAtSameMomentAs(toSecondResolution(d2));
-}
+bool _datesEqualToSecond(DateTime d1, DateTime d2) =>
+    toSecondResolution(d1).isAtSameMomentAs(toSecondResolution(d2));

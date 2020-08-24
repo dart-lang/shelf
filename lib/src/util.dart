@@ -4,5 +4,5 @@
 
 DateTime toSecondResolution(DateTime dt) {
   if (dt.millisecond == 0) return dt;
-  return dt.subtract(new Duration(milliseconds: dt.millisecond));
+  return dt.subtract(Duration(milliseconds: dt.millisecond));
 }

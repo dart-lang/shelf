@@ -3,12 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
-//import 'package:http_parser/http_parser.dart';
-//import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
 
 import 'package:shelf_static/shelf_static.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'test_util.dart';
 
 void main() {
@@ -23,7 +22,7 @@ void main() {
 
   group('default document value', () {
     test('cannot contain slashes', () {
-      var invalidValues = [
+      final invalidValues = [
         'file/foo.txt',
         '/bar.txt',
         '//bar.txt',
@@ -40,42 +39,42 @@ void main() {
 
   group('no default document specified', () {
     test('access "/index.html"', () async {
-      var handler = createStaticHandler(d.sandbox);
+      final handler = createStaticHandler(d.sandbox);
 
-      var response = await makeRequest(handler, '/index.html');
+      final response = await makeRequest(handler, '/index.html');
       expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
     });
 
     test('access "/"', () async {
-      var handler = createStaticHandler(d.sandbox);
+      final handler = createStaticHandler(d.sandbox);
 
-      var response = await makeRequest(handler, '/');
+      final response = await makeRequest(handler, '/');
       expect(response.statusCode, HttpStatus.notFound);
     });
 
     test('access "/files"', () async {
-      var handler = createStaticHandler(d.sandbox);
+      final handler = createStaticHandler(d.sandbox);
 
-      var response = await makeRequest(handler, '/files');
+      final response = await makeRequest(handler, '/files');
       expect(response.statusCode, HttpStatus.notFound);
     });
 
     test('access "/files/" dir', () async {
-      var handler = createStaticHandler(d.sandbox);
+      final handler = createStaticHandler(d.sandbox);
 
-      var response = await makeRequest(handler, '/files/');
+      final response = await makeRequest(handler, '/files/');
       expect(response.statusCode, HttpStatus.notFound);
     });
   });
 
   group('default document specified', () {
     test('access "/index.html"', () async {
-      var handler =
+      final handler =
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-      var response = await makeRequest(handler, '/index.html');
+      final response = await makeRequest(handler, '/index.html');
       expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
@@ -83,10 +82,10 @@ void main() {
     });
 
     test('access "/"', () async {
-      var handler =
+      final handler =
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-      var response = await makeRequest(handler, '/');
+      final response = await makeRequest(handler, '/');
       expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
@@ -94,20 +93,20 @@ void main() {
     });
 
     test('access "/files"', () async {
-      var handler =
+      final handler =
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-      var response = await makeRequest(handler, '/files');
+      final response = await makeRequest(handler, '/files');
       expect(response.statusCode, HttpStatus.movedPermanently);
       expect(response.headers,
           containsPair(HttpHeaders.locationHeader, 'http://localhost/files/'));
     });
 
     test('access "/files/" dir', () async {
-      var handler =
+      final handler =
           createStaticHandler(d.sandbox, defaultDocument: 'index.html');
 
-      var response = await makeRequest(handler, '/files/');
+      final response = await makeRequest(handler, '/files/');
       expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 31);
       expect(response.readAsString(),

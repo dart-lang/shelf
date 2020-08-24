@@ -5,10 +5,10 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
-
 import 'package:shelf_static/shelf_static.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'test_util.dart';
 
 void main() {
@@ -18,54 +18,54 @@ void main() {
   });
 
   test('serves the file contents', () async {
-    var handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
-    var response = await makeRequest(handler, '/file.txt');
+    final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+    final response = await makeRequest(handler, '/file.txt');
     expect(response.statusCode, equals(HttpStatus.ok));
     expect(response.contentLength, equals(8));
     expect(response.readAsString(), completion(equals('contents')));
   });
 
   test('serves a 404 for a non-matching URL', () async {
-    var handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
-    var response = await makeRequest(handler, '/foo/file.txt');
+    final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+    final response = await makeRequest(handler, '/foo/file.txt');
     expect(response.statusCode, equals(HttpStatus.notFound));
   });
 
   test('serves the file contents under a custom URL', () async {
-    var handler =
+    final handler =
         createFileHandler(p.join(d.sandbox, 'file.txt'), url: 'foo/bar');
-    var response = await makeRequest(handler, '/foo/bar');
+    final response = await makeRequest(handler, '/foo/bar');
     expect(response.statusCode, equals(HttpStatus.ok));
     expect(response.contentLength, equals(8));
     expect(response.readAsString(), completion(equals('contents')));
   });
 
   test("serves a 404 if the custom URL isn't matched", () async {
-    var handler =
+    final handler =
         createFileHandler(p.join(d.sandbox, 'file.txt'), url: 'foo/bar');
-    var response = await makeRequest(handler, '/file.txt');
+    final response = await makeRequest(handler, '/file.txt');
     expect(response.statusCode, equals(HttpStatus.notFound));
   });
 
   group('the content type header', () {
     test('is inferred from the file path', () async {
-      var handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
-      var response = await makeRequest(handler, '/file.txt');
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(handler, '/file.txt');
       expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.mimeType, equals('text/plain'));
     });
 
     test("is omitted if it can't be inferred", () async {
-      var handler = createFileHandler(p.join(d.sandbox, 'random.unknown'));
-      var response = await makeRequest(handler, '/random.unknown');
+      final handler = createFileHandler(p.join(d.sandbox, 'random.unknown'));
+      final response = await makeRequest(handler, '/random.unknown');
       expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.mimeType, isNull);
     });
 
     test('comes from the contentType parameter', () async {
-      var handler = createFileHandler(p.join(d.sandbox, 'file.txt'),
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'),
           contentType: 'something/weird');
-      var response = await makeRequest(handler, '/file.txt');
+      final response = await makeRequest(handler, '/file.txt');
       expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.mimeType, equals('something/weird'));
     });
@@ -77,7 +77,7 @@ void main() {
           throwsArgumentError);
     });
 
-    test("an absolute URL", () {
+    test('an absolute URL', () {
       expect(
           () => createFileHandler(p.join(d.sandbox, 'nothing.txt'),
               url: '/foo/bar'),

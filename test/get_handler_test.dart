@@ -3,10 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
-
 import 'package:shelf_static/shelf_static.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 void main() {
   setUp(() async {
@@ -22,12 +21,12 @@ void main() {
   });
 
   test('existing relative path', () async {
-    var existingRelative = p.relative(d.sandbox);
+    final existingRelative = p.relative(d.sandbox);
     expect(() => createStaticHandler(existingRelative), returnsNormally);
   });
 
   test('non-existent absolute path', () {
-    var nonExistingAbsolute = p.join(d.sandbox, 'not_here');
+    final nonExistingAbsolute = p.join(d.sandbox, 'not_here');
     expect(() => createStaticHandler(nonExistingAbsolute), throwsArgumentError);
   });
 

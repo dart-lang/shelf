@@ -3,10 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
 
 import 'package:shelf_static/shelf_static.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+
 import 'test_util.dart';
 
 void main() {
@@ -19,9 +20,9 @@ void main() {
   });
 
   test('access root file', () async {
-    var handler = createStaticHandler(d.sandbox);
+    final handler = createStaticHandler(d.sandbox);
 
-    var response =
+    final response =
         await makeRequest(handler, '/static/root.txt', handlerPath: 'static');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 8);
@@ -29,9 +30,10 @@ void main() {
   });
 
   test('access root file with space', () async {
-    var handler = createStaticHandler(d.sandbox);
+    final handler = createStaticHandler(d.sandbox);
 
-    var response = await makeRequest(handler, '/static/files/with%20space.txt',
+    final response = await makeRequest(
+        handler, '/static/files/with%20space.txt',
         handlerPath: 'static');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
@@ -39,9 +41,10 @@ void main() {
   });
 
   test('access root file with unencoded space', () async {
-    var handler = createStaticHandler(d.sandbox);
+    final handler = createStaticHandler(d.sandbox);
 
-    var response = await makeRequest(handler, '/static/files/with%20space.txt',
+    final response = await makeRequest(
+        handler, '/static/files/with%20space.txt',
         handlerPath: 'static');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
@@ -49,9 +52,9 @@ void main() {
   });
 
   test('access file under directory', () async {
-    var handler = createStaticHandler(d.sandbox);
+    final handler = createStaticHandler(d.sandbox);
 
-    var response = await makeRequest(handler, '/static/files/test.txt',
+    final response = await makeRequest(handler, '/static/files/test.txt',
         handlerPath: 'static');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 16);
@@ -59,9 +62,9 @@ void main() {
   });
 
   test('file not found', () async {
-    var handler = createStaticHandler(d.sandbox);
+    final handler = createStaticHandler(d.sandbox);
 
-    var response = await makeRequest(handler, '/static/not_here.txt',
+    final response = await makeRequest(handler, '/static/not_here.txt',
         handlerPath: 'static');
     expect(response.statusCode, HttpStatus.notFound);
   });

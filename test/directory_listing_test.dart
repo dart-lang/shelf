@@ -4,9 +4,9 @@
 
 import 'dart:io';
 
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
 import 'package:shelf_static/shelf_static.dart';
+import 'package:test/test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import 'test_util.dart';
 
@@ -22,34 +22,34 @@ void main() {
   });
 
   test('access "/"', () async {
-    var handler = createStaticHandler(d.sandbox, listDirectories: true);
+    final handler = createStaticHandler(d.sandbox, listDirectories: true);
 
-    var response = await makeRequest(handler, '/');
+    final response = await makeRequest(handler, '/');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.readAsString(), completes);
   });
 
   test('access "/files"', () async {
-    var handler = createStaticHandler(d.sandbox, listDirectories: true);
+    final handler = createStaticHandler(d.sandbox, listDirectories: true);
 
-    var response = await makeRequest(handler, '/files');
+    final response = await makeRequest(handler, '/files');
     expect(response.statusCode, HttpStatus.movedPermanently);
     expect(response.headers,
         containsPair(HttpHeaders.locationHeader, 'http://localhost/files/'));
   });
 
   test('access "/files/"', () async {
-    var handler = createStaticHandler(d.sandbox, listDirectories: true);
+    final handler = createStaticHandler(d.sandbox, listDirectories: true);
 
-    var response = await makeRequest(handler, '/files/');
+    final response = await makeRequest(handler, '/files/');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.readAsString(), completes);
   });
 
   test('access "/files/empty subfolder"', () async {
-    var handler = createStaticHandler(d.sandbox, listDirectories: true);
+    final handler = createStaticHandler(d.sandbox, listDirectories: true);
 
-    var response = await makeRequest(handler, '/files/empty subfolder');
+    final response = await makeRequest(handler, '/files/empty subfolder');
     expect(response.statusCode, HttpStatus.movedPermanently);
     expect(
         response.headers,
@@ -58,9 +58,9 @@ void main() {
   });
 
   test('access "/files/empty subfolder/"', () async {
-    var handler = createStaticHandler(d.sandbox, listDirectories: true);
+    final handler = createStaticHandler(d.sandbox, listDirectories: true);
 
-    var response = await makeRequest(handler, '/files/empty subfolder/');
+    final response = await makeRequest(handler, '/files/empty subfolder/');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.readAsString(), completes);
   });

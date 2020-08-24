@@ -11,17 +11,17 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_static/shelf_static.dart';
 
 void main(List<String> args) {
-  var parser = _getParser();
+  final parser = _getParser();
 
   int port;
   bool logging;
   bool listDirectories;
 
   try {
-    var result = parser.parse(args);
-    port = int.parse(result['port']);
-    logging = result['logging'];
-    listDirectories = result['list-directories'];
+    final result = parser.parse(args);
+    port = int.parse(result['port'] as String);
+    logging = result['logging'] as bool;
+    listDirectories = result['list-directories'] as bool;
   } on FormatException catch (e) {
     stderr.writeln(e.message);
     stderr.writeln(parser.usage);
@@ -31,7 +31,7 @@ void main(List<String> args) {
   }
 
   if (!FileSystemEntity.isFileSync('example/example_server.dart')) {
-    throw new StateError('Server expects to be started the '
+    throw StateError('Server expects to be started the '
         'root of the project.');
   }
   var pipeline = const shelf.Pipeline();
@@ -45,7 +45,7 @@ void main(List<String> args) {
     defaultDoc = null;
   }
 
-  var handler = pipeline.addHandler(createStaticHandler('example/files',
+  final handler = pipeline.addHandler(createStaticHandler('example/files',
       defaultDocument: defaultDoc, listDirectories: listDirectories));
 
   io.serve(handler, 'localhost', port).then((server) {
@@ -53,12 +53,11 @@ void main(List<String> args) {
   });
 }
 
-ArgParser _getParser() => new ArgParser()
-  ..addFlag('logging', abbr: 'l', defaultsTo: true, negatable: true)
+ArgParser _getParser() => ArgParser()
+  ..addFlag('logging', abbr: 'l', defaultsTo: true)
   ..addOption('port', abbr: 'p', defaultsTo: '8080')
   ..addFlag('list-directories',
       abbr: 'f',
-      defaultsTo: false,
       negatable: false,
       help: 'List the files in the source directory instead of serving the '
           'default document - "$_defaultDoc".');
