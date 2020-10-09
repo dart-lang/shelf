@@ -147,7 +147,7 @@ header separated by commas as per [RFC 2616 section 4.2][].
 
 [new shelf.Request]: https://pub.dev/documentation/shelf/latest/shelf/Request/Request.html
 
-[RFC 2616 section 4.2]: http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
+[RFC 2616 section 4.2]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
 
 If the underlying request uses a chunked transfer coding, the adapter must
 decode the body before passing it to [new shelf.Request][] and should remove the
