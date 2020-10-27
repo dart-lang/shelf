@@ -1,7 +1,5 @@
 name: shelf_router
 version: 0.7.2
-authors:
-  - Jonas Finnemann Jensen <jonasfj@google.com>
 description: |
   A convinent request router for the shelf web-framework, with support for
   URL-parameters, nested routers and routers generated from source annotations.

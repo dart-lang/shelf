@@ -1,7 +1,5 @@
 name: shelf_router_generator
 version: 0.7.2+2
-authors:
-  - Jonas Finnemann Jensen <jonasfj@google.com>
 description: |
   A package:build compatible builder for generating request routers for the
   shelf web-framework based on source annotations.
