@@ -22,7 +22,7 @@ void main() {
   setUpAll(() => server.start());
   tearDownAll(() => server.stop());
 
-  testGet({
+  void testGet({
     @required String path,
     @required String result,
   }) =>

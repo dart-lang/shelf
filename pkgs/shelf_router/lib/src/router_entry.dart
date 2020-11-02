@@ -41,7 +41,7 @@ class RouterEntry {
   RegExp _routePattern;
 
   /// Names for the parameters in the route pattern.
-  List<String> _params = [];
+  final List<String> _params = [];
 
   /// List of parameter names in the route pattern.
   List<String> get params => _params.toList(); // exposed for using generator.
@@ -88,7 +88,7 @@ class RouterEntry {
     }
     // Construct map from parameter name to matched value
     var params = <String, String>{};
-    for (int i = 0; i < _params.length; i++) {
+    for (var i = 0; i < _params.length; i++) {
       // first group is always the full match, we ignore this group.
       params[_params[i]] = m[i + 1];
     }

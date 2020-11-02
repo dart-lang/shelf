@@ -23,11 +23,11 @@ String params(Request request, String name) {
 
   final p = request.context['shelf_router/params'];
   if (!(p is Map<String, String>)) {
-    throw new Exception('no such parameter $name');
+    throw Exception('no such parameter $name');
   }
   final value = (p as Map<String, String>)[name];
   if (value == null) {
-    throw new Exception('no such parameter $name');
+    throw Exception('no such parameter $name');
   }
   return value;
 }
