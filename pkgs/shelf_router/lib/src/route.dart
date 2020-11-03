@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'router.dart';
+import 'package:meta/meta.dart' show sealed;
+import 'package:shelf_router/src/router.dart';
 
 /// Annotation for handler methods that requests should be routed when using
 /// package `shelf_router_generator`.
@@ -45,6 +46,7 @@ import 'router.dart';
 ///
 /// It is also permitted to annotate public members, the only requirement is
 /// that the member has a signature accepted by [Router] as `handler`.
+@sealed
 class Route {
   /// HTTP verb for requests routed to the annotated method.
   final String verb;

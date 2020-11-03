@@ -103,8 +103,10 @@ class RouterEntry {
       if (_handler is Handler || _params.isEmpty) {
         return await _handler(request);
       }
-      return await Function.apply(
-          _handler, [request]..addAll(_params.map((n) => params[n])));
+      return await Function.apply(_handler, [
+        request,
+        ..._params.map((n) => params[n]),
+      ]);
     })(request);
   }
 }

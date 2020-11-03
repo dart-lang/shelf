@@ -1,3 +1,7 @@
+## v0.7.3
+
+ * Added `@sealed` annotation to `Router` and `Route`.
+
 ## v0.7.2
 
  * Always register a `HEAD` handler whenever a `GET` handler is registered.

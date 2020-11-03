@@ -12,7 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'router_entry.dart' show RouterEntry;
+import 'package:meta/meta.dart' show sealed;
+import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 import 'package:shelf/shelf.dart';
 import 'package:http_methods/http_methods.dart';
 
@@ -84,6 +85,7 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 /// will be attempted.
 ///
 ///
+@sealed
 class Router {
   final List<RouterEntry> _routes = [];
 
