@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -267,7 +266,7 @@ void main() {
   });
 
   test('passes asynchronous exceptions to the parent error zone', () async {
-    await runZoned(() async {
+    await runZonedGuarded(() async {
       var server = await shelf_io.serve((request) {
         Future(() => throw 'oh no');
         return syncHandler(request);
@@ -277,7 +276,7 @@ void main() {
       expect(response.statusCode, HttpStatus.ok);
       expect(response.body, 'Hello from /');
       await server.close();
-    }, onError: expectAsync1((error) {
+    }, expectAsync2((error, stack) {
       expect(error, equals('oh no'));
     }));
   });
