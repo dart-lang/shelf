@@ -1,3 +1,7 @@
+## 0.7.10-dev
+
+* Update minimum Dart SDK to `2.8.4`.
+
 ## 0.7.9
 
 * Allow a `handlerPath` to lead up to a double `//` in a URI.

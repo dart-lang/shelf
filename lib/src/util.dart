@@ -16,7 +16,7 @@ import 'shelf_unmodifiable_map.dart';
 void catchTopLevelErrors(void Function() callback,
     void Function(dynamic error, StackTrace) onError) {
   if (Zone.current.inSameErrorZone(Zone.root)) {
-    return runZoned(callback, onError: onError);
+    return runZonedGuarded(callback, onError);
   } else {
     return callback();
   }
