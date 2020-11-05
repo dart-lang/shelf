@@ -5,7 +5,7 @@ author: Dart Team <misc@dartlang.org>
 homepage: https://github.com/dart-lang/shelf_test_handler
 
 environment:
-  sdk: '>=2.0.0 <3.0.0'
+  sdk: '>=2.8.4 <3.0.0'
 
 dependencies:
   http_multi_server: ^2.0.0

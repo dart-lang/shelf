@@ -5,9 +5,8 @@
 import 'dart:async';
 
 import 'package:shelf/shelf.dart';
-import 'package:test/test.dart';
-
 import 'package:shelf_test_handler/shelf_test_handler.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('invokes the handler(s)', () {
@@ -111,18 +110,18 @@ void main() {
   });
 
   test("doesn't swallow handler errors", () {
-    runZoned(() async {
+    runZonedGuarded(() async {
       var handler = ShelfTestHandler();
       handler.expect('GET', '/', (_) => throw 'oh heck');
       await handler(_get('/'));
-    }, onError: expectAsync1((error) {
+    }, expectAsync2((error, stack) {
       expect(error, equals('oh heck'));
     }));
   });
 }
 
 void _expectZoneFailure(Future Function() callback) {
-  runZoned(callback, onError: expectAsync1((error) {
+  runZonedGuarded(callback, expectAsync2((error, stack) {
     expect(error, TypeMatcher<TestFailure>());
   }));
 }

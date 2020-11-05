@@ -1,3 +1,7 @@
+## 1.0.4-dev
+
+* Updated the minimum support Dart SDK to `2.8.4`.
+
 ## 1.0.3
 
 * Support Dart 2 stable releases.
