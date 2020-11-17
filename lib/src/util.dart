@@ -29,7 +29,7 @@ void catchTopLevelErrors(void Function() callback,
 /// [updates] is used.
 ///
 /// If [updates] is `null` or empty, [original] is returned unchanged.
-Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V> updates) {
+Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V>? updates) {
   if (updates == null || updates.isEmpty) return original;
 
   return Map.from(original)..addAll(updates);
@@ -39,7 +39,7 @@ Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V> updates) {
 ///
 /// Returns a new map without modifying [headers].
 Map<String, dynamic> addHeader(
-    Map<String, dynamic> headers, String name, String value) {
+    Map<String, dynamic>? headers, String name, String value) {
   headers = headers == null ? {} : Map.from(headers);
   headers[name] = value;
   return headers;
@@ -49,7 +49,7 @@ Map<String, dynamic> addHeader(
 ///
 /// This works even if [headers] is `null`, or if it's not yet a
 /// case-insensitive map.
-String findHeader(Map<String, List<String>> headers, String name) {
+String? findHeader(Map<String, List<String>?>? headers, String name) {
   if (headers == null) return null;
   if (headers is ShelfUnmodifiableMap) {
     return joinHeaderValues(headers[name]);
@@ -63,17 +63,18 @@ String findHeader(Map<String, List<String>> headers, String name) {
   return null;
 }
 
-Map<String, List<String>> expandToHeadersAll(
-    Map<String, /* String | List<String> */ dynamic> headers) {
-  if (headers is Map<String, List<String>>) return headers;
+Map<String, List<String>?>? expandToHeadersAll(
+  Map<String, /* String | List<String> */ Object?>? headers,
+) {
+  if (headers is Map<String, List<String>?>) return headers;
   if (headers == null || headers.isEmpty) return null;
 
-  return Map<String, List<String>>.fromEntries(headers.entries.map((e) {
-    return MapEntry<String, List<String>>(e.key, expandHeaderValue(e.value));
+  return Map.fromEntries(headers.entries.map((e) {
+    return MapEntry(e.key, expandHeaderValue(e.value));
   }));
 }
 
-List<String> expandHeaderValue(dynamic v) {
+List<String>? expandHeaderValue(dynamic v) {
   if (v is String) {
     return [v];
   } else if (v is List<String>) {
@@ -87,7 +88,7 @@ List<String> expandHeaderValue(dynamic v) {
 
 /// Multiple header values are joined with commas.
 /// See http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-21#page-22
-String joinHeaderValues(List<String> values) {
+String? joinHeaderValues(List<String>? values) {
   if (values == null || values.isEmpty) return null;
   if (values.length == 1) return values.single;
   return values.join(',');

@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-
 import 'dart:async';
 import 'dart:io';
 
@@ -14,7 +13,7 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  IOServer server;
+  late IOServer server;
 
   setUp(() async {
     try {
@@ -47,8 +46,14 @@ void main() {
   });
 
   test('disallows more than one handler from being mounted', () async {
-    server.mount((_) => null);
-    expect(() => server.mount((_) => null), throwsStateError);
-    expect(() => server.mount((_) => null), throwsStateError);
+    server.mount((_) => throw UnimplementedError());
+    expect(
+      () => server.mount((_) => throw UnimplementedError()),
+      throwsStateError,
+    );
+    expect(
+      () => server.mount((_) => throw UnimplementedError()),
+      throwsStateError,
+    );
   });
 }

@@ -19,27 +19,27 @@ class Response extends Message {
   ///
   /// This is parsed from the Expires header in [headers]. If [headers] doesn't
   /// have an Expires header, this will be `null`.
-  DateTime get expires {
+  DateTime? get expires {
     if (_expiresCache != null) return _expiresCache;
     if (!headers.containsKey('expires')) return null;
-    _expiresCache = parseHttpDate(headers['expires']);
+    _expiresCache = parseHttpDate(headers['expires']!);
     return _expiresCache;
   }
 
-  DateTime _expiresCache;
+  DateTime? _expiresCache;
 
   /// The date and time the source of the response's data was last modified.
   ///
   /// This is parsed from the Last-Modified header in [headers]. If [headers]
   /// doesn't have a Last-Modified header, this will be `null`.
-  DateTime get lastModified {
+  DateTime? get lastModified {
     if (_lastModifiedCache != null) return _lastModifiedCache;
     if (!headers.containsKey('last-modified')) return null;
-    _lastModifiedCache = parseHttpDate(headers['last-modified']);
+    _lastModifiedCache = parseHttpDate(headers['last-modified']!);
     return _lastModifiedCache;
   }
 
-  DateTime _lastModifiedCache;
+  DateTime? _lastModifiedCache;
 
   /// Constructs a 200 OK response.
   ///
@@ -59,11 +59,12 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.ok(body,
-      {Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : this(200,
+  Response.ok(
+    body, {
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this(200,
             body: body, headers: headers, encoding: encoding, context: context);
 
   /// Constructs a 301 Moved Permanently response.
@@ -86,13 +87,13 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.movedPermanently(location,
-      {body,
-      Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : this._redirect(301, location, body, headers, encoding,
-            context: context);
+  Response.movedPermanently(
+    location, {
+    body,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this._redirect(301, location, body, headers, encoding, context: context);
 
   /// Constructs a 302 Found response.
   ///
@@ -114,13 +115,20 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.found(location,
-      {body,
-      Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : this._redirect(302, location, body, headers, encoding,
-            context: context);
+  Response.found(
+    location, {
+    body,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this._redirect(
+          302,
+          location,
+          body,
+          headers,
+          encoding,
+          context: context,
+        );
 
   /// Constructs a 303 See Other response.
   ///
@@ -143,28 +151,29 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.seeOther(location,
-      {body,
-      Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : this._redirect(303, location, body, headers, encoding,
-            context: context);
+  Response.seeOther(
+    location, {
+    body,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this._redirect(303, location, body, headers, encoding, context: context);
 
   /// Constructs a helper constructor for redirect responses.
   Response._redirect(
-      int statusCode,
-      location,
-      body,
-      Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      {Map<String, Object> context})
-      : this(statusCode,
-            body: body,
-            encoding: encoding,
-            headers:
-                addHeader(headers, 'location', _locationToString(location)),
-            context: context);
+    int statusCode,
+    location,
+    body,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding, {
+    Map<String, Object>? context,
+  }) : this(
+          statusCode,
+          body: body,
+          encoding: encoding,
+          headers: addHeader(headers, 'location', _locationToString(location)),
+          context: context,
+        );
 
   /// Constructs a 304 Not Modified response.
   ///
@@ -172,12 +181,14 @@ class Response extends Message {
   /// information used to determine whether the requested resource has changed
   /// since the last request. It indicates that the resource has not changed and
   /// the old value should be used.
-  Response.notModified(
-      {Map<String, /* String | List<String> */ Object> headers,
-      Map<String, Object> context})
-      : this(304,
-            headers: addHeader(headers, 'date', formatHttpDate(DateTime.now())),
-            context: context);
+  Response.notModified({
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, Object>? context,
+  }) : this(
+          304,
+          headers: addHeader(headers, 'date', formatHttpDate(DateTime.now())),
+          context: context,
+        );
 
   /// Constructs a 403 Forbidden response.
   ///
@@ -197,15 +208,18 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.forbidden(body,
-      {Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : this(403,
-            headers: body == null ? _adjustErrorHeaders(headers) : headers,
-            body: body ?? 'Forbidden',
-            context: context,
-            encoding: encoding);
+  Response.forbidden(
+    body, {
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this(
+          403,
+          headers: body == null ? _adjustErrorHeaders(headers) : headers,
+          body: body ?? 'Forbidden',
+          context: context,
+          encoding: encoding,
+        );
 
   /// Constructs a 404 Not Found response.
   ///
@@ -226,15 +240,18 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.notFound(body,
-      {Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : this(404,
-            headers: body == null ? _adjustErrorHeaders(headers) : headers,
-            body: body ?? 'Not Found',
-            context: context,
-            encoding: encoding);
+  Response.notFound(
+    body, {
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this(
+          404,
+          headers: body == null ? _adjustErrorHeaders(headers) : headers,
+          body: body ?? 'Not Found',
+          context: context,
+          encoding: encoding,
+        );
 
   /// Constructs a 500 Internal Server Error response.
   ///
@@ -255,16 +272,18 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response.internalServerError(
-      {body,
-      Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : this(500,
-            headers: body == null ? _adjustErrorHeaders(headers) : headers,
-            body: body ?? 'Internal Server Error',
-            context: context,
-            encoding: encoding);
+  Response.internalServerError({
+    body,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this(
+          500,
+          headers: body == null ? _adjustErrorHeaders(headers) : headers,
+          body: body ?? 'Internal Server Error',
+          context: context,
+          encoding: encoding,
+        );
 
   /// Constructs an HTTP response with the given [statusCode].
   ///
@@ -284,12 +303,13 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Response(this.statusCode,
-      {body,
-      Map<String, /* String | List<String> */ Object> headers,
-      Encoding encoding,
-      Map<String, Object> context})
-      : super(body, encoding: encoding, headers: headers, context: context) {
+  Response(
+    this.statusCode, {
+    body,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : super(body, encoding: encoding, headers: headers, context: context) {
     if (statusCode < 100) {
       throw ArgumentError('Invalid status code: $statusCode.');
     }
@@ -311,10 +331,11 @@ class Response extends Message {
   /// [body] is the request body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `<int>[]` (empty list) to indicate no body.
   @override
-  Response change(
-      {Map<String, /* String | List<String> */ Object> headers,
-      Map<String, Object> context,
-      body}) {
+  Response change({
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, Object>? context,
+    body,
+  }) {
     final headersAll = updateMap(this.headersAll, expandToHeadersAll(headers));
     context = updateMap(this.context, context);
 
@@ -330,12 +351,13 @@ class Response extends Message {
 /// Returns a new map without modifying [headers]. This is used to add
 /// content-type information when creating a 500 response with a default body.
 Map<String, dynamic> _adjustErrorHeaders(
-    Map<String, /* String | List<String> */ Object> headers) {
+    Map<String, /* String | List<String> */ Object?>? headers) {
   if (headers == null || headers['content-type'] == null) {
     return addHeader(headers, 'content-type', 'text/plain');
   }
 
-  final contentTypeValue = expandHeaderValue(headers['content-type']).join(',');
+  final contentTypeValue =
+      expandHeaderValue(headers['content-type']!)!.join(',');
   var contentType =
       MediaType.parse(contentTypeValue).change(mimeType: 'text/plain');
   return addHeader(headers, 'content-type', contentType.toString());

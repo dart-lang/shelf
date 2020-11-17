@@ -21,7 +21,7 @@ import 'test_util.dart';
 void main() {
   tearDown(() async {
     if (_server != null) {
-      await _server.close(force: true);
+      await _server!.close(force: true);
       _server = null;
     }
   });
@@ -43,7 +43,7 @@ void main() {
   });
 
   test('sync null response leads to a 500', () async {
-    await _scheduleServer((request) => null);
+    await _scheduleServer((request) => Response.internalServerError());
 
     var response = await _get();
     expect(response.statusCode, HttpStatus.internalServerError);
@@ -150,10 +150,10 @@ void main() {
       return Response.ok('Hello from /', headers: {
         'requested-values': request.headersAll['request-values'],
         'requested-values-length':
-            request.headersAll['request-values'].length.toString(),
+            request.headersAll['request-values']!.length.toString(),
         'set-cookie-values': request.headersAll['set-cookie'],
         'set-cookie-values-length':
-            request.headersAll['set-cookie'].length.toString(),
+            request.headersAll['set-cookie']!.length.toString(),
       });
     });
 
@@ -247,7 +247,7 @@ void main() {
             .codeUnits);
         channel.sink.close();
       }));
-      return null;
+      return Response.internalServerError();
     });
 
     var response = await _post(body: 'Hello');
@@ -342,7 +342,7 @@ void main() {
 
       var response = await _get();
       expect(response.headers, contains('date'));
-      var responseDate = parser.parseHttpDate(response.headers['date']);
+      var responseDate = parser.parseHttpDate(response.headers['date']!);
 
       expect(responseDate.isAfter(beforeRequest), isTrue);
       expect(responseDate.isBefore(DateTime.now()), isTrue);
@@ -357,7 +357,7 @@ void main() {
 
       var response = await _get();
       expect(response.headers, contains('date'));
-      var responseDate = parser.parseHttpDate(response.headers['date']);
+      var responseDate = parser.parseHttpDate(response.headers['date']!);
       expect(responseDate, date);
     });
   });
@@ -513,8 +513,8 @@ void main() {
 
       var connectionInfo =
           request.context['shelf.io.connection_info'] as HttpConnectionInfo;
-      expect(connectionInfo.remoteAddress, equals(_server.address));
-      expect(connectionInfo.localPort, equals(_server.port));
+      expect(connectionInfo.remoteAddress, equals(_server!.address));
+      expect(connectionInfo.localPort, equals(_server!.port));
 
       return syncHandler(request);
     });
@@ -532,7 +532,7 @@ void main() {
     var sslClient = HttpClient(context: securityContext);
 
     Future<HttpClientRequest> _scheduleSecureGet() =>
-        sslClient.getUrl(Uri.parse('https://localhost:${_server.port}/'));
+        sslClient.getUrl(Uri.parse('https://localhost:${_server!.port}/'));
 
     test('secure sync handler returns a value to the client', () async {
       await _scheduleServer(syncHandler, securityContext: securityContext);
@@ -557,19 +557,25 @@ void main() {
   });
 }
 
-int get _serverPort => _server.port;
+int get _serverPort => _server!.port;
 
-HttpServer _server;
+HttpServer? _server;
 
-Future _scheduleServer(Handler handler,
-    {SecurityContext securityContext}) async {
+Future _scheduleServer(
+  Handler handler, {
+  SecurityContext? securityContext,
+}) async {
   assert(_server == null);
-  _server = await shelf_io.serve(handler, 'localhost', 0,
-      securityContext: securityContext);
+  _server = await shelf_io.serve(
+    handler,
+    'localhost',
+    0,
+    securityContext: securityContext,
+  );
 }
 
 Future<http.Response> _get({
-  Map<String, /* String | List<String> */ Object> headers,
+  Map<String, /* String | List<String> */ Object>? headers,
   String path = '',
 }) async {
   // TODO: use http.Client once it supports sending and receiving multiple headers.
@@ -583,7 +589,7 @@ Future<http.Response> _get({
     final rs = await rq.close();
     final rsHeaders = <String, String>{};
     rs.headers.forEach((name, values) {
-      rsHeaders[name] = joinHeaderValues(values);
+      rsHeaders[name] = joinHeaderValues(values)!;
     });
     return http.Response.fromStream(http.StreamedResponse(
       rs,
@@ -596,7 +602,7 @@ Future<http.Response> _get({
 }
 
 Future<http.StreamedResponse> _post(
-    {Map<String, String> headers, String body}) {
+    {Map<String, String>? headers, String? body}) {
   var request =
       http.Request('POST', Uri.parse('http://localhost:$_serverPort/'));
 

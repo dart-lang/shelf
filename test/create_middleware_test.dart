@@ -191,7 +191,7 @@ void main() {
     });
 
     test('inner handler throws, is caught by errorHandler and rethrown', () {
-      var middleware = createMiddleware(errorHandler: (error, stack) {
+      var middleware = createMiddleware(errorHandler: (Object error, stack) {
         expect(error, 'bad handler');
         throw error;
       });

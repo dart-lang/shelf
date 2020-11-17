@@ -54,13 +54,13 @@ class Request extends Message {
   /// The callback wrapper for hijacking this request.
   ///
   /// This will be `null` if this request can't be hijacked.
-  final _OnHijack _onHijack;
+  final _OnHijack? _onHijack;
 
   /// Whether this request can be hijacked.
   ///
   /// This will be `false` either if the adapter doesn't support hijacking, or
   /// if the request has already been hijacked.
-  bool get canHijack => _onHijack != null && !_onHijack.called;
+  bool get canHijack => _onHijack != null && !_onHijack!.called;
 
   /// If this is non-`null` and the requested resource hasn't been modified
   /// since this date and time, the server should return a 304 Not Modified
@@ -71,14 +71,14 @@ class Request extends Message {
   ///
   /// Throws [FormatException], if incoming HTTP request has an invalid
   /// If-Modified-Since header.
-  DateTime get ifModifiedSince {
+  DateTime? get ifModifiedSince {
     if (_ifModifiedSinceCache != null) return _ifModifiedSinceCache;
     if (!headers.containsKey('if-modified-since')) return null;
-    _ifModifiedSinceCache = parseHttpDate(headers['if-modified-since']);
+    _ifModifiedSinceCache = parseHttpDate(headers['if-modified-since']!);
     return _ifModifiedSinceCache;
   }
 
-  DateTime _ifModifiedSinceCache;
+  DateTime? _ifModifiedSinceCache;
 
   /// Creates a new [Request].
   ///
@@ -124,16 +124,18 @@ class Request extends Message {
   ///
   /// See also [hijack].
   // TODO(kevmoo) finish documenting the rest of the arguments.
-  Request(String method, Uri requestedUri,
-      {String protocolVersion,
-      Map<String, /* String | List<String> */ Object> headers,
-      String handlerPath,
-      Uri url,
-      body,
-      Encoding encoding,
-      Map<String, Object> context,
-      void Function(void Function(StreamChannel<List<int>>)) onHijack})
-      : this._(method, requestedUri,
+  Request(
+    String method,
+    Uri requestedUri, {
+    String? protocolVersion,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    String? handlerPath,
+    Uri? url,
+    body,
+    Encoding? encoding,
+    Map<String, Object>? context,
+    void Function(void Function(StreamChannel<List<int>>))? onHijack,
+  }) : this._(method, requestedUri,
             protocolVersion: protocolVersion,
             headers: headers,
             url: url,
@@ -149,16 +151,18 @@ class Request extends Message {
   /// Any [Request] created by calling [change] will pass [_onHijack] from the
   /// source [Request] to ensure that [hijack] can only be called once, even
   /// from a changed [Request].
-  Request._(this.method, this.requestedUri,
-      {String protocolVersion,
-      Map<String, /* String | List<String> */ Object> headers,
-      String handlerPath,
-      Uri url,
-      body,
-      Encoding encoding,
-      Map<String, Object> context,
-      _OnHijack onHijack})
-      : protocolVersion = protocolVersion ?? '1.1',
+  Request._(
+    this.method,
+    this.requestedUri, {
+    String? protocolVersion,
+    Map<String, /* String | List<String> */ Object?>? headers,
+    String? handlerPath,
+    Uri? url,
+    body,
+    Encoding? encoding,
+    Map<String, Object>? context,
+    _OnHijack? onHijack,
+  })  : protocolVersion = protocolVersion ?? '1.1',
         url = _computeUrl(requestedUri, handlerPath, url),
         handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
         _onHijack = onHijack,
@@ -229,11 +233,12 @@ class Request extends Message {
   ///     print(request.handlerPath); // => /static/dir/
   ///     print(request.url);        // => file.html
   @override
-  Request change(
-      {Map<String, /* String | List<String> */ Object> headers,
-      Map<String, Object> context,
-      String path,
-      body}) {
+  Request change({
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, Object>? context,
+    String? path,
+    body,
+  }) {
     final headersAll = updateMap(this.headersAll, expandToHeadersAll(headers));
     context = updateMap(this.context, context);
 
@@ -267,7 +272,7 @@ class Request extends Message {
       throw StateError("This request can't be hijacked.");
     }
 
-    _onHijack.run(callback);
+    _onHijack!.run(callback);
 
     throw const HijackException();
   }
@@ -295,7 +300,7 @@ class _OnHijack {
 ///
 /// If [url] is `null`, the value is inferred from [requestedUri] and
 /// [handlerPath] if available. Otherwise [url] is returned.
-Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
+Uri _computeUrl(Uri requestedUri, String? handlerPath, Uri? url) {
   if (handlerPath != null &&
       handlerPath != requestedUri.path &&
       !handlerPath.endsWith('/')) {
@@ -345,7 +350,7 @@ Uri _computeUrl(Uri requestedUri, String handlerPath, Uri url) {
 ///
 /// If [handlerPath] is `null`, the value is inferred from [requestedUri] and
 /// [url] if available. Otherwise [handlerPath] is returned.
-String _computeHandlerPath(Uri requestedUri, String handlerPath, Uri url) {
+String _computeHandlerPath(Uri requestedUri, String? handlerPath, Uri? url) {
   if (handlerPath != null &&
       handlerPath != requestedUri.path &&
       !handlerPath.endsWith('/')) {

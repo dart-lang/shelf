@@ -37,7 +37,7 @@ class IOServer implements Server {
   }
 
   /// Calls [HttpServer.bind] and wraps the result in an [IOServer].
-  static Future<IOServer> bind(address, int port, {int backlog}) async {
+  static Future<IOServer> bind(address, int port, {int? backlog}) async {
     backlog ??= 0;
     var server = await HttpServer.bind(address, port, backlog: backlog);
     return IOServer(server);

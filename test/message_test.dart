@@ -11,22 +11,22 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 class _TestMessage extends Message {
-  _TestMessage(Map<String, /* String | List<String> */ dynamic> headers,
-      Map<String, Object> context, body, Encoding encoding)
+  _TestMessage(Map<String, /* String | List<String> */ dynamic>? headers,
+      Map<String, Object>? context, body, Encoding? encoding)
       : super(body, headers: headers, context: context, encoding: encoding);
 
   @override
   Message change(
-      {Map<String, String> headers, Map<String, Object> context, body}) {
+      {Map<String, String>? headers, Map<String, Object>? context, body}) {
     throw UnimplementedError();
   }
 }
 
 Message _createMessage(
-    {Map<String, /* String | List<String> */ dynamic> headers,
-    Map<String, Object> context,
+    {Map<String, /* String | List<String> */ dynamic>? headers,
+    Map<String, Object>? context,
     body,
-    Encoding encoding}) {
+    Encoding? encoding}) {
   return _TestMessage(headers, context, body, encoding);
 }
 

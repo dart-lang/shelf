@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  bool gotLog;
+  late bool gotLog;
 
   setUp(() {
     gotLog = false;

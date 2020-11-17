@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 
 import 'test_util.dart';
 
-Request _request({Map<String, String> headers, body, Encoding encoding}) {
+Request _request({Map<String, String>? headers, body, Encoding? encoding}) {
   return Request('GET', localhostUri,
       headers: headers, body: body, encoding: encoding);
 }

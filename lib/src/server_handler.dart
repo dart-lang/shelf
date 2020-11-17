@@ -38,7 +38,7 @@ class ServerHandler {
   ///
   /// If [onClose] is passed, it's called when [server] is closed. It may return
   /// a [Future] or `null`; its return value is returned by [Server.close].
-  ServerHandler(Uri url, {void Function() onClose})
+  ServerHandler(Uri url, {Future? Function()? onClose})
       : _server = _HandlerServer(url, onClose);
 
   /// Pipes requests to [server]'s handler.
@@ -47,11 +47,11 @@ class ServerHandler {
       throw StateError('Request received after the server was closed.');
     }
 
-    if (_server._handler != null) return _server._handler(request);
+    if (_server._handler != null) return _server._handler!(request);
 
     // Avoid async/await so that the common case of a handler already being
     // mounted doesn't involve any extra asynchronous delays.
-    return _server._onMounted.then((_) => _server._handler(request));
+    return _server._onMounted.then((_) => _server._handler!(request));
   }
 }
 
@@ -61,12 +61,12 @@ class _HandlerServer implements Server {
   final Uri url;
 
   /// The callback to call when [close] is called, or `null`.
-  final ZoneCallback _onClose;
+  final ZoneCallback? _onClose;
 
   /// The mounted handler.
   ///
   /// This is `null` until [mount] is called.
-  Handler _handler;
+  Handler? _handler;
 
   /// A future that fires once [mount] has been called.
   Future get _onMounted => _onMountedCompleter.future;
@@ -86,7 +86,7 @@ class _HandlerServer implements Server {
 
   @override
   Future close() => _closeMemo.runOnce(() {
-        return _onClose == null ? null : _onClose();
+        return _onClose == null ? null : _onClose!();
       });
   final _closeMemo = AsyncMemoizer();
 }

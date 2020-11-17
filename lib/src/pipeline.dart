@@ -13,8 +13,8 @@ import 'middleware.dart';
 ///         .addMiddleware(cachingMiddleware)
 ///         .addHandler(application);
 class Pipeline {
-  final Pipeline _parent;
-  final Middleware _middleware;
+  final Pipeline? _parent;
+  final Middleware? _middleware;
 
   const Pipeline()
       : _middleware = null,
@@ -34,7 +34,7 @@ class Pipeline {
   /// through.
   Handler addHandler(Handler handler) {
     if (_middleware == null) return handler;
-    return _parent.addHandler(_middleware(handler));
+    return _parent!.addHandler(_middleware!(handler));
   }
 
   /// Exposes this pipeline of [Middleware] as a single middleware instance.

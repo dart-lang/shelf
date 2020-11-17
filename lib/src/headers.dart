@@ -10,10 +10,10 @@ import 'package:shelf/src/util.dart';
 final _emptyHeaders = Headers._empty();
 
 /// Unmodifiable, key-insensitive header map.
-class Headers extends UnmodifiableMapView<String, List<String>> {
-  Map<String, String> _singleValues;
+class Headers extends UnmodifiableMapView<String, List<String>?> {
+  Map<String, String?>? _singleValues;
 
-  factory Headers.from(Map<String, List<String>> values) {
+  factory Headers.from(Map<String, List<String>?>? values) {
     if (values == null || values.isEmpty) {
       return _emptyHeaders;
     } else if (values is Headers) {
@@ -23,15 +23,17 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
     }
   }
 
-  Headers._(Map<String, List<String>> values)
+  Headers._(Map<String, List<String>?> values)
       : super(CaseInsensitiveMap.from(Map.fromEntries(values.entries
             .where((e) => e.value?.isNotEmpty ?? false)
-            .map((e) => MapEntry(e.key, List.unmodifiable(e.value))))));
+            .map((e) => MapEntry(e.key, List.unmodifiable(e.value!))))));
 
   Headers._empty() : super(const {});
+
   factory Headers.empty() => _emptyHeaders;
 
-  Map<String, String> get singleValues => _singleValues ??= UnmodifiableMapView(
+  Map<String, String?> get singleValues =>
+      _singleValues ??= UnmodifiableMapView(
         CaseInsensitiveMap.from(
             map((key, value) => MapEntry(key, joinHeaderValues(value)))),
       );
