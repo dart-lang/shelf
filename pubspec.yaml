@@ -24,4 +24,7 @@ dependency_overrides:
   http:
     git: https://github.com/dart-lang/http
   http_parser: 4.0.0-nullsafety
+  shelf_packages_handler: any
   shelf_static: 0.2.8
+  shelf_web_socket: any
+  test: ^1.16.0-nullsafety.9
