@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 class _TestMessage extends Message {
-  _TestMessage(Map<String, /* String | List<String> */ dynamic>? headers,
+  _TestMessage(Map<String, /* String | List<String> */ Object>? headers,
       Map<String, Object>? context, body, Encoding? encoding)
       : super(body, headers: headers, context: context, encoding: encoding);
 
@@ -23,7 +23,7 @@ class _TestMessage extends Message {
 }
 
 Message _createMessage(
-    {Map<String, /* String | List<String> */ dynamic>? headers,
+    {Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
     body,
     Encoding? encoding}) {

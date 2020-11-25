@@ -128,7 +128,7 @@ class Request extends Message {
     String method,
     Uri requestedUri, {
     String? protocolVersion,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     String? handlerPath,
     Uri? url,
     body,
@@ -155,7 +155,7 @@ class Request extends Message {
     this.method,
     this.requestedUri, {
     String? protocolVersion,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     String? handlerPath,
     Uri? url,
     body,
@@ -214,7 +214,11 @@ class Request extends Message {
   /// New key-value pairs in [context] and [headers] will be added to the copied
   /// [Request]. If [context] or [headers] includes a key that already exists,
   /// the key-value pair will replace the corresponding entry in the copied
-  /// [Request]. All other context and header values from the [Request] will be
+  /// [Request]. If [context] or [headers] contains a `null` value the
+  /// corresponding `key` will be removed if it exists, otherwise the `null`
+  /// value will be ignored.
+  ///
+  /// All other context and header values from the [Request] will be
   /// included in the copied [Request] unchanged.
   ///
   /// [body] is the request body. It may be either a [String], a [List<int>], a
@@ -235,12 +239,12 @@ class Request extends Message {
   @override
   Request change({
     Map<String, /* String | List<String> */ Object?>? headers,
-    Map<String, Object>? context,
+    Map<String, Object?>? context,
     String? path,
     body,
   }) {
-    final headersAll = updateMap(this.headersAll, expandToHeadersAll(headers));
-    context = updateMap(this.context, context);
+    final headersAll = updateHeaders(this.headersAll, headers);
+    final newContext = updateMap<String, Object>(this.context, context);
 
     body ??= extractBody(this);
 
@@ -252,7 +256,7 @@ class Request extends Message {
         headers: headersAll,
         handlerPath: handlerPath,
         body: body,
-        context: context,
+        context: newContext,
         onHijack: _onHijack);
   }
 

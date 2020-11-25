@@ -185,7 +185,6 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
   httpResponse.headers.chunkedTransferEncoding = false;
 
   response.headersAll.forEach((header, value) {
-    if (value == null) return;
     httpResponse.headers.set(header, value);
   });
 

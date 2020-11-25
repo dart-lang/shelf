@@ -40,7 +40,7 @@ abstract class Message {
   /// for that occurrence.
   ///
   /// The returned map and the lists it contains are unmodifiable.
-  Map<String, List<String>?> get headersAll => _headers;
+  Map<String, List<String>> get headersAll => _headers;
 
   /// Extra context that can be used by for middleware and handlers.
   ///
@@ -80,12 +80,12 @@ abstract class Message {
   Message(
     body, {
     Encoding? encoding,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
   }) : this._withBody(Body(body, encoding), headers, context);
 
   Message._withBody(
-      Body body, Map<String, dynamic>? headers, Map<String, Object>? context)
+      Body body, Map<String, Object>? headers, Map<String, Object>? context)
       : this._withHeadersAll(
           body,
           Headers.from(_adjustHeaders(expandToHeadersAll(headers), body)),
@@ -174,8 +174,8 @@ abstract class Message {
 /// Adds information about [encoding] to [headers].
 ///
 /// Returns a new map without modifying [headers].
-Map<String, List<String>?> _adjustHeaders(
-  Map<String, List<String>?>? headers,
+Map<String, List<String>> _adjustHeaders(
+  Map<String, List<String>>? headers,
   Body body,
 ) {
   var sameEncoding = _sameEncoding(headers, body);
@@ -191,7 +191,7 @@ Map<String, List<String>?> _adjustHeaders(
 
   var newHeaders = headers == null
       ? CaseInsensitiveMap<List<String>>()
-      : CaseInsensitiveMap<List<String>?>.from(headers);
+      : CaseInsensitiveMap<List<String>>.from(headers);
 
   if (!sameEncoding) {
     if (newHeaders['content-type'] == null) {

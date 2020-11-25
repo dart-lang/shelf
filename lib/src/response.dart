@@ -61,7 +61,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.ok(
     body, {
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(200,
@@ -90,7 +90,7 @@ class Response extends Message {
   Response.movedPermanently(
     Object location, {
     body,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this._redirect(301, location, body, headers, encoding, context: context);
@@ -118,7 +118,7 @@ class Response extends Message {
   Response.found(
     Object location, {
     body,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this._redirect(
@@ -154,7 +154,7 @@ class Response extends Message {
   Response.seeOther(
     Object location, {
     body,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this._redirect(303, location, body, headers, encoding, context: context);
@@ -164,7 +164,7 @@ class Response extends Message {
     int statusCode,
     Object location,
     body,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding, {
     Map<String, Object>? context,
   }) : this(
@@ -182,7 +182,7 @@ class Response extends Message {
   /// since the last request. It indicates that the resource has not changed and
   /// the old value should be used.
   Response.notModified({
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
   }) : this(
           304,
@@ -210,7 +210,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.forbidden(
     body, {
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
@@ -242,7 +242,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.notFound(
     body, {
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
@@ -274,7 +274,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.internalServerError({
     body,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
@@ -306,7 +306,7 @@ class Response extends Message {
   Response(
     this.statusCode, {
     body,
-    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
   }) : super(body, encoding: encoding, headers: headers, context: context) {
@@ -323,7 +323,9 @@ class Response extends Message {
   ///
   /// If [context] or [headers] includes a key that already exists, the
   /// key-value pair will replace the corresponding entry in the copied
-  /// [Response].
+  /// [Response]. If [context] or [headers] contains a `null` value the
+  /// corresponding `key` will be removed if it exists, otherwise the `null`
+  /// value will be ignored.
   ///
   /// All other context and header values from the [Response] will be included
   /// in the copied [Response] unchanged.
@@ -333,16 +335,20 @@ class Response extends Message {
   @override
   Response change({
     Map<String, /* String | List<String> */ Object?>? headers,
-    Map<String, Object>? context,
+    Map<String, Object?>? context,
     body,
   }) {
-    final headersAll = updateMap(this.headersAll, expandToHeadersAll(headers));
-    context = updateMap(this.context, context);
+    final headersAll = updateHeaders(this.headersAll, headers);
+    final newContext = updateMap(this.context, context);
 
     body ??= extractBody(this);
 
-    return Response(statusCode,
-        body: body, headers: headersAll, context: context);
+    return Response(
+      statusCode,
+      body: body,
+      headers: headersAll,
+      context: newContext,
+    );
   }
 }
 
@@ -350,14 +356,14 @@ class Response extends Message {
 ///
 /// Returns a new map without modifying [headers]. This is used to add
 /// content-type information when creating a 500 response with a default body.
-Map<String, dynamic> _adjustErrorHeaders(
-    Map<String, /* String | List<String> */ Object?>? headers) {
+Map<String, Object> _adjustErrorHeaders(
+    Map<String, /* String | List<String> */ Object>? headers) {
   if (headers == null || headers['content-type'] == null) {
     return addHeader(headers, 'content-type', 'text/plain');
   }
 
   final contentTypeValue =
-      expandHeaderValue(headers['content-type']!)!.join(',');
+      expandHeaderValue(headers['content-type']!).join(',');
   var contentType =
       MediaType.parse(contentTypeValue).change(mimeType: 'text/plain');
   return addHeader(headers, 'content-type', contentType.toString());

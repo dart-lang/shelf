@@ -15,7 +15,7 @@ void main() {
   group('Request', () {
     _testChange(({
       body,
-      Map<String, Object?>? headers,
+      Map<String, Object>? headers,
       Map<String, Object>? context,
     }) {
       return Request(
@@ -31,7 +31,7 @@ void main() {
   group('Response', () {
     _testChange(({
       body,
-      Map<String, Object?>? headers,
+      Map<String, Object>? headers,
       Map<String, Object>? context,
     }) {
       return Response.ok(

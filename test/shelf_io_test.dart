@@ -148,10 +148,10 @@ void main() {
   test('multiple headers are received from the client', () async {
     await _scheduleServer((request) {
       return Response.ok('Hello from /', headers: {
-        'requested-values': request.headersAll['request-values'],
+        'requested-values': request.headersAll['request-values']!,
         'requested-values-length':
             request.headersAll['request-values']!.length.toString(),
-        'set-cookie-values': request.headersAll['set-cookie'],
+        'set-cookie-values': request.headersAll['set-cookie']!,
         'set-cookie-values-length':
             request.headersAll['set-cookie']!.length.toString(),
       });
