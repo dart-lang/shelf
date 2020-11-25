@@ -88,7 +88,7 @@ class Response extends Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.movedPermanently(
-    location, {
+    Object location, {
     body,
     Map<String, /* String | List<String> */ Object?>? headers,
     Encoding? encoding,
@@ -116,7 +116,7 @@ class Response extends Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.found(
-    location, {
+    Object location, {
     body,
     Map<String, /* String | List<String> */ Object?>? headers,
     Encoding? encoding,
@@ -152,7 +152,7 @@ class Response extends Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   Response.seeOther(
-    location, {
+    Object location, {
     body,
     Map<String, /* String | List<String> */ Object?>? headers,
     Encoding? encoding,
@@ -162,7 +162,7 @@ class Response extends Message {
   /// Constructs a helper constructor for redirect responses.
   Response._redirect(
     int statusCode,
-    location,
+    Object location,
     body,
     Map<String, /* String | List<String> */ Object?>? headers,
     Encoding? encoding, {
@@ -366,10 +366,11 @@ Map<String, dynamic> _adjustErrorHeaders(
 /// Converts [location], which may be a [String] or a [Uri], to a [String].
 ///
 /// Throws an [ArgumentError] if [location] isn't a [String] or a [Uri].
-String _locationToString(location) {
+String _locationToString(Object location) {
   if (location is String) return location;
   if (location is Uri) return location.toString();
 
-  throw ArgumentError('Response location must be a String or Uri, was '
-      '"$location".');
+  throw ArgumentError(
+    'Response location must be a String or Uri, was "$location".',
+  );
 }
