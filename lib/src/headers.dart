@@ -34,6 +34,7 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
 
   Map<String, String> get singleValues => _singleValues ??= UnmodifiableMapView(
         CaseInsensitiveMap.from(
-            map((key, value) => MapEntry(key, joinHeaderValues(value)!))),
+          map((key, value) => MapEntry(key, joinHeaderValues(value)!)),
+        ),
       );
 }

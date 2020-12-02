@@ -31,7 +31,7 @@ abstract class Message {
   /// by concatenating them with a comma.
   ///
   /// The returned map is unmodifiable.
-  Map<String, String?> get headers => _headers.singleValues;
+  Map<String, String> get headers => _headers.singleValues;
 
   /// The HTTP headers with multiple values with case-insensitive keys.
   ///
