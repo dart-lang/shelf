@@ -29,7 +29,7 @@ void main() {
   });
 
   test('async null response leads to a 500', () async {
-    await _scheduleServer((request) => Future.value(null));
+    await _scheduleServer((request) async => null);
 
     var response = await _get();
     expect(response.statusCode, HttpStatus.internalServerError);
