@@ -11,7 +11,11 @@ final _emptyHeaders = Headers._empty();
 
 /// Unmodifiable, key-insensitive header map.
 class Headers extends UnmodifiableMapView<String, List<String>> {
-  Map<String, String>? _singleValues;
+  late final Map<String, String> singleValues = UnmodifiableMapView(
+    CaseInsensitiveMap.from(
+      map((key, value) => MapEntry(key, joinHeaderValues(value)!)),
+    ),
+  );
 
   factory Headers.from(Map<String, List<String>>? values) {
     if (values == null || values.isEmpty) {
@@ -31,10 +35,4 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
   Headers._empty() : super(const {});
 
   factory Headers.empty() => _emptyHeaders;
-
-  Map<String, String> get singleValues => _singleValues ??= UnmodifiableMapView(
-        CaseInsensitiveMap.from(
-          map((key, value) => MapEntry(key, joinHeaderValues(value)!)),
-        ),
-      );
 }
