@@ -42,22 +42,6 @@ void main() {
     expect(response.body, 'Hello from /');
   });
 
-  test('sync null response leads to a 500', () async {
-    await _scheduleServer((request) => Response.internalServerError());
-
-    var response = await _get();
-    expect(response.statusCode, HttpStatus.internalServerError);
-    expect(response.body, 'Internal Server Error');
-  });
-
-  test('async null response leads to a 500', () async {
-    await _scheduleServer((request) => Future.value(null));
-
-    var response = await _get();
-    expect(response.statusCode, HttpStatus.internalServerError);
-    expect(response.body, 'Internal Server Error');
-  });
-
   test('thrown error leads to a 500', () async {
     await _scheduleServer((request) {
       throw UnsupportedError('test');
