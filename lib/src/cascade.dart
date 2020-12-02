@@ -30,8 +30,8 @@ class Cascade {
   /// the next handler.
   final _ShouldCascade _shouldCascade;
 
-  final Cascade _parent;
-  final Handler _handler;
+  final Cascade? _parent;
+  final Handler? _handler;
 
   /// Creates a new, empty cascade.
   ///
@@ -39,7 +39,7 @@ class Cascade {
   /// considered unacceptable. If [shouldCascade] is passed, responses for which
   /// it returns `true` are considered unacceptable. [statusCodes] and
   /// [shouldCascade] may not both be passed.
-  Cascade({Iterable<int> statusCodes, bool Function(Response) shouldCascade})
+  Cascade({Iterable<int>? statusCodes, bool Function(Response)? shouldCascade})
       : _shouldCascade = _computeShouldCascade(statusCodes, shouldCascade),
         _parent = null,
         _handler = null {
@@ -63,15 +63,16 @@ class Cascade {
   /// an acceptable response, and return that. If no inner handlers return an
   /// acceptable response, this will return the final response.
   Handler get handler {
-    if (_handler == null) {
+    final handler = _handler;
+    if (handler == null) {
       throw StateError("Can't get a handler for a cascade with no inner "
           'handlers.');
     }
 
     return (request) {
-      if (_parent._handler == null) return _handler(request);
-      return Future.sync(() => _parent.handler(request)).then((response) {
-        if (_shouldCascade(response)) return _handler(request);
+      if (_parent!._handler == null) return handler(request);
+      return Future.sync(() => _parent!.handler(request)).then((response) {
+        if (_shouldCascade(response)) return handler(request);
         return response;
       });
     };
@@ -81,9 +82,9 @@ class Cascade {
 /// Computes the [Cascade._shouldCascade] function based on the user's
 /// parameters.
 _ShouldCascade _computeShouldCascade(
-    Iterable<int> statusCodes, bool Function(Response) shouldCascade) {
+    Iterable<int>? statusCodes, bool Function(Response)? shouldCascade) {
   if (shouldCascade != null) return shouldCascade;
   statusCodes ??= [404, 405];
-  statusCodes = statusCodes.toSet();
-  return (response) => statusCodes.contains(response.statusCode);
+  final statusCodeSet = statusCodes.toSet();
+  return (response) => statusCodeSet.contains(response.statusCode);
 }

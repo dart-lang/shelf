@@ -1,6 +1,8 @@
-## 0.7.10-dev
+## 1.0.0-nullsafety.0
 
-* Update minimum Dart SDK to `2.8.4`.
+* Update to support Dart null-safety.
+* Updated the `change` function on `Request` and `Response` to clear existing
+  values in `context` if the provided `context` value has `null` values.
 
 ## 0.7.9
 

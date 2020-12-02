@@ -5,24 +5,40 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:test/test.dart';
-
 import 'package:shelf/shelf.dart';
 import 'package:shelf/src/message.dart';
+import 'package:test/test.dart';
 
 import 'test_util.dart';
 
 void main() {
   group('Request', () {
-    _testChange(({body, headers, context}) {
-      return Request('GET', localhostUri,
-          body: body, headers: headers, context: context);
+    _testChange(({
+      body,
+      Map<String, Object>? headers,
+      Map<String, Object>? context,
+    }) {
+      return Request(
+        'GET',
+        localhostUri,
+        body: body,
+        headers: headers,
+        context: context,
+      );
     });
   });
 
   group('Response', () {
-    _testChange(({body, headers, context}) {
-      return Response.ok(body, headers: headers, context: context);
+    _testChange(({
+      body,
+      Map<String, Object>? headers,
+      Map<String, Object>? context,
+    }) {
+      return Response.ok(
+        body,
+        headers: headers,
+        context: context,
+      );
     });
   });
 }
@@ -30,10 +46,11 @@ void main() {
 /// Shared test method used by [Request] and [Response] tests to validate
 /// the behavior of `change` with different `headers` and `context` values.
 void _testChange(
-    Message Function(
-            {dynamic body,
-            Map<String, String> headers,
-            Map<String, Object> context})
+    Message Function({
+  dynamic body,
+  Map<String, String> headers,
+  Map<String, Object> context,
+})
         factory) {
   group('body', () {
     test('with String', () async {

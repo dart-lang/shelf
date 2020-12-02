@@ -11,7 +11,7 @@ import 'test_util.dart';
 
 void main() {
   group('a cascade with several handlers', () {
-    Handler handler;
+    late Handler handler;
     setUp(() {
       handler = Cascade().add((request) {
         if (request.headers['one'] == 'false') {

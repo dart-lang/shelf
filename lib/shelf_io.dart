@@ -38,13 +38,24 @@ export 'src/io_server.dart';
 ////
 /// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
 /// for more details on [address], [port], [backlog], and [shared].
-Future<HttpServer> serve(Handler handler, address, int port,
-    {SecurityContext securityContext, int backlog, bool shared = false}) async {
+Future<HttpServer> serve(
+  Handler handler,
+  address,
+  int port, {
+  SecurityContext? securityContext,
+  int? backlog,
+  bool shared = false,
+}) async {
   backlog ??= 0;
   var server = await (securityContext == null
       ? HttpServer.bind(address, port, backlog: backlog, shared: shared)
-      : HttpServer.bindSecure(address, port, securityContext,
-          backlog: backlog, shared: shared));
+      : HttpServer.bindSecure(
+          address,
+          port,
+          securityContext,
+          backlog: backlog,
+          shared: shared,
+        ));
   serveRequests(server, handler);
   return server;
 }
@@ -77,9 +88,11 @@ Future handleRequest(HttpRequest request, Handler handler) async {
     if (error.name == 'method' || error.name == 'requestedUri') {
       // TODO: use a reduced log level when using package:logging
       _logTopLevelError('Error parsing request.\n$error', stackTrace);
-      final response = Response(400,
-          body: 'Bad Request',
-          headers: {HttpHeaders.contentTypeHeader: 'text/plain'});
+      final response = Response(
+        400,
+        body: 'Bad Request',
+        headers: {HttpHeaders.contentTypeHeader: 'text/plain'},
+      );
       await _writeResponse(response, request.response);
     } else {
       _logTopLevelError('Error parsing request.\n$error', stackTrace);
@@ -96,7 +109,7 @@ Future handleRequest(HttpRequest request, Handler handler) async {
 
   // TODO(nweiz): abstract out hijack handling to make it easier to implement an
   // adapter.
-  Response response;
+  Response? response;
   try {
     response = await handler(shelfRequest);
   } on HijackException catch (error, stackTrace) {
@@ -104,18 +117,20 @@ Future handleRequest(HttpRequest request, Handler handler) async {
     if (!shelfRequest.canHijack) return;
 
     // If the request wasn't hijacked, we shouldn't be seeing this exception.
-    response = _logError(shelfRequest,
-        "Caught HijackException, but the request wasn't hijacked.", stackTrace);
+    response = _logError(
+      shelfRequest,
+      "Caught HijackException, but the request wasn't hijacked.",
+      stackTrace,
+    );
   } catch (error, stackTrace) {
-    response =
-        _logError(shelfRequest, 'Error thrown by handler.\n$error', stackTrace);
+    response = _logError(
+      shelfRequest,
+      'Error thrown by handler.\n$error',
+      stackTrace,
+    );
   }
 
-  if (response == null) {
-    await _writeResponse(_logError(shelfRequest, 'null response from handler.'),
-        request.response);
-    return;
-  } else if (shelfRequest.canHijack) {
+  if (shelfRequest.canHijack) {
     await _writeResponse(response, request.response);
     return;
   }
@@ -144,12 +159,15 @@ Request _fromHttpRequest(HttpRequest request) {
         .then((socket) => callback(StreamChannel(socket, socket)));
   }
 
-  return Request(request.method, request.requestedUri,
-      protocolVersion: request.protocolVersion,
-      headers: headers,
-      body: request,
-      onHijack: onHijack,
-      context: {'shelf.io.connection_info': request.connectionInfo});
+  return Request(
+    request.method,
+    request.requestedUri,
+    protocolVersion: request.protocolVersion,
+    headers: headers,
+    body: request,
+    onHijack: onHijack,
+    context: {'shelf.io.connection_info': request.connectionInfo!},
+  );
 }
 
 Future _writeResponse(Response response, HttpResponse httpResponse) {
@@ -167,7 +185,6 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
   httpResponse.headers.chunkedTransferEncoding = false;
 
   response.headersAll.forEach((header, value) {
-    if (value == null) return;
     httpResponse.headers.set(header, value);
   });
 
@@ -177,8 +194,9 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
     // otherwise `dart:io` will try to add another layer of chunking.
     //
     // TODO(nweiz): Do this more cleanly when sdk#27886 is fixed.
-    response =
-        response.change(body: chunkedCoding.decoder.bind(response.read()));
+    response = response.change(
+      body: chunkedCoding.decoder.bind(response.read()),
+    );
     httpResponse.headers.set(HttpHeaders.transferEncodingHeader, 'chunked');
   } else if (response.statusCode >= 200 &&
       response.statusCode != 204 &&
@@ -205,7 +223,7 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
 
 // TODO(kevmoo) A developer mode is needed to include error info in response
 // TODO(kevmoo) Make error output plugable. stderr, logging, etc
-Response _logError(Request request, String message, [StackTrace stackTrace]) {
+Response _logError(Request request, String message, [StackTrace? stackTrace]) {
   // Add information about the request itself.
   var buffer = StringBuffer();
   buffer.write('${request.method} ${request.requestedUri.path}');
@@ -219,7 +237,7 @@ Response _logError(Request request, String message, [StackTrace stackTrace]) {
   return Response.internalServerError();
 }
 
-void _logTopLevelError(String message, [StackTrace stackTrace]) {
+void _logTopLevelError(String message, [StackTrace? stackTrace]) {
   var chain = Chain.current();
   if (stackTrace != null) {
     chain = Chain.forTrace(stackTrace);

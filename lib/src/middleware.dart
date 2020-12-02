@@ -46,14 +46,15 @@ typedef Middleware = Handler Function(Handler innerHandler);
 /// does not receive errors thrown by [requestHandler] or [responseHandler], nor
 /// does it receive [HijackException]s. It can either return a new response or
 /// throw an error.
-Middleware createMiddleware(
-    {FutureOr<Response> Function(Request) requestHandler,
-    FutureOr<Response> Function(Response) responseHandler,
-    FutureOr<Response> Function(dynamic error, StackTrace) errorHandler}) {
+Middleware createMiddleware({
+  FutureOr<Response?> Function(Request)? requestHandler,
+  FutureOr<Response> Function(Response)? responseHandler,
+  FutureOr<Response> Function(Object error, StackTrace)? errorHandler,
+}) {
   requestHandler ??= (request) => null;
   responseHandler ??= (response) => response;
 
-  void Function(Object, StackTrace) onError;
+  FutureOr<Response> Function(Object, StackTrace)? onError;
   if (errorHandler != null) {
     onError = (error, stackTrace) {
       if (error is HijackException) throw error;
@@ -63,11 +64,11 @@ Middleware createMiddleware(
 
   return (Handler innerHandler) {
     return (request) {
-      return Future.sync(() => requestHandler(request)).then((response) {
+      return Future.sync(() => requestHandler!(request)).then((response) {
         if (response != null) return response;
 
         return Future.sync(() => innerHandler(request))
-            .then((response) => responseHandler(response), onError: onError);
+            .then((response) => responseHandler!(response), onError: onError);
       });
     };
   };

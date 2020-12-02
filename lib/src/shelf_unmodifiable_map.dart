@@ -8,7 +8,7 @@ import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 
 /// A simple wrapper over [UnmodifiableMapView] which avoids re-wrapping itself.
-class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
+class ShelfUnmodifiableMap extends UnmodifiableMapView<String, Object> {
   /// `true` if the key values are already lowercase.
   final bool _ignoreKeyCase;
 
@@ -21,9 +21,11 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
   ///
   /// [source] is copied to a new [Map] to ensure changes to the parameter value
   /// after constructions are not reflected.
-  factory ShelfUnmodifiableMap(Map<String, V> source,
-      {bool ignoreKeyCase = false}) {
-    if (source is ShelfUnmodifiableMap<V> &&
+  factory ShelfUnmodifiableMap(
+    Map<String, Object>? source, {
+    bool ignoreKeyCase = false,
+  }) {
+    if (source is ShelfUnmodifiableMap &&
         //        !ignoreKeyCase: no transformation of the input is required
         // source._ignoreKeyCase: the input cannot be transformed any more
         (!ignoreKeyCase || source._ignoreKeyCase)) {
@@ -35,35 +37,42 @@ class ShelfUnmodifiableMap<V> extends UnmodifiableMapView<String, V> {
     }
 
     if (ignoreKeyCase) {
-      source = CaseInsensitiveMap<V>.from(source);
+      source = CaseInsensitiveMap<Object>.from(source);
     } else {
-      source = Map<String, V>.from(source);
+      source = Map<String, Object>.from(source);
     }
 
-    return ShelfUnmodifiableMap<V>._(source, ignoreKeyCase);
+    return ShelfUnmodifiableMap._(source, ignoreKeyCase);
   }
 
   /// Returns an empty [ShelfUnmodifiableMap].
-  const factory ShelfUnmodifiableMap.empty() = _EmptyShelfUnmodifiableMap<V>;
+  const factory ShelfUnmodifiableMap.empty() = _EmptyShelfUnmodifiableMap;
 
-  ShelfUnmodifiableMap._(Map<String, V> source, this._ignoreKeyCase)
+  ShelfUnmodifiableMap._(Map<String, Object> source, this._ignoreKeyCase)
       : super(source);
 }
 
 /// A const implementation of an empty [ShelfUnmodifiableMap].
-class _EmptyShelfUnmodifiableMap<V> extends MapView<String, V>
-    implements ShelfUnmodifiableMap<V> {
+class _EmptyShelfUnmodifiableMap extends MapView<String, Object>
+    implements ShelfUnmodifiableMap {
   @override
   bool get _ignoreKeyCase => true;
-  const _EmptyShelfUnmodifiableMap() : super(const <String, Null>{});
+
+  const _EmptyShelfUnmodifiableMap() : super(const <String, Object>{});
 
   // Override modifier methods that care about the type of key they use so that
   // when V is Null, they throw UnsupportedErrors instead of type errors.
   @override
-  void operator []=(String key, Object value) => super[key] = null;
+  void operator []=(String key, Object value) => super[key] = const Object();
+
   @override
   void addAll(Map<String, Object> other) => super.addAll({});
+
   @override
-  V putIfAbsent(String key, Object Function() ifAbsent) =>
-      super.putIfAbsent(key, () => null);
+  Object putIfAbsent(String key, Object Function() ifAbsent) =>
+      super.putIfAbsent(key, () => const Object());
+
+  @override
+  // TODO: https://github.com/dart-lang/sdk/issues/44264
+  Object remove(Object? key) => super.remove(key)!;
 }

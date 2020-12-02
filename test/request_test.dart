@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 
 import 'test_util.dart';
 
-Request _request({Map<String, String> headers, body, Encoding encoding}) {
+Request _request({Map<String, String>? headers, body, Encoding? encoding}) {
   return Request('GET', localhostUri,
       headers: headers, body: body, encoding: encoding);
 }
@@ -257,11 +257,15 @@ void main() {
           context: {'context1': 'context value 1'});
 
       test('delete value with null', () {
-        final r = request.change(headers: {'header1': null});
+        final r = request.change(
+          headers: {'header1': null},
+          context: {'context1': null},
+        );
         expect(r.headers, {'content-length': '0'});
         expect(r.headersAll, {
           'content-length': ['0'],
         });
+        expect(r.context, isEmpty);
       });
 
       test('delete value with empty list', () {

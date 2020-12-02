@@ -29,17 +29,30 @@ void catchTopLevelErrors(void Function() callback,
 /// [updates] is used.
 ///
 /// If [updates] is `null` or empty, [original] is returned unchanged.
-Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V> updates) {
+Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V?>? updates) {
   if (updates == null || updates.isEmpty) return original;
 
-  return Map.from(original)..addAll(updates);
+  final value = Map.of(original);
+  for (var entry in updates.entries) {
+    final val = entry.value;
+    if (val == null) {
+      value.remove(entry.key);
+    } else {
+      value[entry.key] = val;
+    }
+  }
+
+  return value;
 }
 
 /// Adds a header with [name] and [value] to [headers], which may be null.
 ///
 /// Returns a new map without modifying [headers].
-Map<String, dynamic> addHeader(
-    Map<String, dynamic> headers, String name, String value) {
+Map<String, Object> addHeader(
+  Map<String, Object>? headers,
+  String name,
+  String value,
+) {
   headers = headers == null ? {} : Map.from(headers);
   headers[name] = value;
   return headers;
@@ -49,7 +62,7 @@ Map<String, dynamic> addHeader(
 ///
 /// This works even if [headers] is `null`, or if it's not yet a
 /// case-insensitive map.
-String findHeader(Map<String, List<String>> headers, String name) {
+String? findHeader(Map<String, List<String>?>? headers, String name) {
   if (headers == null) return null;
   if (headers is ShelfUnmodifiableMap) {
     return joinHeaderValues(headers[name]);
@@ -63,23 +76,44 @@ String findHeader(Map<String, List<String>> headers, String name) {
   return null;
 }
 
-Map<String, List<String>> expandToHeadersAll(
-    Map<String, /* String | List<String> */ dynamic> headers) {
+Map<String, List<String>> updateHeaders(
+  Map<String, List<String>> initialHeaders,
+  Map<String, Object?>? changeHeaders,
+) {
+  return updateMap<String, List<String>>(
+    initialHeaders,
+    _expandToHeadersAll(changeHeaders),
+  );
+}
+
+Map<String, List<String>?>? _expandToHeadersAll(
+  Map<String, /* String | List<String> */ Object?>? headers,
+) {
   if (headers is Map<String, List<String>>) return headers;
   if (headers == null || headers.isEmpty) return null;
 
-  return Map<String, List<String>>.fromEntries(headers.entries.map((e) {
-    return MapEntry<String, List<String>>(e.key, expandHeaderValue(e.value));
+  return Map.fromEntries(headers.entries.map((e) {
+    final val = e.value;
+    return MapEntry(e.key, val == null ? null : expandHeaderValue(val));
   }));
 }
 
-List<String> expandHeaderValue(dynamic v) {
+Map<String, List<String>>? expandToHeadersAll(
+  Map<String, /* String | List<String> */ Object>? headers,
+) {
+  if (headers is Map<String, List<String>>) return headers;
+  if (headers == null || headers.isEmpty) return null;
+
+  return Map.fromEntries(headers.entries.map((e) {
+    return MapEntry(e.key, expandHeaderValue(e.value));
+  }));
+}
+
+List<String> expandHeaderValue(Object v) {
   if (v is String) {
     return [v];
   } else if (v is List<String>) {
     return v;
-  } else if (v == null) {
-    return null;
   } else {
     throw ArgumentError('Expected String or List<String>, got: `$v`.');
   }
@@ -87,8 +121,9 @@ List<String> expandHeaderValue(dynamic v) {
 
 /// Multiple header values are joined with commas.
 /// See http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-21#page-22
-String joinHeaderValues(List<String> values) {
-  if (values == null || values.isEmpty) return null;
+String? joinHeaderValues(List<String>? values) {
+  if (values == null) return null;
+  if (values.isEmpty) return '';
   if (values.length == 1) return values.single;
   return values.join(',');
 }

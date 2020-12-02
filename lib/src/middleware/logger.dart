@@ -19,9 +19,9 @@ import '../middleware.dart';
 /// The `isError` parameter indicates whether the message is caused by an error.
 ///
 /// If [logger] is not passed, the message is just passed to [print].
-Middleware logRequests({void Function(String message, bool isError) logger}) =>
+Middleware logRequests({void Function(String message, bool isError)? logger}) =>
     (innerHandler) {
-      logger ??= _defaultLogger;
+      final theLogger = logger ?? _defaultLogger;
 
       return (request) {
         var startTime = DateTime.now();
@@ -31,16 +31,16 @@ Middleware logRequests({void Function(String message, bool isError) logger}) =>
           var msg = _message(startTime, response.statusCode,
               request.requestedUri, request.method, watch.elapsed);
 
-          logger(msg, false);
+          theLogger(msg, false);
 
           return response;
-        }, onError: (error, StackTrace stackTrace) {
+        }, onError: (Object error, StackTrace stackTrace) {
           if (error is HijackException) throw error;
 
           var msg = _errorMessage(startTime, request.requestedUri,
               request.method, watch.elapsed, error, stackTrace);
 
-          logger(msg, true);
+          theLogger(msg, true);
 
           throw error;
         });
@@ -60,7 +60,7 @@ String _message(DateTime requestTime, int statusCode, Uri requestedUri,
 }
 
 String _errorMessage(DateTime requestTime, Uri requestedUri, String method,
-    Duration elapsedTime, Object error, StackTrace stack) {
+    Duration elapsedTime, Object error, StackTrace? stack) {
   var chain = Chain.current();
   if (stack != null) {
     chain = Chain.forTrace(stack)
@@ -70,7 +70,6 @@ String _errorMessage(DateTime requestTime, Uri requestedUri, String method,
 
   var msg = '$requestTime\t$elapsedTime\t$method\t${requestedUri.path}'
       '${_formatQuery(requestedUri.query)}\n$error';
-  if (chain == null) return msg;
 
   return '$msg\n$chain';
 }

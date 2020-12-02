@@ -61,4 +61,6 @@ void main() {
 }
 
 FutureOr<Response> _chunkResponse(Response response) =>
-    addChunkedEncoding((_) => response)(null);
+    addChunkedEncoding((_) => response)(
+      Request('GET', Uri.parse('http://example.com/')),
+    );

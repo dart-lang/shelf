@@ -77,36 +77,38 @@ abstract class Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
-  Message(body,
-      {Encoding encoding,
-      Map<String, /* String | List<String> */ Object> headers,
-      Map<String, Object> context})
-      : this._withBody(Body(body, encoding), headers, context);
+  Message(
+    body, {
+    Encoding? encoding,
+    Map<String, /* String | List<String> */ Object>? headers,
+    Map<String, Object>? context,
+  }) : this._withBody(Body(body, encoding), headers, context);
 
   Message._withBody(
-      Body body, Map<String, dynamic> headers, Map<String, Object> context)
+      Body body, Map<String, Object>? headers, Map<String, Object>? context)
       : this._withHeadersAll(
-            body,
-            Headers.from(_adjustHeaders(expandToHeadersAll(headers), body)),
-            context);
+          body,
+          Headers.from(_adjustHeaders(expandToHeadersAll(headers), body)),
+          context,
+        );
 
   Message._withHeadersAll(
-      Body body, Headers headers, Map<String, Object> context)
+      Body body, Headers headers, Map<String, Object>? context)
       : _body = body,
         _headers = headers,
-        context = ShelfUnmodifiableMap<Object>(context, ignoreKeyCase: false);
+        context = ShelfUnmodifiableMap(context, ignoreKeyCase: false);
 
   /// The contents of the content-length field in [headers].
   ///
   /// If not set, `null`.
-  int get contentLength {
+  int? get contentLength {
     if (_contentLengthCache != null) return _contentLengthCache;
     if (!headers.containsKey('content-length')) return null;
-    _contentLengthCache = int.parse(headers['content-length']);
+    _contentLengthCache = int.parse(headers['content-length']!);
     return _contentLengthCache;
   }
 
-  int _contentLengthCache;
+  int? _contentLengthCache;
 
   /// The MIME type of the message.
   ///
@@ -114,7 +116,7 @@ abstract class Message {
   /// the MIME type, without any Content-Type parameters.
   ///
   /// If [headers] doesn't have a Content-Type header, this will be `null`.
-  String get mimeType {
+  String? get mimeType {
     var contentType = _contentType;
     if (contentType == null) return null;
     return contentType.mimeType;
@@ -127,7 +129,7 @@ abstract class Message {
   ///
   /// If [headers] doesn't have a Content-Type header or it specifies an
   /// encoding that `dart:convert` doesn't support, this will be `null`.
-  Encoding get encoding {
+  Encoding? get encoding {
     var contentType = _contentType;
     if (contentType == null) return null;
     if (!contentType.parameters.containsKey('charset')) return null;
@@ -137,14 +139,14 @@ abstract class Message {
   /// The parsed version of the Content-Type header in [headers].
   ///
   /// This is cached for efficient access.
-  MediaType get _contentType {
+  MediaType? get _contentType {
     if (_contentTypeCache != null) return _contentTypeCache;
-    if (!headers.containsKey('content-type')) return null;
-    _contentTypeCache = MediaType.parse(headers['content-type']);
-    return _contentTypeCache;
+    final contentTypeValue = headers['content-type'];
+    if (contentTypeValue == null) return null;
+    return _contentTypeCache = MediaType.parse(contentTypeValue);
   }
 
-  MediaType _contentTypeCache;
+  MediaType? _contentTypeCache;
 
   /// Returns a [Stream] representing the body.
   ///
@@ -158,7 +160,7 @@ abstract class Message {
   /// doesn't exist or doesn't have a "charset" parameter, UTF-8 is used.
   ///
   /// This calls [read] internally, which can only be called once.
-  Future<String> readAsString([Encoding encoding]) {
+  Future<String> readAsString([Encoding? encoding]) {
     encoding ??= this.encoding ?? utf8;
     return encoding.decodeStream(read());
   }
@@ -173,7 +175,9 @@ abstract class Message {
 ///
 /// Returns a new map without modifying [headers].
 Map<String, List<String>> _adjustHeaders(
-    Map<String, List<String>> headers, Body body) {
+  Map<String, List<String>>? headers,
+  Body body,
+) {
   var sameEncoding = _sameEncoding(headers, body);
   if (sameEncoding) {
     if (body.contentLength == null ||
@@ -192,12 +196,12 @@ Map<String, List<String>> _adjustHeaders(
   if (!sameEncoding) {
     if (newHeaders['content-type'] == null) {
       newHeaders['content-type'] = [
-        'application/octet-stream; charset=${body.encoding.name}'
+        'application/octet-stream; charset=${body.encoding!.name}'
       ];
     } else {
       final contentType =
-          MediaType.parse(joinHeaderValues(newHeaders['content-type']))
-              .change(parameters: {'charset': body.encoding.name});
+          MediaType.parse(joinHeaderValues(newHeaders['content-type'])!)
+              .change(parameters: {'charset': body.encoding!.name});
       newHeaders['content-type'] = [contentType.toString()];
     }
   }
@@ -213,7 +217,7 @@ Map<String, List<String>> _adjustHeaders(
 }
 
 /// Returns whether [headers] declares the same encoding as [body].
-bool _sameEncoding(Map<String, List<String>> headers, Body body) {
+bool _sameEncoding(Map<String, List<String>?>? headers, Body body) {
   if (body.encoding == null) return true;
 
   var contentType = findHeader(headers, 'content-type');
