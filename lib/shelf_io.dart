@@ -130,6 +130,12 @@ Future handleRequest(HttpRequest request, Handler handler) async {
     );
   }
 
+  if ((response as dynamic) == null) {
+    // Handle nulls flowing from opt-out code
+    await _writeResponse(_logError(shelfRequest, 'null response from handler.'),
+        request.response);
+    return;
+  }
   if (shelfRequest.canHijack) {
     await _writeResponse(response, request.response);
     return;
