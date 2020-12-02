@@ -42,7 +42,6 @@ void main() {
     expect(response.body, 'Hello from /');
   });
 
-
   test('thrown error leads to a 500', () async {
     await _scheduleServer((request) {
       throw UnsupportedError('test');
