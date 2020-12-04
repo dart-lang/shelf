@@ -97,6 +97,8 @@ class Request extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   ///
   /// The default value for [protocolVersion] is '1.1'.
   ///
@@ -217,6 +219,8 @@ class Request extends Message {
   /// [Request]. If [context] or [headers] contains a `null` value the
   /// corresponding `key` will be removed if it exists, otherwise the `null`
   /// value will be ignored.
+  /// For [headers] a value which is an empty list will also cause the
+  /// corresponding key to be removed.
   ///
   /// All other context and header values from the [Request] will be
   /// included in the copied [Request] unchanged.
