@@ -59,6 +59,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.ok(
     body, {
     Map<String, /* String | List<String> */ Object>? headers,
@@ -87,6 +89,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.movedPermanently(
     Object location, {
     body,
@@ -115,6 +119,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.found(
     Object location, {
     body,
@@ -151,6 +157,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.seeOther(
     Object location, {
     body,
@@ -181,6 +189,9 @@ class Response extends Message {
   /// information used to determine whether the requested resource has changed
   /// since the last request. It indicates that the resource has not changed and
   /// the old value should be used.
+  ///
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.notModified({
     Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
@@ -208,6 +219,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.forbidden(
     body, {
     Map<String, /* String | List<String> */ Object>? headers,
@@ -240,6 +253,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.notFound(
     body, {
     Map<String, /* String | List<String> */ Object>? headers,
@@ -272,6 +287,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response.internalServerError({
     body,
     Map<String, /* String | List<String> */ Object>? headers,
@@ -303,6 +320,8 @@ class Response extends Message {
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
+  /// [headers] must contain values that are either `String` or `List<String>`.
+  /// An empty list will cause the header to be omitted.
   Response(
     this.statusCode, {
     body,
@@ -326,6 +345,8 @@ class Response extends Message {
   /// [Response]. If [context] or [headers] contains a `null` value the
   /// corresponding `key` will be removed if it exists, otherwise the `null`
   /// value will be ignored.
+  /// For [headers] a value which is an empty list will also cause the
+  /// corresponding key to be removed.
   ///
   /// All other context and header values from the [Response] will be included
   /// in the copied [Response] unchanged.

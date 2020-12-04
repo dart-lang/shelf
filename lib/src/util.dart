@@ -114,6 +114,8 @@ List<String> expandHeaderValue(Object v) {
     return [v];
   } else if (v is List<String>) {
     return v;
+  } else if ((v as dynamic) == null) {
+    return const [];
   } else {
     throw ArgumentError('Expected String or List<String>, got: `$v`.');
   }
