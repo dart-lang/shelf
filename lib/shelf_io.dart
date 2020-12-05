@@ -132,7 +132,9 @@ Future handleRequest(HttpRequest request, Handler handler) async {
 
   if ((response as dynamic) == null) {
     // Handle nulls flowing from opt-out code
-    await _writeResponse(_logError(shelfRequest, 'null response from handler.'),
+    await _writeResponse(
+        _logError(
+            shelfRequest, 'null response from handler.', StackTrace.current),
         request.response);
     return;
   }
@@ -229,7 +231,7 @@ Future _writeResponse(Response response, HttpResponse httpResponse) {
 
 // TODO(kevmoo) A developer mode is needed to include error info in response
 // TODO(kevmoo) Make error output plugable. stderr, logging, etc
-Response _logError(Request request, String message, [StackTrace? stackTrace]) {
+Response _logError(Request request, String message, StackTrace stackTrace) {
   // Add information about the request itself.
   var buffer = StringBuffer();
   buffer.write('${request.method} ${request.requestedUri.path}');
@@ -243,12 +245,8 @@ Response _logError(Request request, String message, [StackTrace? stackTrace]) {
   return Response.internalServerError();
 }
 
-void _logTopLevelError(String message, [StackTrace? stackTrace]) {
-  var chain = Chain.current();
-  if (stackTrace != null) {
-    chain = Chain.forTrace(stackTrace);
-  }
-  chain = chain
+void _logTopLevelError(String message, StackTrace stackTrace) {
+  final chain = Chain.forTrace(stackTrace)
       .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
       .terse;
 
