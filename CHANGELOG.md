@@ -1,6 +1,7 @@
 ## 0.2.9-dev
 
 * Update SDK constraint to `>=2.3.0 <3.0.0`.
+* Allow `3.x` versions of `package:convert`.
 * Use file `modified` dates instead of `changed` for `304 Not Modified` checks
   as `changed` returns creation dates on Windows.
 
