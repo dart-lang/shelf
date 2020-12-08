@@ -32,8 +32,8 @@ void main() {
 
   test('Handles malformed requests gracefully.', () async {
     server.mount(syncHandler);
-    final rs =
-        await http.get('${server.url}/%D0%C2%BD%A8%CE%C4%BC%FE%BC%D0.zip');
+    final rs = await http
+        .get(Uri.parse('${server.url}/%D0%C2%BD%A8%CE%C4%BC%FE%BC%D0.zip'));
     expect(rs.statusCode, 400);
     expect(rs.body, 'Bad Request');
   });
