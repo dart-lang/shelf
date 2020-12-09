@@ -63,7 +63,7 @@ void main() {
   });
 
   test('Request is populated correctly', () async {
-    Uri uri;
+    late Uri uri;
 
     await _scheduleServer((request) {
       expect(request.contentLength, 0);
