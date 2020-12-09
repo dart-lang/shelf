@@ -63,14 +63,13 @@ void main() {
   });
 
   test('Request is populated correctly', () async {
-    var path = '/foo/bar?qs=value';
+    late Uri uri;
 
     await _scheduleServer((request) {
       expect(request.contentLength, 0);
       expect(request.method, 'GET');
 
-      var expectedUrl = 'http://localhost:$_serverPort$path';
-      expect(request.requestedUri, Uri.parse(expectedUrl));
+      expect(request.requestedUri, uri);
 
       expect(request.url.path, 'foo/bar');
       expect(request.url.pathSegments, ['foo', 'bar']);
@@ -81,7 +80,9 @@ void main() {
       return syncHandler(request);
     });
 
-    var response = await http.get('http://localhost:$_serverPort$path');
+    uri = Uri.http('localhost:$_serverPort', '/foo/bar', {'qs': 'value'});
+    var response = await http.get(uri);
+
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /foo/bar');
   });
@@ -108,8 +109,8 @@ void main() {
       return Response.ok(null);
     }));
 
-    var request = http.StreamedRequest(
-        'POST', Uri.parse('http://localhost:$_serverPort'));
+    var request =
+        http.StreamedRequest('POST', Uri.http('localhost:$_serverPort', ''));
     request.sink.add([1, 2, 3, 4]);
     request.sink.close();
 
@@ -256,7 +257,7 @@ void main() {
         return syncHandler(request);
       }, 'localhost', 0);
 
-      var response = await http.get('http://localhost:${server.port}');
+      var response = await http.get(Uri.http('localhost:${server.port}', '/'));
       expect(response.statusCode, HttpStatus.ok);
       expect(response.body, 'Hello from /');
       await server.close();
@@ -273,7 +274,7 @@ void main() {
       }, 'localhost', 0);
 
       try {
-        return await http.get('http://localhost:${server.port}');
+        return await http.get(Uri.http('localhost:${server.port}', '/'));
       } finally {
         await server.close();
       }
@@ -472,8 +473,7 @@ void main() {
           context: {'shelf.io.buffer_output': false});
     });
 
-    var request =
-        http.Request('GET', Uri.parse('http://localhost:$_serverPort/'));
+    var request = http.Request('GET', Uri.http('localhost:$_serverPort', ''));
 
     var response = await request.send();
     var stream = StreamQueue(utf8.decoder.bind(response.stream));
@@ -516,7 +516,7 @@ void main() {
     var sslClient = HttpClient(context: securityContext);
 
     Future<HttpClientRequest> _scheduleSecureGet() =>
-        sslClient.getUrl(Uri.parse('https://localhost:${_server!.port}/'));
+        sslClient.getUrl(Uri.https('localhost:${_server!.port}', ''));
 
     test('secure sync handler returns a value to the client', () async {
       await _scheduleServer(syncHandler, securityContext: securityContext);
@@ -565,8 +565,7 @@ Future<http.Response> _get({
   // TODO: use http.Client once it supports sending and receiving multiple headers.
   final client = HttpClient();
   try {
-    final rq =
-        await client.getUrl(Uri.parse('http://localhost:$_serverPort/$path'));
+    final rq = await client.getUrl(Uri.http('localhost:$_serverPort', path));
     headers?.forEach((key, value) {
       rq.headers.add(key, value);
     });
@@ -587,8 +586,7 @@ Future<http.Response> _get({
 
 Future<http.StreamedResponse> _post(
     {Map<String, String>? headers, String? body}) {
-  var request =
-      http.Request('POST', Uri.parse('http://localhost:$_serverPort/'));
+  var request = http.Request('POST', Uri.http('localhost:$_serverPort', ''));
 
   if (headers != null) request.headers.addAll(headers);
   if (body != null) request.body = body;
