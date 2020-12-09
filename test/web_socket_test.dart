@@ -68,8 +68,8 @@ void main() {
   });
 
   group('with a set of allowed origins', () {
-    var server;
-    var url;
+    HttpServer server;
+    Uri url;
     setUp(() async {
       server = await shelf_io.serve(
           webSocketHandler((webSocket) {
@@ -77,7 +77,7 @@ void main() {
           }, allowedOrigins: ['pub.dartlang.org', 'GoOgLe.CoM']),
           'localhost',
           0);
-      url = 'http://localhost:${server.port}/';
+      url = Uri.http('localhost:${server.port}', '');
     });
 
     tearDown(() => server.close());
@@ -117,7 +117,7 @@ void main() {
       webSocket.sink.close();
     }), 'localhost', 0);
 
-    var url = 'http://localhost:${server.port}/';
+    var url = Uri.http('localhost:${server.port}', '');
     var headers = _handshakeHeaders;
     headers['Connection'] = 'Other-Token, Upgrade';
     expect(http.get(url, headers: headers).whenComplete(server.close),
@@ -125,13 +125,13 @@ void main() {
   });
 
   group('HTTP errors', () {
-    var server;
-    var url;
+    HttpServer server;
+    Uri url;
     setUp(() async {
       server = await shelf_io.serve(webSocketHandler((_) {
         fail('should not create a WebSocket');
       }), 'localhost', 0);
-      url = 'http://localhost:${server.port}/';
+      url = Uri.http('localhost:${server.port}', '');
     });
 
     tearDown(() => server.close());
