@@ -115,18 +115,17 @@ class Router {
     _routes.add(RouterEntry('ALL', route, handler));
   }
 
-  /// Mount a router below a prefix.
+  /// Mount a handler below a prefix.
   ///
   /// In this case prefix may not contain any parameters, nor
-  void mount(String prefix, Router router) {
+  void mount(String prefix, Handler handler) {
     ArgumentError.checkNotNull(prefix, 'prefix');
-    ArgumentError.checkNotNull(router, 'router');
+    ArgumentError.checkNotNull(handler, 'handler');
     if (!prefix.startsWith('/') || !prefix.endsWith('/')) {
       throw ArgumentError.value(
           prefix, 'prefix', 'must start and end with a slash');
     }
 
-    final handler = router.handler;
     // first slash is always in request.handlerPath
     final path = prefix.substring(1);
     all(prefix + '<path|[^]*>', (Request request) {
@@ -135,24 +134,28 @@ class Router {
   }
 
   /// Get a [Handler] that will route incoming requests to registered handlers.
-  Handler get handler {
+  @Deprecated('The Router class is a Handler on its own')
+  Handler get handler => call;
+
+  /// Route incoming requests to registered handlers.
+  ///
+  /// This method allows a Router instance to be a [Handler].
+  Future<Response> call(Request request) async {
     // Note: this is a great place to optimize the implementation by building
     //       a trie for faster matching... left as an exercise for the reader :)
-    return (Request request) async {
-      for (var route in _routes) {
-        if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
-          continue;
-        }
-        var params = route.match('/' + request.url.path);
-        if (params != null) {
-          var res = await route.invoke(request, params);
-          if (res != null) {
-            return res;
-          }
+    for (var route in _routes) {
+      if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
+        continue;
+      }
+      var params = route.match('/' + request.url.path);
+      if (params != null) {
+        var res = await route.invoke(request, params);
+        if (res != null) {
+          return res;
         }
       }
-      return null;
-    };
+    }
+    return null;
   }
 
   // Handlers for all methods

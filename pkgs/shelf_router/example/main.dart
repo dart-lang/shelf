@@ -52,7 +52,7 @@ class Service {
       return Response.notFound('Page not found');
     });
 
-    return router.handler;
+    return router;
   }
 }
 

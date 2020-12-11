@@ -60,7 +60,7 @@ void main() {
       return Response.ok('not-found');
     });
 
-    server.mount(app.handler);
+    server.mount(app);
 
     expect(await get('/sync-hello'), 'hello-world');
     expect(await get('/async-hello'), 'hello-world');
@@ -80,7 +80,7 @@ void main() {
       return Response.ok('$user / $group');
     });
 
-    server.mount(app.handler);
+    server.mount(app);
 
     expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
   });
@@ -93,7 +93,7 @@ void main() {
       return Response.ok('$user / $group');
     });
 
-    server.mount(app.handler);
+    server.mount(app);
 
     expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
   });
@@ -115,10 +115,37 @@ void main() {
       return Response.notFound('catch-all-handler');
     });
 
-    server.mount(app.handler);
+    server.mount(app);
 
     expect(await get('/hello'), 'hello-world');
     expect(await get('/api/user/jonasfj/info'), 'Hello jonasfj');
     expect(get('/api/user/jonasfj/info-wrong'), throwsA(anything));
+  });
+
+  test('mount(Handler) with middleware', () async {
+    var api = Router();
+    api.get('/hello', (Request request) {
+      return Response.ok('Hello');
+    });
+
+    final middleware = createMiddleware(
+      requestHandler: (request) {
+        if (request.url.queryParameters.containsKey('ok')) {
+          return Response.ok('middleware');
+        }
+        return null;
+      },
+    );
+
+    var app = Router();
+    app.mount(
+      '/api/',
+      Pipeline().addMiddleware(middleware).addHandler(api),
+    );
+
+    server.mount(app);
+
+    expect(await get('/api/hello'), 'Hello');
+    expect(await get('/api/hello?ok'), 'middleware');
   });
 }

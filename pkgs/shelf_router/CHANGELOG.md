@@ -1,3 +1,9 @@
+## v0.7.4
+
+ * Update `Router.mount` parameter to accept a `Handler`.
+ * Make `Router` to be considered a `Handler`.
+ * Deprecate the `Router.handler` getter.
+
 ## v0.7.3
 
  * Added `@sealed` annotation to `Router` and `Route`.

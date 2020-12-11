@@ -1,5 +1,5 @@
 name: shelf_router
-version: 0.7.3
+version: 0.7.4
 description: |
   A convinent request router for the shelf web-framework, with support for
   URL-parameters, nested routers and routers generated from source annotations.
