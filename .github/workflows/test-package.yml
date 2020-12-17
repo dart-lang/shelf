@@ -45,9 +45,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        sdk: [dev, stable]
+        # TODO: enable stable once 2.12 ships!
+        sdk: [dev]
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v0.1
