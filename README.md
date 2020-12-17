@@ -1,7 +1,6 @@
 ## Web Server Middleware for Dart
 
-[![Build Status](https://travis-ci.org/dart-lang/shelf.svg?branch=master)](https://travis-ci.org/dart-lang/shelf)
-[![Coverage Status](https://coveralls.io/repos/dart-lang/shelf/badge.svg?branch=master)](https://coveralls.io/r/dart-lang/shelf)
+[![CI](https://github.com/dart-lang/shelf/workflows/CI/badge.svg?branch=master)](https://github.com/dart-lang/shelf/actions?query=workflow%3ACI+branch%3Amaster)
 
 ## Introduction
 
