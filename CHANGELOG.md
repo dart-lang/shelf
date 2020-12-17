@@ -1,3 +1,7 @@
+## 0.2.9+1
+
+* Change version constraint for the `mime` dependency, so it accepts null-safe versions.
+
 ## 0.2.9
 
 * Update SDK constraint to `>=2.3.0 <3.0.0`.
