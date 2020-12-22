@@ -1,5 +1,5 @@
 name: shelf_router_generator
-version: 0.7.2+3
+version: 0.7.2+4
 description: |
   A package:build compatible builder for generating request routers for the
   shelf web-framework based on source annotations.
@@ -10,7 +10,7 @@ dependencies:
   build: ^1.0.0
   build_config: '>= 0.3.1 <= 0.5.0'
   source_gen: ^0.9.1
-  analyzer:  '>=0.35.0 < 0.41.0'
+  analyzer:  '>=0.35.0 < 0.42.0'
   shelf_router: ^0.7.0
   code_builder: ^3.2.0
   shelf: ^0.7.3

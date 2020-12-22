@@ -1,3 +1,7 @@
+## v0.7.2+4
+
+ * Relax dependency constraint on `analyzer`.
+
 ## v0.7.2+3
 
  * Relax dependency constraint on `analyzer`.
