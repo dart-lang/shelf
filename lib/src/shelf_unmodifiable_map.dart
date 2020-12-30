@@ -4,7 +4,6 @@
 
 import 'dart:collection';
 
-import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 
 /// A simple wrapper over [UnmodifiableMapView] which avoids re-wrapping itself.
