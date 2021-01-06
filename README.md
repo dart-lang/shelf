@@ -30,7 +30,7 @@ Future<void> main() async {
 }
 
 shelf.Response _echoRequest(shelf.Request request) {
-  return new shelf.Response.ok('Request for "${request.url}"');
+  return shelf.Response.ok('Request for "${request.url}"');
 }
 ```
 
@@ -78,7 +78,7 @@ routing correctly. This can be easily accomplished using
 // In an imaginary routing middleware...
 var component = request.url.pathComponents.first;
 var handler = _handlers[component];
-if (handler == null) return new Response.notFound(null);
+if (handler == null) return Response.notFound(null);
 
 // Create a new request just like this one but with whatever URL comes after
 // [component] instead.
@@ -140,18 +140,18 @@ An adapter that knows its own URL should provide an implementation of the
 ### Request Requirements
 
 When implementing an adapter, some rules must be followed. The adapter must not
-pass the `url` or `handlerPath` parameters to [new shelf.Request][]; it should
+pass the `url` or `handlerPath` parameters to [shelf.Request][]; it should
 only pass `requestedUri`. If it passes the `context` parameter, all keys must
 begin with the adapter's package name followed by a period. If multiple headers
 with the same name are received, the adapter must collapse them into a single
 header separated by commas as per [RFC 2616 section 4.2][].
 
-[new shelf.Request]: https://pub.dev/documentation/shelf/latest/shelf/Request/Request.html
+[shelf.Request]: https://pub.dev/documentation/shelf/latest/shelf/Request/Request.html
 
 [RFC 2616 section 4.2]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
 
 If the underlying request uses a chunked transfer coding, the adapter must
-decode the body before passing it to [new shelf.Request][] and should remove the
+decode the body before passing it to [shelf.Request][] and should remove the
 `Transfer-Encoding` header. This ensures that message bodies are chunked if and
 only if the headers declare that they are.
 

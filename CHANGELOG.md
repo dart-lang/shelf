@@ -1,4 +1,4 @@
-## 1.0.0-nullsafety.0
+## 1.0.0-nullsafety.0-dev
 
 * Update to support Dart null-safety.
 * Updated the `change` function on `Request` and `Response` to clear existing
