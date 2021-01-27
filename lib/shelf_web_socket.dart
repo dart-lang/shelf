@@ -25,8 +25,8 @@ typedef _BinaryFunction = void Function(Null, Null);
 /// argument. The subprotocol is determined by looking at the client's
 /// `Sec-WebSocket-Protocol` header and selecting the first entry that also
 /// appears in [protocols]. If no subprotocols are shared between the client and
-/// the server, `null` will be passed instead. Note that if [onConnection] takes
-/// two arguments, [protocols] must be passed.
+/// the server, `null` will be passed instead and no subprotocol heaader will be
+/// sent to the client which may cause it to disconnect.
 ///
 /// [WebSocket subprotocol]: https://tools.ietf.org/html/rfc6455#section-1.9
 ///
@@ -46,11 +46,6 @@ Handler webSocketHandler(Function onConnection,
     Iterable<String> allowedOrigins,
     Duration pingInterval}) {
   if (onConnection is! _BinaryFunction) {
-    if (protocols != null) {
-      throw ArgumentError('If protocols is non-null, onConnection must '
-          'take two arguments, the WebSocket and the protocol.');
-    }
-
     var innerOnConnection = onConnection;
     onConnection = (webSocket, _) => innerOnConnection(webSocket);
   }

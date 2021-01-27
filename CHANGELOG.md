@@ -1,3 +1,8 @@
+## 0.2.4-dev
+
+* Allow omitting `protocols` argument even if the `onConnection` callback takes
+  a second argument.
+
 ## 0.2.3
 
 * Add `pingInterval` argument to `webSocketHandler`, to be passed through

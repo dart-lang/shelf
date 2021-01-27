@@ -92,11 +92,12 @@ class WebSocketHandler {
   ///
   /// If no matching protocol can be found, returns `null`.
   String _chooseProtocol(Request request) {
-    var protocols = request.headers['Sec-WebSocket-Protocol'];
-    if (protocols == null) return null;
-    for (var protocol in protocols.split(',')) {
-      protocol = protocol.trim();
-      if (_protocols.contains(protocol)) return protocol;
+    var requestProtocols = request.headers['Sec-WebSocket-Protocol'];
+    if (requestProtocols == null) return null;
+    if (_protocols == null) return null;
+    for (var requestProtocol in requestProtocols.split(',')) {
+      requestProtocol = requestProtocol.trim();
+      if (_protocols.contains(requestProtocol)) return requestProtocol;
     }
     return null;
   }
