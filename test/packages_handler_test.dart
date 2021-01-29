@@ -25,12 +25,12 @@ void main() {
 
   group('packagesHandler', () {
     test('defaults to the current method of package resolution', () async {
-      var handler = packagesHandler();
-      var request = Request(
+      final handler = packagesHandler();
+      final request = Request(
           'GET',
           Uri.parse('http://example.com/shelf_packages_handler/'
               'shelf_packages_handler.dart'));
-      var response = await handler(request);
+      final response = await handler(request);
       expect(response.statusCode, equals(200));
       expect(
           await response.readAsString(), contains('Handler packagesHandler'));
@@ -46,26 +46,26 @@ void main() {
       });
 
       test('looks up a real file', () async {
-        var request =
+        final request =
             Request('GET', Uri.parse('http://example.com/foo/foo.dart'));
-        var response = await handler(request);
+        final response = await handler(request);
         expect(response.statusCode, equals(200));
         expect(await response.readAsString(), contains('in foo'));
       });
 
       test('404s for a nonexistent package', () async {
-        var request =
+        final request =
             Request('GET', Uri.parse('http://example.com/bar/foo.dart'));
-        var response = await handler(request);
+        final response = await handler(request);
         expect(response.statusCode, equals(404));
         expect(
             await response.readAsString(), contains('Package bar not found'));
       });
 
       test('404s for a nonexistent file', () async {
-        var request =
+        final request =
             Request('GET', Uri.parse('http://example.com/foo/bar.dart'));
-        var response = await handler(request);
+        final response = await handler(request);
         expect(response.statusCode, equals(404));
       });
     });
@@ -73,46 +73,46 @@ void main() {
 
   group('packagesDirHandler', () {
     test('supports a directory at the root of the URL', () async {
-      var handler = packagesDirHandler();
-      var request = Request(
+      final handler = packagesDirHandler();
+      final request = Request(
           'GET',
           Uri.parse('http://example.com/packages/shelf_packages_handler/'
               'shelf_packages_handler.dart'));
-      var response = await handler(request);
+      final response = await handler(request);
       expect(response.statusCode, equals(200));
       expect(
           await response.readAsString(), contains('Handler packagesHandler'));
     });
 
     test('supports a directory deep in the URL', () async {
-      var handler = packagesDirHandler();
-      var request = Request(
+      final handler = packagesDirHandler();
+      final request = Request(
           'GET',
           Uri.parse('http://example.com/foo/bar/very/deep/packages/'
               'shelf_packages_handler/shelf_packages_handler.dart'));
-      var response = await handler(request);
+      final response = await handler(request);
       expect(response.statusCode, equals(200));
       expect(
           await response.readAsString(), contains('Handler packagesHandler'));
     });
 
     test('404s for a URL without a packages directory', () async {
-      var handler = packagesDirHandler();
-      var request = Request(
+      final handler = packagesDirHandler();
+      final request = Request(
           'GET',
           Uri.parse('http://example.com/shelf_packages_handler/'
               'shelf_packages_handler.dart'));
-      var response = await handler(request);
+      final response = await handler(request);
       expect(response.statusCode, equals(404));
     });
 
     test('404s for a non-existent file within a packages directory', () async {
-      var handler = packagesDirHandler();
-      var request = Request(
+      final handler = packagesDirHandler();
+      final request = Request(
           'GET',
           Uri.parse('http://example.com/packages/shelf_packages_handler/'
               'non_existent.dart'));
-      var response = await handler(request);
+      final response = await handler(request);
       expect(response.statusCode, equals(404));
     });
   });

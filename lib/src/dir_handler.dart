@@ -27,7 +27,7 @@ class DirHandler {
 
   /// The callback for handling a single request.
   FutureOr<Response> call(Request request) {
-    var segments = request.url.pathSegments;
+    final segments = request.url.pathSegments;
     for (var i = 0; i < segments.length; i++) {
       if (segments[i] != _name) continue;
       return _inner(request.change(path: p.url.joinAll(segments.take(i + 1))));

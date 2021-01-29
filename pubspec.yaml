@@ -13,6 +13,7 @@ dependencies:
   shelf_static: ^0.2.0
 
 dev_dependencies:
+  pedantic: ^1.9.0
   test: '>=1.0.0 <2.0.0'
 
 dependency_overrides:
