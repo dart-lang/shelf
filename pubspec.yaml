@@ -1,7 +1,7 @@
 name: shelf_static
-version: 0.2.9+1
-description: Static file server support for Shelf
-homepage: https://github.com/dart-lang/shelf_static
+version: 0.2.9+2
+description: Static file server support for shelf
+repository: https://github.com/dart-lang/shelf_static
 
 environment:
   sdk: '>=2.3.0 <3.0.0'
@@ -11,10 +11,9 @@ dependencies:
   http_parser: '>=0.0.2+2 <5.0.0'
   mime: '>=0.9.0 <=1.0.0'
   path: '>=1.1.0 <2.0.0'
-  shelf: '>=0.5.7 <0.8.0'
+  shelf: '>=0.5.7 <2.0.0'
 
 dev_dependencies:
   args: '^1.0.0'
   test: '^1.2.0'
   test_descriptor: '^1.0.0'
-
