@@ -1,18 +1,19 @@
 name: shelf_web_socket
-version: 0.2.4-dev
+version: 0.2.4
 
 description: >-
   A shelf handler that wires up a listener for every connection.
 homepage: https://github.com/dart-lang/shelf_web_socket
 
 environment:
-  sdk: ">=2.0.0 <3.0.0"
+  sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
-  shelf: ^0.7.0
-  web_socket_channel: ^1.0.0
+  shelf: '>=0.7.0 <2.0.0'
   stream_channel: ">1.4.0 <3.0.0"
+  web_socket_channel: ^1.0.0
 
 dev_dependencies:
   http: ">=0.10.0 <0.13.0"
-  test: ^1.0.0
+  pedantic: ^1.4.0
+  test: ^1.6.0

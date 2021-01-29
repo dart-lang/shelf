@@ -18,7 +18,7 @@ Map<String, String> get _handshakeHeaders => {
 
 void main() {
   test('can communicate with a dart:io WebSocket client', () async {
-    var server = await shelf_io.serve(webSocketHandler((webSocket) {
+    final server = await shelf_io.serve(webSocketHandler((webSocket) {
       webSocket.sink.add('hello!');
       webSocket.stream.first.then((request) {
         expect(request, equals('ping'));
@@ -28,7 +28,8 @@ void main() {
     }), 'localhost', 0);
 
     try {
-      var webSocket = await WebSocket.connect('ws://localhost:${server.port}');
+      final webSocket =
+          await WebSocket.connect('ws://localhost:${server.port}');
       var n = 0;
       await webSocket.listen((message) {
         if (n == 0) {
@@ -49,7 +50,7 @@ void main() {
   });
 
   test('negotiates the sub-protocol', () async {
-    var server = await shelf_io.serve(
+    final server = await shelf_io.serve(
         webSocketHandler((webSocket, protocol) {
           expect(protocol, equals('two'));
           webSocket.sink.close();
@@ -58,7 +59,7 @@ void main() {
         0);
 
     try {
-      var webSocket = await WebSocket.connect('ws://localhost:${server.port}',
+      final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
           protocols: ['one', 'two', 'three']);
       expect(webSocket.protocol, equals('two'));
       return webSocket.close();
@@ -68,12 +69,12 @@ void main() {
   });
 
   test('handles protocol header without allowed protocols', () async {
-    var server = await shelf_io.serve(webSocketHandler((webSocket) {
+    final server = await shelf_io.serve(webSocketHandler((webSocket) {
       webSocket.sink.close();
     }), 'localhost', 0);
 
     try {
-      var webSocket = await WebSocket.connect('ws://localhost:${server.port}',
+      final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
           protocols: ['one', 'two', 'three']);
       expect(webSocket.protocol, isNull);
       return webSocket.close();
@@ -83,13 +84,13 @@ void main() {
   });
 
   test('allows two argument callbacks without protocols', () async {
-    var server = await shelf_io.serve(webSocketHandler((webSocket, protocol) {
+    final server = await shelf_io.serve(webSocketHandler((webSocket, protocol) {
       expect(protocol, isNull);
       webSocket.sink.close();
     }), 'localhost', 0);
 
     try {
-      var webSocket = await WebSocket.connect('ws://localhost:${server.port}',
+      final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
           protocols: ['one', 'two', 'three']);
       expect(webSocket.protocol, isNull);
       return webSocket.close();
@@ -114,13 +115,13 @@ void main() {
     tearDown(() => server.close());
 
     test('allows access with an allowed origin', () {
-      var headers = _handshakeHeaders;
+      final headers = _handshakeHeaders;
       headers['Origin'] = 'pub.dartlang.org';
       expect(http.get(url, headers: headers), hasStatus(101));
     });
 
     test('forbids access with a non-allowed origin', () {
-      var headers = _handshakeHeaders;
+      final headers = _handshakeHeaders;
       headers['Origin'] = 'dartlang.org';
       expect(http.get(url, headers: headers), hasStatus(403));
     });
@@ -130,13 +131,13 @@ void main() {
     });
 
     test('ignores the case of the client origin', () {
-      var headers = _handshakeHeaders;
+      final headers = _handshakeHeaders;
       headers['Origin'] = 'PuB.DaRtLaNg.OrG';
       expect(http.get(url, headers: headers), hasStatus(101));
     });
 
     test('ignores the case of the server origin', () {
-      var headers = _handshakeHeaders;
+      final headers = _handshakeHeaders;
       headers['Origin'] = 'google.com';
       expect(http.get(url, headers: headers), hasStatus(101));
     });
@@ -144,12 +145,12 @@ void main() {
 
   // Regression test for issue 21894.
   test('allows a Connection header with multiple values', () async {
-    var server = await shelf_io.serve(webSocketHandler((webSocket) {
+    final server = await shelf_io.serve(webSocketHandler((webSocket) {
       webSocket.sink.close();
     }), 'localhost', 0);
 
-    var url = Uri.http('localhost:${server.port}', '');
-    var headers = _handshakeHeaders;
+    final url = Uri.http('localhost:${server.port}', '');
+    final headers = _handshakeHeaders;
     headers['Connection'] = 'Other-Token, Upgrade';
     expect(http.get(url, headers: headers).whenComplete(server.close),
         hasStatus(101));
@@ -172,39 +173,36 @@ void main() {
     });
 
     test('404s for non-Upgrade requests', () {
-      var headers = _handshakeHeaders;
-      headers.remove('Connection');
+      final headers = _handshakeHeaders..remove('Connection');
       expect(http.get(url, headers: headers), hasStatus(404));
     });
 
     test('404s for non-websocket upgrade requests', () {
-      var headers = _handshakeHeaders;
+      final headers = _handshakeHeaders;
       headers['Upgrade'] = 'fblthp';
       expect(http.get(url, headers: headers), hasStatus(404));
     });
 
     test('400s for a missing Sec-WebSocket-Version', () {
-      var headers = _handshakeHeaders;
-      headers.remove('Sec-WebSocket-Version');
+      final headers = _handshakeHeaders..remove('Sec-WebSocket-Version');
       expect(http.get(url, headers: headers), hasStatus(400));
     });
 
     test('404s for an unknown Sec-WebSocket-Version', () {
-      var headers = _handshakeHeaders;
+      final headers = _handshakeHeaders;
       headers['Sec-WebSocket-Version'] = '15';
       expect(http.get(url, headers: headers), hasStatus(404));
     });
 
     test('400s for a missing Sec-WebSocket-Key', () {
-      var headers = _handshakeHeaders;
-      headers.remove('Sec-WebSocket-Key');
+      final headers = _handshakeHeaders..remove('Sec-WebSocket-Key');
       expect(http.get(url, headers: headers), hasStatus(400));
     });
   });
 }
 
 Matcher hasStatus(int status) => completion(predicate((response) {
-      expect(response, TypeMatcher<http.Response>());
+      expect(response, isA<http.Response>());
       expect(response.statusCode, equals(status));
       return true;
     }));

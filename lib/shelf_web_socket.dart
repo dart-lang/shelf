@@ -7,7 +7,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'src/web_socket_handler.dart';
 
-typedef _BinaryFunction = void Function(Null, Null);
 
 /// Creates a Shelf handler that upgrades HTTP requests to WebSocket
 /// connections.
@@ -45,8 +44,8 @@ Handler webSocketHandler(Function onConnection,
     {Iterable<String> protocols,
     Iterable<String> allowedOrigins,
     Duration pingInterval}) {
-  if (onConnection is! _BinaryFunction) {
-    var innerOnConnection = onConnection;
+  if (onConnection is! void Function(Null, Null)) {
+    final innerOnConnection = onConnection;
     onConnection = (webSocket, _) => innerOnConnection(webSocket);
   }
 

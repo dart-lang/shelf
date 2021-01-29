@@ -28,17 +28,17 @@ class WebSocketHandler {
   Response handle(Request request) {
     if (request.method != 'GET') return _notFound();
 
-    var connection = request.headers['Connection'];
+    final connection = request.headers['Connection'];
     if (connection == null) return _notFound();
-    var tokens =
+    final tokens =
         connection.toLowerCase().split(',').map((token) => token.trim());
     if (!tokens.contains('upgrade')) return _notFound();
 
-    var upgrade = request.headers['Upgrade'];
+    final upgrade = request.headers['Upgrade'];
     if (upgrade == null) return _notFound();
     if (upgrade.toLowerCase() != 'websocket') return _notFound();
 
-    var version = request.headers['Sec-WebSocket-Version'];
+    final version = request.headers['Sec-WebSocket-Version'];
     if (version == null) {
       return _badRequest('missing Sec-WebSocket-Version header.');
     } else if (version != '13') {
@@ -50,7 +50,7 @@ class WebSocketHandler {
           '"${request.protocolVersion}".');
     }
 
-    var key = request.headers['Sec-WebSocket-Key'];
+    final key = request.headers['Sec-WebSocket-Key'];
     if (key == null) return _badRequest('missing Sec-WebSocket-Key header.');
 
     if (!request.canHijack) {
@@ -61,20 +61,20 @@ class WebSocketHandler {
     // The Origin header is always set by browser connections. By filtering out
     // unexpected origins, we ensure that malicious JavaScript is unable to fake
     // a WebSocket handshake.
-    var origin = request.headers['Origin'];
+    final origin = request.headers['Origin'];
     if (origin != null &&
         _allowedOrigins != null &&
         !_allowedOrigins.contains(origin.toLowerCase())) {
       return _forbidden('invalid origin "$origin".');
     }
 
-    var protocol = _chooseProtocol(request);
+    final protocol = _chooseProtocol(request);
     request.hijack((channel) {
-      var sink = utf8.encoder.startChunkedConversion(channel.sink);
-      sink.add('HTTP/1.1 101 Switching Protocols\r\n'
-          'Upgrade: websocket\r\n'
-          'Connection: Upgrade\r\n'
-          'Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n');
+      final sink = utf8.encoder.startChunkedConversion(channel.sink)
+        ..add('HTTP/1.1 101 Switching Protocols\r\n'
+            'Upgrade: websocket\r\n'
+            'Connection: Upgrade\r\n'
+            'Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n');
       if (protocol != null) sink.add('Sec-WebSocket-Protocol: $protocol\r\n');
       sink.add('\r\n');
 
@@ -92,7 +92,7 @@ class WebSocketHandler {
   ///
   /// If no matching protocol can be found, returns `null`.
   String _chooseProtocol(Request request) {
-    var requestProtocols = request.headers['Sec-WebSocket-Protocol'];
+    final requestProtocols = request.headers['Sec-WebSocket-Protocol'];
     if (requestProtocols == null) return null;
     if (_protocols == null) return null;
     for (var requestProtocol in requestProtocols.split(',')) {

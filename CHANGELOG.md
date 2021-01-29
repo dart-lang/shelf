@@ -1,5 +1,7 @@
-## 0.2.4-dev
+## 0.2.4
 
+* Support the latest shelf release (`1.x.x`).
+* Require at least Dart 2.1
 * Allow omitting `protocols` argument even if the `onConnection` callback takes
   a second argument.
 
