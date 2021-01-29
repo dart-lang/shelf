@@ -1,3 +1,7 @@
+## 2.0.1
+
+- Allow the latest (null-safe) version of `pkg:shelf`.
+
 ## 2.0.0
 
 ### Breaking changes
