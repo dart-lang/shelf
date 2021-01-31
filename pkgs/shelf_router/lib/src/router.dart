@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:meta/meta.dart' show sealed;
-import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
-import 'package:shelf/shelf.dart';
 import 'package:http_methods/http_methods.dart';
+import 'package:meta/meta.dart' show sealed;
+import 'package:shelf/shelf.dart';
+import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 
 /// Get a URL parameter captured by the [Router].
 String params(Request request, String name) {
@@ -26,7 +26,7 @@ String params(Request request, String name) {
   if (!(p is Map<String, String>)) {
     throw Exception('no such parameter $name');
   }
-  final value = (p as Map<String, String>)[name];
+  final value = (p)[name];
   if (value == null) {
     throw Exception('no such parameter $name');
   }
@@ -35,9 +35,6 @@ String params(Request request, String name) {
 
 /// Middleware to remove body from request.
 final _removeBody = createMiddleware(responseHandler: (r) {
-  if (r == null) {
-    return null;
-  }
   if (r.headers.containsKey('content-length')) {
     r = r.change(headers: {'content-length': '0'});
   }
@@ -149,13 +146,10 @@ class Router {
       }
       var params = route.match('/' + request.url.path);
       if (params != null) {
-        var res = await route.invoke(request, params);
-        if (res != null) {
-          return res;
-        }
+        return await route.invoke(request, params);
       }
     }
-    return null;
+    return Response.notFound('Not Found');
   }
 
   // Handlers for all methods

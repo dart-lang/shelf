@@ -13,20 +13,18 @@
 // limitations under the License.
 
 @TestOn('vm')
-
 import 'dart:async';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
-import 'package:test/test.dart';
-
 import 'package:shelf_router/shelf_router.dart';
+import 'package:test/test.dart';
 
 void main() {
   // Create a server that listens on localhost for testing
-  io.IOServer server;
+  late io.IOServer server;
 
   setUp(() async {
     try {
@@ -38,9 +36,10 @@ void main() {
 
   tearDown(() => server.close());
 
-  Future<String> get(String path) => http.read(server.url.toString() + path);
+  Future<String> get(String path) =>
+      http.read(Uri.parse(server.url.toString() + path));
   Future<int> head(String path) async =>
-      (await http.head(server.url.toString() + path)).statusCode;
+      (await http.head(Uri.parse(server.url.toString() + path))).statusCode;
 
   test('get sync/async handler', () async {
     var app = Router();

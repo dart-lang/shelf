@@ -21,7 +21,7 @@ bool _isNoCapture(String regexp) {
 
   // Construct a new regular expression matching anything containing regexp,
   // then match with empty-string and count number of groups.
-  return RegExp('^(?:$regexp)|.*\$').firstMatch('').groupCount == 0;
+  return RegExp('^(?:$regexp)|.*\$').firstMatch('')!.groupCount == 0;
 }
 
 /// Entry in the router.
@@ -38,7 +38,7 @@ class RouterEntry {
   /// Expression that the request path must match.
   ///
   /// This also captures any parameters in the route pattern.
-  RegExp _routePattern;
+  late RegExp _routePattern;
 
   /// Names for the parameters in the route pattern.
   final List<String> _params = [];
@@ -50,7 +50,7 @@ class RouterEntry {
     this.verb,
     this.route,
     this._handler, {
-    Middleware middleware,
+    Middleware? middleware,
   }) : _middleware = middleware ?? ((Handler fn) => fn) {
     ArgumentError.checkNotNull(verb, 'verb');
     ArgumentError.checkNotNull(route, 'route');
@@ -65,10 +65,10 @@ class RouterEntry {
 
     var pattern = '';
     for (var m in _parser.allMatches(route)) {
-      pattern += RegExp.escape(m[1]);
+      pattern += RegExp.escape(m[1]!);
       if (m[2] != null) {
-        _params.add(m[2]);
-        if (m[3] != null && !_isNoCapture(m[3])) {
+        _params.add(m[2]!);
+        if (m[3] != null && !_isNoCapture(m[3]!)) {
           throw ArgumentError.value(
               route, 'route', 'expression for "${m[2]}" is capturing');
         }
@@ -80,7 +80,7 @@ class RouterEntry {
 
   /// Returns a map from parameter name to value, if the path matches the
   /// route pattern. Otherwise returns null.
-  Map<String, String> match(String path) {
+  Map<String, String>? match(String path) {
     // Check if path matches the route pattern
     var m = _routePattern.firstMatch(path);
     if (m == null) {
@@ -90,7 +90,7 @@ class RouterEntry {
     var params = <String, String>{};
     for (var i = 0; i < _params.length; i++) {
       // first group is always the full match, we ignore this group.
-      params[_params[i]] = m[i + 1];
+      params[_params[i]] = m[i + 1]!;
     }
     return params;
   }

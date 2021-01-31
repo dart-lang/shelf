@@ -67,7 +67,7 @@ void main() {
   ]);
 
   test('non-capture regex only', () {
-    expect(() => RouterEntry('GET', '/users/<user|([^]*)>/info', null),
+    expect(() => RouterEntry('GET', '/users/<user|([^]*)>/info', () {}),
         throwsA(anything));
   });
 }
