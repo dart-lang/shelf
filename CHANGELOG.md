@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Stable null safety release.
+
 ## 1.0.0-nullsafety.0
 
 * Update to support Dart null-safety.
