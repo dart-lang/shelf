@@ -41,13 +41,13 @@ class RouterEntry {
   final RegExp _routePattern;
 
   /// Names for the parameters in the route pattern.
-  final List<String> _params = [];
+  final List<String> _params;
 
   /// List of parameter names in the route pattern.
   List<String> get params => _params.toList(); // exposed for using generator.
 
   RouterEntry._(this.verb, this.route, this._handler, this._middleware,
-      this._routePattern);
+      this._routePattern, this._params);
 
   factory RouterEntry(
     String verb,
@@ -80,7 +80,8 @@ class RouterEntry {
     }
     final routePattern = RegExp('^$pattern\$');
 
-    return RouterEntry._(verb, route, handler, middleware, routePattern);
+    return RouterEntry._(
+        verb, route, handler, middleware, routePattern, params);
   }
 
   /// Returns a map from parameter name to value, if the path matches the
