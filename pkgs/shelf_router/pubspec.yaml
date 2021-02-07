@@ -7,13 +7,16 @@ homepage: https://github.com/google/dart-neats/tree/master/shelf_router
 repository: https://github.com/google/dart-neats.git
 issue_tracker: https://github.com/google/dart-neats/labels/pkg:shelf_router
 dependencies:
-  meta: ^1.3.0-nullsafety
-  shelf: ^1.0.0-nullsafety
-  http_methods: #^1.0.0
-    path: ../http_methods
+  meta: ^1.3.0
+  shelf: ^1.0.0
+  http_methods: ^1.1.0
 dev_dependencies:
-  test: ^1.16.0-nullsafety
-  pedantic: ^1.10.0-nullsafety
-  http: ^0.13.0-nullsafety
+  test: ^1.16.0
+  pedantic: ^1.10.0
+  http: ^0.13.0
+dependency_overrides:
+  # Temporarily required until version 1.1.0 of http_methods is published.
+  http_methods:
+    path: ../http_methods
 environment:
   sdk: '>=2.12.0-0 <3.0.0'

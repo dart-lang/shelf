@@ -1,3 +1,7 @@
+## v0.8.0-nullsafety.0
+
+ * Migrate package to null-safety
+
 ## v0.7.4
 
  * Update `Router.mount` parameter to accept a `Handler`.
