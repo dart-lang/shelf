@@ -38,7 +38,7 @@ class RouterEntry {
   /// Expression that the request path must match.
   ///
   /// This also captures any parameters in the route pattern.
-  late RegExp _routePattern;
+  final RegExp _routePattern;
 
   /// Names for the parameters in the route pattern.
   final List<String> _params = [];
@@ -46,28 +46,31 @@ class RouterEntry {
   /// List of parameter names in the route pattern.
   List<String> get params => _params.toList(); // exposed for using generator.
 
-  RouterEntry(
-    this.verb,
-    this.route,
-    this._handler, {
+  RouterEntry._(this.verb, this.route, this._handler, this._middleware,
+      this._routePattern);
+
+  factory RouterEntry(
+    String verb,
+    String route,
+    Function handler, {
     Middleware? middleware,
-  }) : _middleware = middleware ?? ((Handler fn) => fn) {
+  }) {
+    middleware = middleware ?? ((Handler fn) => fn);
+
     ArgumentError.checkNotNull(verb, 'verb');
     ArgumentError.checkNotNull(route, 'route');
-    ArgumentError.checkNotNull(_handler, 'handler');
+    ArgumentError.checkNotNull(handler, 'handler');
     if (!route.startsWith('/')) {
       throw ArgumentError.value(
           route, 'route', 'expected route to start with a slash');
     }
-    if (!(_handler is Function)) {
-      throw ArgumentError.value(_handler, 'handler', 'expected a function');
-    }
 
+    final params = <String>[];
     var pattern = '';
     for (var m in _parser.allMatches(route)) {
       pattern += RegExp.escape(m[1]!);
       if (m[2] != null) {
-        _params.add(m[2]!);
+        params.add(m[2]!);
         if (m[3] != null && !_isNoCapture(m[3]!)) {
           throw ArgumentError.value(
               route, 'route', 'expression for "${m[2]}" is capturing');
@@ -75,7 +78,9 @@ class RouterEntry {
         pattern += '(${m[3] ?? r'[^/]+'})';
       }
     }
-    _routePattern = RegExp('^$pattern\$');
+    final routePattern = RegExp('^$pattern\$');
+
+    return RouterEntry._(verb, route, handler, middleware, routePattern);
   }
 
   /// Returns a map from parameter name to value, if the path matches the
