@@ -147,4 +147,22 @@ void main() {
     expect(await get('/api/hello'), 'Hello');
     expect(await get('/api/hello?ok'), 'middleware');
   });
+
+  test('responds with 404 if no handler matches', () {
+    var api = Router()..get('/hello', (request) => Response.ok('Hello'));
+    server.mount(api);
+
+    expect(
+        get('/hi'),
+        throwsA(isA<http.ClientException>()
+            .having((e) => e.message, 'message', contains('404: Not Found.'))));
+  });
+
+  test('can invoke custom handler if no route matches', () {
+    var api = Router(notFoundHandler: (req) => Response.ok('Not found, but ok'))
+      ..get('/hello', (request) => Response.ok('Hello'));
+    server.mount(api);
+
+    expect(get('/hi'), completion('Not found, but ok'));
+  });
 }

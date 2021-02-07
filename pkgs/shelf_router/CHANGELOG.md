@@ -1,6 +1,10 @@
 ## v0.8.0-nullsafety.0
 
  * Migrate package to null-safety
+ * Since handlers are not allowed to return `null` in `shelf` 1.0.0, a router
+   will return a default 404 response instead.
+   This behavior can be overridden with the `notFoundHandler` constructor
+   parameter.
 
 ## v0.7.4
 

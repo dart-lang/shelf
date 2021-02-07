@@ -26,7 +26,7 @@ String params(Request request, String name) {
   if (!(p is Map<String, String>)) {
     throw Exception('no such parameter $name');
   }
-  final value = (p)[name];
+  final value = p[name];
   if (value == null) {
     throw Exception('no such parameter $name');
   }
@@ -78,13 +78,21 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 /// ```
 ///
 /// If multiple routes match the same request, the handler for the first
-/// route is called. If the handler returns `null` the next matching handler
-/// will be attempted.
-///
-///
+/// route is called.
+/// If no route matches a request, a [Response.notFound] will be returned
+/// instead. The default matcher can be overridden with the `notFoundHandler`
+/// constructor parameter.
 @sealed
 class Router {
   final List<RouterEntry> _routes = [];
+  final Handler _notFoundHandler;
+
+  /// Creates a new [Router] routing requests to handlers.
+  ///
+  /// The [notFoundHandler] will be invoked for requests where no matching route
+  /// was found. By default, a simple [Response.notFound] will be used instead.
+  Router({Handler notFoundHandler = _defaultNotFound})
+      : _notFoundHandler = notFoundHandler;
 
   /// Add [handler] for [verb] requests to [route].
   ///
@@ -149,7 +157,7 @@ class Router {
         return await route.invoke(request, params);
       }
     }
-    return Response.notFound('Not Found');
+    return _notFoundHandler(request);
   }
 
   // Handlers for all methods
@@ -185,4 +193,8 @@ class Router {
 
   /// Handle `PATCH` request to [route] using [handler].
   void patch(String route, Function handler) => add('PATCH', route, handler);
+
+  static Response _defaultNotFound(Request request) {
+    return Response.notFound('Not Found');
+  }
 }
