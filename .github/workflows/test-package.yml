@@ -19,8 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # TODO: beta -> 2.12.0 once it's released
-        sdk: [beta, dev]
+        sdk: [dev]
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v0.5
