@@ -1,3 +1,7 @@
+## 0.2.4+1
+
+* Support the latest `package:web_socket_channel`.
+
 ## 0.2.4
 
 * Support the latest shelf release (`1.x.x`).
