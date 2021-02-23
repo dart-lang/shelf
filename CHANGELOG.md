@@ -1,6 +1,10 @@
+## 1.0.0-dev
+
+* Migrate to null safety.
+
 ## 0.2.9+2
 
-- Change version constraint for the `shelf` dependency, so it accepts null-safe versions.
+* Change version constraint for the `shelf` dependency, so it accepts null-safe versions.
 
 ## 0.2.9+1
 

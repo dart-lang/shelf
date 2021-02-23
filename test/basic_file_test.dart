@@ -153,7 +153,7 @@ void main() {
       final rootPath = p.join(d.sandbox, 'root.txt');
 
       final response1 = await makeRequest(handler, '/root.txt');
-      final originalModificationDate = response1.lastModified;
+      final originalModificationDate = response1.lastModified!;
 
       // Ensure the timestamp change is > 1s.
       await Future<void>.delayed(const Duration(seconds: 2));
@@ -167,7 +167,7 @@ void main() {
       final response2 =
           await makeRequest(handler, '/root.txt', headers: headers);
       expect(response2.statusCode, HttpStatus.ok);
-      expect(response2.lastModified.millisecondsSinceEpoch,
+      expect(response2.lastModified!.millisecondsSinceEpoch,
           greaterThan(originalModificationDate.millisecondsSinceEpoch));
     });
   });

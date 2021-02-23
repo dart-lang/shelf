@@ -23,8 +23,7 @@ void main(List<String> args) {
     logging = result['logging'] as bool;
     listDirectories = result['list-directories'] as bool;
   } on FormatException catch (e) {
-    stderr.writeln(e.message);
-    stderr.writeln(parser.usage);
+    stderr..writeln(e.message)..writeln(parser.usage);
     // http://linux.die.net/include/sysexits.h
     // #define EX_USAGE	64	/* command line usage error */
     exit(64);
@@ -40,7 +39,7 @@ void main(List<String> args) {
     pipeline = pipeline.addMiddleware(shelf.logRequests());
   }
 
-  var defaultDoc = _defaultDoc;
+  String? defaultDoc = _defaultDoc;
   if (listDirectories) {
     defaultDoc = null;
   }
