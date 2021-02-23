@@ -9,7 +9,7 @@ import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:test/test.dart';
 
 void main() {
-  String dir;
+  late String dir;
   setUp(() {
     dir =
         Directory.systemTemp.createTempSync('shelf_packages_handler_test').path;
@@ -37,7 +37,7 @@ void main() {
     });
 
     group('with a package map', () {
-      Handler handler;
+      late Handler handler;
 
       setUp(() {
         handler = packagesHandler(packageMap: {

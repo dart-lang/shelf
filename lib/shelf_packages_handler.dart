@@ -19,7 +19,7 @@ import 'src/package_config_handler.dart';
 /// `package:` uris for that package.
 ///
 /// This can only serve assets from `file:` URIs.
-Handler packagesHandler({Map<String, Uri> packageMap}) =>
+Handler packagesHandler({Map<String, Uri>? packageMap}) =>
     PackageConfigHandler(packageMap: packageMap).handleRequest;
 
 /// A handler that serves virtual `packages/` directories wherever they're
@@ -30,5 +30,5 @@ Handler packagesHandler({Map<String, Uri> packageMap}) =>
 ///
 /// This is useful for ensuring that `package:` imports work for all entrypoints
 /// in Dartium.
-Handler packagesDirHandler({Map<String, Uri> packageMap}) =>
+Handler packagesDirHandler({Map<String, Uri>? packageMap}) =>
     DirHandler('packages', packagesHandler(packageMap: packageMap));

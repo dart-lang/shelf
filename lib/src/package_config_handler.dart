@@ -18,9 +18,9 @@ class PackageConfigHandler {
 
   /// Optional, a map of package names to base uri for resolving `package:`
   /// uris for that package.
-  final Map<String, Uri> _packageMap;
+  final Map<String, Uri>? _packageMap;
 
-  PackageConfigHandler({Map<String, Uri> packageMap})
+  PackageConfigHandler({Map<String, Uri>? packageMap})
       : _packageMap = packageMap;
 
   /// The callback for handling a single request.
@@ -34,9 +34,9 @@ class PackageConfigHandler {
   /// [_packageMap] or the current isolate resolver.
   Future<Handler> _handlerFor(String packageName) =>
       _packageHandlers.putIfAbsent(packageName, () async {
-        Uri packageUri;
+        Uri? packageUri;
         if (_packageMap != null) {
-          packageUri = _packageMap[packageName];
+          packageUri = _packageMap![packageName];
         } else {
           final fakeResolvedUri = await Isolate.resolvePackageUri(
               Uri(scheme: 'package', path: '$packageName/'));

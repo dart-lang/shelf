@@ -1,6 +1,10 @@
+## 3.0.0-dev
+
+* Migrate to null safety.
+
 ## 2.0.1
 
-- Allow the latest (null-safe) version of `pkg:shelf`.
+* Allow the latest (null-safe) version of `pkg:shelf`.
 
 ## 2.0.0
 
@@ -17,17 +21,17 @@
 
 ## 1.0.3
 
-- Require Dart SDK 1.22.0
-- Support `package:async` v2
+* Require Dart SDK 1.22.0
+* Support `package:async` v2
 
 ## 1.0.2
 
-- Fix Strong mode errors with `package:shelf` v0.7.x
+* Fix Strong mode errors with `package:shelf` v0.7.x
 
 ## 1.0.1
 
-- Allow dependencies on `package:shelf` v0.7.x
+* Allow dependencies on `package:shelf` v0.7.x
 
 ## 0.0.1
 
-- Initial version
+* Initial version
