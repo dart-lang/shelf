@@ -100,8 +100,8 @@ void main() {
   });
 
   group('with a set of allowed origins', () {
-    HttpServer server;
-    Uri url;
+    late HttpServer server;
+    late Uri url;
     setUp(() async {
       server = await shelf_io.serve(
           webSocketHandler((webSocket) {
@@ -157,8 +157,8 @@ void main() {
   });
 
   group('HTTP errors', () {
-    HttpServer server;
-    Uri url;
+    late HttpServer server;
+    late Uri url;
     setUp(() async {
       server = await shelf_io.serve(webSocketHandler((_) {
         fail('should not create a WebSocket');
@@ -201,7 +201,7 @@ void main() {
   });
 }
 
-Matcher hasStatus(int status) => completion(predicate((response) {
+Matcher hasStatus(int status) => completion(predicate((http.Response response) {
       expect(response, isA<http.Response>());
       expect(response.statusCode, equals(status));
       return true;

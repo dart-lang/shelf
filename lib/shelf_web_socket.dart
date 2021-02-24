@@ -7,7 +7,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'src/web_socket_handler.dart';
 
-
 /// Creates a Shelf handler that upgrades HTTP requests to WebSocket
 /// connections.
 ///
@@ -41,9 +40,9 @@ import 'src/web_socket_handler.dart';
 /// channel instance, enabling round-trip disconnect detection.
 /// See [WebSocketChannel] for more details.
 Handler webSocketHandler(Function onConnection,
-    {Iterable<String> protocols,
-    Iterable<String> allowedOrigins,
-    Duration pingInterval}) {
+    {Iterable<String>? protocols,
+    Iterable<String>? allowedOrigins,
+    Duration? pingInterval}) {
   if (onConnection is! void Function(Null, Null)) {
     final innerOnConnection = onConnection;
     onConnection = (webSocket, _) => innerOnConnection(webSocket);
@@ -52,7 +51,7 @@ Handler webSocketHandler(Function onConnection,
   return WebSocketHandler(
     onConnection,
     protocols?.toSet(),
-    allowedOrigins?.map((origin) => origin.toLowerCase())?.toSet(),
+    allowedOrigins?.map((origin) => origin.toLowerCase()).toSet(),
     pingInterval,
   ).handle;
 }

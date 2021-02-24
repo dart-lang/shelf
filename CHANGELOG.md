@@ -1,3 +1,7 @@
+## 1.0.0-dev
+
+* Migrate to null safety.
+
 ## 0.2.4+1
 
 * Support the latest `package:web_socket_channel`.
