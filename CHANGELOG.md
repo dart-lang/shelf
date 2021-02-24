@@ -1,3 +1,9 @@
+## 1.1.0-dev
+
+* Change `Request.hijack` return type from `void` to `Never`. This may cause
+  analysis hints in packages using this method, but is not actually breaking
+  for apps.
+
 ## 1.0.0
 
 * Stable null safety release.
