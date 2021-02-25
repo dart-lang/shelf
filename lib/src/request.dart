@@ -275,7 +275,7 @@ class Request extends Message {
   /// hijacking, such as the `dart:io` adapter. In addition, a given request may
   /// only be hijacked once. [canHijack] can be used to detect whether this
   /// request can be hijacked.
-  void hijack(void Function(StreamChannel<List<int>>) callback) {
+  Never hijack(void Function(StreamChannel<List<int>>) callback) {
     if (_onHijack == null) {
       throw StateError("This request can't be hijacked.");
     }
