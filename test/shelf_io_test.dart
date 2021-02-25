@@ -232,7 +232,6 @@ void main() {
             .codeUnits);
         channel.sink.close();
       }));
-      return Response.internalServerError();
     });
 
     var response = await _post(body: 'Hello');
