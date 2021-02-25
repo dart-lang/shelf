@@ -10,7 +10,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('invokes the handler(s)', () {
-    ShelfTestHandler handler;
+    late ShelfTestHandler handler;
     setUp(() {
       handler = ShelfTestHandler();
     });
@@ -96,14 +96,6 @@ void main() {
             expectAsync1((_) {
               fail('should never get here');
             }, count: 0));
-        await handler(_get('/'));
-      });
-    });
-
-    test('if the handler returns null', () {
-      _expectZoneFailure(() async {
-        var handler = ShelfTestHandler();
-        handler.expect('GET', '/', (_) => null);
         await handler(_get('/'));
       });
     });

@@ -32,7 +32,7 @@ class ShelfTestServer {
   /// The [description] is used in debugging output for this handler. It
   /// defaults to "ShelfTestHandler".
   static Future<ShelfTestServer> create(
-      {bool log = true, String description}) async {
+      {bool log = true, String? description}) async {
     var server = await HttpMultiServer.loopback(0);
     var handler = ShelfTestHandler(log: log, description: description);
     serveRequests(server, handler);

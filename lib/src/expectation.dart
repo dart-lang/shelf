@@ -7,10 +7,10 @@ import 'package:shelf/shelf.dart';
 /// A single expectation for an HTTP request sent to a [ShelfTestHandler].
 class Expectation {
   /// The expected request method, or [null] if this allows any requests.
-  final String method;
+  final String? method;
 
   /// The expected request path, or [null] if this allows any requests.
-  final String path;
+  final String? path;
 
   /// The handler to use for requests that match this expectation.
   final Handler handler;

@@ -1,6 +1,6 @@
-## 1.0.4-dev
+## 2.0.0-dev
 
-* Updated the minimum support Dart SDK to `2.8.4`.
+* Migration to null safety.
 
 ## 1.0.3
 

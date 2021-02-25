@@ -32,7 +32,7 @@ class ShelfTestHandler {
   ///
   /// The [description] is used in debugging output for this handler. It
   /// defaults to "ShelfTestHandler".
-  ShelfTestHandler({bool log = true, String description})
+  ShelfTestHandler({bool log = true, String? description})
       : _log = log,
         description = description ?? 'ShelfTestHandler',
         _zone = Zone.current;
@@ -83,15 +83,13 @@ class ShelfTestHandler {
         throw TestFailure(message);
       }
 
-      var response = await expectation.handler(request);
-      if (response != null) return response;
-
-      throw TestFailure('$description handler returned null for $requestInfo.');
+      return await expectation.handler(request);
     } on HijackException catch (_) {
       rethrow;
     } catch (error, stackTrace) {
       _zone.handleUncaughtError(error, stackTrace);
-      return null;
+      // We can't return null here, the handler type doesn't allow it.
+      return Response.internalServerError(body: '$error');
     }
   }
 }
