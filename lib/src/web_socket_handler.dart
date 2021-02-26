@@ -81,11 +81,6 @@ class WebSocketHandler {
       _onConnection(
           WebSocketChannel(channel, pingInterval: _pingInterval), protocol);
     });
-
-    // [request.hijack] is guaranteed to throw a [HijackException], so we'll
-    // never get here.
-    assert(false);
-    throw StateError('unreachable');
   }
 
   /// Selects a subprotocol to use for the given connection.

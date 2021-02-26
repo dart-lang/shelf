@@ -1,3 +1,7 @@
+## 1.0.1-dev
+
+* Require the latest shelf, remove dead code.
+
 ## 1.0.0
 
 * Migrate to null safety.
