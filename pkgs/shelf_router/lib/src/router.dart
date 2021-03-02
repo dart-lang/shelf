@@ -19,9 +19,6 @@ import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 
 /// Get a URL parameter captured by the [Router].
 String params(Request request, String name) {
-  ArgumentError.checkNotNull(request, 'request');
-  ArgumentError.checkNotNull(name, 'name');
-
   final p = request.context['shelf_router/params'];
   if (!(p is Map<String, String>)) {
     throw Exception('no such parameter $name');
@@ -101,7 +98,6 @@ class Router {
   /// `HEAD` is always wrong. To explicitely implement a `HEAD` handler it must
   /// be registered before the `GET` handler.
   void add(String verb, String route, Function handler) {
-    ArgumentError.checkNotNull(verb, 'verb');
     if (!isHttpMethod(verb)) {
       throw ArgumentError.value(verb, 'verb', 'expected a valid HTTP method');
     }
@@ -124,8 +120,6 @@ class Router {
   ///
   /// In this case prefix may not contain any parameters, nor
   void mount(String prefix, Handler handler) {
-    ArgumentError.checkNotNull(prefix, 'prefix');
-    ArgumentError.checkNotNull(handler, 'handler');
     if (!prefix.startsWith('/') || !prefix.endsWith('/')) {
       throw ArgumentError.value(
           prefix, 'prefix', 'must start and end with a slash');

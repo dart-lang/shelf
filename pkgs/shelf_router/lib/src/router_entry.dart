@@ -17,8 +17,6 @@ import 'package:shelf/shelf.dart';
 
 /// Check if the [regexp] is non-capturing.
 bool _isNoCapture(String regexp) {
-  ArgumentError.checkNotNull(regexp, 'regexp');
-
   // Construct a new regular expression matching anything containing regexp,
   // then match with empty-string and count number of groups.
   return RegExp('^(?:$regexp)|.*\$').firstMatch('')!.groupCount == 0;
@@ -57,9 +55,6 @@ class RouterEntry {
   }) {
     middleware = middleware ?? ((Handler fn) => fn);
 
-    ArgumentError.checkNotNull(verb, 'verb');
-    ArgumentError.checkNotNull(route, 'route');
-    ArgumentError.checkNotNull(handler, 'handler');
     if (!route.startsWith('/')) {
       throw ArgumentError.value(
           route, 'route', 'expected route to start with a slash');
