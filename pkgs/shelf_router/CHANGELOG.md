@@ -5,6 +5,8 @@
    will return a default 404 response instead.
    This behavior can be overridden with the `notFoundHandler` constructor
    parameter.
+ * __Breaking__: Remove deprecated `Router.handler` getter.
+   The router itself is a handler.
 
 ## v0.7.4
 
