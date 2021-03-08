@@ -1,4 +1,4 @@
-## v0.8.0-nullsafety.0
+## v1.0.0
 
  * Migrate package to null-safety
  * Since handlers are not allowed to return `null` in `shelf` 1.0.0, a router

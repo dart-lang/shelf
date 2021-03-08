@@ -1,5 +1,5 @@
 name: shelf_router
-version: 0.8.0-nullsafety.0
+version: 1.0.0
 description: |
   A convinent request router for the shelf web-framework, with support for
   URL-parameters, nested routers and routers generated from source annotations.
@@ -14,9 +14,5 @@ dev_dependencies:
   test: ^1.16.0
   pedantic: ^1.10.0
   http: ^0.13.0
-dependency_overrides:
-  # Temporarily required until version 1.1.0 of http_methods is published.
-  http_methods:
-    path: ../http_methods
 environment:
   sdk: '>=2.12.0-0 <3.0.0'
