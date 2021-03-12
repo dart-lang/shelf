@@ -20,21 +20,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sdk: [dev]
+        sdk: [2.12.0, dev]
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v0.3
+      - uses: dart-lang/setup-dart@v1.0
         with:
           sdk: ${{ matrix.sdk }}
       - id: install
-        name: Install dependencies
         run: dart pub get
-      - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed .
-        if: always() && steps.install.outcome == 'success'
-      - name: Analyze code
-        run: dart analyze --fatal-infos
-        if: always() && steps.install.outcome == 'success'
+      - run: dart format --output=none --set-exit-if-changed .
+        if: matrix.sdk == 'dev' && steps.install.outcome == 'success'
+      - run: dart analyze --fatal-infos
+        if: matrix.sdk == 'dev' && steps.install.outcome == 'success'
+      - run: dart analyze
+        if: matrix.sdk != 'dev' && steps.install.output == 'success'
 
   # Run tests on a matrix consisting of two dimensions:
   # 1. OS: ubuntu-latest, (macos-latest, windows-latest)
@@ -47,39 +46,13 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        sdk: [dev]
+        sdk: [2.12.0, dev]
     steps:
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v0.3
+      - uses: dart-lang/setup-dart@v1.0
         with:
           sdk: ${{ matrix.sdk }}
       - id: install
-        name: Install dependencies
         run: dart pub get
-      - name: Run VM tests
-        run: dart test --platform vm
-        if: always() && steps.install.outcome == 'success'
-
-  # Run tests on a matrix consisting of two dimensions:
-  # 1. OS: ubuntu-latest, (macos-latest, windows-latest)
-  # 2. release channel: 2.0.0
-  test-legacy-sdk:
-    needs: analyze
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        # Add macos-latest and/or windows-latest if relevant for this package.
-        os: [ubuntu-latest]
-        sdk: [2.0.0]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v0.3
-        with:
-          sdk: ${{ matrix.sdk }}
-      - id: install
-        name: Install dependencies
-        run: pub get
-      - name: Run VM tests
-        run: pub run test --platform vm
+      - run: dart test
         if: always() && steps.install.outcome == 'success'
