@@ -1,4 +1,4 @@
-## 1.1.0-dev
+## 1.1.0
 
 * Change `Request.hijack` return type from `void` to `Never`. This may cause
   analysis hints in packages using this method, but is not actually breaking
