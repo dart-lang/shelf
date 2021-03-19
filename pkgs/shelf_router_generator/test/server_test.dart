@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:test/test.dart';
-import 'package:meta/meta.dart';
+// @dart=2.12
+
 import 'package:http/http.dart' as http;
+import 'package:test/test.dart';
+
 import 'server/server.dart';
 
 void main() {
@@ -23,11 +25,11 @@ void main() {
   tearDownAll(() => server.stop());
 
   void testGet({
-    @required String path,
-    @required String result,
+    required String path,
+    required String result,
   }) =>
       test('GET $path', () async {
-        final result = await http.read(server.uri.resolve(path));
+        final result = await http.get(server.uri.resolve(path));
         expect(result, equals(result));
       });
 

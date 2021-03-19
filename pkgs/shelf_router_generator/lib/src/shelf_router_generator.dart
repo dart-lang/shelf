@@ -44,10 +44,10 @@ class _Handler {
 /// Find members of a class annotated with [shelf_router.Route].
 List<ExecutableElement> getAnnotatedElementsOrderBySourceOffset(
     ClassElement cls) {
-  return <ExecutableElement>[]
-    ..addAll(cls.methods.where(_routeType.hasAnnotationOfExact))
-    ..addAll(cls.accessors.where(_routeType.hasAnnotationOfExact))
-    ..sort((a, b) => (a.nameOffset ?? -1).compareTo(b.nameOffset ?? -1));
+  return <ExecutableElement>[
+    ...cls.methods.where(_routeType.hasAnnotationOfExact),
+    ...cls.accessors.where(_routeType.hasAnnotationOfExact)
+  ]..sort((a, b) => (a.nameOffset ?? -1).compareTo(b.nameOffset ?? -1));
 }
 
 /// Generate a `_$<className>Router(<className> service)` method that returns a

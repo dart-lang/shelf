@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.12
+
 import 'dart:async' show Future;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf/shelf.dart';
@@ -55,7 +57,7 @@ class Service {
 
   // The generated function _$ServiceRouter can be used to get a [Handler]
   // for this object. This can be used with [shelf_io.serve].
-  Handler get handler => _$ServiceRouter(this).handler;
+  Handler get handler => _$ServiceRouter(this);
 }
 
 class Api {

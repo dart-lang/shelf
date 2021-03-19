@@ -12,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// @dart=2.12
+
 import 'dart:async' show Future;
 import 'dart:io' show HttpServer;
+
 import 'package:shelf/shelf_io.dart' as shelf_io;
+
 import 'service.dart';
 
 class Server {
   final _service = Service();
-  HttpServer _server;
+  late HttpServer _server;
 
   Future<void> start() async {
-    _server = await shelf_io.serve(_service.router.handler, 'localhost', 0);
+    _server = await shelf_io.serve(_service.router, 'localhost', 0);
   }
 
   Future<void> stop() {
