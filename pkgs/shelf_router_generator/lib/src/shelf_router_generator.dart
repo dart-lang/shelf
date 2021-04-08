@@ -23,15 +23,17 @@ import 'package:http_methods/http_methods.dart' show isHttpMethod;
 import 'package:meta/meta.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
+
+// ignore: implementation_imports
 import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 import 'package:source_gen/source_gen.dart' as g;
 
 // Type checkers that we need later
-final _routeType = g.TypeChecker.fromRuntime(shelf_router.Route);
-final _routerType = g.TypeChecker.fromRuntime(shelf_router.Router);
-final _responseType = g.TypeChecker.fromRuntime(shelf.Response);
-final _requestType = g.TypeChecker.fromRuntime(shelf.Request);
-final _stringType = g.TypeChecker.fromRuntime(String);
+const _routeType = g.TypeChecker.fromRuntime(shelf_router.Route);
+const _routerType = g.TypeChecker.fromRuntime(shelf_router.Router);
+const _responseType = g.TypeChecker.fromRuntime(shelf.Response);
+const _requestType = g.TypeChecker.fromRuntime(shelf.Request);
+const _stringType = g.TypeChecker.fromRuntime(String);
 
 /// A representation of a handler that was annotated with [Route].
 class _Handler {
@@ -43,12 +45,11 @@ class _Handler {
 
 /// Find members of a class annotated with [shelf_router.Route].
 List<ExecutableElement> getAnnotatedElementsOrderBySourceOffset(
-    ClassElement cls) {
-  return <ExecutableElement>[
-    ...cls.methods.where(_routeType.hasAnnotationOfExact),
-    ...cls.accessors.where(_routeType.hasAnnotationOfExact)
-  ]..sort((a, b) => (a.nameOffset ?? -1).compareTo(b.nameOffset ?? -1));
-}
+        ClassElement cls) =>
+    <ExecutableElement>[
+      ...cls.methods.where(_routeType.hasAnnotationOfExact),
+      ...cls.accessors.where(_routeType.hasAnnotationOfExact)
+    ]..sort((a, b) => (a.nameOffset ?? -1).compareTo(b.nameOffset ?? -1));
 
 /// Generate a `_$<className>Router(<className> service)` method that returns a
 /// [shelf_router.Router] configured based on annotated handlers.
@@ -106,7 +107,7 @@ code.Code _buildAddHandlerCode({
 
 class ShelfRouterGenerator extends g.Generator {
   @override
-  Future<String> generate(g.LibraryReader library, BuildStep step) async {
+  Future<String> generate(g.LibraryReader library, BuildStep buildStep) async {
     // Create a map from ClassElement to list of annotated elements sorted by
     // offset in source code, this is not type checked yet.
     final classes = <ClassElement, List<_Handler>>{};
@@ -262,8 +263,8 @@ void _typeCheckHandler(_Handler h) {
   }
 }
 
-/// Type checks for the case where [shelf_router.Route.mount] is used to annotate
-/// a getter that returns a [shelf_router.Router].
+/// Type checks for the case where [shelf_router.Route.mount] is used to
+/// annotate a getter that returns a [shelf_router.Router].
 void _typeCheckMount(_Handler h) {
   if (h.element.isStatic) {
     throw g.InvalidGenerationSourceError(

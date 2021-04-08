@@ -22,19 +22,15 @@ part 'api.g.dart';
 
 class Api {
   @Route.get('/time')
-  Response _time(Request request) {
-    return Response.ok('it is about now');
-  }
+  Response _time(Request request) => Response.ok('it is about now');
 
   @Route.get('/to-uppercase/<word|.*>')
-  Future<Response> _toUpperCase(Request request, String word) async {
-    return Response.ok(word.toUpperCase());
-  }
+  Future<Response> _toUpperCase(Request request, String word) async =>
+      Response.ok(word.toUpperCase());
 
   @Route.get(r'/$string-escape')
-  Response _stringEscapingWorks(Request request) {
-    return Response.ok('Just testing string escaping');
-  }
+  Response _stringEscapingWorks(Request request) =>
+      Response.ok('Just testing string escaping');
 
   Router get router => _$ApiRouter(this);
 }

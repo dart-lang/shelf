@@ -29,9 +29,7 @@ class Server {
     _server = await shelf_io.serve(_service.router, 'localhost', 0);
   }
 
-  Future<void> stop() {
-    return _server.close();
-  }
+  Future<void> stop() => _server.close();
 
   Uri get uri => Uri(
         scheme: 'http',

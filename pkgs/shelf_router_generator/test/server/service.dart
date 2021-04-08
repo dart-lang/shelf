@@ -25,20 +25,17 @@ part 'service.g.dart';
 class Service {
   @Route.get('/say-hello')
   @Route.get('/say-hello/')
-  Response _sayHello(Request request) {
-    return Response.ok('hello world');
-  }
+  Response _sayHello(Request request) => Response.ok('hello world');
 
   @Route.get('/wave')
   FutureOr<Response> _wave(Request request) async {
-    await Future.delayed(Duration(milliseconds: 50));
+    await Future.delayed(const Duration(milliseconds: 50));
     return Response.ok('_o/');
   }
 
   @Route.get('/greet/<user>')
-  Future<Response> _greet(Request request, String user) async {
-    return Response.ok('Greetings, $user');
-  }
+  Future<Response> _greet(Request request, String user) async =>
+      Response.ok('Greetings, $user');
 
   @Route.get('/hi/<user>')
   Future<Response> _hi(Request request) async {
@@ -57,7 +54,6 @@ class Service {
 
 class UnrelatedThing {
   @EndPoint.put('/api/test')
-  Future<Response> unrelatedMethod(Request request) async {
-    return Response.ok('hello world');
-  }
+  Future<Response> unrelatedMethod(Request request) async =>
+      Response.ok('hello world');
 }

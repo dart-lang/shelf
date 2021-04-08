@@ -21,8 +21,8 @@ import 'server/server.dart';
 
 void main() {
   final server = Server();
-  setUpAll(() => server.start());
-  tearDownAll(() => server.stop());
+  setUpAll(server.start);
+  tearDownAll(server.stop);
 
   void testGet({
     required String path,
