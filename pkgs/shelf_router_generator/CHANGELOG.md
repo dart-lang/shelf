@@ -1,6 +1,7 @@
-## v1.0.0-dev
+## v1.0.0
 
  * Support update-to-date dependencies.
+ * Migrate implementation to null safety.
  * Generate null-safe code.
 
 ## v0.7.2+4

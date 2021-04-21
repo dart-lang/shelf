@@ -20,7 +20,6 @@ import 'package:analyzer/dart/element/type.dart' show ParameterizedType;
 import 'package:build/build.dart' show BuildStep, log;
 import 'package:code_builder/code_builder.dart' as code;
 import 'package:http_methods/http_methods.dart' show isHttpMethod;
-import 'package:meta/meta.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
 
@@ -49,13 +48,13 @@ List<ExecutableElement> getAnnotatedElementsOrderBySourceOffset(
     <ExecutableElement>[
       ...cls.methods.where(_routeType.hasAnnotationOfExact),
       ...cls.accessors.where(_routeType.hasAnnotationOfExact)
-    ]..sort((a, b) => (a.nameOffset ?? -1).compareTo(b.nameOffset ?? -1));
+    ]..sort((a, b) => (a.nameOffset).compareTo(b.nameOffset));
 
 /// Generate a `_$<className>Router(<className> service)` method that returns a
 /// [shelf_router.Router] configured based on annotated handlers.
 code.Method _buildRouterMethod({
-  @required ClassElement classElement,
-  @required List<_Handler> handlers,
+  required ClassElement classElement,
+  required List<_Handler> handlers,
 }) =>
     code.Method(
       (b) => b
@@ -81,9 +80,9 @@ code.Method _buildRouterMethod({
 
 /// Generate the code statement that adds [handler] from [service] to [router].
 code.Code _buildAddHandlerCode({
-  @required code.Reference router,
-  @required code.Reference service,
-  @required _Handler handler,
+  required code.Reference router,
+  required code.Reference service,
+  required _Handler handler,
 }) {
   switch (handler.verb) {
     case r'$mount':
@@ -107,7 +106,7 @@ code.Code _buildAddHandlerCode({
 
 class ShelfRouterGenerator extends g.Generator {
   @override
-  Future<String> generate(g.LibraryReader library, BuildStep buildStep) async {
+  Future<String?> generate(g.LibraryReader library, BuildStep buildStep) async {
     // Create a map from ClassElement to list of annotated elements sorted by
     // offset in source code, this is not type checked yet.
     final classes = <ClassElement, List<_Handler>>{};
@@ -120,8 +119,8 @@ class ShelfRouterGenerator extends g.Generator {
 
       classes[cls] = elements
           .map((e) => _routeType.annotationsOfExact(e).map((a) => _Handler(
-                a.getField('verb').toStringValue(),
-                a.getField('route').toStringValue(),
+                a.getField('verb')!.toStringValue()!,
+                a.getField('route')!.toStringValue()!,
                 e,
               )))
           .expand((i) => i)
