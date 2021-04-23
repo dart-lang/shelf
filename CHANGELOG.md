@@ -1,7 +1,6 @@
 ## 1.1.1
 
-* Avoid wraping response bodies that already contained `List<int>` in a `CastList`.
-  This will improve the performance of large response bodies
+* Avoid wraping response bodies that already contained `List<int>` or `Stream<List<int>>` in a `CastList`/`CastStream` to improve performance.
 
 ## 1.1.0
 
