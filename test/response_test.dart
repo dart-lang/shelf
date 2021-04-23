@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:shelf/shelf.dart' hide Request;
 import 'package:test/test.dart';
@@ -23,6 +24,14 @@ void main() {
       var response = Response.ok('hello, world');
       expect(response.read().toList(), completion(equals([helloWorldBytes])));
     });
+  });
+
+  test('supports a Uint8List body without copying', () async {
+    var bytes = Uint8List(10);
+    var response = Response.ok(bytes);
+
+    expect(response.contentLength, 10);
+    expect(identical(await response.read().first, bytes), true);
   });
 
   group('new Response.internalServerError without a body', () {

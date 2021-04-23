@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'dart:typed_data';
+
 /// The body of a request or response.
 ///
 /// This tracks whether the body has been read. It's separate from [Message]
@@ -52,6 +54,13 @@ class Body {
         contentLength = encoded.length;
         stream = Stream.fromIterable([encoded]);
       }
+    } else if (body is Uint8List) {
+      // Any data that is written to a Dart socket that is not a Uint8List or
+      // Int8List must be copied into a new list. Allow users to provide a
+      // typed data object to avoid this copy, which is important for performance
+      // of large file requests.
+      contentLength = body.length;
+      stream = Stream.fromIterable([body]);
     } else if (body is List) {
       contentLength = body.length;
       stream = Stream.fromIterable([body.cast()]);
