@@ -1,3 +1,9 @@
+## 1.1.1
+
+* Avoid wrapping response bodies that already contained `List<int>` or
+  `Stream<List<int>>` in a `CastList`/`CastStream` to improve
+  performance.
+
 ## 1.1.0
 
 * Change `Request.hijack` return type from `void` to `Never`. This may cause

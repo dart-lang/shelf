@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:shelf/shelf.dart' hide Request;
 import 'package:test/test.dart';
@@ -23,6 +24,38 @@ void main() {
       var response = Response.ok('hello, world');
       expect(response.read().toList(), completion(equals([helloWorldBytes])));
     });
+  });
+
+  test('supports a Uint8List body without copying', () async {
+    var bytes = Uint8List(10);
+    var response = Response.ok(bytes);
+
+    expect(response.contentLength, 10);
+    expect(await response.read().single, same(bytes));
+  });
+
+  test('supports a List<int> body without copying', () async {
+    var bytes = <int>[1, 2, 3, 4];
+    var response = Response.ok(bytes);
+
+    expect(response.contentLength, 4);
+    expect(await response.read().single, same(bytes));
+  });
+
+  test('supports a Stream<List<int>> body without copying', () async {
+    var bytes = Stream.value(<int>[1, 2, 3, 4]);
+    var response = Response.ok(bytes);
+
+    expect(response.read(), same(bytes));
+  });
+
+  test('Copies a dynamic list of int elements', () async {
+    var bytes = <dynamic>[1, 2, 3, 4];
+    var response = Response.ok(bytes);
+
+    expect(response.contentLength, 4);
+    expect(await response.read().single,
+        isA<List<int>>().having((values) => values, 'values', [1, 2, 3, 4]));
   });
 
   group('new Response.internalServerError without a body', () {
