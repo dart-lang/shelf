@@ -5,8 +5,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'dart:typed_data';
-
 /// The body of a request or response.
 ///
 /// This tracks whether the body has been read. It's separate from [Message]
