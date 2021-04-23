@@ -53,15 +53,12 @@ class Body {
         stream = Stream.fromIterable([encoded]);
       }
     } else if (body is List<int>) {
-      // Any data that is written to a Dart socket that is not a Uint8List or
-      // Int8List must be copied into a new list. Allow users to provide a
-      // typed data object to avoid this copy, which is important for performance
-      // of large file requests.
+      // Avoid performance overhead from an unnecessary cast.
       contentLength = body.length;
-      stream = Stream.fromIterable([body]);
+      stream = Stream.value(body);
     } else if (body is List) {
       contentLength = body.length;
-      stream = Stream.fromIterable([body.cast()]);
+      stream = Stream.value(body.cast());
     } else if (body is Stream) {
       stream = body.cast();
     } else {

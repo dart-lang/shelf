@@ -31,7 +31,7 @@ void main() {
     var response = Response.ok(bytes);
 
     expect(response.contentLength, 10);
-    expect(identical(await response.read().first, bytes), true);
+    expect(await response.read().single, same(bytes));
   });
 
   test('supports a List<int> body without copying', () async {
@@ -39,7 +39,7 @@ void main() {
     var response = Response.ok(bytes);
 
     expect(response.contentLength, 4);
-    expect(identical(await response.read().first, bytes), true);
+    expect(await response.read().single, same(bytes));
   });
 
   test('Copies a dynamic list of int elements', () async {
@@ -47,7 +47,10 @@ void main() {
     var response = Response.ok(bytes);
 
     expect(response.contentLength, 4);
-    expect(await response.read().first, <int>[1, 2, 3, 4]);
+    expect(
+        await response.read().single,
+        isA<List<int>>()
+            .having((List<int> values) => values, 'values', [1, 2, 3, 4]));
   });
 
   group('new Response.internalServerError without a body', () {
