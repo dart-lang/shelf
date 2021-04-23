@@ -59,6 +59,9 @@ class Body {
     } else if (body is List) {
       contentLength = body.length;
       stream = Stream.value(body.cast());
+    } else if (body is Stream<List<int>>) {
+      // Avoid performance overhead from an unnecessary cast.
+      stream = body;
     } else if (body is Stream) {
       stream = body.cast();
     } else {

@@ -42,15 +42,20 @@ void main() {
     expect(await response.read().single, same(bytes));
   });
 
+  test('supports a Stream<List<int>> body without copying', () async {
+    var bytes = Stream.value(<int>[1, 2, 3, 4]);
+    var response = Response.ok(bytes);
+
+    expect(response.read(), same(bytes));
+  });
+
   test('Copies a dynamic list of int elements', () async {
     var bytes = <dynamic>[1, 2, 3, 4];
     var response = Response.ok(bytes);
 
     expect(response.contentLength, 4);
-    expect(
-        await response.read().single,
-        isA<List<int>>()
-            .having((List<int> values) => values, 'values', [1, 2, 3, 4]));
+    expect(await response.read().single,
+        isA<List<int>>().having((values) => values, 'values', [1, 2, 3, 4]));
   });
 
   group('new Response.internalServerError without a body', () {
