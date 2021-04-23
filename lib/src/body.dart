@@ -54,7 +54,7 @@ class Body {
         contentLength = encoded.length;
         stream = Stream.fromIterable([encoded]);
       }
-    } else if (body is Uint8List) {
+    } else if (body is List<int>) {
       // Any data that is written to a Dart socket that is not a Uint8List or
       // Int8List must be copied into a new list. Allow users to provide a
       // typed data object to avoid this copy, which is important for performance
