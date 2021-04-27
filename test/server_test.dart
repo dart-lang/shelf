@@ -3,15 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shelf/shelf.dart';
+import 'package:shelf_test_handler/shelf_test_handler.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:test/test.dart';
-
-import 'package:shelf_test_handler/shelf_test_handler.dart';
 
 void main() {
   test('serves a ShelfTestHandler', () async {
