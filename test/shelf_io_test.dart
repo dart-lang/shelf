@@ -66,7 +66,6 @@ void main() {
     late Uri uri;
 
     await _scheduleServer((request) {
-      expect(request.contentLength, 0);
       expect(request.method, 'GET');
 
       expect(request.requestedUri, uri);
