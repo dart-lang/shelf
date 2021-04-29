@@ -1,3 +1,5 @@
+## 1.1.2-dev
+
 ## 1.1.1
 
 * Avoid wrapping response bodies that already contained `List<int>` or
