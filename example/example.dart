@@ -29,7 +29,7 @@ void main(List<String> args) {
     exit(64);
   }
 
-  if (!FileSystemEntity.isFileSync('example/example_server.dart')) {
+  if (!FileSystemEntity.isFileSync('example/example.dart')) {
     throw StateError('Server expects to be started the '
         'root of the project.');
   }
