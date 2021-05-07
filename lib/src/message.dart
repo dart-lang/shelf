@@ -206,12 +206,10 @@ Map<String, List<String>> _adjustHeaders(
     }
   }
 
-  if (body.contentLength != null &&
-      !(
-          // If the contentLength is 0 and there's an explicit content-length
-          // in the headers, user the header value – needed for HEAD requests!
-          body.contentLength == 0 &&
-              findHeader(headers, 'content-length') != null)) {
+  final explicitOverrideOfZeroLength =
+      body.contentLength == 0 && findHeader(headers, 'content-length') != null;
+
+  if (body.contentLength != null && !explicitOverrideOfZeroLength) {
     final coding = joinHeaderValues(newHeaders['transfer-encoding']);
     if (coding == null || equalsIgnoreAsciiCase(coding, 'identity')) {
       newHeaders['content-length'] = [body.contentLength.toString()];
