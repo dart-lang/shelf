@@ -206,7 +206,10 @@ Map<String, List<String>> _adjustHeaders(
     }
   }
 
-  if (body.contentLength != null) {
+  final explicitOverrideOfZeroLength =
+      body.contentLength == 0 && findHeader(headers, 'content-length') != null;
+
+  if (body.contentLength != null && !explicitOverrideOfZeroLength) {
     final coding = joinHeaderValues(newHeaders['transfer-encoding']);
     if (coding == null || equalsIgnoreAsciiCase(coding, 'identity')) {
       newHeaders['content-length'] = [body.contentLength.toString()];
