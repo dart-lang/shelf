@@ -1,3 +1,7 @@
+## 1.1.0-dev
+
+* Correctly handle `HEAD` requests.
+
 ## 1.0.0
 
 * Migrate to null safety.

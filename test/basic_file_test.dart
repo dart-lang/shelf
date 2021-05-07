@@ -48,6 +48,15 @@ void main() {
     expect(response.readAsString(), completion('root txt'));
   });
 
+  test('HEAD', () async {
+    final handler = createStaticHandler(d.sandbox);
+
+    final response = await makeRequest(handler, '/root.txt', method: 'HEAD');
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.contentLength, 8);
+    expect(await response.readAsString(), isEmpty);
+  });
+
   test('access root file with space', () async {
     final handler = createStaticHandler(d.sandbox);
 

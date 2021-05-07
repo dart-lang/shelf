@@ -10,14 +10,23 @@ import 'package:test/test.dart';
 final p.Context _ctx = p.url;
 
 /// Makes a simple GET request to [handler] and returns the result.
-Future<Response> makeRequest(Handler handler, String path,
-    {String? handlerPath, Map<String, String>? headers}) {
+Future<Response> makeRequest(
+  Handler handler,
+  String path, {
+  String? handlerPath,
+  Map<String, String>? headers,
+  String method = 'GET',
+}) async {
   final rootedHandler = _rootHandler(handlerPath, handler);
-  return Future.sync(() => rootedHandler(_fromPath(path, headers)));
+  return rootedHandler(_fromPath(path, headers, method: method));
 }
 
-Request _fromPath(String path, Map<String, String>? headers) =>
-    Request('GET', Uri.parse('http://localhost$path'), headers: headers);
+Request _fromPath(
+  String path,
+  Map<String, String>? headers, {
+  required String method,
+}) =>
+    Request(method, Uri.parse('http://localhost$path'), headers: headers);
 
 Handler _rootHandler(String? path, Handler handler) {
   if (path == null || path.isEmpty) {

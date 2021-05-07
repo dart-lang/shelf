@@ -196,5 +196,8 @@ Future<Response> _handleFile(Request request, File file,
   final contentType = await getContentType();
   if (contentType != null) headers[HttpHeaders.contentTypeHeader] = contentType;
 
-  return Response.ok(file.openRead(), headers: headers);
+  return Response.ok(
+    request.method == 'HEAD' ? null : file.openRead(),
+    headers: headers,
+  );
 }
