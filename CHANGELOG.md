@@ -1,4 +1,7 @@
-## 1.1.2-dev
+## 1.1.2
+
+* Allow an explicit non-zero content-length header if the body is empty.
+  (Needed to correctly support HEAD requests).
 
 ## 1.1.1
 

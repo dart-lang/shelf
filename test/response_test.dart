@@ -58,6 +58,14 @@ void main() {
         isA<List<int>>().having((values) => values, 'values', [1, 2, 3, 4]));
   });
 
+  test('allows content-length header even if body is null', () async {
+    // needed for HEAD responses
+    var response = Response.ok(null, headers: {'Content-Length': '42'});
+
+    expect(response.contentLength, 42);
+    expect(await response.readAsString(), isEmpty);
+  });
+
   group('new Response.internalServerError without a body', () {
     test('sets the body to "Internal Server Error"', () {
       var response = Response.internalServerError();
