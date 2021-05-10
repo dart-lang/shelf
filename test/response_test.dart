@@ -66,6 +66,13 @@ void main() {
     expect(await response.readAsString(), isEmpty);
   });
 
+  test('clears content-length for notModified response', () async {
+    var response = Response.notModified(headers: {'Content-Length': '42'});
+
+    expect(response.contentLength, 0);
+    expect(await response.readAsString(), isEmpty);
+  });
+
   group('new Response.internalServerError without a body', () {
     test('sets the body to "Internal Server Error"', () {
       var response = Response.internalServerError();

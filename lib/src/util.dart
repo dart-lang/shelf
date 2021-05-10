@@ -58,6 +58,18 @@ Map<String, Object> addHeader(
   return headers;
 }
 
+/// Removed the header with case-insensitive name [name].
+///
+/// Returns a new map without modifying [headers].
+Map<String, Object> removeHeader(
+  Map<String, Object>? headers,
+  String name,
+) {
+  headers = headers == null ? {} : Map.from(headers);
+  headers.removeWhere((header, value) => equalsIgnoreAsciiCase(header, name));
+  return headers;
+}
+
 /// Returns the header with the given [name] in [headers].
 ///
 /// This works even if [headers] is `null`, or if it's not yet a
