@@ -1,3 +1,5 @@
+## 1.1.3-dev
+
 ## 1.1.2
 
 * Allow an explicit non-zero content-length header if the body is empty.

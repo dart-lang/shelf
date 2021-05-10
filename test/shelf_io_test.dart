@@ -62,6 +62,14 @@ void main() {
     expect(response.body, 'Internal Server Error');
   });
 
+  test('supports HEAD requests', () async {
+    await _scheduleServer((request) {
+      return Response(200, headers: {'content-length': '1'});
+    });
+    var response = await _head();
+    expect(response.headers['content-length'], '1');
+  });
+
   test('Request is populated correctly', () async {
     late Uri uri;
 
@@ -556,14 +564,26 @@ Future _scheduleServer(
   );
 }
 
-Future<http.Response> _get({
+Future<http.Response> _get(
+        {Map<String, /* String | List<String> */ Object>? headers,
+        String path = ''}) =>
+    _request((client, url) => client.getUrl(url), headers: headers, path: path);
+
+Future<http.Response> _head(
+        {Map<String, /* String | List<String> */ Object>? headers,
+        String path = ''}) =>
+    _request((client, url) => client.headUrl(url),
+        headers: headers, path: path);
+
+Future<http.Response> _request(
+  Future<HttpClientRequest> Function(HttpClient, Uri) request, {
   Map<String, /* String | List<String> */ Object>? headers,
   String path = '',
 }) async {
   // TODO: use http.Client once it supports sending and receiving multiple headers.
   final client = HttpClient();
   try {
-    final rq = await client.getUrl(Uri.http('localhost:$_serverPort', path));
+    final rq = await request(client, Uri.http('localhost:$_serverPort', path));
     headers?.forEach((key, value) {
       rq.headers.add(key, value);
     });
