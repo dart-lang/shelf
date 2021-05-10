@@ -192,12 +192,16 @@ class Response extends Message {
   ///
   /// [headers] must contain values that are either `String` or `List<String>`.
   /// An empty list will cause the header to be omitted.
+  ///
+  /// If [headers] contains a value for `content-length` it will be removed.
   Response.notModified({
     Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
   }) : this(
           304,
-          headers: addHeader(headers, 'date', formatHttpDate(DateTime.now())),
+          headers: removeHeader(
+              addHeader(headers, 'date', formatHttpDate(DateTime.now())),
+              'content-length'),
           context: context,
         );
 
