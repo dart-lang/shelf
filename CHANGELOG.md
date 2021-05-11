@@ -1,3 +1,7 @@
+## 1.1.4-dev
+
+* Documentation cleanup.
+
 ## 1.1.3
 
 * Automatically remove `content-length` header from a `Response.notModified`.

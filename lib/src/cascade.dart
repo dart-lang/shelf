@@ -20,11 +20,13 @@ typedef _ShouldCascade = bool Function(Response response);
 /// If all handlers return unacceptable responses, the final response will be
 /// returned.
 ///
-///     var handler = new Cascade()
-///         .add(webSocketHandler)
-///         .add(staticFileHandler)
-///         .add(application)
-///         .handler;
+/// ```dart
+///  var handler = new Cascade()
+///      .add(webSocketHandler)
+///      .add(staticFileHandler)
+///      .add(application)
+///      .handler;
+/// ```
 class Cascade {
   /// The function used to determine whether the cascade should continue on to
   /// the next handler.

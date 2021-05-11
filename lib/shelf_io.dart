@@ -35,7 +35,7 @@ export 'src/io_server.dart';
 /// [port] and sends requests to [handler].
 ///
 /// If a [securityContext] is provided an HTTPS server will be started.
-////
+///
 /// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
 /// for more details on [address], [port], [backlog], and [shared].
 Future<HttpServer> serve(
