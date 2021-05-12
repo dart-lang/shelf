@@ -1,13 +1,10 @@
-## 1.1.4-dev
-
-* Documentation cleanup.
-
-## 1.1.3
+## 1.1.3-dev
 
 * Automatically remove `content-length` header from a `Response.notModified`.
   Restores some of the safety around malformed requests that was removed in
   `1.1.2` where we started allowing `content-length` for some responses without
   bodies.
+* Documentation cleanup.
 
 ## 1.1.2
 
