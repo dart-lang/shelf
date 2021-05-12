@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -42,63 +40,62 @@ void main() {
 
     test(
         'the second response should be returned if it matches and the first '
-        "doesn't", () {
-      return Future.sync(() {
-        return handler(Request('GET', localhostUri, headers: {'one': 'false'}));
-      }).then((response) {
-        expect(response.statusCode, equals(200));
-        expect(response.readAsString(), completion(equals('handler 2')));
-      });
+        "doesn't", () async {
+      final response = await handler(
+        Request('GET', localhostUri, headers: {'one': 'false'}),
+      );
+      expect(response.statusCode, equals(200));
+      expect(response.readAsString(), completion(equals('handler 2')));
     });
 
     test(
         'the third response should be returned if it matches and the first '
-        "two don't", () {
-      return Future.sync(() {
-        return handler(Request('GET', localhostUri,
-            headers: {'one': 'false', 'two': 'false'}));
-      }).then((response) {
-        expect(response.statusCode, equals(200));
-        expect(response.readAsString(), completion(equals('handler 3')));
-      });
+        "two don't", () async {
+      final response = await handler(
+        Request('GET', localhostUri, headers: {'one': 'false', 'two': 'false'}),
+      );
+
+      expect(response.statusCode, equals(200));
+      expect(response.readAsString(), completion(equals('handler 3')));
     });
 
-    test('the third response should be returned if no response matches', () {
-      return Future.sync(() {
-        return handler(Request('GET', localhostUri,
-            headers: {'one': 'false', 'two': 'false', 'three': 'false'}));
-      }).then((response) {
-        expect(response.statusCode, equals(404));
-        expect(response.readAsString(), completion(equals('handler 3')));
-      });
+    test('the third response should be returned if no response matches',
+        () async {
+      final response = await handler(
+        Request(
+          'GET',
+          localhostUri,
+          headers: {'one': 'false', 'two': 'false', 'three': 'false'},
+        ),
+      );
+      expect(response.statusCode, equals(404));
+      expect(response.readAsString(), completion(equals('handler 3')));
     });
   });
 
-  test('a 404 response triggers a cascade by default', () {
+  test('a 404 response triggers a cascade by default', () async {
     var handler = Cascade()
         .add((_) => Response.notFound('handler 1'))
         .add((_) => Response.ok('handler 2'))
         .handler;
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(response.statusCode, equals(200));
-      expect(response.readAsString(), completion(equals('handler 2')));
-    });
+    final response = await makeSimpleRequest(handler);
+    expect(response.statusCode, equals(200));
+    expect(response.readAsString(), completion(equals('handler 2')));
   });
 
-  test('a 405 response triggers a cascade by default', () {
+  test('a 405 response triggers a cascade by default', () async {
     var handler = Cascade()
         .add((_) => Response(405))
         .add((_) => Response.ok('handler 2'))
         .handler;
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(response.statusCode, equals(200));
-      expect(response.readAsString(), completion(equals('handler 2')));
-    });
+    final response = await makeSimpleRequest(handler);
+    expect(response.statusCode, equals(200));
+    expect(response.readAsString(), completion(equals('handler 2')));
   });
 
-  test('[statusCodes] controls which statuses cause cascading', () {
+  test('[statusCodes] controls which statuses cause cascading', () async {
     var handler = Cascade(statusCodes: [302, 403])
         .add((_) => Response.found('/'))
         .add((_) => Response.forbidden('handler 2'))
@@ -106,13 +103,12 @@ void main() {
         .add((_) => Response.ok('handler 4'))
         .handler;
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(response.statusCode, equals(404));
-      expect(response.readAsString(), completion(equals('handler 3')));
-    });
+    final response = await makeSimpleRequest(handler);
+    expect(response.statusCode, equals(404));
+    expect(response.readAsString(), completion(equals('handler 3')));
   });
 
-  test('[shouldCascade] controls which responses cause cascading', () {
+  test('[shouldCascade] controls which responses cause cascading', () async {
     var handler =
         Cascade(shouldCascade: (response) => response.statusCode % 2 == 1)
             .add((_) => Response.movedPermanently('/'))
@@ -121,10 +117,9 @@ void main() {
             .add((_) => Response.ok('handler 4'))
             .handler;
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(response.statusCode, equals(404));
-      expect(response.readAsString(), completion(equals('handler 3')));
-    });
+    final response = await makeSimpleRequest(handler);
+    expect(response.statusCode, equals(404));
+    expect(response.readAsString(), completion(equals('handler 3')));
   });
 
   group('errors', () {
