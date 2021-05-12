@@ -27,7 +27,7 @@ app.get('/user/<user>', (Request request, String user) {
   return Response.ok('hello $user');
 });
 
-var server = await io.serve(app.handler, 'localhost', 8080);
+var server = await io.serve(app, 'localhost', 8080);
 ```
 
 See reference documentation of `Router` class for more information.
