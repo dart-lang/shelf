@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  test('compose middleware with Pipeline', () {
+  test('compose middleware with Pipeline', () async {
     var accessLocation = 0;
 
     var middlewareA = createMiddleware(requestHandler: (request) {
@@ -40,13 +40,12 @@ void main() {
       return syncHandler(request);
     });
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(response, isNotNull);
-      expect(accessLocation, 5);
-    });
+    final response = await makeSimpleRequest(handler);
+    expect(response, isNotNull);
+    expect(accessLocation, 5);
   });
 
-  test('Pipeline can be used as middleware', () {
+  test('Pipeline can be used as middleware', () async {
     var accessLocation = 0;
 
     var middlewareA = createMiddleware(requestHandler: (request) {
@@ -80,9 +79,8 @@ void main() {
       return syncHandler(request);
     });
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(response, isNotNull);
-      expect(accessLocation, 5);
-    });
+    final response = await makeSimpleRequest(handler);
+    expect(response, isNotNull);
+    expect(accessLocation, 5);
   });
 }

@@ -22,24 +22,22 @@ void main() {
     expect(msg, contains('[200]'));
   };
 
-  test('logs a request with a synchronous response', () {
+  test('logs a request with a synchronous response', () async {
     var handler = const Pipeline()
         .addMiddleware(logRequests(logger: logger))
         .addHandler(syncHandler);
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(gotLog, isTrue);
-    });
+    await makeSimpleRequest(handler);
+    expect(gotLog, isTrue);
   });
 
-  test('logs a request with an asynchronous response', () {
+  test('logs a request with an asynchronous response', () async {
     var handler = const Pipeline()
         .addMiddleware(logRequests(logger: logger))
         .addHandler(asyncHandler);
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(gotLog, isTrue);
-    });
+    await makeSimpleRequest(handler);
+    expect(gotLog, isTrue);
   });
 
   test('logs a request with an asynchronous error response', () {

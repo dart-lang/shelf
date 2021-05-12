@@ -10,64 +10,59 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
-  test('forwards the request and response if both handlers are null', () {
+  test('forwards the request and response if both handlers are null', () async {
     var handler = const Pipeline()
         .addMiddleware(createMiddleware())
         .addHandler((request) {
       return syncHandler(request, headers: {'from': 'innerHandler'});
     });
 
-    return makeSimpleRequest(handler).then((response) {
-      expect(response.headers['from'], 'innerHandler');
-    });
+    final response = await makeSimpleRequest(handler);
+    expect(response.headers['from'], 'innerHandler');
   });
 
   group('requestHandler', () {
-    test('sync null response forwards to inner handler', () {
+    test('sync null response forwards to inner handler', () async {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(requestHandler: (request) => null))
           .addHandler(syncHandler);
 
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.headers['from'], isNull);
-      });
+      final response = await makeSimpleRequest(handler);
+      expect(response.headers['from'], isNull);
     });
 
-    test('async null response forwards to inner handler', () {
+    test('async null response forwards to inner handler', () async {
       var handler = const Pipeline()
           .addMiddleware(
               createMiddleware(requestHandler: (request) => Future.value(null)))
           .addHandler(syncHandler);
 
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.headers['from'], isNull);
-      });
+      final response = await makeSimpleRequest(handler);
+      expect(response.headers['from'], isNull);
     });
 
-    test('sync response is returned', () {
+    test('sync response is returned', () async {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(
               requestHandler: (request) => _middlewareResponse))
           .addHandler(_failHandler);
 
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.headers['from'], 'middleware');
-      });
+      final response = await makeSimpleRequest(handler);
+      expect(response.headers['from'], 'middleware');
     });
 
-    test('async response is returned', () {
+    test('async response is returned', () async {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(
               requestHandler: (request) => Future.value(_middlewareResponse)))
           .addHandler(_failHandler);
 
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.headers['from'], 'middleware');
-      });
+      final response = await makeSimpleRequest(handler);
+      expect(response.headers['from'], 'middleware');
     });
 
     group('with responseHandler', () {
-      test('with sync result, responseHandler is not called', () {
+      test('with sync result, responseHandler is not called', () async {
         var middleware = createMiddleware(
             requestHandler: (request) => _middlewareResponse,
             responseHandler: (response) => fail('should not be called'));
@@ -75,27 +70,26 @@ void main() {
         var handler =
             const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
 
-        return makeSimpleRequest(handler).then((response) {
-          expect(response.headers['from'], 'middleware');
-        });
+        final response = await makeSimpleRequest(handler);
+        expect(response.headers['from'], 'middleware');
       });
 
-      test('with async result, responseHandler is not called', () {
+      test('with async result, responseHandler is not called', () async {
         var middleware = createMiddleware(
             requestHandler: (request) => Future.value(_middlewareResponse),
             responseHandler: (response) => fail('should not be called'));
         var handler =
             const Pipeline().addMiddleware(middleware).addHandler(syncHandler);
 
-        return makeSimpleRequest(handler).then((response) {
-          expect(response.headers['from'], 'middleware');
-        });
+        final response = await makeSimpleRequest(handler);
+        expect(response.headers['from'], 'middleware');
       });
     });
   });
 
   group('responseHandler', () {
-    test('innerHandler sync response is seen, replaced value continues', () {
+    test('innerHandler sync response is seen, replaced value continues',
+        () async {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(responseHandler: (response) {
         expect(response.headers['from'], 'handler');
@@ -104,12 +98,12 @@ void main() {
         return syncHandler(request, headers: {'from': 'handler'});
       });
 
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.headers['from'], 'middleware');
-      });
+      final response = await makeSimpleRequest(handler);
+      expect(response.headers['from'], 'middleware');
     });
 
-    test('innerHandler async response is seen, async value continues', () {
+    test('innerHandler async response is seen, async value continues',
+        () async {
       var handler = const Pipeline()
           .addMiddleware(createMiddleware(responseHandler: (response) {
         expect(response.headers['from'], 'handler');
@@ -118,9 +112,8 @@ void main() {
         return Future(() => syncHandler(request, headers: {'from': 'handler'}));
       });
 
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.headers['from'], 'middleware');
-      });
+      final response = await makeSimpleRequest(handler);
+      expect(response.headers['from'], 'middleware');
     });
   });
 
@@ -169,7 +162,8 @@ void main() {
       expect(makeSimpleRequest(handler), throwsA('middleware error'));
     });
 
-    test('inner handler throws, is caught by errorHandler with response', () {
+    test('inner handler throws, is caught by errorHandler with response',
+        () async {
       var middleware = createMiddleware(errorHandler: (error, stack) {
         expect(error, 'bad handler');
         return _middlewareResponse;
@@ -180,9 +174,8 @@ void main() {
         throw 'bad handler';
       });
 
-      return makeSimpleRequest(handler).then((response) {
-        expect(response.headers['from'], 'middleware');
-      });
+      final response = await makeSimpleRequest(handler);
+      expect(response.headers['from'], 'middleware');
     });
 
     test('inner handler throws, is caught by errorHandler and rethrown', () {
