@@ -13,7 +13,7 @@ the response is the return value.
 * Trivially mix and match synchronous and asynchronous processing.
 * Flexibility to return a simple string or a byte stream with the same model.
 
-See [Write HTTP servers](https://dart.dev/tutorials/server/httpserver) for more
+See the [Dart HTTP server documentation](https://dart.dev/tutorials/server/httpserver) for more
 information. You may also want to look at
 [package:shelf_router](https://pub.dev/packages/shelf_router) and
 [package:shelf_static](https://pub.dev/packages/shelf_static) as examples of
