@@ -134,7 +134,7 @@ List<String> expandHeaderValue(Object v) {
 }
 
 /// Multiple header values are joined with commas.
-/// See http://tools.ietf.org/html/draft-ietf-httpbis-p1-messaging-21#page-22
+/// See https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-p1-messaging-21#page-22
 String? joinHeaderValues(List<String>? values) {
   if (values == null) return null;
   if (values.isEmpty) return '';
