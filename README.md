@@ -13,25 +13,34 @@ the response is the return value.
 * Trivially mix and match synchronous and asynchronous processing.
 * Flexibility to return a simple string or a byte stream with the same model.
 
+See [Write HTTP servers](https://dart.dev/tutorials/server/httpserver) for more
+information. You may also want to look at
+[package:shelf_router](https://pub.dev/packages/shelf_router) and
+[package:shelf_static](https://pub.dev/packages/shelf_static) as examples of
+packages that build on and extend `package:shelf`.
+
 ## Example
 
 See `example/example.dart`
 
 ```dart
-import 'package:shelf/shelf.dart' as shelf;
-import 'package:shelf/shelf_io.dart' as io;
+import 'package:shelf/shelf.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
 
-Future<void> main() async {
-  var handler = const shelf.Pipeline().addMiddleware(shelf.logRequests())
-      .addHandler(_echoRequest);
+void main() async {
+  var handler =
+      const Pipeline().addMiddleware(logRequests()).addHandler(_echoRequest);
 
-  var server = await io.serve(handler, 'localhost', 8080);
+  var server = await shelf_io.serve(handler, 'localhost', 8080);
+
+  // Enable content compression
+  server.autoCompress = true;
+
   print('Serving at http://${server.address.host}:${server.port}');
 }
 
-shelf.Response _echoRequest(shelf.Request request) {
-  return shelf.Response.ok('Request for "${request.url}"');
-}
+Response _echoRequest(Request request) =>
+    Response.ok('Request for "${request.url}"');
 ```
 
 ## Handlers and Middleware
@@ -188,8 +197,5 @@ take precedence.
 
 ## Inspiration
 
-* [Connect](http://www.senchalabs.org/connect/) for NodeJS.
-    * Read [this great write-up](http://howtonode.org/connect-it) to understand
-      the overall philosophy of all of these models.
-* [Rack](http://rack.github.io/) for Ruby.
-* [WSGI](http://legacy.python.org/dev/peps/pep-3333/) for Python.
+* [Connect](https://github.com/senchalabs/connect) for NodeJS.
+* [Rack](https://github.com/rack/rack) for Ruby.
