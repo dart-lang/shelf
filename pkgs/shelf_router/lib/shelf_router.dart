@@ -34,7 +34,7 @@
 ///   });
 ///
 ///   // Listen for requests on port localhost:8080
-///   await io.serve(router.handler, 'localhost', 8080);
+///   await io.serve(router, 'localhost', 8080);
 /// }
 /// ```
 ///

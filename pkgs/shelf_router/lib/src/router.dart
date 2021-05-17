@@ -71,7 +71,7 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 ///   return Response.ok(message.getById(msgId));
 /// });
 ///
-/// var server = await io.serve(app.handler, 'localhost', 8080);
+/// var server = await io.serve(app, 'localhost', 8080);
 /// ```
 ///
 /// If multiple routes match the same request, the handler for the first
