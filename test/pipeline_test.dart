@@ -49,6 +49,15 @@ void main() {
     expect(accessLocation, 5);
   });
 
+  test('extensions for composition', () async {
+    var handler =
+        middlewareA.addMiddleware(middlewareB).addHandler(innerHandler);
+
+    final response = await makeSimpleRequest(handler);
+    expect(response, isNotNull);
+    expect(accessLocation, 5);
+  });
+
   test('Pipeline can be used as middleware', () async {
     var innerPipeline =
         const Pipeline().addMiddleware(middlewareA).addMiddleware(middlewareB);

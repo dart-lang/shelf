@@ -1,3 +1,9 @@
+## 1.2.0
+
+* Added `MiddlewareExtensions` which provides `addMiddleware` and `addHandler`
+  to `Middleware` instances. Provides easier access to the composition
+  capabilities offered by `Pipeline`.
+
 ## 1.1.4
 
 * Documentation improvements.

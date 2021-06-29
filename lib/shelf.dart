@@ -8,6 +8,7 @@ export 'src/hijack_exception.dart';
 export 'src/middleware.dart';
 export 'src/middleware/add_chunked_encoding.dart';
 export 'src/middleware/logger.dart';
+export 'src/middleware_extensions.dart';
 export 'src/pipeline.dart';
 export 'src/request.dart';
 export 'src/response.dart';
