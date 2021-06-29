@@ -10,6 +10,10 @@ import 'test_util.dart';
 void main() {
   var accessLocation = 0;
 
+  setUp(() {
+    accessLocation = 0;
+  });
+
   Handler middlewareA(Handler innerHandler) => (request) {
         expect(accessLocation, 0);
         accessLocation = 1;
@@ -35,7 +39,6 @@ void main() {
   }
 
   test('compose middleware with Pipeline', () async {
-    accessLocation = 0;
     var handler = const Pipeline()
         .addMiddleware(middlewareA)
         .addMiddleware(middlewareB)
@@ -47,8 +50,6 @@ void main() {
   });
 
   test('Pipeline can be used as middleware', () async {
-    accessLocation = 0;
-
     var innerPipeline =
         const Pipeline().addMiddleware(middlewareA).addMiddleware(middlewareB);
 
