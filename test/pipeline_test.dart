@@ -8,37 +8,41 @@ import 'package:test/test.dart';
 import 'test_util.dart';
 
 void main() {
+  var accessLocation = 0;
+
+  setUp(() {
+    accessLocation = 0;
+  });
+
+  Handler middlewareA(Handler innerHandler) => (request) {
+        expect(accessLocation, 0);
+        accessLocation = 1;
+        final response = innerHandler(request);
+        expect(accessLocation, 4);
+        accessLocation = 5;
+        return response;
+      };
+
+  Handler middlewareB(Handler innerHandler) => (request) {
+        expect(accessLocation, 1);
+        accessLocation = 2;
+        final response = innerHandler(request);
+        expect(accessLocation, 3);
+        accessLocation = 4;
+        return response;
+      };
+
+  Response innerHandler(Request request) {
+    expect(accessLocation, 2);
+    accessLocation = 3;
+    return syncHandler(request);
+  }
+
   test('compose middleware with Pipeline', () async {
-    var accessLocation = 0;
-
-    var middlewareA = createMiddleware(requestHandler: (request) {
-      expect(accessLocation, 0);
-      accessLocation = 1;
-      return null;
-    }, responseHandler: (response) {
-      expect(accessLocation, 4);
-      accessLocation = 5;
-      return response;
-    });
-
-    var middlewareB = createMiddleware(requestHandler: (request) {
-      expect(accessLocation, 1);
-      accessLocation = 2;
-      return null;
-    }, responseHandler: (response) {
-      expect(accessLocation, 3);
-      accessLocation = 4;
-      return response;
-    });
-
     var handler = const Pipeline()
         .addMiddleware(middlewareA)
         .addMiddleware(middlewareB)
-        .addHandler((request) {
-      expect(accessLocation, 2);
-      accessLocation = 3;
-      return syncHandler(request);
-    });
+        .addHandler(innerHandler);
 
     final response = await makeSimpleRequest(handler);
     expect(response, isNotNull);
@@ -46,38 +50,12 @@ void main() {
   });
 
   test('Pipeline can be used as middleware', () async {
-    var accessLocation = 0;
-
-    var middlewareA = createMiddleware(requestHandler: (request) {
-      expect(accessLocation, 0);
-      accessLocation = 1;
-      return null;
-    }, responseHandler: (response) {
-      expect(accessLocation, 4);
-      accessLocation = 5;
-      return response;
-    });
-
-    var middlewareB = createMiddleware(requestHandler: (request) {
-      expect(accessLocation, 1);
-      accessLocation = 2;
-      return null;
-    }, responseHandler: (response) {
-      expect(accessLocation, 3);
-      accessLocation = 4;
-      return response;
-    });
-
     var innerPipeline =
         const Pipeline().addMiddleware(middlewareA).addMiddleware(middlewareB);
 
     var handler = const Pipeline()
         .addMiddleware(innerPipeline.middleware)
-        .addHandler((request) {
-      expect(accessLocation, 2);
-      accessLocation = 3;
-      return syncHandler(request);
-    });
+        .addHandler(innerHandler);
 
     final response = await makeSimpleRequest(handler);
     expect(response, isNotNull);
