@@ -8,10 +8,15 @@ import 'middleware.dart';
 /// A helper that makes it easy to compose a set of [Middleware] and a
 /// [Handler].
 ///
-///     var handler = const Pipeline()
-///         .addMiddleware(loggingMiddleware)
-///         .addMiddleware(cachingMiddleware)
-///         .addHandler(application);
+/// ```dart
+///  var handler = const Pipeline()
+///      .addMiddleware(loggingMiddleware)
+///      .addMiddleware(cachingMiddleware)
+///      .addHandler(application);
+/// ```
+///
+/// Note: this package also provides `addMiddleware` and `addHandler` extensions
+//  members on [Middleware], which may be easier to use.
 class Pipeline {
   const Pipeline();
 
