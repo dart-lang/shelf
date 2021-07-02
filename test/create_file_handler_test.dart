@@ -71,6 +71,62 @@ void main() {
     });
   });
 
+  group('the content range header', () {
+    test('is bytes from 0 to 4', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=0-4'},
+      );
+      expect(response.statusCode, equals(HttpStatus.partialContent));
+      expect(
+        response.headers[HttpHeaders.acceptRangesHeader],
+        'bytes',
+      );
+      expect(
+        response.headers[HttpHeaders.contentRangeHeader],
+        'bytes 0-4/8',
+      );
+    });
+    test('at the end of has overflow from 0 to 9', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=0-9'},
+      );
+      expect(
+        response.statusCode,
+        equals(HttpStatus.partialContent),
+      );
+      expect(
+        response.headers[HttpHeaders.acceptRangesHeader],
+        'bytes',
+      );
+      expect(
+        response.headers[HttpHeaders.contentRangeHeader],
+        'bytes 0-7/8',
+      );
+    });
+    test('at the start of has overflow from 8 to 9', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=8-9'},
+      );
+      expect(
+        response.headers[HttpHeaders.acceptRangesHeader],
+        'bytes',
+      );
+      expect(
+        response.statusCode,
+        equals(HttpStatus.requestedRangeNotSatisfiable),
+      );
+    });
+  });
+
   group('throws an ArgumentError for', () {
     test("a file that doesn't exist", () {
       expect(() => createFileHandler(p.join(d.sandbox, 'nothing.txt')),
