@@ -12,22 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:collection' show UnmodifiableMapView;
+
 import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 
 /// Get a URL parameter captured by the [Router].
+@Deprecated('Use Request.params instead')
 String params(Request request, String name) {
-  final p = request.context['shelf_router/params'];
-  if (!(p is Map<String, String>)) {
-    throw Exception('no such parameter $name');
-  }
-  final value = p[name];
+  final value = request.params[name];
   if (value == null) {
     throw Exception('no such parameter $name');
   }
   return value;
+}
+
+final _emptyParams = UnmodifiableMapView(<String, String>{});
+
+extension RouterParams on Request {
+  /// Get URL parameters captured by the [Router].
+  ///
+  /// **Example**
+  /// ```dart
+  /// final app = Router();
+  ///
+  /// app.get('/hello/<name>', (Request request) {
+  ///   final name = request.params['name'];
+  ///   return Response.ok('Hello $name');
+  /// });
+  /// ```
+  ///
+  /// If no parameters are captured this returns an empty map.
+  ///
+  /// The returned map is unmodifiable.
+  Map<String, String> get params {
+    final p = context['shelf_router/params'];
+    if (p is Map<String, String>) {
+      return UnmodifiableMapView(p);
+    }
+    return _emptyParams;
+  }
 }
 
 /// Middleware to remove body from request.
@@ -51,7 +77,7 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 /// // Route pattern parameters can be specified <paramName>
 /// app.get('/users/<userName>/whoami', (Request request) async {
 ///   // The matched values can be read with params(request, param)
-///   var userName = params(request, 'userName');
+///   var userName = request.params['userName'];
 ///   return Response.ok('You are ${userName}');
 /// });
 ///
@@ -59,7 +85,8 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 /// // doesn't implement Handler, it's assumed to take all parameters in the
 /// // order they appear in the route pattern.
 /// app.get('/users/<userName>/say-hello', (Request request, String userName) async {
-///   return Response.ok('Hello ${uName}');
+///   assert(userName == request.params['userName']);
+///   return Response.ok('Hello ${userName}');
 /// });
 ///
 /// // It is possible to have multiple parameters, and if desired a custom
@@ -67,7 +94,7 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 /// // REGEXP is a regular expression (leaving out ^ and $).
 /// // If no regular expression is specified `[^/]+` will be used.
 /// app.get('/users/<userName>/messages/<msgId|\d+>', (Request request) async {
-///   var msgId = int.parse(params(request, 'msgId'));
+///   var msgId = int.parse(request.params['msgId']!);
 ///   return Response.ok(message.getById(msgId));
 /// });
 ///
@@ -144,7 +171,10 @@ class Router {
       }
       var params = route.match('/' + request.url.path);
       if (params != null) {
-        return await route.invoke(request, params);
+        final response = await route.invoke(request, params);
+        if (response != routeNotFound) {
+          return response;
+        }
       }
     }
     return _notFoundHandler(request);
@@ -184,7 +214,58 @@ class Router {
   /// Handle `PATCH` request to [route] using [handler].
   void patch(String route, Function handler) => add('PATCH', route, handler);
 
-  static Response _defaultNotFound(Request request) {
-    return Response.notFound('Not Found');
-  }
+  static Response _defaultNotFound(Request request) => routeNotFound;
+
+  /// Sentinel [Response] object indicating that no matching route was found.
+  ///
+  /// This is the default response value from a [Router] created without a
+  /// `notFoundHandler`, when no routes matches the incoming request.
+  ///
+  /// If the [routeNotFound] object is returned from a [Handler] the [Router]
+  /// will consider the route _not matched_, and attempt to match other routes.
+  /// This is useful when mounting nested routers, or when matching a route
+  /// is conditioned on properties beyond the path of the URL.
+  ///
+  /// **Example**
+  /// ```dart
+  /// final app = Router();
+  ///
+  /// // The pattern for this route will match '/search' and '/search?q=...',
+  /// // but if request does not have `?q=...', then the handler will return
+  /// // [Router.routeNotFound] causing the router to attempt further routes.
+  /// app.get('/search', (Request request) async {
+  ///   if (!request.uri.queryParameters.containsKey('q')) {
+  ///     return Router.routeNotFound;
+  ///   }
+  ///   return Response.ok('TODO: make search results');
+  /// });
+  ///
+  /// // Same pattern as above
+  /// app.get('/search', (Request request) async {
+  ///   return Response.ok('TODO: return search form');
+  /// });
+  ///
+  /// // Create a single nested router we can mount for handling API requests.
+  /// final api = Router();
+  ///
+  /// api.get('/version', (Request request) => Response.ok('1'));
+  ///
+  /// // Mounting router under '/api'
+  /// app.mount('/api', api);
+  ///
+  /// // If a request matches `/api/...` then the routes in the [api] router
+  /// // will be attempted. However, for a request like `/api/hello` there is
+  /// // no matching route in the [api] router. Thus, the router will return
+  /// // [Router.routeNotFound], which will cause matching to continue.
+  /// // Hence, the catch-all route below will be matched, causing a custom 404
+  /// // response with message 'nothing found'.
+  ///
+  /// // In the pattern below `<anything|.*>` is on the form `<name|regex>`,
+  /// // thus, this simply creates a URL parameter called `anything` which
+  /// // matches anything.
+  /// app.all('/<anything|.*>', (Request request) {
+  ///   return Response.notFound('nothing found');
+  /// });
+  /// ```
+  static final Response routeNotFound = Response.notFound('Route not found');
 }
