@@ -81,13 +81,14 @@ void main() {
       );
       expect(response.statusCode, equals(HttpStatus.partialContent));
       expect(
-        response.headers[HttpHeaders.acceptRangesHeader],
-        'bytes',
+        response.headers,
+        containsPair(HttpHeaders.acceptRangesHeader, 'bytes'),
       );
       expect(
-        response.headers[HttpHeaders.contentRangeHeader],
-        'bytes 0-4/8',
+        response.headers,
+        containsPair(HttpHeaders.contentRangeHeader, 'bytes 0-4/8'),
       );
+      expect(response.headers, containsPair('content-length', '5'));
     });
     test('at the end of has overflow from 0 to 9', () async {
       final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
@@ -101,13 +102,14 @@ void main() {
         equals(HttpStatus.partialContent),
       );
       expect(
-        response.headers[HttpHeaders.acceptRangesHeader],
-        'bytes',
+        response.headers,
+        containsPair(HttpHeaders.acceptRangesHeader, 'bytes'),
       );
       expect(
-        response.headers[HttpHeaders.contentRangeHeader],
-        'bytes 0-7/8',
+        response.headers,
+        containsPair(HttpHeaders.contentRangeHeader, 'bytes 0-7/8'),
       );
+      expect(response.headers, containsPair('content-length', '8'));
     });
     test('at the start of has overflow from 8 to 9', () async {
       final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
@@ -116,13 +118,14 @@ void main() {
         '/file.txt',
         headers: {'range': 'bytes=8-9'},
       );
+      expect(response.headers, containsPair('content-length', '0'));
       expect(
-        response.headers[HttpHeaders.acceptRangesHeader],
-        'bytes',
+        response.headers,
+        containsPair(HttpHeaders.acceptRangesHeader, 'bytes'),
       );
       expect(
         response.statusCode,
-        equals(HttpStatus.requestedRangeNotSatisfiable),
+        HttpStatus.requestedRangeNotSatisfiable,
       );
     });
   });
