@@ -23,7 +23,9 @@ void main(List<String> args) {
     logging = result['logging'] as bool;
     listDirectories = result['list-directories'] as bool;
   } on FormatException catch (e) {
-    stderr..writeln(e.message)..writeln(parser.usage);
+    stderr
+      ..writeln(e.message)
+      ..writeln(parser.usage);
     // http://linux.die.net/include/sysexits.h
     // #define EX_USAGE	64	/* command line usage error */
     exit(64);
