@@ -1,3 +1,7 @@
+## v1.1.1
+
+ * Fix `Router.routeNotFound` to enable multiple `read()` calls on it.
+
 ## v1.1.0
  * `params` is deprecated in favor of `Request.params` adding using an extension
    on `Request`.

@@ -165,4 +165,11 @@ void main() {
 
     expect(get('/hi'), completion('Not found, but ok'));
   });
+
+  test('can call Router.routeNotFound.read multiple times', () async {
+    final b1 = await Router.routeNotFound.readAsString();
+    expect(b1, 'Route not found');
+    final b2 = await Router.routeNotFound.readAsString();
+    expect(b2, b1);
+  });
 }

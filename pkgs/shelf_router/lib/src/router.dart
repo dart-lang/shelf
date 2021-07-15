@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'dart:collection' show UnmodifiableMapView;
+import 'dart:convert';
 
 import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
@@ -267,5 +268,30 @@ class Router {
   ///   return Response.notFound('nothing found');
   /// });
   /// ```
-  static final Response routeNotFound = Response.notFound('Route not found');
+  static final Response routeNotFound = _RouteNotFoundResponse();
+}
+
+/// Extends [Response] to allow it to be used multiple times in the
+/// actual content being served.
+class _RouteNotFoundResponse extends Response {
+  static const _message = 'Route not found';
+  static final _messageBytes = utf8.encode(_message);
+
+  _RouteNotFoundResponse() : super.notFound(_message);
+
+  @override
+  Stream<List<int>> read() => Stream<List<int>>.value(_messageBytes);
+
+  @override
+  Response change({
+    Map<String, /* String | List<String> */ Object?>? headers,
+    Map<String, Object?>? context,
+    body,
+  }) {
+    return super.change(
+      headers: headers,
+      context: context,
+      body: body ?? _message,
+    );
+  }
 }
