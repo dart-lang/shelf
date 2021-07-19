@@ -90,6 +90,7 @@ void main() {
       );
       expect(response.headers, containsPair('content-length', '5'));
     });
+
     test('at the end of has overflow from 0 to 9', () async {
       final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
       final response = await makeRequest(
@@ -111,6 +112,7 @@ void main() {
       );
       expect(response.headers, containsPair('content-length', '8'));
     });
+
     test('at the start of has overflow from 8 to 9', () async {
       final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
       final response = await makeRequest(
@@ -127,6 +129,54 @@ void main() {
         response.statusCode,
         HttpStatus.requestedRangeNotSatisfiable,
       );
+    });
+
+    test('ignores invalid request with start > end', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=2-1'},
+      );
+      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(response.contentLength, equals(8));
+      expect(response.readAsString(), completion(equals('contents')));
+    });
+
+    test('ignores request with start > end', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=2-1'},
+      );
+      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(response.contentLength, equals(8));
+      expect(response.readAsString(), completion(equals('contents')));
+    });
+
+    test('ignores request with units other than bytes', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'not-bytes=0-1'},
+      );
+      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(response.contentLength, equals(8));
+      expect(response.readAsString(), completion(equals('contents')));
+    });
+
+    test('ignores request with no start or end', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=-'},
+      );
+      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(response.contentLength, equals(8));
+      expect(response.readAsString(), completion(equals('contents')));
     });
   });
 

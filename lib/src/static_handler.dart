@@ -188,74 +188,71 @@ Future<Response> _handleFile(Request request, File file,
     }
   }
 
+  final contentType = await getContentType();
   final headers = {
     HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified),
     HttpHeaders.acceptRangesHeader: 'bytes',
+    if (contentType != null) HttpHeaders.contentTypeHeader: contentType,
   };
 
-  final contentType = await getContentType();
-  final length = await file.length();
+  return _fileRangeResponse(request, file, headers) ??
+      Response.ok(
+        request.method == 'HEAD' ? null : file.openRead(),
+        headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
+      );
+}
+
+/// Serves a range of [file], if [request] is valid 'bytes' range request.
+///
+/// If the request does not specify a range, specifies a range of the wrong
+/// type, or has a syntactic error the range is ignored and `null` is returned.
+///
+/// If the range request is valid but the file is not long enough to include the
+/// start of the range a range not satisfiable response is returned.
+///
+/// Ranges that end past the end of the file are truncated.
+Response? _fileRangeResponse(
+    Request request, File file, Map<String, Object> headers) {
   final range = request.headers[HttpHeaders.rangeHeader];
-  if (contentType != null) headers[HttpHeaders.contentTypeHeader] = contentType;
-  if (range != null) {
-    // We only support one range, where the standard support several.
-    final matches = RegExp(r'^bytes=(\d*)\-(\d*)$').firstMatch(range);
-    // If the range header have the right format, handle it.
-    if (matches != null) {
-      final startMatch = matches[1]!;
-      final endMatch = matches[2]!;
-      if (startMatch.isNotEmpty || endMatch.isNotEmpty) {
-        // Serve sub-range.
-        int start; // First byte position - inclusive.
-        int end; // Last byte position - inclusive.
-        if (startMatch.isEmpty) {
-          start = length - int.parse(endMatch);
-          if (start < 0) start = 0;
-          end = length - 1;
-        } else {
-          start = int.parse(startMatch);
-          end = endMatch.isEmpty ? length - 1 : int.parse(endMatch);
-        }
-        // If the range is syntactically invalid the Range header
-        // MUST be ignored (RFC 2616 section 14.35.1).
-        if (start <= end) {
-          if (end >= length) {
-            end = length - 1;
-          }
-          if (start >= length) {
-            return Response(
-              HttpStatus.requestedRangeNotSatisfiable,
-              headers: headers,
-            );
-          }
+  if (range == null) return null;
+  final matches = RegExp(r'^bytes=(\d*)\-(\d*)$').firstMatch(range);
+  // Ignore ranges other than bytes
+  if (matches == null) return null;
 
-          // Override Content-Length with the actual bytes sent.
-          headers[HttpHeaders.contentLengthHeader] =
-              (end - start + 1).toString();
+  final actualLength = file.lengthSync();
+  final startMatch = matches[1]!;
+  final endMatch = matches[2]!;
+  if (startMatch.isEmpty && endMatch.isEmpty) return null;
 
-          // Set 'Partial Content' status code.
-          headers[HttpHeaders.contentRangeHeader] = 'bytes $start-$end/$length';
-          // Pipe the 'range' of the file.
-          if (request.method == 'HEAD') {
-            return Response(
-              HttpStatus.partialContent,
-              headers: headers,
-            );
-          } else {
-            return Response(
-              HttpStatus.partialContent,
-              body: file.openRead(start, end + 1),
-              headers: headers,
-            );
-          }
-        }
-      }
-    }
+  int start; // First byte position - inclusive.
+  int end; // Last byte position - inclusive.
+  if (startMatch.isEmpty) {
+    start = actualLength - int.parse(endMatch);
+    if (start < 0) start = 0;
+    end = actualLength - 1;
+  } else {
+    start = int.parse(startMatch);
+    end = endMatch.isEmpty ? actualLength - 1 : int.parse(endMatch);
   }
-  headers[HttpHeaders.contentLengthHeader] = stat.size.toString();
 
-  return Response.ok(
-    request.method == 'HEAD' ? null : file.openRead(),
-    headers: headers,
+  // If the range is syntactically invalid the Range header
+  // MUST be ignored (RFC 2616 section 14.35.1).
+  if (start > end) return null;
+
+  if (end >= actualLength) {
+    end = actualLength - 1;
+  }
+  if (start >= actualLength) {
+    return Response(
+      HttpStatus.requestedRangeNotSatisfiable,
+      headers: headers,
+    );
+  }
+  return Response(
+    HttpStatus.partialContent,
+    body: request.method == 'HEAD' ? null : file.openRead(start, end + 1),
+    headers: headers
+      ..[HttpHeaders.contentLengthHeader] = (end - start + 1).toString()
+      ..[HttpHeaders.contentRangeHeader] = 'bytes $start-$end/$actualLength',
   );
 }

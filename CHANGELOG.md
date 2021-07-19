@@ -1,3 +1,5 @@
+## 1.1.1-dev
+
 ## 1.1.0
 
 * Correctly handle `HEAD` requests.
