@@ -1,6 +1,6 @@
 name: shelf_router_generator
-version: 1.0.0
-description: |
+version: 1.0.1
+description: >-
   A package:build compatible builder for generating request routers for the
   shelf web-framework based on source annotations.
 homepage: https://github.com/google/dart-neats/tree/master/shelf_router_generator
@@ -8,7 +8,7 @@ repository: https://github.com/google/dart-neats.git
 issue_tracker: https://github.com/google/dart-neats/labels/pkg:shelf_router_generator
 
 dependencies:
-  analyzer: ^1.2.0
+  analyzer: '>=1.2.0 <3.0.0'
   build: ^2.0.0
   build_config: ^1.0.0
   code_builder: ^4.0.0

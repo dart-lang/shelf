@@ -1,3 +1,7 @@
+## v1.0.1
+
+* Support update-to-date dependencies.
+
 ## v1.0.0
 
  * Support update-to-date dependencies.
