@@ -21,8 +21,9 @@
 library builder;
 
 import 'package:build/build.dart';
-import 'package:source_gen/source_gen.dart';
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
+import 'package:source_gen/source_gen.dart';
+
 import 'src/shelf_router_generator.dart';
 
 /// A [Builder] that generates a `_$<className>Router(<className> service)`
