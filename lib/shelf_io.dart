@@ -29,7 +29,7 @@ import 'package:stream_channel/stream_channel.dart';
 import 'shelf.dart';
 import 'src/util.dart';
 
-export 'src/io_server.dart';
+export 'src/io_server.dart' show IOServer;
 
 /// Starts an [HttpServer] that listens on the specified [address] and
 /// [port] and sends requests to [handler].
