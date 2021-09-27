@@ -2,9 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
-import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart';
 
 /// A handler that proxies requests to [url].
@@ -49,11 +50,12 @@ Handler proxyHandler(url, {http.Client? client, String? proxyName}) {
     _addHeader(clientRequest.headers, 'via',
         '${serverRequest.protocolVersion} $proxyName');
 
-    unawaited(serverRequest
+    serverRequest
         .read()
         .forEach(clientRequest.sink.add)
         .catchError(clientRequest.sink.addError)
-        .whenComplete(clientRequest.sink.close));
+        .whenComplete(clientRequest.sink.close)
+        .ignore();
     final clientResponse = await nonNullClient.send(clientRequest);
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45

@@ -1,3 +1,8 @@
+## 1.0.1
+
+- Drop dependency on `package:pedantic`.
+- Require Dart `2.14`.
+
 ## 1.0.0
 
 - Require Dart `2.12`.
