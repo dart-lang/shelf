@@ -2,10 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: deprecated_member_use_from_same_package
+
 /// A Shelf adapter for handling [HttpRequest] objects from `dart:io`.
 ///
 /// One can provide an instance of [HttpServer] as the `requests` parameter in
-/// [serveRequests].
+/// [serveRequestsGuarded].
 ///
 /// This adapter supports request hijacking; see [Request.hijack]. It also
 /// supports the `"shelf.io.buffer_output"` `Response.context` property. If this
@@ -34,7 +36,7 @@ export 'src/io_server.dart' show IOServer;
 /// Serve a [Stream] of [HttpRequest]s with error handling.
 ///
 /// [HttpServer] implements [Stream<HttpRequest>] so it can be passed directly
-/// to [serveRequests].
+/// to [serveRequestsGuarded].
 ///
 /// Serves requests in an error zone, using [onError] to handle errors.
 ///
@@ -104,6 +106,7 @@ Future<HttpServer> serve(
 /// console and cause a 500 response with no body. Errors thrown asynchronously
 /// by [handler] will be printed to the console or, if there's an active error
 /// zone, passed to that zone.
+@Deprecated('Use serveRequestsGuarded')
 void serveRequests(Stream<HttpRequest> requests, Handler handler) {
   catchTopLevelErrors(() {
     requests.listen((request) => handleRequest(request, handler));

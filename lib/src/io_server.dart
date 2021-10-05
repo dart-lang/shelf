@@ -52,7 +52,9 @@ class IOServer implements Server {
     }
     _mounted = true;
 
-    serveRequests(server, handler);
+    serveRequestsGuarded(server, handler, (e, s) {
+      print('IOServer: error serving requests:\n$e:$s');
+    });
   }
 
   @override
