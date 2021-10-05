@@ -31,50 +31,39 @@ import 'src/util.dart';
 
 export 'src/io_server.dart' show IOServer;
 
-/// Starts an [HttpServer] that listens on the specified [address] and
-/// [port] and sends requests to [handler].
-///
-/// If a [securityContext] is provided an HTTPS server will be started.
-///
-/// Serves requests in an error zone, using [onError] to handle errors, if
-/// provided. Uses a default error handler that prints error summary if
-/// [onError] is not provided.
-///
-/// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
-/// for more details on [address], [port], [backlog], and [shared].
-Future<HttpServer> serveGuarded(
-  Handler handler,
-  address,
-  int port, {
-  SecurityContext? securityContext,
-  int? backlog,
-  bool shared = false,
-  void Function(Object, StackTrace) onError = _logServeRequestErrors,
-}) async {
-  backlog ??= 0;
-  var server = await (securityContext == null
-      ? HttpServer.bind(address, port, backlog: backlog, shared: shared)
-      : HttpServer.bindSecure(
-          address,
-          port,
-          securityContext,
-          backlog: backlog,
-          shared: shared,
-        ));
-  serveRequestsGuarded(server, handler, onError: onError);
-  return server;
-}
-
 /// Serve a [Stream] of [HttpRequest]s with error handling.
 ///
-/// Serves requests in an error zone, using [onError] to handle errors, if
-/// provided. Uses a default error handler that prints error summary if
-/// [onError] is not provided.
+/// [HttpServer] implements [Stream<HttpRequest>] so it can be passed directly
+/// to [serveRequests].
+///
+/// Serves requests in an error zone, using [onError] to handle errors.
+///
+/// Errors thrown by [handler] while serving a request will be printed to the
+/// console and cause a 500 response with no body. All other errors are passed
+/// to the [onError] error handler.
+///
+/// If [captureAsyncTraces] is set to true, capture async traces with
+/// [Chain.capture], which will have an overhead of recording more traces.
+///
+/// Note that in real applications errors might need to be captured for
+/// investigation purposes and logged to analytics backends.
+///
+/// **Example**
+///
+/// Serve request and print errors.
+///
+/// ```
+///   var server = await HttpServer.bind(address, port);
+///   serveRequestsGuarded(server, handler, _logServeRequestErrors);
+/// ```
 void serveRequestsGuarded(Stream<HttpRequest> requests, Handler handler,
-    {void Function(Object, StackTrace) onError = _logServeRequestErrors}) {
-  return Chain.capture(() {
-    serveRequests(requests, handler);
-  }, onError: onError);
+    void Function(Object, StackTrace) onError,
+    {bool captureAsyncTraces = false}) {
+  if (captureAsyncTraces) {
+    return Chain.capture(() => serveRequests(requests, handler),
+        onError: onError);
+  }
+  return runZonedGuarded(() => serveRequests(requests, handler), onError);
 }
 
 /// Starts an [HttpServer] that listens on the specified [address] and

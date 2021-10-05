@@ -13,6 +13,7 @@ import 'package:http_parser/http_parser.dart' as parser;
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf/src/util.dart';
+import 'package:stack_trace/stack_trace.dart';
 import 'package:test/test.dart';
 
 import 'ssl_certs.dart';
@@ -288,6 +289,64 @@ void main() {
 
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
+  });
+
+  test('serves requests with capture enabled', () async {
+    var server = await HttpServer.bind('localhost', 0);
+    shelf_io.serveRequestsGuarded(server, syncHandler, (e, s) {
+      fail('Unexpected error: $e:$s');
+    }, captureAsyncTraces: true);
+
+    var response = await http.get(Uri.http('localhost:${server.port}', '/'));
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.body, 'Hello from /');
+    await server.close();
+  });
+
+  test('serves requests with capture disabled', () async {
+    var server = await HttpServer.bind('localhost', 0);
+    shelf_io.serveRequestsGuarded(server, syncHandler, (e, s) {
+      fail('Unexpected error: $e:$s');
+    });
+
+    var response = await http.get(Uri.http('localhost:${server.port}', '/'));
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.body, 'Hello from /');
+    await server.close();
+  });
+
+  test('passes stack chains to error handler with capture enabled', () async {
+    var server = await HttpServer.bind('localhost', 0);
+    shelf_io.serveRequestsGuarded(server, (request) {
+      Future(() => throw 'oh no');
+      return syncHandler(request);
+    }, (e, s) {
+      expect(e, equals('oh no'));
+      expect(s, isA<Chain>());
+      expect('$s', contains('serveRequestsGuarded'));
+    }, captureAsyncTraces: true);
+
+    var response = await http.get(Uri.http('localhost:${server.port}', '/'));
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.body, 'Hello from /');
+    await server.close();
+  });
+
+  test('passes stack traces to error handler with capture disabled', () async {
+    var server = await HttpServer.bind('localhost', 0);
+    shelf_io.serveRequestsGuarded(server, (request) {
+      Future(() => throw 'oh no');
+      return syncHandler(request);
+    }, (e, s) {
+      expect(e, equals('oh no'));
+      expect(s, isA<StackTrace>());
+      expect('$s', contains('_handleMessage'));
+    });
+
+    var response = await http.get(Uri.http('localhost:${server.port}', '/'));
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.body, 'Hello from /');
+    await server.close();
   });
 
   test('a bad HTTP host request results in a 500 response', () async {

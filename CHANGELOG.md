@@ -1,4 +1,4 @@
-## 1.2.1-dev
+## 1.3.0-dev
 
 * Added `serveGuarded` and `serveRequestGuarded` API that always serve
   requests in an error zone, capture async error traces, and use provided
