@@ -1,5 +1,7 @@
 ## 1.2.1-dev
 
+* Deprecate `ServerHandler`.
+
 ## 1.2.0
 
 * Added `MiddlewareExtensions` which provides `addMiddleware` and `addHandler`
