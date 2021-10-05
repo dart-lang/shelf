@@ -1,5 +1,9 @@
 ## 1.2.1-dev
 
+* Added `serveGuarded` and `serveRequestGuarded` API that always serve
+  requests in an error zone, capture async error traces, and use provided
+  error handler to handle errors.
+
 ## 1.2.0
 
 * Added `MiddlewareExtensions` which provides `addMiddleware` and `addHandler`

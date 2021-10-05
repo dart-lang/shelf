@@ -36,6 +36,52 @@ export 'src/io_server.dart' show IOServer;
 ///
 /// If a [securityContext] is provided an HTTPS server will be started.
 ///
+/// Serves requests in an error zone, using [onError] to handle errors, if
+/// provided. Uses a default error handler that prints error summary if
+/// [onError] is not provided.
+///
+/// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
+/// for more details on [address], [port], [backlog], and [shared].
+Future<HttpServer> serveGuarded(
+  Handler handler,
+  address,
+  int port, {
+  SecurityContext? securityContext,
+  int? backlog,
+  bool shared = false,
+  void Function(Object, StackTrace) onError = _logServeRequestErrors,
+}) async {
+  backlog ??= 0;
+  var server = await (securityContext == null
+      ? HttpServer.bind(address, port, backlog: backlog, shared: shared)
+      : HttpServer.bindSecure(
+          address,
+          port,
+          securityContext,
+          backlog: backlog,
+          shared: shared,
+        ));
+  serveRequestsGuarded(server, handler, onError: onError);
+  return server;
+}
+
+/// Serve a [Stream] of [HttpRequest]s with error handling.
+///
+/// Serves requests in an error zone, using [onError] to handle errors, if
+/// provided. Uses a default error handler that prints error summary if
+/// [onError] is not provided.
+void serveRequestsGuarded(Stream<HttpRequest> requests, Handler handler,
+    {void Function(Object, StackTrace) onError = _logServeRequestErrors}) {
+  return Chain.capture(() {
+    serveRequests(requests, handler);
+  }, onError: onError);
+}
+
+/// Starts an [HttpServer] that listens on the specified [address] and
+/// [port] and sends requests to [handler].
+///
+/// If a [securityContext] is provided an HTTPS server will be started.
+///
 /// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
 /// for more details on [address], [port], [backlog], and [shared].
 Future<HttpServer> serve(
@@ -72,9 +118,7 @@ Future<HttpServer> serve(
 void serveRequests(Stream<HttpRequest> requests, Handler handler) {
   catchTopLevelErrors(() {
     requests.listen((request) => handleRequest(request, handler));
-  }, (error, stackTrace) {
-    _logTopLevelError('Asynchronous error\n$error', stackTrace);
-  });
+  }, _logServeRequestErrors);
 }
 
 /// Uses [handler] to handle [request].
@@ -254,3 +298,6 @@ void _logTopLevelError(String message, StackTrace stackTrace) {
   stderr.writeln(message);
   stderr.writeln(chain);
 }
+
+void _logServeRequestErrors(Object error, StackTrace stackTrace) =>
+    _logTopLevelError('Serve request error:\n$error', stackTrace);

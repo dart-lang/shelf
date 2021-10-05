@@ -13,8 +13,8 @@ import 'shelf_unmodifiable_map.dart';
 /// If [this] is called in a non-root error zone, it will just run [callback]
 /// and return the result. Otherwise, it will capture any errors using
 /// [runZoned] and pass them to [onError].
-void catchTopLevelErrors(void Function() callback,
-    void Function(dynamic error, StackTrace) onError) {
+void catchTopLevelErrors(
+    void Function() callback, void Function(Object error, StackTrace) onError) {
   if (Zone.current.inSameErrorZone(Zone.root)) {
     return runZonedGuarded(callback, onError);
   } else {
