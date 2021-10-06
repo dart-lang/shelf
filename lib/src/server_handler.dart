@@ -16,6 +16,8 @@ import 'server.dart';
 /// Requests to the handler are sent to the server's mounted handler once it's
 /// available. This is used to expose a virtual [Server] that's actually one
 /// part of a larger URL-space.
+@Deprecated('Do not use. If you have a use case for this class add a comment '
+    'at https://github.com/dart-lang/shelf/issues/205')
 class ServerHandler {
   /// The server.
   ///
