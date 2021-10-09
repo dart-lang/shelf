@@ -9,6 +9,7 @@ export 'src/middleware.dart' show Middleware, createMiddleware;
 export 'src/middleware/add_chunked_encoding.dart' show addChunkedEncoding;
 export 'src/middleware/logger.dart' show logRequests;
 export 'src/middleware_extensions.dart' show MiddlewareExtensions;
+export 'src/multipart.dart' show ReadMultipartRequest;
 export 'src/pipeline.dart' show Pipeline;
 export 'src/request.dart' show Request;
 export 'src/response.dart' show Response;

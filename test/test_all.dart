@@ -10,6 +10,7 @@ import 'hijack_test.dart' as hijack;
 import 'log_middleware_test.dart' as log_middleware;
 import 'message_change_test.dart' as message_change;
 import 'message_test.dart' as message;
+import 'multipart_test.dart' as multipart;
 import 'pipeline_test.dart' as pipeline;
 import 'request_test.dart' as request;
 import 'response_test.dart' as response;
@@ -22,6 +23,7 @@ void main() {
   group('log_middleware', log_middleware.main);
   group('message_change', message_change.main);
   group('message', message.main);
+  group('multipart', multipart.main);
   group('pipeline', pipeline.main);
   group('request', request.main);
   group('response', response.main);

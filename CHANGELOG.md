@@ -1,5 +1,8 @@
-## 1.2.1-dev
+## 1.3.0-dev
 
+* Add the `ReadMultipartRequest` extension on `Request` to handle multipart requests:
+    * `Request.isMultipart` checks whether a request has a multipart body.
+    * `Request.parts` reads individual parts from the multipart body.
 * Deprecate `ServerHandler`.
 
 ## 1.2.0
