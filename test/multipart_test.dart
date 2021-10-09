@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:mime/mime.dart';
 import 'package:shelf/shelf.dart';
-import 'package:test/scaffolding.dart';
 import 'package:test/test.dart';
 
 import 'test_util.dart';
