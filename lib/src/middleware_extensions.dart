@@ -1,7 +1,7 @@
 import 'handler.dart';
 import 'middleware.dart';
 
-/// Extensions on [Middleware] to aid in composing [Middleware] and [Handlers].
+/// Extensions on [Middleware] to aid in composing [Middleware] and [Handler]s.
 ///
 /// These members can be used in place of [Pipeline].
 extension MiddlewareExtensions on Middleware {
