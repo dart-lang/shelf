@@ -45,6 +45,7 @@ class Response extends Message {
   ///
   /// This indicates that the request has succeeded.
   ///
+  /// {@template shelf_response_body_and_encoding_param}
   /// [body] is the response body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null` to indicate no body.
   ///
@@ -61,6 +62,7 @@ class Response extends Message {
   /// Content-Type header, it will be set to "application/octet-stream".
   /// [headers] must contain values that are either `String` or `List<String>`.
   /// An empty list will cause the header to be omitted.
+  /// {@endtemplate}
   Response.ok(
     body, {
     Map<String, /* String | List<String> */ Object>? headers,
@@ -75,22 +77,7 @@ class Response extends Message {
   /// URI. [location] is that URI; it can be either a [String] or a [Uri]. It's
   /// automatically set as the Location header in [headers].
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  ///
-  /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
-  /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
-  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
-  /// encoding to the body.
-  ///
-  /// If [encoding] is passed, the "encoding" field of the Content-Type header
-  /// in [headers] will be set appropriately. If there is no existing
-  /// Content-Type header, it will be set to "application/octet-stream".
-  /// [headers] must contain values that are either `String` or `List<String>`.
-  /// An empty list will cause the header to be omitted.
+  /// {@macro shelf_response_body_and_encoding_param}
   Response.movedPermanently(
     Object location, {
     body,
@@ -105,22 +92,7 @@ class Response extends Message {
   /// URI. [location] is that URI; it can be either a [String] or a [Uri]. It's
   /// automatically set as the Location header in [headers].
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  ///
-  /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
-  /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
-  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
-  /// encoding to the body.
-  ///
-  /// If [encoding] is passed, the "encoding" field of the Content-Type header
-  /// in [headers] will be set appropriately. If there is no existing
-  /// Content-Type header, it will be set to "application/octet-stream".
-  /// [headers] must contain values that are either `String` or `List<String>`.
-  /// An empty list will cause the header to be omitted.
+  /// {@macro shelf_response_body_and_encoding_param}
   Response.found(
     Object location, {
     body,
@@ -143,22 +115,7 @@ class Response extends Message {
   /// [String] or a [Uri]. It's automatically set as the Location header in
   /// [headers].
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  ///
-  /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
-  /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
-  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
-  /// encoding to the body.
-  ///
-  /// If [encoding] is passed, the "encoding" field of the Content-Type header
-  /// in [headers] will be set appropriately. If there is no existing
-  /// Content-Type header, it will be set to "application/octet-stream".
-  /// [headers] must contain values that are either `String` or `List<String>`.
-  /// An empty list will cause the header to be omitted.
+  /// {@macro shelf_response_body_and_encoding_param}
   Response.seeOther(
     Object location, {
     body,
@@ -209,22 +166,7 @@ class Response extends Message {
   ///
   /// This indicates that the server is refusing to fulfill the request.
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  ///
-  /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
-  /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
-  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
-  /// encoding to the body.
-  ///
-  /// If [encoding] is passed, the "encoding" field of the Content-Type header
-  /// in [headers] will be set appropriately. If there is no existing
-  /// Content-Type header, it will be set to "application/octet-stream".
-  /// [headers] must contain values that are either `String` or `List<String>`.
-  /// An empty list will cause the header to be omitted.
+  /// {@macro shelf_response_body_and_encoding_param}
   Response.forbidden(
     body, {
     Map<String, /* String | List<String> */ Object>? headers,
@@ -243,22 +185,7 @@ class Response extends Message {
   /// This indicates that the server didn't find any resource matching the
   /// requested URI.
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  ///
-  /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
-  /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
-  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
-  /// encoding to the body.
-  ///
-  /// If [encoding] is passed, the "encoding" field of the Content-Type header
-  /// in [headers] will be set appropriately. If there is no existing
-  /// Content-Type header, it will be set to "application/octet-stream".
-  /// [headers] must contain values that are either `String` or `List<String>`.
-  /// An empty list will cause the header to be omitted.
+  /// {@macro shelf_response_body_and_encoding_param}
   Response.notFound(
     body, {
     Map<String, /* String | List<String> */ Object>? headers,
@@ -277,22 +204,7 @@ class Response extends Message {
   /// This indicates that the server had an internal error that prevented it
   /// from fulfilling the request.
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  ///
-  /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
-  /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
-  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
-  /// encoding to the body.
-  ///
-  /// If [encoding] is passed, the "encoding" field of the Content-Type header
-  /// in [headers] will be set appropriately. If there is no existing
-  /// Content-Type header, it will be set to "application/octet-stream".
-  /// [headers] must contain values that are either `String` or `List<String>`.
-  /// An empty list will cause the header to be omitted.
+  /// {@macro shelf_response_body_and_encoding_param}
   Response.internalServerError({
     body,
     Map<String, /* String | List<String> */ Object>? headers,
@@ -310,22 +222,7 @@ class Response extends Message {
   ///
   /// [statusCode] must be greater than or equal to 100.
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
-  ///
-  /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
-  /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
-  /// will set the Transfer-Encoding header to "chunked" and apply the chunked
-  /// encoding to the body.
-  ///
-  /// If [encoding] is passed, the "encoding" field of the Content-Type header
-  /// in [headers] will be set appropriately. If there is no existing
-  /// Content-Type header, it will be set to "application/octet-stream".
-  /// [headers] must contain values that are either `String` or `List<String>`.
-  /// An empty list will cause the header to be omitted.
+  /// {@macro shelf_response_body_and_encoding_param}
   Response(
     this.statusCode, {
     body,
@@ -355,7 +252,7 @@ class Response extends Message {
   /// All other context and header values from the [Response] will be included
   /// in the copied [Response] unchanged.
   ///
-  /// [body] is the request body. It may be either a [String], a [List<int>], a
+  /// [body] is the response body. It may be either a [String], a [List<int>], a
   /// [Stream<List<int>>], or `<int>[]` (empty list) to indicate no body.
   @override
   Response change({
