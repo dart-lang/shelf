@@ -15,8 +15,10 @@
 // @dart=2.12
 
 import 'dart:async' show Future, FutureOr;
+
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
+
 import 'api.dart';
 import 'unrelatedannotation.dart';
 
@@ -39,7 +41,7 @@ class Service {
 
   @Route.get('/hi/<user>')
   Future<Response> _hi(Request request) async {
-    final name = params(request, 'user');
+    final name = request.params['user'];
     return Response.ok('hi $name');
   }
 
