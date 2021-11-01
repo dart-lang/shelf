@@ -2,22 +2,23 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// A Shelf adapter for handling [HttpRequest] objects from `dart:io`.
+/// A Shelf adapter for handling [HttpRequest] objects from `dart:io`'s
+/// [HttpServer].
 ///
 /// One can provide an instance of [HttpServer] as the `requests` parameter in
 /// [serveRequests].
 ///
-/// This adapter supports request hijacking; see [Request.hijack]. It also
-/// supports the `"shelf.io.buffer_output"` `Response.context` property. If this
-/// property is `true` (the default), streamed responses will be buffered to
-/// improve performance; if it's `false`, all chunks will be pushed over the
-/// wire as they're received. See
-/// [`HttpResponse.bufferOutput`](https://api.dart.dev/stable/dart-io/HttpResponse/bufferOutput.html)
-/// for more information.
+/// This adapter supports request hijacking; see [Request.hijack].
 ///
-/// `Request`s passed to a `Handler` will contain the
-/// `"shelf.io.connection_info"` `Request.context` property, which holds the
-/// `HttpConnectionInfo` object from the underlying `HttpRequest`.
+/// [Request]s passed to a [Handler] will contain the [Request.context] key
+/// `"shelf.io.connection_info"` containing the [HttpConnectionInfo] object from
+/// the underlying [HttpRequest].
+///
+/// When creating [Response] instances for this adapter, you can set the
+/// `"shelf.io.buffer_output"` key in [Response.context]. If `true`,
+/// (the default), streamed responses will be buffered to improve performance.
+/// If `false`, all chunks will be pushed over the wire as they're received.
+/// See [HttpResponse.bufferOutput] for more information.
 import 'dart:async';
 import 'dart:io';
 
