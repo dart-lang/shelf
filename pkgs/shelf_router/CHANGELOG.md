@@ -1,3 +1,7 @@
+## v1.1.2
+
+  * Remove trailing slash requirement when using `mount`.
+
 ## v1.1.1
 
  * Fix `Router.routeNotFound` to enable multiple `read()` calls on it.

@@ -148,16 +148,24 @@ class Router {
   ///
   /// In this case prefix may not contain any parameters, nor
   void mount(String prefix, Handler handler) {
-    if (!prefix.startsWith('/') || !prefix.endsWith('/')) {
-      throw ArgumentError.value(
-          prefix, 'prefix', 'must start and end with a slash');
+    if (!prefix.startsWith('/')) {
+      throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
     }
 
     // first slash is always in request.handlerPath
     final path = prefix.substring(1);
-    all(prefix + '<path|[^]*>', (Request request) {
-      return handler(request.change(path: path));
-    });
+    if (prefix.endsWith('/')) {
+      all(prefix + '<path|[^]*>', (Request request) {
+        return handler(request.change(path: path));
+      });
+    } else {
+      all(prefix, (Request request) {
+        return handler(request.change(path: path));
+      });
+      all(prefix + '/<path|[^]*>', (Request request) {
+        return handler(request.change(path: path + '/'));
+      });
+    }
   }
 
   /// Route incoming requests to registered handlers.

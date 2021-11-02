@@ -148,6 +148,36 @@ void main() {
     expect(await get('/api/hello?ok'), 'middleware');
   });
 
+  test('mount(Router) does not require a trailing slash', () async {
+    var api = Router();
+    api.get('/', (Request request) {
+      return Response.ok('Hello World!');
+    });
+
+    api.get('/user/<user>/info', (Request request, String user) {
+      return Response.ok('Hello $user');
+    });
+
+    var app = Router();
+    app.get('/hello', (Request request) {
+      return Response.ok('hello-world');
+    });
+
+    app.mount('/api', api);
+
+    app.all('/<_|[^]*>', (Request request) {
+      return Response.ok('catch-all-handler');
+    });
+
+    server.mount(app);
+
+    expect(await get('/hello'), 'hello-world');
+    expect(await get('/api'), 'Hello World!');
+    expect(await get('/api/'), 'Hello World!');
+    expect(await get('/api/user/jonasfj/info'), 'Hello jonasfj');
+    expect(await get('/api/user/jonasfj/info-wrong'), 'catch-all-handler');
+  });
+
   test('responds with 404 if no handler matches', () {
     var api = Router()..get('/hello', (request) => Response.ok('Hello'));
     server.mount(api);
