@@ -1,6 +1,7 @@
 ## 1.2.1-dev
 
 * Deprecate `ServerHandler`.
+* Require Dart >= 2.14
 
 ## 1.2.0
 
