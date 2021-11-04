@@ -14,13 +14,13 @@ void main() {
     gotLog = false;
   });
 
-  var logger = (String msg, bool isError) {
+  void logger(String msg, bool isError) {
     expect(gotLog, isFalse);
     gotLog = true;
     expect(isError, isFalse);
     expect(msg, contains('GET'));
     expect(msg, contains('[200]'));
-  };
+  }
 
   test('logs a request with a synchronous response', () async {
     var handler = const Pipeline()

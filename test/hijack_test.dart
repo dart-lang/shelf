@@ -12,8 +12,7 @@ import 'test_util.dart';
 
 void main() {
   test('hijacking a non-hijackable request throws a StateError', () {
-    expect(() => Request('GET', localhostUri).hijack((_) => null),
-        throwsStateError);
+    expect(() => Request('GET', localhostUri).hijack((_) {}), throwsStateError);
   });
 
   test(
@@ -42,19 +41,19 @@ void main() {
 
   test('hijacking a hijackable request twice throws a StateError', () {
     // Assert that the [onHijack] callback is only called once.
-    var request = Request('GET', localhostUri,
-        onHijack: expectAsync1((_) => null, count: 1));
+    var request =
+        Request('GET', localhostUri, onHijack: expectAsync1((_) {}, count: 1));
 
-    expect(() => request.hijack((_) => null), throwsHijackException);
+    expect(() => request.hijack((_) {}), throwsHijackException);
 
-    expect(() => request.hijack((_) => null), throwsStateError);
+    expect(() => request.hijack((_) {}), throwsStateError);
   });
 
   group('calling change', () {
     test('hijacking a non-hijackable request throws a StateError', () {
       var request = Request('GET', localhostUri);
       var newRequest = request.change();
-      expect(() => newRequest.hijack((_) => null), throwsStateError);
+      expect(() => newRequest.hijack((_) {}), throwsStateError);
     });
 
     test(
@@ -88,13 +87,13 @@ void main() {
         'StateError', () {
       // Assert that the [onHijack] callback is only called once.
       var request = Request('GET', localhostUri,
-          onHijack: expectAsync1((_) => null, count: 1));
+          onHijack: expectAsync1((_) {}, count: 1));
 
       var newRequest = request.change();
 
-      expect(() => newRequest.hijack((_) => null), throwsHijackException);
+      expect(() => newRequest.hijack((_) {}), throwsHijackException);
 
-      expect(() => request.hijack((_) => null), throwsStateError);
+      expect(() => request.hijack((_) {}), throwsStateError);
     });
   });
 }

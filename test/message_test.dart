@@ -175,7 +175,7 @@ void main() {
     });
 
     test('throws when calling read()/readAsString() multiple times', () {
-      var request;
+      Message request;
 
       request = _createMessage();
       expect(request.read().toList(), completion(isEmpty));
