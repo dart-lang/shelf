@@ -4,7 +4,6 @@
 
 import 'dart:async';
 
-import 'package:pedantic/pedantic.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 

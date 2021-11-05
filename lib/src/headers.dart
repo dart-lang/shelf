@@ -5,7 +5,8 @@
 import 'dart:collection';
 
 import 'package:http_parser/http_parser.dart';
-import 'package:shelf/src/util.dart';
+
+import 'util.dart';
 
 final _emptyHeaders = Headers._empty();
 
