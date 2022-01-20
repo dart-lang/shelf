@@ -94,6 +94,18 @@ void main() {
     });
   });
 
+  group('Response.badRequest:', () {
+    test('no supplied body results in "Bad Request"', () {
+      var response = Response.badRequest();
+      expect(response.readAsString(), completion(equals('Bad Request')));
+    });
+
+    test('sets body', () {
+      var response = Response.badRequest(body: 'missing token');
+      expect(response.readAsString(), completion(equals('missing token')));
+    });
+  });
+
   group('Response redirect', () {
     test('sets the location header for a String', () {
       var response = Response.found('/foo');
