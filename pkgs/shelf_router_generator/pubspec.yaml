@@ -8,7 +8,7 @@ repository: https://github.com/google/dart-neats.git
 issue_tracker: https://github.com/google/dart-neats/labels/pkg:shelf_router_generator
 
 dependencies:
-  analyzer: '>=1.2.0 <3.0.0'
+  analyzer: '>=2.0.0 <4.0.0'
   build: ^2.0.0
   build_config: ^1.0.0
   code_builder: ^4.0.0
@@ -19,7 +19,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.0.0
-  build_verify: ^2.0.0
+  build_verify: ^3.0.0
   http: ^0.13.0
   lints: ^1.0.0
   test: ^1.5.3
