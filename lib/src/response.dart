@@ -162,6 +162,24 @@ class Response extends Message {
           context: context,
         );
 
+  /// Constructs a 400 Bad Request response.
+  ///
+  /// This indicates that the server has received a malformed request.
+  ///
+  /// {@macro shelf_response_body_and_encoding_param}
+  Response.badRequest({
+    body,
+    Map<String, /* String | List<String> */ Object>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this(
+          400,
+          headers: body == null ? _adjustErrorHeaders(headers) : headers,
+          body: body ?? 'Bad Request',
+          context: context,
+          encoding: encoding,
+        );
+
   /// Constructs a 403 Forbidden response.
   ///
   /// This indicates that the server is refusing to fulfill the request.
