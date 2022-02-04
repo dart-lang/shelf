@@ -1,6 +1,7 @@
 ## 1.3.0
 
 * Add Response.badRequest() constructor
+
 ## 1.2.1-dev
 
 * Deprecate `ServerHandler`.
