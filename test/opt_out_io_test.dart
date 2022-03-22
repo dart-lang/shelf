@@ -41,7 +41,7 @@ int get _serverPort => _server.port;
 
 HttpServer _server;
 
-Future _scheduleServer(
+Future<void> _scheduleServer(
   Handler handler, {
   SecurityContext securityContext,
 }) async {
@@ -58,7 +58,7 @@ Future<http.Response> _get({
   Map<String, /* String | List<String> */ Object> headers,
   String path = '',
 }) async {
-  // TODO: use http.Client once it supports sending and receiving multiple headers.
+  // TODO: use http.Client once it supports sending/receiving multiple headers.
   final client = HttpClient();
   try {
     final rq =

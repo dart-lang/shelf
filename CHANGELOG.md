@@ -2,7 +2,7 @@
 
 * Add Response.badRequest() constructor
 * Deprecate `ServerHandler`.
-* Require Dart >= 2.14
+* Require Dart >= 2.16
 
 ## 1.2.0
 

@@ -19,7 +19,7 @@ void main() {
     });
 
     test('read', () {
-      var helloWorldBytes = List.from(helloBytes)..addAll(worldBytes);
+      var helloWorldBytes = [...helloBytes, ...worldBytes];
 
       var response = Response.ok('hello, world');
       expect(response.read().toList(), completion(equals([helloWorldBytes])));
@@ -147,7 +147,7 @@ void main() {
 
   group('change', () {
     test('with no arguments returns instance with equal values', () {
-      var controller = StreamController();
+      var controller = StreamController<Object>();
 
       var request = Response(345,
           body: 'hèllo, world',

@@ -31,7 +31,7 @@ class Body {
   /// [body] may be either a [Body], a [String], a [List<int>], a
   /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] will be
   /// used to convert it to a [Stream<List<int>>].
-  factory Body(body, [Encoding? encoding]) {
+  factory Body(Object? body, [Encoding? encoding]) {
     if (body is Body) return body;
 
     Stream<List<int>> stream;

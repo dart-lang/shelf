@@ -12,12 +12,14 @@ import 'test_util.dart';
 
 class _TestMessage extends Message {
   _TestMessage(Map<String, /* String | List<String> */ Object>? headers,
-      Map<String, Object>? context, body, Encoding? encoding)
+      Map<String, Object>? context, Object? body, Encoding? encoding)
       : super(body, headers: headers, context: context, encoding: encoding);
 
   @override
   Message change(
-      {Map<String, String>? headers, Map<String, Object>? context, body}) {
+      {Map<String, String>? headers,
+      Map<String, Object>? context,
+      Object? body}) {
     throw UnimplementedError();
   }
 }
@@ -25,7 +27,7 @@ class _TestMessage extends Message {
 Message _createMessage(
     {Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
-    body,
+    Object? body,
     Encoding? encoding}) {
   return _TestMessage(headers, context, body, encoding);
 }
@@ -110,7 +112,7 @@ void main() {
     });
 
     test('supports a Stream<List<int>> body', () {
-      var controller = StreamController();
+      var controller = StreamController<Object>();
       var request = _createMessage(body: controller.stream);
       expect(request.readAsString(), completion(equals('hello, world')));
 
@@ -156,7 +158,7 @@ void main() {
     });
 
     test('supports a Stream<List<int>> body', () {
-      var controller = StreamController();
+      var controller = StreamController<Object>();
       var request = _createMessage(body: controller.stream);
       expect(request.read().toList(),
           completion(equals([helloBytes, worldBytes])));
@@ -220,13 +222,13 @@ void main() {
     });
 
     test('is null for a stream body', () {
-      var request = _createMessage(body: Stream.empty());
+      var request = _createMessage(body: Stream<List<int>>.empty());
       expect(request.contentLength, isNull);
     });
 
     test('uses the content-length header for a stream body', () {
       var request = _createMessage(
-          body: Stream.empty(), headers: {'content-length': '42'});
+          body: Stream<List<int>>.empty(), headers: {'content-length': '42'});
       expect(request.contentLength, 42);
     });
 

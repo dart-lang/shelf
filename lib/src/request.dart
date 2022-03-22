@@ -133,7 +133,7 @@ class Request extends Message {
     Map<String, /* String | List<String> */ Object>? headers,
     String? handlerPath,
     Uri? url,
-    body,
+    Object? body,
     Encoding? encoding,
     Map<String, Object>? context,
     void Function(void Function(StreamChannel<List<int>>))? onHijack,
@@ -147,7 +147,7 @@ class Request extends Message {
             context: context,
             onHijack: onHijack == null ? null : _OnHijack(onHijack));
 
-  /// This constructor has the same signature as [new Request] except that
+  /// This constructor has the same signature as [Request.new] except that
   /// accepts [onHijack] as [_OnHijack].
   ///
   /// Any [Request] created by calling [change] will pass [_onHijack] from the
@@ -160,7 +160,7 @@ class Request extends Message {
     Map<String, /* String | List<String> */ Object>? headers,
     String? handlerPath,
     Uri? url,
-    body,
+    Object? body,
     Encoding? encoding,
     Map<String, Object>? context,
     _OnHijack? onHijack,
@@ -245,7 +245,7 @@ class Request extends Message {
     Map<String, /* String | List<String> */ Object?>? headers,
     Map<String, Object?>? context,
     String? path,
-    body,
+    Object? body,
   }) {
     final headersAll = updateHeaders(this.headersAll, headers);
     final newContext = updateMap<String, Object>(this.context, context);
