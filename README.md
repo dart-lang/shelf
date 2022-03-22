@@ -87,13 +87,13 @@ routing correctly. This can be easily accomplished using
 
 ```dart
 // In an imaginary routing middleware...
-var component = request.url.pathComponents.first;
+var component = request.url.pathSegments.first;
 var handler = _handlers[component];
 if (handler == null) return Response.notFound(null);
 
 // Create a new request just like this one but with whatever URL comes after
 // [component] instead.
-return handler(request.change(script: component));
+return handler(request.change(path: component));
 ```
 
 ## Adapters
