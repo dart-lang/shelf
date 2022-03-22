@@ -7,14 +7,15 @@
 **Shelf** makes it easy to create and compose **web servers** and **parts of web
 servers**. How?
 
-* Expose a small set of simple types.
-* Map server logic into a simple function: a single argument for the request,
-the response is the return value.
-* Trivially mix and match synchronous and asynchronous processing.
-* Flexibility to return a simple string or a byte stream with the same model.
+- Expose a small set of simple types.
+- Map server logic into a simple function: a single argument for the request,
+  the response is the return value.
+- Trivially mix and match synchronous and asynchronous processing.
+- Flexibility to return a simple string or a byte stream with the same model.
 
-See the [Dart HTTP server documentation](https://dart.dev/tutorials/server/httpserver) for more
-information. You may also want to look at
+See the
+[Dart HTTP server documentation](https://dart.dev/tutorials/server/httpserver)
+for more information. You may also want to look at
 [package:shelf_router](https://pub.dev/packages/shelf_router) and
 [package:shelf_static](https://pub.dev/packages/shelf_static) as examples of
 packages that build on and extend `package:shelf`.
@@ -45,28 +46,25 @@ Response _echoRequest(Request request) =>
 
 ## Handlers and Middleware
 
-A [handler][] is any function that handles a [shelf.Request][] and returns a
-[shelf.Response][]. It can either handle the request itself--for example, a
-static file server that looks up the requested URI on the filesystem--or it can
-do some processing and forward it to another handler--for example, a logger that
-prints information about requests and responses to the command line.
+A [Handler][] is any function that handles a [Request][] and returns a
+[Response][]. It can either handle the request itself–for example, a static file
+server that looks up the requested URI on the filesystem–or it can do some
+processing and forward it to another handler–for example, a logger that prints
+information about requests and responses to the command line.
 
 [handler]: https://pub.dev/documentation/shelf/latest/shelf/Handler.html
-
-[shelf.Request]: https://pub.dev/documentation/shelf/latest/shelf/Request-class.html
-
-[shelf.Response]: https://pub.dev/documentation/shelf/latest/shelf/Response-class.html
+[request]: https://pub.dev/documentation/shelf/latest/shelf/Request-class.html
+[response]: https://pub.dev/documentation/shelf/latest/shelf/Response-class.html
 
 The latter kind of handler is called "[middleware][]", since it sits in the
 middle of the server stack. Middleware can be thought of as a function that
 takes a handler and wraps it in another handler to provide additional
 functionality. A Shelf application is usually composed of many layers of
-middleware with one or more handlers at the very center; the [shelf.Pipeline][]
-class makes this sort of application easy to construct.
+middleware with one or more handlers at the very center; the [Pipeline][] class
+makes this sort of application easy to construct.
 
 [middleware]: https://pub.dev/documentation/shelf/latest/shelf/Middleware.html
-
-[shelf.Pipeline]: https://pub.dev/documentation/shelf/latest/shelf/Pipeline-class.html
+[pipeline]: https://pub.dev/documentation/shelf/latest/shelf/Pipeline-class.html
 
 Some middleware can also take multiple handlers and call one or more of them for
 each request. For example, a routing middleware might choose which handler to
@@ -74,31 +72,32 @@ call based on the request's URI or HTTP method, while a cascading middleware
 might call each one in sequence until one returns a successful response.
 
 Middleware that routes requests between handlers should be sure to update each
-request's [`handlerPath`][handlerPath] and [`url`][url]. This allows inner
+request's [`handlerPath`][handlerpath] and [`url`][url]. This allows inner
 handlers to know where they are in the application so they can do their own
 routing correctly. This can be easily accomplished using
 [`Request.change()`][change]:
 
-[handlerPath]: https://pub.dev/documentation/shelf/latest/shelf/Request/handlerPath.html
+[handlerpath]:
+  https://pub.dev/documentation/shelf/latest/shelf/Request/handlerPath.html
 [url]: https://pub.dev/documentation/shelf/latest/shelf/Request/url.html
 [change]: https://pub.dev/documentation/shelf/latest/shelf/Request/change.html
 
 ```dart
 // In an imaginary routing middleware...
-var component = request.url.pathComponents.first;
+var component = request.url.pathSegments.first;
 var handler = _handlers[component];
 if (handler == null) return Response.notFound(null);
 
 // Create a new request just like this one but with whatever URL comes after
 // [component] instead.
-return handler(request.change(script: component));
+return handler(request.change(path: component));
 ```
 
 ## Adapters
 
-An adapter is any code that creates [shelf.Request][] objects, passes them to a
-handler, and deals with the resulting [shelf.Response][]. For the most part,
-adapters forward requests from and responses to an underlying HTTP server;
+An adapter is any code that creates [Request][] objects, passes them to a
+handler, and deals with the resulting [Response][]. For the most part, adapters
+forward requests from and responses to an underlying HTTP server;
 [shelf_io.serve][] is this sort of adapter. An adapter might also synthesize
 HTTP requests within the browser using `window.location` and `window.history`,
 or it might pipe requests directly from an HTTP client to a Shelf handler.
@@ -149,18 +148,16 @@ An adapter that knows its own URL should provide an implementation of the
 ### Request Requirements
 
 When implementing an adapter, some rules must be followed. The adapter must not
-pass the `url` or `handlerPath` parameters to [shelf.Request][]; it should
-only pass `requestedUri`. If it passes the `context` parameter, all keys must
-begin with the adapter's package name followed by a period. If multiple headers
-with the same name are received, the adapter must collapse them into a single
-header separated by commas as per [RFC 2616 section 4.2][].
+pass the `url` or `handlerPath` parameters to [Request][]; it should only pass
+`requestedUri`. If it passes the `context` parameter, all keys must begin with
+the adapter's package name followed by a period. If multiple headers with the
+same name are received, the adapter must collapse them into a single header
+separated by commas as per [RFC 2616 section 4.2][].
 
-[shelf.Request]: https://pub.dev/documentation/shelf/latest/shelf/Request/Request.html
-
-[RFC 2616 section 4.2]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
+[rfc 2616 section 4.2]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
 
 If the underlying request uses a chunked transfer coding, the adapter must
-decode the body before passing it to [shelf.Request][] and should remove the
+decode the body before passing it to [Request][] and should remove the
 `Transfer-Encoding` header. This ensures that message bodies are chunked if and
 only if the headers declare that they are.
 
@@ -170,19 +167,24 @@ An adapter must not add or modify any [entity headers][] for a response.
 
 [entity headers]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec7.html#sec7.1
 
-If *none* of the following conditions are true, the adapter must apply
-[chunked transfer coding][] to a response's body and set its Transfer-Encoding header to `chunked`:
+If _none_ of the following conditions are true, the adapter must apply [chunked
+transfer coding][] to a response's body and set its Transfer-Encoding header to
+`chunked`:
 
-* The status code is less than 200, or equal to 204 or 304.
-* A Content-Length header is provided.
-* The Content-Type header indicates the MIME type `multipart/byteranges`.
-* The Transfer-Encoding header is set to anything other than `identity`.
+- The status code is less than 200, or equal to 204 or 304.
+- A Content-Length header is provided.
+- The Content-Type header indicates the MIME type `multipart/byteranges`.
+- The Transfer-Encoding header is set to anything other than `identity`.
 
-[chunked transfer coding]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
+[chunked transfer coding]:
+  https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
 
-Adapters may find the [`addChunkedEncoding()`][addChunkedEncoding] middleware
+Adapters may find the [`addChunkedEncoding()`][addchunkedencoding] middleware
 useful for implementing this behavior, if the underlying server doesn't
 implement it manually.
+
+[addchunkedencoding]:
+  https://pub.dev/documentation/shelf/latest/shelf/addChunkedEncoding.html
 
 When responding to a HEAD request, the adapter must not emit an entity body.
 Otherwise, it shouldn't modify the entity body in any way.
@@ -197,5 +199,5 @@ take precedence.
 
 ## Inspiration
 
-* [Connect](https://github.com/senchalabs/connect) for NodeJS.
-* [Rack](https://github.com/rack/rack) for Ruby.
+- [Connect](https://github.com/senchalabs/connect) for NodeJS.
+- [Rack](https://github.com/rack/rack) for Ruby.
