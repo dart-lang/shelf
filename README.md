@@ -46,28 +46,25 @@ Response _echoRequest(Request request) =>
 
 ## Handlers and Middleware
 
-A [handler][] is any function that handles a [shelf.Request][] and returns a
-[shelf.Response][]. It can either handle the request itself–for example, a
-static file server that looks up the requested URI on the filesystem–or it can
-do some processing and forward it to another handler–for example, a logger that
-prints information about requests and responses to the command line.
+A [Handler][] is any function that handles a [Request][] and returns a
+[Response][]. It can either handle the request itself–for example, a static file
+server that looks up the requested URI on the filesystem–or it can do some
+processing and forward it to another handler–for example, a logger that prints
+information about requests and responses to the command line.
 
 [handler]: https://pub.dev/documentation/shelf/latest/shelf/Handler.html
-[shelf.request]:
-  https://pub.dev/documentation/shelf/latest/shelf/Request-class.html
-[shelf.response]:
-  https://pub.dev/documentation/shelf/latest/shelf/Response-class.html
+[request]: https://pub.dev/documentation/shelf/latest/shelf/Request-class.html
+[response]: https://pub.dev/documentation/shelf/latest/shelf/Response-class.html
 
 The latter kind of handler is called "[middleware][]", since it sits in the
 middle of the server stack. Middleware can be thought of as a function that
 takes a handler and wraps it in another handler to provide additional
 functionality. A Shelf application is usually composed of many layers of
-middleware with one or more handlers at the very center; the [shelf.Pipeline][]
-class makes this sort of application easy to construct.
+middleware with one or more handlers at the very center; the [Pipeline][] class
+makes this sort of application easy to construct.
 
 [middleware]: https://pub.dev/documentation/shelf/latest/shelf/Middleware.html
-[shelf.pipeline]:
-  https://pub.dev/documentation/shelf/latest/shelf/Pipeline-class.html
+[pipeline]: https://pub.dev/documentation/shelf/latest/shelf/Pipeline-class.html
 
 Some middleware can also take multiple handlers and call one or more of them for
 each request. For example, a routing middleware might choose which handler to
@@ -98,9 +95,9 @@ return handler(request.change(path: component));
 
 ## Adapters
 
-An adapter is any code that creates [shelf.Request][] objects, passes them to a
-handler, and deals with the resulting [shelf.Response][]. For the most part,
-adapters forward requests from and responses to an underlying HTTP server;
+An adapter is any code that creates [Request][] objects, passes them to a
+handler, and deals with the resulting [Response][]. For the most part, adapters
+forward requests from and responses to an underlying HTTP server;
 [shelf_io.serve][] is this sort of adapter. An adapter might also synthesize
 HTTP requests within the browser using `window.location` and `window.history`,
 or it might pipe requests directly from an HTTP client to a Shelf handler.
@@ -151,18 +148,16 @@ An adapter that knows its own URL should provide an implementation of the
 ### Request Requirements
 
 When implementing an adapter, some rules must be followed. The adapter must not
-pass the `url` or `handlerPath` parameters to [shelf.Request][]; it should only
-pass `requestedUri`. If it passes the `context` parameter, all keys must begin
-with the adapter's package name followed by a period. If multiple headers with
-the same name are received, the adapter must collapse them into a single header
+pass the `url` or `handlerPath` parameters to [Request][]; it should only pass
+`requestedUri`. If it passes the `context` parameter, all keys must begin with
+the adapter's package name followed by a period. If multiple headers with the
+same name are received, the adapter must collapse them into a single header
 separated by commas as per [RFC 2616 section 4.2][].
 
-[shelf.request]:
-  https://pub.dev/documentation/shelf/latest/shelf/Request/Request.html
 [rfc 2616 section 4.2]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html
 
 If the underlying request uses a chunked transfer coding, the adapter must
-decode the body before passing it to [shelf.Request][] and should remove the
+decode the body before passing it to [Request][] and should remove the
 `Transfer-Encoding` header. This ensures that message bodies are chunked if and
 only if the headers declare that they are.
 
