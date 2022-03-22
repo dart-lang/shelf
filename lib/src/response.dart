@@ -64,7 +64,7 @@ class Response extends Message {
   /// An empty list will cause the header to be omitted.
   /// {@endtemplate}
   Response.ok(
-    body, {
+    Object? body, {
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -80,7 +80,7 @@ class Response extends Message {
   /// {@macro shelf_response_body_and_encoding_param}
   Response.movedPermanently(
     Object location, {
-    body,
+    Object? body,
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -95,7 +95,7 @@ class Response extends Message {
   /// {@macro shelf_response_body_and_encoding_param}
   Response.found(
     Object location, {
-    body,
+    Object? body,
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -118,7 +118,7 @@ class Response extends Message {
   /// {@macro shelf_response_body_and_encoding_param}
   Response.seeOther(
     Object location, {
-    body,
+    Object? body,
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -128,7 +128,7 @@ class Response extends Message {
   Response._redirect(
     int statusCode,
     Object location,
-    body,
+    Object? body,
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding, {
     Map<String, Object>? context,
@@ -168,7 +168,7 @@ class Response extends Message {
   ///
   /// {@macro shelf_response_body_and_encoding_param}
   Response.badRequest({
-    body,
+    Object? body,
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -186,7 +186,7 @@ class Response extends Message {
   ///
   /// {@macro shelf_response_body_and_encoding_param}
   Response.forbidden(
-    body, {
+    Object? body, {
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -205,7 +205,7 @@ class Response extends Message {
   ///
   /// {@macro shelf_response_body_and_encoding_param}
   Response.notFound(
-    body, {
+    Object? body, {
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -224,7 +224,7 @@ class Response extends Message {
   ///
   /// {@macro shelf_response_body_and_encoding_param}
   Response.internalServerError({
-    body,
+    Object? body,
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -243,7 +243,7 @@ class Response extends Message {
   /// {@macro shelf_response_body_and_encoding_param}
   Response(
     this.statusCode, {
-    body,
+    Object? body,
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -276,7 +276,7 @@ class Response extends Message {
   Response change({
     Map<String, /* String | List<String> */ Object?>? headers,
     Map<String, Object?>? context,
-    body,
+    Object? body,
   }) {
     final headersAll = updateHeaders(this.headersAll, headers);
     final newContext = updateMap(this.context, context);

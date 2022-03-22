@@ -29,7 +29,7 @@ void main() {
       () async {
     var serverHandler = ServerHandler(localhostUri);
     var future = makeSimpleRequest(serverHandler.handler);
-    await Future.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
 
     serverHandler.server.mount(syncHandler);
     var response = await future;
@@ -49,7 +49,7 @@ void main() {
 
   test('calls onClose when Server.close is called', () async {
     var onCloseCalled = false;
-    var completer = Completer();
+    var completer = Completer<void>();
     var serverHandler = ServerHandler(localhostUri, onClose: () {
       onCloseCalled = true;
       return completer.future;
@@ -60,11 +60,11 @@ void main() {
       closeDone = true;
     }));
     expect(onCloseCalled, isTrue);
-    await Future.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
 
     expect(closeDone, isFalse);
     completer.complete();
-    await Future.delayed(Duration.zero);
+    await Future<void>.delayed(Duration.zero);
 
     expect(closeDone, isTrue);
   });
