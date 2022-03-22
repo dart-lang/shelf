@@ -188,6 +188,9 @@ Adapters may find the [`addChunkedEncoding()`][addchunkedencoding] middleware
 useful for implementing this behavior, if the underlying server doesn't
 implement it manually.
 
+[addchunkedencoding]:
+  https://pub.dev/documentation/shelf/latest/shelf/addChunkedEncoding.html
+
 When responding to a HEAD request, the adapter must not emit an entity body.
 Otherwise, it shouldn't modify the entity body in any way.
 
