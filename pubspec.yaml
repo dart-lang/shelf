@@ -4,7 +4,7 @@ description: >-
   A model for web server middleware that encourages composition and easy reuse
 repository: https://github.com/dart-lang/shelf
 environment:
-  sdk: ">=2.14.0 <3.0.0"
+  sdk: ">=2.16.0 <3.0.0"
 
 dependencies:
   async: ^2.5.0

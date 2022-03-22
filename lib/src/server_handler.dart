@@ -40,7 +40,7 @@ class ServerHandler {
   ///
   /// If [onClose] is passed, it's called when [server] is closed. It may return
   /// a [Future] or `null`; its return value is returned by [Server.close].
-  ServerHandler(Uri url, {Future? Function()? onClose})
+  ServerHandler(Uri url, {Future<void>? Function()? onClose})
       : _server = _HandlerServer(url, onClose);
 
   /// Pipes requests to [server]'s handler.
@@ -63,7 +63,7 @@ class _HandlerServer implements Server {
   final Uri url;
 
   /// The callback to call when [close] is called, or `null`.
-  final ZoneCallback? _onClose;
+  final ZoneCallback<void>? _onClose;
 
   /// The mounted handler.
   ///
@@ -71,7 +71,7 @@ class _HandlerServer implements Server {
   Handler? _handler;
 
   /// A future that fires once [mount] has been called.
-  Future get _onMounted => _onMountedCompleter.future;
+  Future<void> get _onMounted => _onMountedCompleter.future;
   final _onMountedCompleter = Completer();
 
   _HandlerServer(this.url, this._onClose);
@@ -87,7 +87,7 @@ class _HandlerServer implements Server {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(() {
+  Future<void> close() => _closeMemo.runOnce(() {
         return _onClose == null ? null : _onClose!();
       });
   final _closeMemo = AsyncMemoizer();

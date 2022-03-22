@@ -10,7 +10,8 @@ import 'package:test/test.dart';
 
 import 'test_util.dart';
 
-Request _request({Map<String, String>? headers, body, Encoding? encoding}) {
+Request _request(
+    {Map<String, String>? headers, Object? body, Encoding? encoding}) {
   return Request('GET', localhostUri,
       headers: headers, body: body, encoding: encoding);
 }
@@ -214,7 +215,7 @@ void main() {
 
   group('change', () {
     test('with no arguments returns instance with equal values', () {
-      var controller = StreamController();
+      var controller = StreamController<Object>();
 
       var uri = Uri.parse('https://test.example.com/static/file.html');
 

@@ -47,5 +47,5 @@ abstract class Server {
   ///
   /// Once this is called, no more requests will be passed to this server's
   /// handler. Otherwise, the cleanup behavior is implementation-dependent.
-  Future close();
+  Future<void> close();
 }

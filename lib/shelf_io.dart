@@ -41,7 +41,7 @@ export 'src/io_server.dart' show IOServer;
 /// for more details on [address], [port], [backlog], and [shared].
 Future<HttpServer> serve(
   Handler handler,
-  address,
+  Object address,
   int port, {
   SecurityContext? securityContext,
   int? backlog,
@@ -81,7 +81,7 @@ void serveRequests(Stream<HttpRequest> requests, Handler handler) {
 /// Uses [handler] to handle [request].
 ///
 /// Returns a [Future] which completes when the request has been handled.
-Future handleRequest(HttpRequest request, Handler handler) async {
+Future<void> handleRequest(HttpRequest request, Handler handler) async {
   Request shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
@@ -179,7 +179,7 @@ Request _fromHttpRequest(HttpRequest request) {
   );
 }
 
-Future _writeResponse(Response response, HttpResponse httpResponse) {
+Future<void> _writeResponse(Response response, HttpResponse httpResponse) {
   if (response.context.containsKey('shelf.io.buffer_output')) {
     httpResponse.bufferOutput =
         response.context['shelf.io.buffer_output'] as bool;

@@ -437,7 +437,7 @@ void main() {
 
       test('status code is 1xx', () async {
         await _scheduleServer((request) {
-          return Response(123, body: Stream.empty());
+          return Response(123, body: Stream<List<int>>.empty());
         });
 
         var response = await _get();
@@ -448,7 +448,7 @@ void main() {
 
       test('status code is 204', () async {
         await _scheduleServer((request) {
-          return Response(204, body: Stream.empty());
+          return Response(204, body: Stream<List<int>>.empty());
         });
 
         var response = await _get();
@@ -459,7 +459,7 @@ void main() {
 
       test('status code is 304', () async {
         await _scheduleServer((request) {
-          return Response(304, body: Stream.empty());
+          return Response(304, body: Stream<List<int>>.empty());
         });
 
         var response = await _get();
@@ -551,7 +551,7 @@ int get _serverPort => _server!.port;
 
 HttpServer? _server;
 
-Future _scheduleServer(
+Future<void> _scheduleServer(
   Handler handler, {
   SecurityContext? securityContext,
 }) async {
@@ -580,7 +580,7 @@ Future<http.Response> _request(
   Map<String, /* String | List<String> */ Object>? headers,
   String path = '',
 }) async {
-  // TODO: use http.Client once it supports sending and receiving multiple headers.
+  // TODO: use http.Client once it supports sending/receiving multiple headers.
   final client = HttpClient();
   try {
     final rq = await request(client, Uri.http('localhost:$_serverPort', path));

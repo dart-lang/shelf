@@ -78,7 +78,7 @@ abstract class Message {
   /// in [headers] will be set appropriately. If there is no existing
   /// Content-Type header, it will be set to "application/octet-stream".
   Message(
-    body, {
+    Object? body, {
     Encoding? encoding,
     Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
@@ -168,7 +168,7 @@ abstract class Message {
   /// Creates a new [Message] by copying existing values and applying specified
   /// changes.
   Message change(
-      {Map<String, String> headers, Map<String, Object> context, body});
+      {Map<String, String> headers, Map<String, Object> context, Object? body});
 }
 
 /// Adds information about [encoding] to [headers].

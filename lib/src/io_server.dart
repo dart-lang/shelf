@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-
 import 'dart:io';
 
 import '../shelf_io.dart';
@@ -37,7 +36,7 @@ class IOServer implements Server {
   }
 
   /// Calls [HttpServer.bind] and wraps the result in an [IOServer].
-  static Future<IOServer> bind(address, int port, {int? backlog}) async {
+  static Future<IOServer> bind(Object address, int port, {int? backlog}) async {
     backlog ??= 0;
     var server = await HttpServer.bind(address, port, backlog: backlog);
     return IOServer(server);
@@ -56,5 +55,5 @@ class IOServer implements Server {
   }
 
   @override
-  Future close() => server.close();
+  Future<void> close() => server.close();
 }
