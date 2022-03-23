@@ -1,7 +1,5 @@
-dart:
-# todo: Test on stable after 2.12 is released
-#  - stable
-  - dev
+sdk:
+  - stable
 stages:
   - analyze:
       - analyze
