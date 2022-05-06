@@ -1,3 +1,5 @@
+## 1.0.2-dev
+
 ## 1.0.1
 
 * Require the latest shelf, remove dead code.
