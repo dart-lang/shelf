@@ -1,3 +1,5 @@
+## 1.3.1-dev
+
 ## 1.3.0
 
 * Add Response.badRequest() constructor
