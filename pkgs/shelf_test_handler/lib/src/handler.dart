@@ -10,7 +10,8 @@ import 'package:test/test.dart';
 
 import 'expectation.dart';
 
-/// A [Handler] that handles requests as specified by [expect] and [expectAnything].
+/// A [Handler] that handles requests as specified by [expect] and
+/// [expectAnything].
 class ShelfTestHandler {
   /// The description used in debugging output for this handler.
   final String description;

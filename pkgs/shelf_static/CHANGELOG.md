@@ -1,5 +1,7 @@
 ## 1.1.1-dev
 
+- Require Dart `2.14`.
+
 ## 1.1.0
 
 * Correctly handle `HEAD` requests.
@@ -22,8 +24,8 @@
 * Update SDK constraint to `>=2.3.0 <3.0.0`.
 * Allow `3.x` versions of `package:convert`.
 * Allow `4.x` versions of `package:http_parser`.
-* Use file `modified` dates instead of `changed` for `304 Not Modified` checks
-  as `changed` returns creation dates on Windows.
+* Use file `modified` dates instead of `changed` for `304 Not Modified` checks as `changed` returns creation dates on
+  Windows.
 
 ## 0.2.8
 

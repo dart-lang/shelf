@@ -1,5 +1,7 @@
 ## 1.0.2-dev
 
+- Require Dart `2.14`.
+
 ## 1.0.1
 
 * Require the latest shelf, remove dead code.
@@ -16,13 +18,11 @@
 
 * Support the latest shelf release (`1.x.x`).
 * Require at least Dart 2.1
-* Allow omitting `protocols` argument even if the `onConnection` callback takes
-  a second argument.
+* Allow omitting `protocols` argument even if the `onConnection` callback takes a second argument.
 
 ## 0.2.3
 
-* Add `pingInterval` argument to `webSocketHandler`, to be passed through
-  to the created channel.
+* Add `pingInterval` argument to `webSocketHandler`, to be passed through to the created channel.
 
 ## 0.2.2+5
 
@@ -30,8 +30,7 @@
 
 ## 0.2.2+4
 
-* Fix the check for `onConnection` to check the number of arguments  and not
-  that the arguments are `dynamic`.
+* Fix the check for `onConnection` to check the number of arguments and not that the arguments are `dynamic`.
 
 ## 0.2.2+3
 
@@ -64,8 +63,8 @@
 
 ## 0.1.0
 
-* **Breaking change**: `webSocketHandler()` now passes a `WebSocketChannel` to
-  the `onConnection()` callback, rather than a deprecated `CompatibleWebSocket`.
+* **Breaking change**: `webSocketHandler()` now passes a `WebSocketChannel` to the `onConnection()` callback, rather
+  than a deprecated `CompatibleWebSocket`.
 
 ## 0.0.1+5
 
@@ -85,5 +84,4 @@
 
 ## 0.0.1+1
 
-* Properly parse the `Connection` header. This fixes an issue where Firefox was
-  unable to connect.
+* Properly parse the `Connection` header. This fixes an issue where Firefox was unable to connect.

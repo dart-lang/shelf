@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: inference_failure_on_untyped_parameter
+
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -43,7 +45,7 @@ void main() {
           fail('Only expected two messages.');
         }
         n++;
-      }).asFuture();
+      }).asFuture<void>();
     } finally {
       await server.close();
     }

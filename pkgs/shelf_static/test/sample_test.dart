@@ -52,7 +52,7 @@ Future<Response> _requestFile(String filename) {
   return _request(Request('GET', uri));
 }
 
-Future _testFileContents(String filename) async {
+Future<void> _testFileContents(String filename) async {
   final filePath = p.join(_samplePath, filename);
   final file = File(filePath);
   final fileContents = file.readAsBytesSync();
@@ -64,7 +64,7 @@ Future _testFileContents(String filename) async {
   await _expectCompletesWithBytes(response, fileContents);
 }
 
-Future _expectCompletesWithBytes(
+Future<void> _expectCompletesWithBytes(
     Response response, List<int> expectedBytes) async {
   final bytes = await response.read().toList();
   final flatBytes = bytes.expand((e) => e);

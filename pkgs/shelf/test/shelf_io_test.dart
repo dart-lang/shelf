@@ -521,13 +521,13 @@ void main() {
 
     var sslClient = HttpClient(context: securityContext);
 
-    Future<HttpClientRequest> _scheduleSecureGet() =>
+    Future<HttpClientRequest> scheduleSecureGet() =>
         sslClient.getUrl(Uri.https('localhost:${_server!.port}', ''));
 
     test('secure sync handler returns a value to the client', () async {
       await _scheduleServer(syncHandler, securityContext: securityContext);
 
-      var req = await _scheduleSecureGet();
+      var req = await scheduleSecureGet();
 
       var response = await req.close();
       expect(response.statusCode, HttpStatus.ok);
@@ -538,7 +538,7 @@ void main() {
     test('secure async handler returns a value to the client', () async {
       await _scheduleServer(asyncHandler, securityContext: securityContext);
 
-      var req = await _scheduleSecureGet();
+      var req = await scheduleSecureGet();
       var response = await req.close();
       expect(response.statusCode, HttpStatus.ok);
       expect(await response.cast<List<int>>().transform(utf8.decoder).single,
