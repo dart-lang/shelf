@@ -4,7 +4,7 @@ description: Static file server support for the shelf package and ecosystem
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_static
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
   convert: ^3.0.0

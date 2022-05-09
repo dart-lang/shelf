@@ -110,7 +110,7 @@ Handler createStaticHandler(String fileSystemPath,
 
         final byteSink = ByteAccumulatorSink();
 
-        await file.openRead(0, length).listen(byteSink.add).asFuture();
+        await file.openRead(0, length).listen(byteSink.add).asFuture<void>();
 
         return mimeResolver.lookup(file.path, headerBytes: byteSink.bytes);
       } else {

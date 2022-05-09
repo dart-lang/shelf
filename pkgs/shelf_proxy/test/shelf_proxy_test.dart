@@ -173,7 +173,7 @@ void main() {
 ///
 /// [targetPath] is the root-relative path on the target server to proxy to. It
 /// defaults to `/`.
-Future createProxy(shelf.Handler handler, {String? targetPath}) async {
+Future<void> createProxy(shelf.Handler handler, {String? targetPath}) async {
   handler = expectAsync1(handler, reason: 'target server handler');
   final targetServer = await shelf_io.serve(handler, 'localhost', 0);
   targetUri = Uri.parse('http://localhost:${targetServer.port}');

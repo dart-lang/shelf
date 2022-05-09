@@ -22,7 +22,7 @@ import 'package:shelf/shelf.dart';
 ///
 /// [proxyName] is used in headers to identify this proxy. It should be a valid
 /// HTTP token or a hostname. It defaults to `shelf_proxy`.
-Handler proxyHandler(url, {http.Client? client, String? proxyName}) {
+Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
   Uri uri;
   if (url is String) {
     uri = Uri.parse(url);

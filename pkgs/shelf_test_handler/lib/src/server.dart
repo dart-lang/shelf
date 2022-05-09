@@ -44,5 +44,5 @@ class ShelfTestServer {
   /// Closes the server.
   ///
   /// If [force] is `true`, all active connections will be closed immediately.
-  Future close({bool force = false}) => _server.close(force: force);
+  Future<void> close({bool force = false}) => _server.close(force: force);
 }

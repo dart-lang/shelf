@@ -45,6 +45,7 @@ Handler webSocketHandler(Function onConnection,
     Duration? pingInterval}) {
   if (onConnection is! void Function(Null, Null)) {
     final innerOnConnection = onConnection;
+    // ignore: inference_failure_on_untyped_parameter
     onConnection = (webSocket, _) => innerOnConnection(webSocket);
   }
 

@@ -10,6 +10,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_test_handler/shelf_test_handler.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:test/test.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
   test('serves a ShelfTestHandler', () async {
@@ -25,7 +26,8 @@ void main() {
     var server = await ShelfTestServer.create();
     addTearDown(server.close);
 
-    server.handler.expect('GET', '/', webSocketHandler((webSocket) {
+    server.handler.expect('GET', '/',
+        webSocketHandler((WebSocketChannel webSocket) {
       webSocket.sink.add('hello!');
       webSocket.sink.close();
     }));

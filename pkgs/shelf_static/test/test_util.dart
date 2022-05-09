@@ -55,7 +55,7 @@ class _SecondResolutionDateTimeMatcher extends Matcher {
       : _target = toSecondResolution(target);
 
   @override
-  bool matches(dynamic item, Map matchState) {
+  bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
     if (item is! DateTime) return false;
 
     return _datesEqualToSecond(_target, item);

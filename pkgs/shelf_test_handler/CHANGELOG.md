@@ -1,5 +1,7 @@
 ## 2.0.1-dev
 
+- Require Dart `2.14`.
+
 ## 2.0.0
 
 * Migration to null safety.
