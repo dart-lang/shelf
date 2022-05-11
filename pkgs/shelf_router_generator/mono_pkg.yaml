@@ -1,8 +1,12 @@
 sdk:
-  - stable
+- 2.14.0
+- dev
+
 stages:
-  - analyze:
-      - analyze
-      - format
-  - tests:
-      - test
+- analyze_and_format:
+  - analyze: --fatal-infos .
+  - format:
+    sdk:
+    - dev
+- unit_test:
+  - test: --test-randomize-ordering-seed=random

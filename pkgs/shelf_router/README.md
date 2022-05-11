@@ -4,8 +4,6 @@
 applications in Dart by composing request handlers. This package offers a
 request router for Shelf, matching request to handlers using route patterns.
 
-**Disclaimer:** This is not an officially supported Google product.
-
 Also see the [`shelf_router_generator`][shelf_router_generator] package
 for how to automatically generate
 a `Route` using the `Route` annotation in this package.

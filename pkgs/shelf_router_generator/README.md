@@ -6,8 +6,6 @@ applications in Dart by composing request handlers. The `shelf_router` package
 offers a request router for Shelf. this package enables generating a
 `shelf_route.Router` from annotations in code.
 
-**Disclaimer:** This is not an officially supported Google product.
-
 This package should be a _development dependency_ along with
 [package `build_runner`](https://pub.dartlang.org/packages/build_runner), and
 used with [package `shelf`](https://pub.dartlang.org/packages/shelf) and

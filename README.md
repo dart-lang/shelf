@@ -15,6 +15,16 @@
 - Package: <https://pub.dev/packages/shelf_proxy>
 - [Source code](pkgs/shelf_proxy)
 
+## shelf_router [![Pub Package](https://img.shields.io/pub/v/shelf_router.svg)](https://pub.dev/packages/shelf_router)
+
+- Package: <https://pub.dev/packages/shelf_router>
+- [Source code](pkgs/shelf_router)
+
+## shelf_router_generator [![Pub Package](https://img.shields.io/pub/v/shelf_router_generator.svg)](https://pub.dev/packages/shelf_router_generator)
+
+- Package: <https://pub.dev/packages/shelf_router_generator>
+- [Source code](pkgs/shelf_router_generator)
+
 ## shelf_static [![Pub Package](https://img.shields.io/pub/v/shelf_static.svg)](https://pub.dev/packages/shelf_static)
 
 - Package: <https://pub.dev/packages/shelf_static>
