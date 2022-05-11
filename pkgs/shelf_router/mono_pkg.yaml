@@ -1,0 +1,8 @@
+sdk:
+  - stable
+stages:
+  - analyze:
+      - analyze
+      - format
+  - tests:
+      - test
