@@ -18,7 +18,7 @@ See the [package:shelf readme](pkgs/shelf/) for more information.
 
 Package | Description | Version
 --- | --- | ---
-[shelf](pkgs/shelf/) | A model for web server middleware that encourages composition and easy reuse | [![pub package](https://img.shields.io/pub/v/shelf.svg)](https://pub.dev/packages/shelf)
+[shelf](pkgs/shelf/) | A model for web server middleware that encourages composition and easy reuse. | [![pub package](https://img.shields.io/pub/v/shelf.svg)](https://pub.dev/packages/shelf)
 [shelf_packages_handler](pkgs/shelf_packages_handler/) | A shelf handler for serving a `packages/` directory. | [![pub package](https://img.shields.io/pub/v/shelf_packages_handler.svg)](https://pub.dev/packages/shelf_packages_handler)
 [shelf_proxy](pkgs/shelf_proxy/) | A shelf handler for proxying HTTP requests to another server. | [![pub package](https://img.shields.io/pub/v/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy)
 [shelf_router](pkgs/shelf_router/) | A convinent request router for the shelf web-framework, with support for URL-parameters, nested routers and routers generated from source annotations. | [![pub package](https://img.shields.io/pub/v/shelf_router.svg)](https://pub.dev/packages/shelf_router)
