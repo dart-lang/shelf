@@ -31,7 +31,10 @@ class Package implements Comparable<Package> {
     // An quick and dirty yaml parser (this script doesn't currently have access
     // to package:pubspec).
     var pubspec = File('${dir.path}/pubspec.yaml');
-    var contents = pubspec.readAsStringSync().replaceAll('>\n', '');
+    var contents = pubspec
+        .readAsStringSync()
+        .replaceAll('>\n', '')
+        .replaceAll('\n  ', ' ');
     return contents
         .split('\n')
         .firstWhere((line) => line.startsWith('description:'))
