@@ -1,6 +1,6 @@
 name: shelf_router
 version: 1.1.2
-description: |
+description: >
   A convinent request router for the shelf web-framework, with support for
   URL-parameters, nested routers and routers generated from source annotations.
 homepage: https://github.com/google/dart-neats/tree/master/shelf_router
