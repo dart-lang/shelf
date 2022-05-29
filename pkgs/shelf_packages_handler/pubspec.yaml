@@ -1,6 +1,5 @@
 name: shelf_packages_handler
 version: 3.0.1-dev
-
 description: A shelf handler for serving a `packages/` directory.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_packages_handler
 
