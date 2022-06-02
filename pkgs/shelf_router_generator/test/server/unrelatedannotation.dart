@@ -1,5 +1,3 @@
-// @dart=2.12
-
 /// Annotation for an API end-point.
 class EndPoint {
   /// HTTP verb for requests routed to the annotated method.
