@@ -1,6 +1,7 @@
-## Proxy for Shelf
+[![pub package](https://img.shields.io/pub/v/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy)
+[![package publisher](https://img.shields.io/pub/publisher/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy/publisher)
 
-[![Build Status](https://github.com/dart-lang/shelf/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/shelf/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
+## Proxy for Shelf
 
 `shelf_proxy` is a [Shelf][] handler that proxies requests to an external
 server. It can be served directly and used as a proxy server, or it can be

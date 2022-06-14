@@ -1,3 +1,6 @@
+[![pub package](https://img.shields.io/pub/v/shelf_web_socket.svg)](https://pub.dev/packages/shelf_web_socket)
+[![package publisher](https://img.shields.io/pub/publisher/shelf_web_socket.svg)](https://pub.dev/packages/shelf_web_socket/publisher)
+
 ## Web Socket Handler for Shelf
 
 `shelf_web_socket` is a [Shelf][] handler for establishing [WebSocket][]
