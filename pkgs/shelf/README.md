@@ -3,10 +3,6 @@
 
 ## Web Server Middleware for Dart
 
-[![Build Status](https://github.com/dart-lang/shelf/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/shelf/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
-
-## Introduction
-
 **Shelf** makes it easy to create and compose **web servers** and **parts of web
 servers**. How?
 

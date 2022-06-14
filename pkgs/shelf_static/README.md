@@ -3,8 +3,6 @@
 
 `shelf_static` is a `Handler` for the Dart `shelf` package.
 
-[![Build Status](https://github.com/dart-lang/shelf/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/shelf/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
-
 ### Example
 ```dart
 import 'package:shelf/shelf_io.dart' as io;
