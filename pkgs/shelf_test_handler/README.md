@@ -1,3 +1,6 @@
+[![pub package](https://img.shields.io/pub/v/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler)
+[![package publisher](https://img.shields.io/pub/publisher/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler/publisher)
+
 A [shelf][] handler that makes it easy to test HTTP interactions, especially
 when multiple different HTTP requests are expected in a particular sequence.
 

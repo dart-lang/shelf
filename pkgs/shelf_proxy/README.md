@@ -1,3 +1,6 @@
+[![pub package](https://img.shields.io/pub/v/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy)
+[![package publisher](https://img.shields.io/pub/publisher/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy/publisher)
+
 ## Proxy for Shelf
 
 [![Build Status](https://github.com/dart-lang/shelf/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/shelf/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
