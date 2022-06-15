@@ -1,4 +1,6 @@
-## 1.3.1-dev
+## 1.3.1
+
+* Update the pubspec `repository` field.
 
 ## 1.3.0
 

@@ -1,15 +1,17 @@
-## 1.0.2-dev
+## 1.0.2
+
+* Update the pubspec `repository` field.
 
 ## 1.0.1
 
-- Drop dependency on `package:pedantic`.
-- Require Dart `2.14`.
+* Drop dependency on `package:pedantic`.
+* Require Dart `2.14`.
 
 ## 1.0.0
 
-- Require Dart `2.12`.
-- Enable null safety.
-- Removed deprecated `createProxyHandler`.
+* Require Dart `2.12`.
+* Enable null safety.
+* Removed deprecated `createProxyHandler`.
 
 ## 0.1.0+7
 

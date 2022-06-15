@@ -1,6 +1,7 @@
-## 1.0.2-dev
+## 1.0.2
 
-- Require Dart `2.14`.
+* Require Dart `2.14`.
+* Update the pubspec `repository` field.
 
 ## 1.0.1
 
