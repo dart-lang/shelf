@@ -1,19 +1,23 @@
+## 1.1.3
+
+* Update the pubspec `repository` field.
+
 ## v1.1.2
 
-  * Remove trailing slash requirement when using `mount`.
+* Remove trailing slash requirement when using `mount`.
 
 ## v1.1.1
 
- * Fix `Router.routeNotFound` to enable multiple `read()` calls on it.
+* Fix `Router.routeNotFound` to enable multiple `read()` calls on it.
 
 ## v1.1.0
- * `params` is deprecated in favor of `Request.params` adding using an extension
-   on `Request`.
- * The default `notFoundHandler` now returns a sentinel `routeNotFound` response
-   object which causes 404 with the message 'Route not found'.
- * __Minor breaking__: Handlers and sub-routers that return the sentinel
-   `routeNotFound` response object will be ignored and pattern matching will
-   continue on additional routes/handlers.
+* `params` is deprecated in favor of `Request.params` adding using an extension
+    on `Request`.
+* The default `notFoundHandler` now returns a sentinel `routeNotFound` response
+    object which causes 404 with the message 'Route not found'.
+* __Minor breaking__: Handlers and sub-routers that return the sentinel
+    `routeNotFound` response object will be ignored and pattern matching will
+    continue on additional routes/handlers.
 
 Changing the router to continue pattern matching additional routes if a matched
 _handler_ or _nested router_ returns the sentinel `routeNotFound` response
