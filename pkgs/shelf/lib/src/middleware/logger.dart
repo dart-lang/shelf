@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
+import '../../shelf.dart';
 import '../hijack_exception.dart';
 import '../middleware.dart';
 
@@ -19,7 +20,8 @@ import '../middleware.dart';
 /// The `isError` parameter indicates whether the message is caused by an error.
 ///
 /// If [logger] is not passed, the message is just passed to [print].
-Middleware logRequests({void Function(String message, bool isError)? logger}) =>
+Middleware logRequests(
+        {void Function(String message, bool isError, Request req)? logger}) =>
     (innerHandler) {
       final theLogger = logger ?? _defaultLogger;
 
@@ -31,7 +33,7 @@ Middleware logRequests({void Function(String message, bool isError)? logger}) =>
           var msg = _message(startTime, response.statusCode,
               request.requestedUri, request.method, watch.elapsed);
 
-          theLogger(msg, false);
+          theLogger(msg, false, request);
 
           return response;
         }, onError: (Object error, StackTrace stackTrace) {
@@ -40,7 +42,7 @@ Middleware logRequests({void Function(String message, bool isError)? logger}) =>
           var msg = _errorMessage(startTime, request.requestedUri,
               request.method, watch.elapsed, error, stackTrace);
 
-          theLogger(msg, true);
+          theLogger(msg, true, request);
 
           throw error;
         });
@@ -74,7 +76,7 @@ String _errorMessage(DateTime requestTime, Uri requestedUri, String method,
   return '$msg\n$chain';
 }
 
-void _defaultLogger(String msg, bool isError) {
+void _defaultLogger(String msg, bool isError, Request req) {
   if (isError) {
     print('[ERROR] $msg');
   } else {
