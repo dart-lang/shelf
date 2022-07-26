@@ -353,24 +353,25 @@ void main() {
     });
   });
 
-  group('server header', () {
-    test('defaults to "dart:io with Shelf"', () async {
+  group('X-Powered-By header', () {
+    const poweredBy = 'x-powered-by';
+    test('defaults to "Dart with package:shelf"', () async {
       await _scheduleServer(syncHandler);
 
       var response = await _get();
-      expect(response.headers,
-          containsPair(HttpHeaders.serverHeader, 'dart:io with Shelf'));
+      expect(
+        response.headers,
+        containsPair(poweredBy, 'Dart with package:shelf'),
+      );
     });
 
     test('defers to header in response', () async {
       await _scheduleServer((request) {
-        return Response.ok('test',
-            headers: {HttpHeaders.serverHeader: 'myServer'});
+        return Response.ok('test', headers: {poweredBy: 'myServer'});
       });
 
       var response = await _get();
-      expect(
-          response.headers, containsPair(HttpHeaders.serverHeader, 'myServer'));
+      expect(response.headers, containsPair(poweredBy, 'myServer'));
     });
   });
 

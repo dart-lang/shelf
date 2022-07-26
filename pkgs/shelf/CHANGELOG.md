@@ -1,3 +1,10 @@
+## 1.3.2
+
+* `shelf_io.dart`
+    * Started setting `X-Powered-By` response header
+      to `Dart with package:shelf`.
+    * Stopped setting `Server` header (with value `dart:io with Shelf`).
+
 ## 1.3.1
 
 * Update the pubspec `repository` field.
