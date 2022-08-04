@@ -106,6 +106,13 @@ void main() {
     });
   });
 
+  group('Response.unauthorized:', () {
+    test('sets body', () {
+      var response = Response.unauthorized('Unauthorized');
+      expect(response.readAsString(), completion(equals('Unauthorized')));
+    });
+  });
+
   group('Response redirect', () {
     test('sets the location header for a String', () {
       var response = Response.found('/foo');
