@@ -182,7 +182,8 @@ class Response extends Message {
 
   /// Constructs a 401 Unauthorized response.
   ///
-  /// This indicates that the request is unauthorized due to invalid
+  /// This indicates indicates that the client request has not been completed
+  /// because it lacks valid authentication credentials.
   ///
   /// {@macro shelf_response_body_and_encoding_param}
   Response.unauthorized(
