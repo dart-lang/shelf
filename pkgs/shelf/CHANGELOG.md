@@ -1,3 +1,5 @@
+## 1.4.0
+* Add Response.unauthorized() constructor
 ## 1.3.2
 
 * `shelf_io.dart`
