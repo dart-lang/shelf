@@ -108,8 +108,10 @@ void main() {
 
   group('Response.unauthorized:', () {
     test('sets body', () {
-      var response = Response.unauthorized('Unauthorized');
-      expect(response.readAsString(), completion(equals('Unauthorized')));
+      var response = Response.unauthorized('request unauthorized');
+      expect(
+          response.readAsString(), completion(equals('request unauthorized')));
+      expect(response.statusCode, 401);
     });
   });
 
