@@ -180,6 +180,25 @@ class Response extends Message {
           encoding: encoding,
         );
 
+  /// Constructs a 401 Unauthorized response.
+  ///
+  /// This indicates indicates that the client request has not been completed
+  /// because it lacks valid authentication credentials.
+  ///
+  /// {@macro shelf_response_body_and_encoding_param}
+  Response.unauthorized(
+    Object? body, {
+    Map<String, /* String | List<String> */ Object>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this(
+          401,
+          headers: body == null ? _adjustErrorHeaders(headers) : headers,
+          body: body ?? 'Unauthorized',
+          context: context,
+          encoding: encoding,
+        );
+
   /// Constructs a 403 Forbidden response.
   ///
   /// This indicates that the server is refusing to fulfill the request.
