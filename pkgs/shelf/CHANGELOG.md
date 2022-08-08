@@ -1,4 +1,4 @@
-## 1.4.0
+## 1.4.0-dev
 
 * Add Response.unauthorized() constructor
 
