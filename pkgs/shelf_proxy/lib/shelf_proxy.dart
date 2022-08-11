@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
@@ -40,7 +41,15 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
     // TODO(nweiz): Handle TRACE requests correctly. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
     final requestUrl = uri.resolve(serverRequest.url.toString());
-    final clientRequest = http.StreamedRequest(serverRequest.method, requestUrl)
+
+    // To use truely request method, not the one from the serverRequest
+    // In flutter web's cross domain request, serverRequest.method is OPTIONS,
+    // but the real request method is POST or GET or others.
+    final method = serverRequest.headers[
+      HttpHeaders.accessControlRequestMethodHeader
+    ] ?? serverRequest.method;
+
+    final clientRequest = http.StreamedRequest(method, requestUrl)
       ..followRedirects = false
       ..headers.addAll(serverRequest.headers)
       ..headers['Host'] = uri.authority;
