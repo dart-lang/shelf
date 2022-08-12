@@ -1,3 +1,7 @@
+## 1.0.3
+
+* Add cross domain request support, use truly request method from 'Access-Control-Request-Method'
+
 ## 1.0.2
 
 * Update the pubspec `repository` field.
