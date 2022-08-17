@@ -1,3 +1,7 @@
+## v1.1.0
+* Remove trailing slash requirement when using `mount`.
+* Relax dependency constraint on `analyzer`.
+
 ## v1.0.3
 
 * Update the pubspec `repository` field.

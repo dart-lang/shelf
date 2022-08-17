@@ -20,5 +20,5 @@ void main() {
     await expectBuildClean(
       packageRelativeDirectory: 'pkgs/shelf_router_generator',
     );
-  });
+  }, timeout: const Timeout(Duration(minutes: 5)));
 }
