@@ -57,6 +57,8 @@ Future<HttpServer> serve(
           backlog: backlog,
           shared: shared,
         ));
+  // See https://webtechsurvey.com/response-header/x-powered-by
+  server.defaultResponseHeaders.add('x-powered-by', 'Dart with package:shelf');
   serveRequests(server, handler);
   return server;
 }
@@ -217,11 +219,6 @@ Future<void> _writeResponse(Response response, HttpResponse httpResponse) {
     httpResponse.headers.set(HttpHeaders.transferEncodingHeader, 'chunked');
   }
 
-  if (!response.headers.containsKey(_xPoweredByResponseHeader)) {
-    httpResponse.headers
-        .set(_xPoweredByResponseHeader, 'Dart with package:shelf');
-  }
-
   if (!response.headers.containsKey(HttpHeaders.dateHeader)) {
     httpResponse.headers.date = DateTime.now().toUtc();
   }
@@ -230,11 +227,6 @@ Future<void> _writeResponse(Response response, HttpResponse httpResponse) {
       .addStream(response.read())
       .then((_) => httpResponse.close());
 }
-
-/// Common header to advertise the server technology being used.
-///
-/// See https://webtechsurvey.com/response-header/x-powered-by
-const _xPoweredByResponseHeader = 'X-Powered-By';
 
 // TODO(kevmoo) A developer mode is needed to include error info in response
 // TODO(kevmoo) Make error output plugable. stderr, logging, etc

@@ -365,6 +365,17 @@ void main() {
       );
     });
 
+    test('Can be overridden on the HttpClient', () async {
+      await _scheduleServer(syncHandler);
+      _server!.defaultResponseHeaders.removeAll('x-powered-by');
+
+      var response = await _get();
+      expect(
+        response.headers,
+        isNot(contains(poweredBy)),
+      );
+    });
+
     test('defers to header in response', () async {
       await _scheduleServer((request) {
         return Response.ok('test', headers: {poweredBy: 'myServer'});
