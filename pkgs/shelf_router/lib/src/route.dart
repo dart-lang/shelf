@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import 'package:meta/meta.dart' show sealed;
-import 'package:shelf_router/src/router.dart';
+import 'router.dart';
 
 /// Annotation for handler methods that requests should be routed when using
 /// package `shelf_router_generator`.

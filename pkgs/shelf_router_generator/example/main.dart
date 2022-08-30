@@ -38,7 +38,7 @@ class Service {
   // Handlers can be asynchronous (returning `FutureOr` is also allowed).
   @Route.get('/wave')
   Future<Response> _wave(Request request) async {
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
     return Response.ok('_o/');
   }
 
