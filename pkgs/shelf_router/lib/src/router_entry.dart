@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'dart:async';
+
 import 'package:shelf/shelf.dart';
 
 /// Check if the [regexp] is non-capturing.
@@ -102,12 +103,12 @@ class RouterEntry {
 
     return await _middleware((request) async {
       if (_handler is Handler || _params.isEmpty) {
-        return await _handler(request);
+        return await _handler(request) as Response;
       }
       return await Function.apply(_handler, [
         request,
         ..._params.map((n) => params[n]),
-      ]);
+      ]) as Response;
     })(request);
   }
 }
