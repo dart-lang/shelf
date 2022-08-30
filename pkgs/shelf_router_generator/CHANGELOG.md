@@ -1,3 +1,7 @@
+## v1.0.4
+
+* Support update-to-date dependencies.
+
 ## v1.0.3
 
 * Update the pubspec `repository` field.
