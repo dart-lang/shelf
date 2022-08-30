@@ -18,7 +18,8 @@ import 'dart:convert';
 import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
-import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
+
+import 'router_entry.dart' show RouterEntry;
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -294,7 +295,7 @@ class _RouteNotFoundResponse extends Response {
   Response change({
     Map<String, /* String | List<String> */ Object?>? headers,
     Map<String, Object?>? context,
-    body,
+    Object? body,
   }) {
     return super.change(
       headers: headers,
