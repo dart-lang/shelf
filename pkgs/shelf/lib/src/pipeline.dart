@@ -16,7 +16,7 @@ import 'middleware.dart';
 /// ```
 ///
 /// Note: this package also provides `addMiddleware` and `addHandler` extensions
-//  members on [Middleware], which may be easier to use.
+///  members on [Middleware], which may be easier to use.
 class Pipeline {
   const Pipeline();
 
