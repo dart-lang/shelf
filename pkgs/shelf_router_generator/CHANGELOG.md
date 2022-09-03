@@ -1,3 +1,7 @@
+## v1.0.5-dev
+
+* Require Dart >=2.14
+
 ## v1.0.4
 
 * Support update-to-date dependencies.
