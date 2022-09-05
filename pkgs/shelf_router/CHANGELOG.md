@@ -1,3 +1,8 @@
+## 1.1.4-dev
+
+* Fix spelling in pubspec
+* Require Dart >=2.14
+
 ## 1.1.3
 
 * Update the pubspec `repository` field.
