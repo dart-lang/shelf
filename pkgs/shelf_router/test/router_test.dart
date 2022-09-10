@@ -204,7 +204,7 @@ void main() {
   });
 
   test('can mount dynamic routes', () async {
-    // routes for an [user] to [other]. This nests gets nested
+    // routes for an [user] to [other]. This gets nested
     // parameters from previous mounts
     Handler createUserToOtherHandler(String user, String other) {
       var router = Router();
