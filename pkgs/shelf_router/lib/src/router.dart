@@ -142,31 +142,84 @@ class Router {
 
   /// Handle all request to [route] using [handler].
   void all(String route, Function handler) {
-    _routes.add(RouterEntry('ALL', route, handler));
+    _all(route, handler, mounted: false);
+  }
+
+  void _all(String route, Function handler, {required bool mounted}) {
+    _routes.add(RouterEntry('ALL', route, handler, mounted: mounted));
   }
 
   /// Mount a handler below a prefix.
-  ///
-  /// In this case prefix may not contain any parameters, nor
-  void mount(String prefix, Handler handler) {
+  void mount(String prefix, Function handler) {
     if (!prefix.startsWith('/')) {
       throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
     }
 
     // first slash is always in request.handlerPath
     final path = prefix.substring(1);
+    const pathParam = '__path';
     if (prefix.endsWith('/')) {
-      all('$prefix<path|[^]*>', (Request request) {
-        return handler(request.change(path: path));
-      });
+      _all(
+        prefix + '<$pathParam|[^]*>',
+        (Request request, RouterEntry route) {
+          // Remove path param from extracted route params
+          final paramsList = [...route.params]..removeLast();
+          return _invokeMountedHandler(request, handler, path, paramsList);
+        },
+        mounted: true,
+      );
     } else {
-      all(prefix, (Request request) {
-        return handler(request.change(path: path));
-      });
-      all('$prefix/<path|[^]*>', (Request request) {
-        return handler(request.change(path: '$path/'));
-      });
+      _all(
+        prefix,
+        (Request request, RouterEntry route) {
+          return _invokeMountedHandler(request, handler, path, route.params);
+        },
+        mounted: true,
+      );
+      _all(
+        prefix + '/<$pathParam|[^]*>',
+        (Request request, RouterEntry route) {
+          // Remove path param from extracted route params
+          final paramsList = [...route.params]..removeLast();
+          return _invokeMountedHandler(
+              request, handler, path + '/', paramsList);
+        },
+        mounted: true,
+      );
     }
+  }
+
+  Future<Response> _invokeMountedHandler(Request request, Function handler,
+      String path, List<String> paramsList) async {
+    final params = _getParamsFromRequest(request);
+    final resolvedPath = _replaceParamsInPath(request, path, params);
+
+    return await Function.apply(handler, [
+      request.change(path: resolvedPath),
+      ...paramsList.map((n) => params[n]),
+    ]) as Response;
+  }
+
+  Map<String, String> _getParamsFromRequest(Request request) {
+    return request.context['shelf_router/params'] as Map<String, String>;
+  }
+
+  /// Replaces the variable slots (<someVar>) from [path] with the
+  /// values from [params]
+  String _replaceParamsInPath(
+    Request request,
+    String path,
+    Map<String, String> params,
+  ) {
+    // TODO(davidmartos96): Maybe this could be done in a different way
+    // to avoid replacing the path N times, N being the number of params
+    var resolvedPath = path;
+    for (final paramEntry in params.entries) {
+      resolvedPath =
+          resolvedPath.replaceFirst('<${paramEntry.key}>', paramEntry.value);
+    }
+
+    return resolvedPath;
   }
 
   /// Route incoming requests to registered handlers.

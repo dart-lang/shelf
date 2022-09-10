@@ -34,6 +34,10 @@ class RouterEntry {
   final Function _handler;
   final Middleware _middleware;
 
+  /// This router entry is used
+  /// as a mount point
+  final bool _mounted;
+
   /// Expression that the request path must match.
   ///
   /// This also captures any parameters in the route pattern.
@@ -46,13 +50,14 @@ class RouterEntry {
   List<String> get params => _params.toList(); // exposed for using generator.
 
   RouterEntry._(this.verb, this.route, this._handler, this._middleware,
-      this._routePattern, this._params);
+      this._routePattern, this._params, this._mounted);
 
   factory RouterEntry(
     String verb,
     String route,
     Function handler, {
     Middleware? middleware,
+    bool mounted = false,
   }) {
     middleware = middleware ?? ((Handler fn) => fn);
 
@@ -77,7 +82,7 @@ class RouterEntry {
     final routePattern = RegExp('^$pattern\$');
 
     return RouterEntry._(
-        verb, route, handler, middleware, routePattern, params);
+        verb, route, handler, middleware, routePattern, params, mounted);
   }
 
   /// Returns a map from parameter name to value, if the path matches the
@@ -102,9 +107,17 @@ class RouterEntry {
     request = request.change(context: {'shelf_router/params': params});
 
     return await _middleware((request) async {
+      if (_mounted) {
+        // if this route is mounted, we include
+        // the route itself as a parameter so
+        // that the mount can extract the parameters
+        return await _handler(request, this) as Response;
+      }
+
       if (_handler is Handler || _params.isEmpty) {
         return await _handler(request) as Response;
       }
+
       return await Function.apply(_handler, [
         request,
         ..._params.map((n) => params[n]),

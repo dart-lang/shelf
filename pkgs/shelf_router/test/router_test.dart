@@ -202,4 +202,61 @@ void main() {
     final b2 = await Router.routeNotFound.readAsString();
     expect(b2, b1);
   });
+
+  test('can mount dynamic routes', () async {
+    // routes for an [user] to [other]. This nests gets nested
+    // parameters from previous mounts
+    Handler createUserToOtherHandler(String user, String other) {
+      var router = Router();
+
+      router.get('/<action>', (Request request, String action) {
+        return Response.ok('$user to $other: $action');
+      });
+
+      return router;
+    }
+
+    // routes for a specific [user]. The user value
+    // is extracted from the mount
+    Handler createUserHandler(String user) {
+      var router = Router();
+
+      router.mount('/to/<other>/', (Request request, String other) {
+        final r = createUserToOtherHandler(user, other);
+        return r(request);
+      });
+
+      router.get('/self', (Request request) {
+        return Response.ok("I'm $user");
+      });
+
+      router.get('/', (Request request) {
+        return Response.ok('$user root');
+      });
+      return router;
+    }
+
+    var app = Router();
+    app.get('/hello', (Request request) {
+      return Response.ok('hello-world');
+    });
+
+    app.mount('/users/<user>', (Request request, String user) {
+      final r = createUserHandler(user);
+      return r(request);
+    });
+
+    app.all('/<_|[^]*>', (Request request) {
+      return Response.ok('catch-all-handler');
+    });
+
+    server.mount(app);
+
+    expect(await get('/hello'), 'hello-world');
+    expect(await get('/users/david/to/jake/salutes'), 'david to jake: salutes');
+    expect(await get('/users/jennifer/to/mary/bye'), 'jennifer to mary: bye');
+    expect(await get('/users/jennifer/self'), "I'm jennifer");
+    expect(await get('/users/jake'), 'jake root');
+    expect(await get('/users/david/no-route'), 'catch-all-handler');
+  });
 }
