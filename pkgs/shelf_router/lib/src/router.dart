@@ -157,7 +157,11 @@ class Router {
 
     // first slash is always in request.handlerPath
     final path = prefix.substring(1);
+    
+    // Prefix it with two underscores to avoid conflicts
+    // with user defined path parameters
     const pathParam = '__path';
+    
     if (prefix.endsWith('/')) {
       _all(
         prefix + '<$pathParam|[^]*>',
