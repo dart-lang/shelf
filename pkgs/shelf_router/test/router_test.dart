@@ -222,8 +222,8 @@ void main() {
       var router = Router();
 
       router.mount('/to/<other>/', (Request request, String other) {
-        final r = createUserToOtherHandler(user, other);
-        return r(request);
+        final handler = createUserToOtherHandler(user, other);
+        return handler(request);
       });
 
       router.get('/self', (Request request) {
@@ -242,8 +242,8 @@ void main() {
     });
 
     app.mount('/users/<user>', (Request request, String user) {
-      final r = createUserHandler(user);
-      return r(request);
+      final handler = createUserHandler(user);
+      return handler(request);
     });
 
     app.all('/<_|[^]*>', (Request request) {
