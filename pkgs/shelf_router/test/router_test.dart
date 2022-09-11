@@ -259,4 +259,37 @@ void main() {
     expect(await get('/users/jake'), 'jake root');
     expect(await get('/users/david/no-route'), 'catch-all-handler');
   });
+
+  test('can mount dynamic routes with multiple parameters', () async {
+    var app = Router();
+    app.mount(r'/first/<second>/third/<fourth|\d+>/last',
+        (Request request, String second, String fourthNum) {
+      var router = Router();
+      router.get('/', (r) => Response.ok('$second ${int.parse(fourthNum)}'));
+      return router(request);
+    });
+
+    server.mount(app);
+
+    expect(await get('/first/hello/third/12/last'), 'hello 12');
+  });
+
+  test('can mount dynamic routes with regexp', () async {
+    var app = Router();
+
+    app.mount(r'/before/<bookId|\d+>/after', (Request request, String bookId) {
+      var router = Router();
+      router.get('/', (r) => Response.ok('book ${int.parse(bookId)}'));
+      return router(request);
+    });
+
+    app.all('/<_|[^]*>', (Request request) {
+      return Response.ok('catch-all-handler');
+    });
+
+    server.mount(app);
+
+    expect(await get('/before/123/after'), 'book 123');
+    expect(await get('/before/abc/after'), 'catch-all-handler');
+  });
 }

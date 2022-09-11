@@ -19,7 +19,7 @@ import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
-import 'router_entry.dart' show RouterEntry;
+import 'router_entry.dart' show ParamInfo, RouterEntry;
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -167,7 +167,7 @@ class Router {
         prefix + '<$pathParam|[^]*>',
         (Request request, RouterEntry route) {
           // Remove path param from extracted route params
-          final paramsList = [...route.params]..removeLast();
+          final paramsList = [...route.paramInfos]..removeLast();
           return _invokeMountedHandler(request, handler, path, paramsList);
         },
         mounted: true,
@@ -176,7 +176,8 @@ class Router {
       _all(
         prefix,
         (Request request, RouterEntry route) {
-          return _invokeMountedHandler(request, handler, path, route.params);
+          return _invokeMountedHandler(
+              request, handler, path, route.paramInfos);
         },
         mounted: true,
       );
@@ -184,7 +185,7 @@ class Router {
         prefix + '/<$pathParam|[^]*>',
         (Request request, RouterEntry route) {
           // Remove path param from extracted route params
-          final paramsList = [...route.params]..removeLast();
+          final paramsList = [...route.paramInfos]..removeLast();
           return _invokeMountedHandler(
               request, handler, path + '/', paramsList);
         },
@@ -194,13 +195,14 @@ class Router {
   }
 
   Future<Response> _invokeMountedHandler(Request request, Function handler,
-      String path, List<String> paramsList) async {
+      String path, List<ParamInfo> paramInfos) async {
     final params = _getParamsFromRequest(request);
-    final resolvedPath = _replaceParamsInPath(request, path, params);
+    final resolvedPath =
+        _replaceParamsInPath(request, path, params, paramInfos);
 
     return await Function.apply(handler, [
       request.change(path: resolvedPath),
-      ...paramsList.map((n) => params[n]),
+      ...paramInfos.map((info) => params[info.name]),
     ]) as Response;
   }
 
@@ -214,15 +216,37 @@ class Router {
     Request request,
     String path,
     Map<String, String> params,
+    List<ParamInfo> paramInfos,
   ) {
-    // TODO(davidmartos96): Maybe this could be done in a different way
-    // to avoid replacing the path N times, N being the number of params
-    var resolvedPath = path;
-    for (final paramEntry in params.entries) {
-      resolvedPath =
-          resolvedPath.replaceFirst('<${paramEntry.key}>', paramEntry.value);
+    // we iterate the non-resolved path and we write to a StringBuffer
+    // resolving ther parameters along the way
+    final resolvedPathBuff = StringBuffer();
+    var paramIndex = 0;
+    var charIndex = 0;
+    while (charIndex < path.length) {
+      if (paramIndex < paramInfos.length) {
+        final paramInfo = paramInfos[paramIndex];
+        if (charIndex < paramInfo.startIdx - 1) {
+          // Add up until the param slot starts
+          final part = path.substring(charIndex, paramInfo.startIdx - 1);
+          resolvedPathBuff.write(part);
+          charIndex += part.length;
+        } else {
+          // Add the resolved value of the parameter
+          final paramName = paramInfo.name;
+          final paramValue = params[paramName]!;
+          resolvedPathBuff.write(paramValue);
+          charIndex = paramInfo.endIdx - 1;
+          paramIndex++;
+        }
+      } else {
+        // All params looped, so add up until the end of the path
+        final part = path.substring(charIndex, path.length);
+        resolvedPathBuff.write(part);
+        charIndex += part.length;
+      }
     }
-
+    var resolvedPath = resolvedPathBuff.toString();
     return resolvedPath;
   }
 
