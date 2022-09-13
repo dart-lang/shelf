@@ -205,8 +205,8 @@ class Router {
     ]) as Response;
   }
 
-  /// Removes the "rest path" from the requested url in mounted routes. This
-  /// new path is then used to update the scope of the mounted handler with
+  /// Removes the "rest path" from the requested [urlPath] in mounted routes.
+  /// This new path is then used to update the scope of the mounted handler with
   /// [Request.change]
   String _getEffectiveMountPath(
     String urlPath,
