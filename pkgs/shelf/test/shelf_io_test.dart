@@ -365,13 +365,56 @@ void main() {
       );
     });
 
-    test('defers to header in response', () async {
+    test('defers to header in response when default', () async {
       await _scheduleServer((request) {
         return Response.ok('test', headers: {poweredBy: 'myServer'});
       });
 
       var response = await _get();
       expect(response.headers, containsPair(poweredBy, 'myServer'));
+    });
+
+    test('can be set at the server level', () async {
+      _server = await shelf_io.serve(
+        syncHandler,
+        'localhost',
+        0,
+        poweredByHeader: 'ourServer',
+      );
+      var response = await _get();
+      expect(
+        response.headers,
+        containsPair(poweredBy, 'ourServer'),
+      );
+    });
+
+    test('defers to header in response when set at the server level', () async {
+      _server = await shelf_io.serve(
+        (request) {
+          return Response.ok('test', headers: {poweredBy: 'myServer'});
+        },
+        'localhost',
+        0,
+        poweredByHeader: 'ourServer',
+      );
+
+      var response = await _get();
+      expect(response.headers, containsPair(poweredBy, 'myServer'));
+    });
+
+    test('is omitted when set to null', () async {
+      _server = await shelf_io.serve(
+        syncHandler,
+        'localhost',
+        0,
+        poweredByHeader: null,
+      );
+
+      var response = await _get();
+      expect(
+        response.headers,
+        isNot(contains(poweredBy)),
+      );
     });
   });
 
