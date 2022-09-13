@@ -197,7 +197,7 @@ class Router {
   Future<Response> _invokeMountedHandler(
       Request request, Function handler, List<String> pathParams) async {
     final paramsMap = request.params;
-    final effectivePath = _replaceParamsInPath(request.url.path, paramsMap);
+    final effectivePath = _getEffectiveMountPath(request.url.path, paramsMap);
 
     return await Function.apply(handler, [
       request.change(path: effectivePath),
@@ -205,9 +205,10 @@ class Router {
     ]) as Response;
   }
 
-  /// Replaces the variable slots (<someVar>) from [path] with the
-  /// values from [paramsMap]
-  String _replaceParamsInPath(
+  /// Removes the "rest path" from the requested url in mounted routes. This
+  /// new path is then used to update the scope of the mounted handler with
+  /// [Request.change]
+  String _getEffectiveMountPath(
     String urlPath,
     Map<String, String> paramsMap,
   ) {
