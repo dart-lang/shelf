@@ -19,7 +19,7 @@ import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
-import 'router_entry.dart' show ParamInfo, RouterEntry;
+import 'router_entry.dart' show RouterEntry;
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -113,6 +113,12 @@ class Router {
   final List<RouterEntry> _routes = [];
   final Handler _notFoundHandler;
 
+  /// Name of the parameter used for matching the rest of te path in a mounted
+  /// route.
+  /// Prefixed with two underscores to avoid conflicts
+  /// with user defined path parameters
+  static const _kRestPathParam = '__path';
+
   /// Creates a new [Router] routing requests to handlers.
   ///
   /// The [notFoundHandler] will be invoked for requests where no matching route
@@ -156,19 +162,15 @@ class Router {
     }
 
     // first slash is always in request.handlerPath
-    final path = prefix.substring(1);
-
-    // Prefix it with two underscores to avoid conflicts
-    // with user defined path parameters
-    const pathParam = '__path';
+    const restPathParam = _kRestPathParam;
 
     if (prefix.endsWith('/')) {
       _all(
-        prefix + '<$pathParam|[^]*>',
+        prefix + '<$restPathParam|[^]*>',
         (Request request, RouterEntry route) {
           // Remove path param from extracted route params
-          final paramsList = [...route.paramInfos]..removeLast();
-          return _invokeMountedHandler(request, handler, path, paramsList);
+          final paramsList = [...route.params]..removeLast();
+          return _invokeMountedHandler(request, handler, paramsList);
         },
         mounted: true,
       );
@@ -176,78 +178,42 @@ class Router {
       _all(
         prefix,
         (Request request, RouterEntry route) {
-          return _invokeMountedHandler(
-              request, handler, path, route.paramInfos);
+          return _invokeMountedHandler(request, handler, route.params);
         },
         mounted: true,
       );
       _all(
-        prefix + '/<$pathParam|[^]*>',
+        prefix + '/<$restPathParam|[^]*>',
         (Request request, RouterEntry route) {
           // Remove path param from extracted route params
-          final paramsList = [...route.paramInfos]..removeLast();
-          return _invokeMountedHandler(
-              request, handler, path + '/', paramsList);
+          final paramsList = [...route.params]..removeLast();
+          return _invokeMountedHandler(request, handler, paramsList);
         },
         mounted: true,
       );
     }
   }
 
-  Future<Response> _invokeMountedHandler(Request request, Function handler,
-      String path, List<ParamInfo> paramInfos) async {
-    final params = _getParamsFromRequest(request);
-    final resolvedPath =
-        _replaceParamsInPath(request, path, params, paramInfos);
+  Future<Response> _invokeMountedHandler(
+      Request request, Function handler, List<String> pathParams) async {
+    final paramsMap = request.params;
+
+    final pathParamSegment = paramsMap[_kRestPathParam];
+    final urlPath = request.url.path;
+    late final String effectivePath;
+    if (pathParamSegment != null && pathParamSegment.isNotEmpty) {
+      /// If we encounter the "rest path" parameter we remove it
+      /// from the request path that shelf will handle.
+      effectivePath =
+          urlPath.substring(0, urlPath.length - pathParamSegment.length);
+    } else {
+      effectivePath = urlPath;
+    }
 
     return await Function.apply(handler, [
-      request.change(path: resolvedPath),
-      ...paramInfos.map((info) => params[info.name]),
+      request.change(path: effectivePath),
+      ...pathParams.map((param) => paramsMap[param]),
     ]) as Response;
-  }
-
-  Map<String, String> _getParamsFromRequest(Request request) {
-    return request.context['shelf_router/params'] as Map<String, String>;
-  }
-
-  /// Replaces the variable slots (<someVar>) from [path] with the
-  /// values from [params]
-  String _replaceParamsInPath(
-    Request request,
-    String path,
-    Map<String, String> params,
-    List<ParamInfo> paramInfos,
-  ) {
-    // we iterate the non-resolved path and we write to a StringBuffer
-    // resolving ther parameters along the way
-    final resolvedPathBuff = StringBuffer();
-    var paramIndex = 0;
-    var charIndex = 0;
-    while (charIndex < path.length) {
-      if (paramIndex < paramInfos.length) {
-        final paramInfo = paramInfos[paramIndex];
-        if (charIndex < paramInfo.startIdx - 1) {
-          // Add up until the param slot starts
-          final part = path.substring(charIndex, paramInfo.startIdx - 1);
-          resolvedPathBuff.write(part);
-          charIndex += part.length;
-        } else {
-          // Add the resolved value of the parameter
-          final paramName = paramInfo.name;
-          final paramValue = params[paramName]!;
-          resolvedPathBuff.write(paramValue);
-          charIndex = paramInfo.endIdx - 1;
-          paramIndex++;
-        }
-      } else {
-        // All params looped, so add up until the end of the path
-        final part = path.substring(charIndex, path.length);
-        resolvedPathBuff.write(part);
-        charIndex += part.length;
-      }
-    }
-    var resolvedPath = resolvedPathBuff.toString();
-    return resolvedPath;
   }
 
   /// Route incoming requests to registered handlers.

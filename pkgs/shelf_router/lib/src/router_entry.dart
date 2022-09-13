@@ -44,16 +44,13 @@ class RouterEntry {
   final RegExp _routePattern;
 
   /// Names for the parameters in the route pattern.
-  final List<ParamInfo> _paramInfos;
-
-  List<ParamInfo> get paramInfos => _paramInfos.toList();
+  final List<String> _params;
 
   /// List of parameter names in the route pattern.
-  // exposed for using generator.
-  List<String> get params => _paramInfos.map((p) => p.name).toList();
+  List<String> get params => _params.toList(); // exposed for using generator.
 
   RouterEntry._(this.verb, this.route, this._handler, this._middleware,
-      this._routePattern, this._paramInfos, this._mounted);
+      this._routePattern, this._params, this._mounted);
 
   factory RouterEntry(
     String verb,
@@ -69,26 +66,12 @@ class RouterEntry {
           route, 'route', 'expected route to start with a slash');
     }
 
-    final params = <ParamInfo>[];
+    final params = <String>[];
     var pattern = '';
-    // Keep the index where the matches are located
-    // so that we can calculate the positioning of
-    // the extracted parameter
-    var prevMatchIndex = 0;
     for (var m in _parser.allMatches(route)) {
-      final firstGroup = m[1]!;
-      pattern += RegExp.escape(firstGroup);
+      pattern += RegExp.escape(m[1]!);
       if (m[2] != null) {
-        final paramName = m[2]!;
-        final startIdx = prevMatchIndex + firstGroup.length;
-        final paramInfo = ParamInfo(
-          name: paramName,
-          startIdx: startIdx,
-          endIdx: m.end,
-        );
-        params.add(paramInfo);
-        prevMatchIndex = m.end;
-
+        params.add(m[2]!);
         if (m[3] != null && !_isNoCapture(m[3]!)) {
           throw ArgumentError.value(
               route, 'route', 'expression for "${m[2]}" is capturing');
@@ -112,10 +95,9 @@ class RouterEntry {
     }
     // Construct map from parameter name to matched value
     var params = <String, String>{};
-    for (var i = 0; i < _paramInfos.length; i++) {
+    for (var i = 0; i < _params.length; i++) {
       // first group is always the full match, we ignore this group.
-      final paramInfo = _paramInfos[i];
-      params[paramInfo.name] = m[i + 1]!;
+      params[_params[i]] = m[i + 1]!;
     }
     return params;
   }
@@ -132,37 +114,14 @@ class RouterEntry {
         return await _handler(request, this) as Response;
       }
 
-      if (_handler is Handler || _paramInfos.isEmpty) {
+      if (_handler is Handler || _params.isEmpty) {
         return await _handler(request) as Response;
       }
 
       return await Function.apply(_handler, [
         request,
-        ..._paramInfos.map((info) => params[info.name]),
+        ..._params.map((n) => params[n]),
       ]) as Response;
     })(request);
   }
-}
-
-/// This class holds information about a parameter extracted
-/// from the route path.
-/// The indexes can by used by the mount logic to resolve the
-/// parametrized path when handling the request.
-class ParamInfo {
-  /// This is the name of the parameter, without <, >
-  final String name;
-
-  /// The index in the route String where the parameter
-  /// expression starts (inclusive)
-  final int startIdx;
-
-  /// The index in the route String where the parameter
-  /// expression ends (exclusive)
-  final int endIdx;
-
-  const ParamInfo({
-    required this.name,
-    required this.startIdx,
-    required this.endIdx,
-  });
 }
