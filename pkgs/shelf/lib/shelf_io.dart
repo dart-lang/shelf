@@ -44,7 +44,7 @@ export 'src/io_server.dart' show IOServer;
 /// Every response will get a "date" header and an "X-Powered-By" header.
 /// If the either header is present, it will not be overwritten.
 /// Pass [poweredByHeader] to set the default content for "X-Powered-By", pass
-/// null to omit this header..
+/// `null` to omit this header..
 /// {@endtemplate}
 Future<HttpServer> serve(
   Handler handler,
