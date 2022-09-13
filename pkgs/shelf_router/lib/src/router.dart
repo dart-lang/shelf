@@ -197,9 +197,21 @@ class Router {
   Future<Response> _invokeMountedHandler(
       Request request, Function handler, List<String> pathParams) async {
     final paramsMap = request.params;
+    final effectivePath = _replaceParamsInPath(request.url.path, paramsMap);
 
+    return await Function.apply(handler, [
+      request.change(path: effectivePath),
+      ...pathParams.map((param) => paramsMap[param]),
+    ]) as Response;
+  }
+
+  /// Replaces the variable slots (<someVar>) from [path] with the
+  /// values from [paramsMap]
+  String _replaceParamsInPath(
+    String urlPath,
+    Map<String, String> paramsMap,
+  ) {
     final pathParamSegment = paramsMap[_kRestPathParam];
-    final urlPath = request.url.path;
     late final String effectivePath;
     if (pathParamSegment != null && pathParamSegment.isNotEmpty) {
       /// If we encounter the "rest path" parameter we remove it
@@ -207,13 +219,10 @@ class Router {
       effectivePath =
           urlPath.substring(0, urlPath.length - pathParamSegment.length);
     } else {
+      // No parameters in the requested path
       effectivePath = urlPath;
     }
-
-    return await Function.apply(handler, [
-      request.change(path: effectivePath),
-      ...pathParams.map((param) => paramsMap[param]),
-    ]) as Response;
+    return effectivePath;
   }
 
   /// Route incoming requests to registered handlers.
