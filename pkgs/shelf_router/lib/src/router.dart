@@ -56,6 +56,40 @@ extension RouterParams on Request {
     }
     return _emptyParams;
   }
+
+  /// Get URL parameters captured by the [Router.mount].
+  /// They can be accessed from inside the mounted routes.
+  ///
+  /// **Example**
+  /// ```dart
+  /// Router createUsersRouter() {
+  ///   var router = Router();
+  ///
+  ///   String getUser(Request r) => r.mountedParams['user']!;
+  ///
+  ///   router.get('/self', (Request request) {
+  ///     return Response.ok("I'm ${getUser(request)}");
+  ///   });
+  ///
+  ///   return router;
+  /// }
+  ///
+  /// var app = Router();
+  ///
+  /// final usersRouter = createUsersRouter();
+  /// app.mount('/users/<user>', (Request r, String user) => usersRouter(r));
+  /// ```
+  ///
+  /// If no parameters are captured this returns an empty map.
+  ///
+  /// The returned map is unmodifiable.
+  Map<String, String> get mountedParams {
+    final p = context['shelf_router/mountedParams'];
+    if (p is Map<String, String>) {
+      return UnmodifiableMapView(p);
+    }
+    return _emptyParams;
+  }
 }
 
 /// Middleware to remove body from request.
@@ -148,11 +182,17 @@ class Router {
 
   /// Handle all request to [route] using [handler].
   void all(String route, Function handler) {
-    _all(route, handler, mounted: false);
+    _all(route, handler, applyParamsOnHandle: true);
   }
 
-  void _all(String route, Function handler, {required bool mounted}) {
-    _routes.add(RouterEntry('ALL', route, handler, mounted: mounted));
+  void _all(String route, Function handler,
+      {required bool applyParamsOnHandle}) {
+    _routes.add(RouterEntry(
+      'ALL',
+      route,
+      handler,
+      applyParamsOnHandle: applyParamsOnHandle,
+    ));
   }
 
   /// Mount a handler below a prefix.
@@ -161,7 +201,6 @@ class Router {
       throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
     }
 
-    // first slash is always in request.handlerPath
     const restPathParam = _kRestPathParam;
 
     if (prefix.endsWith('/')) {
@@ -172,7 +211,7 @@ class Router {
           final paramsList = [...route.params]..removeLast();
           return _invokeMountedHandler(request, handler, paramsList);
         },
-        mounted: true,
+        applyParamsOnHandle: false,
       );
     } else {
       _all(
@@ -180,7 +219,7 @@ class Router {
         (Request request, RouterEntry route) {
           return _invokeMountedHandler(request, handler, route.params);
         },
-        mounted: true,
+        applyParamsOnHandle: false,
       );
       _all(
         prefix + '/<$restPathParam|[^]*>',
@@ -189,7 +228,7 @@ class Router {
           final paramsList = [...route.params]..removeLast();
           return _invokeMountedHandler(request, handler, paramsList);
         },
-        mounted: true,
+        applyParamsOnHandle: false,
       );
     }
   }
@@ -199,8 +238,21 @@ class Router {
     final paramsMap = request.params;
     final effectivePath = _getEffectiveMountPath(request.url.path, paramsMap);
 
+    final modifiedRequest = request.change(
+      path: effectivePath,
+      context: {
+        // Include the parameters captured here as mounted parameters.
+        // We also include previous mounted params in case there is double
+        // nesting of `mount`s
+        'shelf_router/mountedParams': {
+          ...request.mountedParams,
+          ...paramsMap,
+        },
+      },
+    );
+
     return await Function.apply(handler, [
-      request.change(path: effectivePath),
+      modifiedRequest,
       ...pathParams.map((param) => paramsMap[param]),
     ]) as Response;
   }

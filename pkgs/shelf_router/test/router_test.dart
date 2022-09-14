@@ -204,34 +204,40 @@ void main() {
   });
 
   test('can mount dynamic routes', () async {
-    // routes for an [user] to [other]. This gets nested
-    // parameters from previous mounts
-    Handler createUserToOtherHandler(String user, String other) {
-      var router = Router();
-
-      router.get('/<action>', (Request request, String action) {
-        return Response.ok('$user to $other: $action');
-      });
-
-      return router;
-    }
-
     // routes for a specific [user]. The user value
     // is extracted from the mount
-    Handler createUserHandler(String user) {
+    Router createUsersRouter() {
       var router = Router();
 
-      router.mount('/to/<other>/', (Request request, String other) {
-        final handler = createUserToOtherHandler(user, other);
-        return handler(request);
-      });
+      String getUser(Request r) => r.mountedParams['user']!;
+
+      // Nested mount
+      // Routes for an [user] to [other]. This gets nested
+      // parameters from previous mounts
+      Router createUserToOtherRouter() {
+        var router = Router();
+
+        String getOtherUser(Request r) => r.mountedParams['other']!;
+
+        router.get('/<action>', (Request request, String action) {
+          return Response.ok(
+            '${getUser(request)} to ${getOtherUser(request)}: $action',
+          );
+        });
+
+        return router;
+      }
+
+      final userToOtherRouter = createUserToOtherRouter();
+      router.mount(
+          '/to/<other>/', (Request r, String other) => userToOtherRouter(r));
 
       router.get('/self', (Request request) {
-        return Response.ok("I'm $user");
+        return Response.ok("I'm ${getUser(request)}");
       });
 
       router.get('/', (Request request) {
-        return Response.ok('$user root');
+        return Response.ok('${getUser(request)} root');
       });
       return router;
     }
@@ -241,10 +247,8 @@ void main() {
       return Response.ok('hello-world');
     });
 
-    app.mount('/users/<user>', (Request request, String user) {
-      final handler = createUserHandler(user);
-      return handler(request);
-    });
+    final usersRouter = createUsersRouter();
+    app.mount('/users/<user>', (Request r, String user) => usersRouter(r));
 
     app.all('/<_|[^]*>', (Request request) {
       return Response.ok('catch-all-handler');
@@ -262,12 +266,24 @@ void main() {
 
   test('can mount dynamic routes with multiple parameters', () async {
     var app = Router();
-    app.mount(r'/first/<second>/third/<fourth|\d+>/last',
-        (Request request, String second, String fourthNum) {
+
+    final mountedRouter = () {
       var router = Router();
-      router.get('/', (r) => Response.ok('$second ${int.parse(fourthNum)}'));
-      return router(request);
-    });
+
+      String getSecond(Request r) => r.mountedParams['second']!;
+      int getFourth(Request r) => int.parse(r.mountedParams['fourth']!);
+
+      router.get(
+        '/',
+        (Request r) => Response.ok('${getSecond(r)} ${getFourth(r)}'),
+      );
+      return router;
+    }();
+
+    app.mount(
+      r'/first/<second>/third/<fourth|\d+>/last',
+      (Request r, String second, String fourth) => mountedRouter(r),
+    );
 
     server.mount(app);
 
@@ -277,11 +293,19 @@ void main() {
   test('can mount dynamic routes with regexp', () async {
     var app = Router();
 
-    app.mount(r'/before/<bookId|\d+>/after', (Request request, String bookId) {
+    final mountedRouter = () {
       var router = Router();
-      router.get('/', (r) => Response.ok('book ${int.parse(bookId)}'));
-      return router(request);
-    });
+
+      int getBookId(Request r) => int.parse(r.mountedParams['bookId']!);
+
+      router.get('/', (Request r) => Response.ok('book ${getBookId(r)}'));
+      return router;
+    }();
+
+    app.mount(
+      r'/before/<bookId|\d+>/after',
+      (Request r, String bookId) => mountedRouter(r),
+    );
 
     app.all('/<_|[^]*>', (Request request) {
       return Response.ok('catch-all-handler');
