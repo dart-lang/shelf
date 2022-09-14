@@ -47,8 +47,7 @@ class ShelfUnmodifiableMap extends UnmodifiableMapView<String, Object> {
   /// Returns an empty [ShelfUnmodifiableMap].
   const factory ShelfUnmodifiableMap.empty() = _EmptyShelfUnmodifiableMap;
 
-  ShelfUnmodifiableMap._(Map<String, Object> source, this._ignoreKeyCase)
-      : super(source);
+  ShelfUnmodifiableMap._(super.source, this._ignoreKeyCase);
 }
 
 /// A const implementation of an empty [ShelfUnmodifiableMap].

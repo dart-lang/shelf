@@ -156,15 +156,15 @@ class Router {
     // first slash is always in request.handlerPath
     final path = prefix.substring(1);
     if (prefix.endsWith('/')) {
-      all(prefix + '<path|[^]*>', (Request request) {
+      all('$prefix<path|[^]*>', (Request request) {
         return handler(request.change(path: path));
       });
     } else {
       all(prefix, (Request request) {
         return handler(request.change(path: path));
       });
-      all(prefix + '/<path|[^]*>', (Request request) {
-        return handler(request.change(path: path + '/'));
+      all('$prefix/<path|[^]*>', (Request request) {
+        return handler(request.change(path: '$path/'));
       });
     }
   }
@@ -179,7 +179,7 @@ class Router {
       if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
         continue;
       }
-      var params = route.match('/' + request.url.path);
+      var params = route.match('/${request.url.path}');
       if (params != null) {
         final response = await route.invoke(request, params);
         if (response != routeNotFound) {
