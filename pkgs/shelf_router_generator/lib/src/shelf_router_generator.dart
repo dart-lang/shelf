@@ -68,7 +68,10 @@ code.Method _buildRouterMethod({
         ..body = code.Block(
           (b) => b
             ..addExpression(
-                code.refer('Router').newInstance([]).assignFinal('router'))
+              code
+                  .declareFinal('router')
+                  .assign(code.refer('Router').newInstance([])),
+            )
             ..statements.addAll(handlers.map((h) => _buildAddHandlerCode(
                   router: code.refer('router'),
                   service: code.refer('service'),
