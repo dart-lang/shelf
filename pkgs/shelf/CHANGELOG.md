@@ -3,6 +3,7 @@
 * Add Response.unauthorized() constructor
 * Add `poweredByHeader` argument to `serve`, `serveRequests`, and
   `handleRequest`.
+* Require Dart >= 2.17
 
 ## 1.3.2
 

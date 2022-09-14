@@ -1,3 +1,7 @@
+## 1.0.3-dev
+
+* Require Dart `2.17`.
+
 ## 1.0.2
 
 * Require Dart `2.14`.

@@ -6,7 +6,7 @@ description: >
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_router
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '>=2.17.0 <3.0.0'
 
 dependencies:
   meta: ^1.3.0
@@ -15,5 +15,5 @@ dependencies:
 
 dev_dependencies:
   test: ^1.16.0
-  lints: ^1.0.0
+  lints: ^2.0.0
   http: ^0.13.0

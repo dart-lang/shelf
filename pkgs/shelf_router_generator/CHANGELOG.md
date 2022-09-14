@@ -1,6 +1,7 @@
 ## v1.0.5-dev
 
-* Require Dart >=2.14
+* Require `analyzer: '>=4.6.0 <6.0.0'`
+* Require `sdk: '>=2.17.0 <3.0.0'`
 
 ## v1.0.4
 

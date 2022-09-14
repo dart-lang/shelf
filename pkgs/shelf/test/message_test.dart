@@ -12,8 +12,8 @@ import 'test_util.dart';
 
 class _TestMessage extends Message {
   _TestMessage(Map<String, /* String | List<String> */ Object>? headers,
-      Map<String, Object>? context, Object? body, Encoding? encoding)
-      : super(body, headers: headers, context: context, encoding: encoding);
+      Map<String, Object>? context, super.body, Encoding? encoding)
+      : super(headers: headers, context: context, encoding: encoding);
 
   @override
   Message change(

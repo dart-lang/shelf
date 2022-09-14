@@ -1,7 +1,7 @@
 ## 1.1.4-dev
 
 * Fix spelling in pubspec
-* Require Dart >=2.14
+* Require Dart >=2.17
 
 ## 1.1.3
 
