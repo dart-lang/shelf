@@ -205,7 +205,7 @@ class Router {
 
     if (prefix.endsWith('/')) {
       _all(
-        prefix + '<$restPathParam|[^]*>',
+        '$prefix<$restPathParam|[^]*>',
         (Request request, RouterEntry route) {
           // Remove path param from extracted route params
           final paramsList = [...route.params]..removeLast();
@@ -222,7 +222,7 @@ class Router {
         applyParamsOnHandle: false,
       );
       _all(
-        prefix + '/<$restPathParam|[^]*>',
+        '$prefix/<$restPathParam|[^]*>',
         (Request request, RouterEntry route) {
           // Remove path param from extracted route params
           final paramsList = [...route.params]..removeLast();
