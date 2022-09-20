@@ -1,4 +1,4 @@
-## 1.4.0-dev
+## 1.4.0
 
 * Add Response.unauthorized() constructor
 * Add `poweredByHeader` argument to `serve`, `serveRequests`, and
