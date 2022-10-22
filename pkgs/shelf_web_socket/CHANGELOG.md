@@ -1,6 +1,7 @@
 ## 1.0.3-dev
 
 * Require Dart `2.17`.
+* Fix checking for binary callbacks with strong null safety.
 
 ## 1.0.2
 
