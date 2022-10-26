@@ -2,14 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore_for_file: inference_failure_on_untyped_parameter
-
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:test/test.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 Map<String, String> get _handshakeHeaders => {
       'Upgrade': 'websocket',
@@ -20,7 +19,8 @@ Map<String, String> get _handshakeHeaders => {
 
 void main() {
   test('can communicate with a dart:io WebSocket client', () async {
-    final server = await shelf_io.serve(webSocketHandler((webSocket) {
+    final server =
+        await shelf_io.serve(webSocketHandler((WebSocketChannel webSocket) {
       webSocket.sink.add('hello!');
       webSocket.stream.first.then((request) {
         expect(request, equals('ping'));
@@ -53,7 +53,7 @@ void main() {
 
   test('negotiates the sub-protocol', () async {
     final server = await shelf_io.serve(
-        webSocketHandler((webSocket, protocol) {
+        webSocketHandler((WebSocketChannel webSocket, String? protocol) {
           expect(protocol, equals('two'));
           webSocket.sink.close();
         }, protocols: ['three', 'two', 'x']),
@@ -71,7 +71,8 @@ void main() {
   });
 
   test('handles protocol header without allowed protocols', () async {
-    final server = await shelf_io.serve(webSocketHandler((webSocket) {
+    final server =
+        await shelf_io.serve(webSocketHandler((WebSocketChannel webSocket) {
       webSocket.sink.close();
     }), 'localhost', 0);
 
@@ -86,7 +87,8 @@ void main() {
   });
 
   test('allows two argument callbacks without protocols', () async {
-    final server = await shelf_io.serve(webSocketHandler((webSocket, protocol) {
+    final server = await shelf_io.serve(
+        webSocketHandler((WebSocketChannel webSocket, String? protocol) {
       expect(protocol, isNull);
       webSocket.sink.close();
     }), 'localhost', 0);
@@ -106,7 +108,7 @@ void main() {
     late Uri url;
     setUp(() async {
       server = await shelf_io.serve(
-          webSocketHandler((webSocket) {
+          webSocketHandler((WebSocketChannel webSocket) {
             webSocket.sink.close();
           }, allowedOrigins: ['pub.dartlang.org', 'GoOgLe.CoM']),
           'localhost',
@@ -147,7 +149,8 @@ void main() {
 
   // Regression test for issue 21894.
   test('allows a Connection header with multiple values', () async {
-    final server = await shelf_io.serve(webSocketHandler((webSocket) {
+    final server =
+        await shelf_io.serve(webSocketHandler((WebSocketChannel webSocket) {
       webSocket.sink.close();
     }), 'localhost', 0);
 
