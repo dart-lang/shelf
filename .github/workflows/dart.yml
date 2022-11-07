@@ -319,6 +319,188 @@ jobs:
         if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
   job_005:
+    name: "unit_test; linux; Dart 2.17.0; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_with_coverage"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: "2.17.0"
+      - name: "Activate package:coverage"
+        run: "dart pub global activate coverage '>=1.5.0'"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - id: pkgs_shelf_pub_upgrade
+        name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf
+      - name: "pkgs/shelf; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf/coverage/lcov.info
+          flag-name: coverage_00
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_00
+      - id: pkgs_shelf_packages_handler_pub_upgrade
+        name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - name: "pkgs/shelf_packages_handler; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_packages_handler/coverage/lcov.info
+          flag-name: coverage_01
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_packages_handler/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_01
+      - id: pkgs_shelf_proxy_pub_upgrade
+        name: pkgs/shelf_proxy; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_proxy
+      - name: "pkgs/shelf_proxy; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_proxy
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_proxy/coverage/lcov.info
+          flag-name: coverage_02
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_proxy/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_02
+      - id: pkgs_shelf_router_pub_upgrade
+        name: pkgs/shelf_router; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_router
+      - name: "pkgs/shelf_router; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_router
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_router/coverage/lcov.info
+          flag-name: coverage_03
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_router/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_03
+      - id: pkgs_shelf_static_pub_upgrade
+        name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - name: "pkgs/shelf_static; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_static/coverage/lcov.info
+          flag-name: coverage_04
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_static/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_04
+      - id: pkgs_shelf_test_handler_pub_upgrade
+        name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: "pkgs/shelf_test_handler; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_test_handler/coverage/lcov.info
+          flag-name: coverage_05
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_test_handler/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_05
+      - id: pkgs_shelf_web_socket_pub_upgrade
+        name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+      - name: "pkgs/shelf_web_socket; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_web_socket/coverage/lcov.info
+          flag-name: coverage_06
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_web_socket/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_06
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_006:
     name: "unit_test; linux; Dart 2.17.0; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: ubuntu-latest
     steps:
@@ -326,7 +508,7 @@ jobs:
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_1"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_test_handler
             os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0
@@ -362,17 +544,17 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_006:
-    name: "unit_test; linux; Dart 2.17.0; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
+  job_007:
+    name: "unit_test; linux; Dart 2.17.0; PKG: pkgs/shelf_router_generator; `dart test --test-randomize-ordering-seed=random`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf_router_generator;commands:test_1"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf_router_generator
             os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
@@ -383,42 +565,6 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - id: pkgs_shelf_pub_upgrade
-        name: pkgs/shelf; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf
-      - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf
-      - id: pkgs_shelf_packages_handler_pub_upgrade
-        name: pkgs/shelf_packages_handler; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
-      - name: "pkgs/shelf_packages_handler; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
-      - id: pkgs_shelf_proxy_pub_upgrade
-        name: pkgs/shelf_proxy; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_proxy
-      - name: "pkgs/shelf_proxy; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_proxy
-      - id: pkgs_shelf_router_pub_upgrade
-        name: pkgs/shelf_router; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_router
-      - name: "pkgs/shelf_router; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_router
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
         run: dart pub upgrade
@@ -428,39 +574,194 @@ jobs:
         run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-      - id: pkgs_shelf_static_pub_upgrade
-        name: pkgs/shelf_static; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-      - name: "pkgs/shelf_static; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-      - id: pkgs_shelf_test_handler_pub_upgrade
-        name: pkgs/shelf_test_handler; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-      - id: pkgs_shelf_web_socket_pub_upgrade
-        name: pkgs/shelf_web_socket; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
-      - name: "pkgs/shelf_web_socket; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-  job_007:
+  job_008:
+    name: "unit_test; linux; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_with_coverage"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        with:
+          sdk: dev
+      - name: "Activate package:coverage"
+        run: "dart pub global activate coverage '>=1.5.0'"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+      - id: pkgs_shelf_pub_upgrade
+        name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf
+      - name: "pkgs/shelf; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf/coverage/lcov.info
+          flag-name: coverage_07
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_07
+      - id: pkgs_shelf_packages_handler_pub_upgrade
+        name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - name: "pkgs/shelf_packages_handler; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_packages_handler/coverage/lcov.info
+          flag-name: coverage_08
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_packages_handler/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_08
+      - id: pkgs_shelf_proxy_pub_upgrade
+        name: pkgs/shelf_proxy; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_proxy
+      - name: "pkgs/shelf_proxy; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_proxy
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_proxy/coverage/lcov.info
+          flag-name: coverage_09
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_proxy/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_09
+      - id: pkgs_shelf_router_pub_upgrade
+        name: pkgs/shelf_router; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_router
+      - name: "pkgs/shelf_router; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_router
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_router/coverage/lcov.info
+          flag-name: coverage_10
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_router/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_10
+      - id: pkgs_shelf_static_pub_upgrade
+        name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - name: "pkgs/shelf_static; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_static/coverage/lcov.info
+          flag-name: coverage_11
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_static/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_11
+      - id: pkgs_shelf_test_handler_pub_upgrade
+        name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: "pkgs/shelf_test_handler; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_test_handler/coverage/lcov.info
+          flag-name: coverage_12
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_test_handler/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_12
+      - id: pkgs_shelf_web_socket_pub_upgrade
+        name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+      - name: "pkgs/shelf_web_socket; dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        run: "dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+      - name: Upload coverage to Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          path-to-lcov: pkgs/shelf_web_socket/coverage/lcov.info
+          flag-name: coverage_13
+          parallel: true
+      - name: Upload coverage to codecov.io
+        uses: codecov/codecov-action@main
+        with:
+          files: pkgs/shelf_web_socket/coverage/lcov.info
+          fail_ci_if_error: true
+          name: coverage_13
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_009:
     name: "unit_test; linux; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: ubuntu-latest
     steps:
@@ -468,7 +769,7 @@ jobs:
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_1"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_test_handler
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -504,17 +805,17 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_008:
-    name: "unit_test; linux; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
+  job_010:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/shelf_router_generator; `dart test --test-randomize-ordering-seed=random`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf_router_generator;commands:test_1"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf_router_generator
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
@@ -525,42 +826,6 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
-      - id: pkgs_shelf_pub_upgrade
-        name: pkgs/shelf; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf
-      - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf
-      - id: pkgs_shelf_packages_handler_pub_upgrade
-        name: pkgs/shelf_packages_handler; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
-      - name: "pkgs/shelf_packages_handler; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
-      - id: pkgs_shelf_proxy_pub_upgrade
-        name: pkgs/shelf_proxy; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_proxy
-      - name: "pkgs/shelf_proxy; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_proxy
-      - id: pkgs_shelf_router_pub_upgrade
-        name: pkgs/shelf_router; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_router
-      - name: "pkgs/shelf_router; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_router
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
         run: dart pub upgrade
@@ -570,39 +835,12 @@ jobs:
         run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-      - id: pkgs_shelf_static_pub_upgrade
-        name: pkgs/shelf_static; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-      - name: "pkgs/shelf_static; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-      - id: pkgs_shelf_test_handler_pub_upgrade
-        name: pkgs/shelf_test_handler; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-      - id: pkgs_shelf_web_socket_pub_upgrade
-        name: pkgs/shelf_web_socket; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
-      - name: "pkgs/shelf_web_socket; dart test --test-randomize-ordering-seed=random"
-        run: "dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-  job_009:
+  job_011:
     name: "unit_test; windows; Dart 2.17.0; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: windows-latest
     steps:
@@ -636,7 +874,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_010:
+  job_012:
     name: "unit_test; windows; Dart 2.17.0; PKGS: pkgs/shelf_packages_handler, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
     runs-on: windows-latest
     steps:
@@ -688,7 +926,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_011:
+  job_013:
     name: "unit_test; windows; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: windows-latest
     steps:
@@ -722,7 +960,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_012:
+  job_014:
     name: "unit_test; windows; Dart dev; PKGS: pkgs/shelf_packages_handler, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
     runs-on: windows-latest
     steps:
@@ -774,3 +1012,15 @@ jobs:
       - job_002
       - job_003
       - job_004
+  job_15:
+    name: Mark Coveralls job finished
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark Coveralls job finished
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          parallel-finished: true
+    needs:
+      - job_005
+      - job_008

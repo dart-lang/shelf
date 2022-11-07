@@ -76,12 +76,16 @@ for PKG in ${PKGS}; do
         dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
         ;;
       test_0)
+        echo 'dart test --test-randomize-ordering-seed=random -p chrome'
+        dart test --test-randomize-ordering-seed=random -p chrome || EXIT_CODE=$?
+        ;;
+      test_1)
         echo 'dart test --test-randomize-ordering-seed=random'
         dart test --test-randomize-ordering-seed=random || EXIT_CODE=$?
         ;;
-      test_1)
-        echo 'dart test --test-randomize-ordering-seed=random -p chrome'
-        dart test --test-randomize-ordering-seed=random -p chrome || EXIT_CODE=$?
+      test_with_coverage)
+        echo 'dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random'
+        dart pub global run coverage:test_with_coverage -- --test-randomize-ordering-seed=random || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"

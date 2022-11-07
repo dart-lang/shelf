@@ -7,3 +7,7 @@ github:
 merge_stages:
   - analyze_and_format
   - unit_test
+
+coverage_service:
+- coveralls
+- codecov

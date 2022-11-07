@@ -9,7 +9,9 @@ stages:
     sdk:
     - dev
 - unit_test:
-  - test: --test-randomize-ordering-seed=random
+  - test_with_coverage: --test-randomize-ordering-seed=random
     os:
     - linux
+  - test: --test-randomize-ordering-seed=random
+    os:
     - windows
