@@ -357,12 +357,6 @@ jobs:
           path-to-lcov: pkgs/shelf/coverage/lcov.info
           flag-name: coverage_00
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_00
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
@@ -379,12 +373,6 @@ jobs:
           path-to-lcov: pkgs/shelf_packages_handler/coverage/lcov.info
           flag-name: coverage_01
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_packages_handler/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_01
       - id: pkgs_shelf_proxy_pub_upgrade
         name: pkgs/shelf_proxy; dart pub upgrade
         run: dart pub upgrade
@@ -401,12 +389,6 @@ jobs:
           path-to-lcov: pkgs/shelf_proxy/coverage/lcov.info
           flag-name: coverage_02
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_proxy/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_02
       - id: pkgs_shelf_router_pub_upgrade
         name: pkgs/shelf_router; dart pub upgrade
         run: dart pub upgrade
@@ -423,12 +405,6 @@ jobs:
           path-to-lcov: pkgs/shelf_router/coverage/lcov.info
           flag-name: coverage_03
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_router/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_03
       - id: pkgs_shelf_static_pub_upgrade
         name: pkgs/shelf_static; dart pub upgrade
         run: dart pub upgrade
@@ -445,12 +421,6 @@ jobs:
           path-to-lcov: pkgs/shelf_static/coverage/lcov.info
           flag-name: coverage_04
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_static/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_04
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
         run: dart pub upgrade
@@ -467,12 +437,6 @@ jobs:
           path-to-lcov: pkgs/shelf_test_handler/coverage/lcov.info
           flag-name: coverage_05
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_test_handler/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_05
       - id: pkgs_shelf_web_socket_pub_upgrade
         name: pkgs/shelf_web_socket; dart pub upgrade
         run: dart pub upgrade
@@ -489,12 +453,6 @@ jobs:
           path-to-lcov: pkgs/shelf_web_socket/coverage/lcov.info
           flag-name: coverage_06
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_web_socket/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_06
     needs:
       - job_001
       - job_002
@@ -618,12 +576,6 @@ jobs:
           path-to-lcov: pkgs/shelf/coverage/lcov.info
           flag-name: coverage_07
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_07
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
@@ -640,12 +592,6 @@ jobs:
           path-to-lcov: pkgs/shelf_packages_handler/coverage/lcov.info
           flag-name: coverage_08
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_packages_handler/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_08
       - id: pkgs_shelf_proxy_pub_upgrade
         name: pkgs/shelf_proxy; dart pub upgrade
         run: dart pub upgrade
@@ -662,12 +608,6 @@ jobs:
           path-to-lcov: pkgs/shelf_proxy/coverage/lcov.info
           flag-name: coverage_09
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_proxy/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_09
       - id: pkgs_shelf_router_pub_upgrade
         name: pkgs/shelf_router; dart pub upgrade
         run: dart pub upgrade
@@ -684,12 +624,6 @@ jobs:
           path-to-lcov: pkgs/shelf_router/coverage/lcov.info
           flag-name: coverage_10
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_router/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_10
       - id: pkgs_shelf_static_pub_upgrade
         name: pkgs/shelf_static; dart pub upgrade
         run: dart pub upgrade
@@ -706,12 +640,6 @@ jobs:
           path-to-lcov: pkgs/shelf_static/coverage/lcov.info
           flag-name: coverage_11
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_static/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_11
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
         run: dart pub upgrade
@@ -728,12 +656,6 @@ jobs:
           path-to-lcov: pkgs/shelf_test_handler/coverage/lcov.info
           flag-name: coverage_12
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_test_handler/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_12
       - id: pkgs_shelf_web_socket_pub_upgrade
         name: pkgs/shelf_web_socket; dart pub upgrade
         run: dart pub upgrade
@@ -750,12 +672,6 @@ jobs:
           path-to-lcov: pkgs/shelf_web_socket/coverage/lcov.info
           flag-name: coverage_13
           parallel: true
-      - name: Upload coverage to codecov.io
-        uses: codecov/codecov-action@main
-        with:
-          files: pkgs/shelf_web_socket/coverage/lcov.info
-          fail_ci_if_error: true
-          name: coverage_13
     needs:
       - job_001
       - job_002

@@ -10,4 +10,3 @@ merge_stages:
 
 coverage_service:
 - coveralls
-- codecov
