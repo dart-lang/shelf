@@ -1,4 +1,4 @@
-## v1.0.5-dev
+## v1.0.5
 
 * Require `analyzer: '>=4.6.0 <6.0.0'`
 * Require `sdk: '>=2.17.0 <3.0.0'`
