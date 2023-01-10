@@ -7,18 +7,17 @@ import 'package:http_parser/http_parser.dart';
 
 import '../middleware.dart';
 
-/// Middleware that adds [chunked transfer coding][] to responses if none of the
-/// following conditions are true:
-///
-/// [chunked transfer coding]: https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
+/// Middleware that adds
+/// [chunked transfer coding](https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1)
+/// to a responses if none of the following conditions are true:
 ///
 /// * A Content-Length header is provided.
 /// * The Content-Type header indicates the MIME type `multipart/byteranges`.
 /// * The Transfer-Encoding header already includes the `chunked` coding.
 ///
-/// This is intended for use by [Shelf adapters][] rather than end-users.
-///
-/// [Shelf adapters]: https://github.com/dart-lang/shelf#adapters
+/// This is intended for use by
+/// [Shelf adapters](https://github.com/dart-lang/shelf#adapters) rather than
+/// end-users.
 final addChunkedEncoding = createMiddleware(responseHandler: (response) {
   if (response.contentLength != null) return response;
   if (response.statusCode < 200) return response;
