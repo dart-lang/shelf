@@ -16,7 +16,7 @@ import '../middleware.dart';
 /// * The Transfer-Encoding header already includes the `chunked` coding.
 ///
 /// This is intended for use by
-/// [Shelf adapters](https://github.com/dart-lang/shelf#adapters) rather than
+/// [Shelf adapters](https://pub.dev/packages/shelf#adapters) rather than
 /// end-users.
 final addChunkedEncoding = createMiddleware(responseHandler: (response) {
   if (response.contentLength != null) return response;
