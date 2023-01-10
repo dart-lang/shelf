@@ -34,7 +34,7 @@ const _responseType = g.TypeChecker.fromRuntime(shelf.Response);
 const _requestType = g.TypeChecker.fromRuntime(shelf.Request);
 const _stringType = g.TypeChecker.fromRuntime(String);
 
-/// A representation of a handler that was annotated with [Route].
+/// A representation of a handler that was annotated with [shelf_router.Route].
 class _Handler {
   final String verb, route;
   final ExecutableElement element;
