@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.4.2
+# Created with package:mono_repo v6.5.0
 name: Dart CI
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
@@ -29,14 +29,14 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: stable
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.4.2
+        run: dart pub global activate mono_repo 6.5.0
       - name: mono_repo self validate
         run: dart pub global run mono_repo generate --validate
   job_002:
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:analyze"
@@ -54,12 +54,12 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: "2.17.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -137,7 +137,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:analyze"
@@ -147,12 +147,12 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -230,7 +230,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:format"
@@ -240,12 +240,12 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -323,7 +323,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_1"
@@ -333,12 +333,12 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: "2.17.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -367,7 +367,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.17.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_0"
@@ -377,12 +377,12 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: "2.17.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -465,7 +465,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_1"
@@ -475,12 +475,12 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -509,7 +509,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@9b0c1fce7a93df8e3bb8926b0d6e9d89e92f20a7
+        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_0"
@@ -519,12 +519,12 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -607,12 +607,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: "2.17.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -641,12 +641,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: "2.17.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
@@ -693,12 +693,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -727,12 +727,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+        uses: dart-lang/setup-dart@a57a6c04cf7d4840e88432aad6281d1e125f0d46
         with:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
