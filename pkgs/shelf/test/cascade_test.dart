@@ -110,7 +110,7 @@ void main() {
 
   test('[shouldCascade] controls which responses cause cascading', () async {
     var handler =
-        Cascade(shouldCascade: (response) => response.statusCode % 2 == 1)
+        Cascade(shouldCascade: (response) => response.statusCode.isOdd)
             .add((_) => Response.movedPermanently('/'))
             .add((_) => Response.forbidden('handler 2'))
             .add((_) => Response.notFound('handler 3'))

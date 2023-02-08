@@ -231,11 +231,11 @@ void main() {
       request.hijack(expectAsync1((channel) {
         expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
 
-        channel.sink.add(('HTTP/1.1 404 Not Found\r\n'
+        channel.sink.add('HTTP/1.1 404 Not Found\r\n'
                 'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
                 'Content-Length: 13\r\n'
                 '\r\n'
-                'Hello, world!')
+                'Hello, world!'
             .codeUnits);
         channel.sink.close();
       }));
@@ -259,7 +259,7 @@ void main() {
   test('passes asynchronous exceptions to the parent error zone', () async {
     await runZonedGuarded(() async {
       var server = await shelf_io.serve((request) {
-        Future(() => throw 'oh no');
+        Future(() => throw StateError('oh no'));
         return syncHandler(request);
       }, 'localhost', 0);
 
@@ -268,14 +268,14 @@ void main() {
       expect(response.body, 'Hello from /');
       await server.close();
     }, expectAsync2((error, stack) {
-      expect(error, equals('oh no'));
+      expect(error, isOhNoStateError);
     }));
   });
 
   test("doesn't pass asynchronous exceptions to the root error zone", () async {
     var response = await Zone.root.run(() async {
       var server = await shelf_io.serve((request) {
-        Future(() => throw 'oh no');
+        Future(() => throw StateError('oh no'));
         return syncHandler(request);
       }, 'localhost', 0);
 

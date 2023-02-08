@@ -107,6 +107,7 @@ Future<void> handleRequest(
   Request shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
+    // ignore: avoid_catching_errors
   } on ArgumentError catch (error, stackTrace) {
     if (error.name == 'method' || error.name == 'requestedUri') {
       // TODO: use a reduced log level when using package:logging
