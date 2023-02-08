@@ -103,6 +103,7 @@ class RouterEntry {
 
     return await _middleware((request) async {
       if (_handler is Handler || _params.isEmpty) {
+        // ignore: avoid_dynamic_calls
         return await _handler(request) as Response;
       }
       return await Function.apply(_handler, [
