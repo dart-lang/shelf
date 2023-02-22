@@ -17,12 +17,12 @@ See the [package:shelf readme](pkgs/shelf/) for more information.
 ## Packages
 
 | Package | Description | Version |
-|---|---|---|
+| --- | --- | --- |
 | [shelf](pkgs/shelf/) | A model for web server middleware that encourages composition and easy reuse. | [![pub package](https://img.shields.io/pub/v/shelf.svg)](https://pub.dev/packages/shelf) |
 | [shelf_packages_handler](pkgs/shelf_packages_handler/) | A shelf handler for serving a `packages/` directory. | [![pub package](https://img.shields.io/pub/v/shelf_packages_handler.svg)](https://pub.dev/packages/shelf_packages_handler) |
 | [shelf_proxy](pkgs/shelf_proxy/) | A shelf handler for proxying HTTP requests to another server. | [![pub package](https://img.shields.io/pub/v/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy) |
-| [shelf_router](pkgs/shelf_router/) | A convinent request router for the shelf web-framework, with support for URL-parameters, nested routers and routers generated from source annotations. | [![pub package](https://img.shields.io/pub/v/shelf_router.svg)](https://pub.dev/packages/shelf_router) |
-| [shelf_router_generator](pkgs/shelf_router_generator/) | A package:build compatible builder for generating request routers for the shelf web-framework based on source annotations. | [![pub package](https://img.shields.io/pub/v/shelf_router_generator.svg)](https://pub.dev/packages/shelf_router_generator) |
+| [shelf_router](pkgs/shelf_router/) | A convenient request router for the shelf web-framework, with support for URL-parameters, nested routers and routers generated from source annotations. | [![pub package](https://img.shields.io/pub/v/shelf_router.svg)](https://pub.dev/packages/shelf_router) |
+| [shelf_router_generator](pkgs/shelf_router_generator/) | A package:build-compatible builder for generating request routers for the shelf web-framework based on source annotations. | [![pub package](https://img.shields.io/pub/v/shelf_router_generator.svg)](https://pub.dev/packages/shelf_router_generator) |
 | [shelf_static](pkgs/shelf_static/) | Static file server support for the shelf package and ecosystem. | [![pub package](https://img.shields.io/pub/v/shelf_static.svg)](https://pub.dev/packages/shelf_static) |
 | [shelf_test_handler](pkgs/shelf_test_handler/) | A Shelf handler that makes it easy to test HTTP interactions. | [![pub package](https://img.shields.io/pub/v/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler) |
 | [shelf_web_socket](pkgs/shelf_web_socket/) | A shelf handler that wires up a listener for every connection. | [![pub package](https://img.shields.io/pub/v/shelf_web_socket.svg)](https://pub.dev/packages/shelf_web_socket) |

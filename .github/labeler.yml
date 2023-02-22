@@ -1,0 +1,28 @@
+# Configuration for .github/workflows/pull_request_label.yml. 
+
+'infra':
+  - '.github/**'
+
+'package:shelf':
+  - 'pkgs/shelf/**'
+
+'package:shelf_packages_handler':
+  - 'pkgs/shelf_packages_handler/**'
+
+'package:shelf_proxy':
+  - 'pkgs/shelf_proxy/**'
+
+'package:shelf_router':
+  - 'pkgs/shelf_router/**'
+
+'package:shelf_router_generator':
+  - 'pkgs/shelf_router_generator/**'
+
+'package:shelf_static':
+  - 'pkgs/shelf_static/**'
+
+'package:shelf_test_handler':
+  - 'pkgs/shelf_test_handler/**'
+
+'package:shelf_web_socket':
+  - 'pkgs/shelf_web_socket/**'
