@@ -1,8 +1,13 @@
 name: shelf
-version: 1.4.1-dev
+version: 1.4.1
 description: >
   A model for web server middleware that encourages composition and easy reuse.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf
+
+topics:
+  - server
+  - shelf
+
 environment:
   sdk: '>=2.17.0 <3.0.0'
 

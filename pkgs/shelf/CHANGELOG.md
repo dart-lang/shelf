@@ -1,4 +1,6 @@
-## 1.4.1-dev
+## 1.4.1
+
+* Added package topics to the pubspec file.
 
 ## 1.4.0
 

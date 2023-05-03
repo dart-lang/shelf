@@ -1,9 +1,13 @@
 name: shelf_router_generator
-version: 1.0.5
+version: 1.0.6
 description: >
   A package:build-compatible builder for generating request routers for the
   shelf web-framework based on source annotations.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_router_generator
+
+topics:
+  - server
+  - shelf
 
 environment:
   sdk: '>=2.17.0 <3.0.0'
