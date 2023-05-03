@@ -5,6 +5,7 @@ name: Publish
 on:
   pull_request:
     branches: [ master ]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     tags: [ '[A-z]+-v[0-9]+.[0-9]+.[0-9]+*' ]
 
