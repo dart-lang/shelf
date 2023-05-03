@@ -1,7 +1,8 @@
-## 1.1.4-dev
+## 1.1.4
 
-* Fix spelling in pubspec
-* Require Dart >=2.17
+* Fixed a spelling issue in the pubspec file.
+* Added package topics to the pubspec file.
+* Require Dart >=2.17.
 
 ## 1.1.3
 

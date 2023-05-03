@@ -5,6 +5,10 @@ description: >
   shelf web-framework based on source annotations.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_router_generator
 
+topics:
+  - server
+  - shelf
+
 environment:
   sdk: '>=2.17.0 <3.0.0'
 
