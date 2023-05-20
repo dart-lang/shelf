@@ -5,8 +5,6 @@ name: No Response
 
 # Run as a daily cron.
 on:
-  issue_comment:
-    types: [created]
   schedule:
     # Every day at 8am
     - cron: '0 8 * * *'
