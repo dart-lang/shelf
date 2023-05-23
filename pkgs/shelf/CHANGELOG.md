@@ -1,3 +1,7 @@
+## 1.4.2-dev
+
+* Require Dart >= 2.19
+
 ## 1.4.1
 
 * Added package topics to the pubspec file.

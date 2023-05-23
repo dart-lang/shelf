@@ -19,6 +19,8 @@
 /// (the default), streamed responses will be buffered to improve performance.
 /// If `false`, all chunks will be pushed over the wire as they're received.
 /// See [HttpResponse.bufferOutput] for more information.
+library;
+
 import 'dart:async';
 import 'dart:io';
 
