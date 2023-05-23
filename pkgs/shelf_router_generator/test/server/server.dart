@@ -24,7 +24,7 @@ class Server {
   late HttpServer _server;
 
   Future<void> start() async {
-    _server = await shelf_io.serve(_service.router, 'localhost', 0);
+    _server = await shelf_io.serve(_service.router.call, 'localhost', 0);
   }
 
   Future<void> stop() => _server.close();

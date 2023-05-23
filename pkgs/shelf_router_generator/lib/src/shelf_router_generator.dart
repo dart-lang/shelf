@@ -90,7 +90,7 @@ code.Code _buildAddHandlerCode({
     case r'$mount':
       return router.property('mount').call([
         code.literalString(handler.route, raw: true),
-        service.property(handler.element.name),
+        service.property(handler.element.name).property('call'),
       ]).statement;
     case r'$all':
       return router.property('all').call([

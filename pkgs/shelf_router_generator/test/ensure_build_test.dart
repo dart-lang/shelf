@@ -12,12 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// import 'package:build_verify/build_verify.dart';
-// import 'package:test/test.dart';
+@Tags(['presubmit-only'])
+library;
+
+import 'package:build_verify/build_verify.dart';
+import 'package:test/test.dart';
 
 void main() {
-  // TODO: Run this test when the build_runner bug is fixed
-  // test('ensure_build', () {
-  //   expectBuildClean(packageRelativeDirectory: 'shelf_router_generator');
-  // });
+  test('ensure_build', () {
+    expectBuildClean(packageRelativeDirectory: 'shelf_router_generator');
+  });
 }

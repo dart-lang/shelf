@@ -1,3 +1,7 @@
+## 1.1.5-dev
+
+* Require Dart `2.19`.
+
 ## 1.1.4
 
 * Fixed a spelling issue in the pubspec file.

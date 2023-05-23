@@ -1,3 +1,7 @@
+## 1.0.7-dev
+
+* Require `sdk: '>=2.19.0 <3.0.0'`
+
 ## 1.0.6
 
 * Added package topics to the pubspec file.

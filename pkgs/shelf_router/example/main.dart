@@ -45,7 +45,7 @@ class Service {
     });
 
     // Other routers can be mounted...
-    router.mount('/api/', Api().router);
+    router.mount('/api/', Api().router.call);
 
     // You can catch all verbs and use a URL-parameter with a regular expression
     // that matches everything to catch app.
@@ -53,7 +53,7 @@ class Service {
       return Response.notFound('Page not found');
     });
 
-    return router;
+    return router.call;
   }
 }
 
