@@ -13,6 +13,7 @@
 // limitations under the License.
 
 @Tags(['presubmit-only'])
+@Timeout.factor(4)
 library;
 
 import 'package:build_verify/build_verify.dart';
