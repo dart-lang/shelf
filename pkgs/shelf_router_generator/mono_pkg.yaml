@@ -10,3 +10,5 @@ stages:
     - dev
 - unit_test:
   - test: --test-randomize-ordering-seed=random
+  - test: --run-skipped -t presubmit-only
+    sdk: dev

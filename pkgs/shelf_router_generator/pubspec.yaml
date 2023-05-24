@@ -27,6 +27,4 @@ dev_dependencies:
   build_verify: ^3.0.0
   dart_flutter_team_lints: ^1.0.0
   http: '>=0.13.0 <2.0.0'
-  # TODO: REMOVE THIS ONCE build_runner_core is fixed! dart-lang/build#3514
-  logging: 1.1.0
   test: ^1.5.3
