@@ -6,10 +6,10 @@ stages:
 - analyze_and_format:
   - analyze: --fatal-infos .
     sdk:
-    - pubspec
+    - dev
   - format:
     sdk:
-    - pubspec
+    - dev
 - unit_test:
   - test: --test-randomize-ordering-seed=random
     os:
