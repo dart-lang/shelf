@@ -121,7 +121,8 @@ void main() {
     var request =
         http.StreamedRequest('POST', Uri.http('localhost:$_serverPort', ''));
     request.sink.add([1, 2, 3, 4]);
-    unawaited(request.sink.close());
+    // ignore: unawaited_futures
+    request.sink.close();
 
     var response = await request.send();
     expect(response.statusCode, HttpStatus.ok);

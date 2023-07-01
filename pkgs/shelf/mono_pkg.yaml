@@ -5,8 +5,6 @@ sdk:
 stages:
 - analyze_and_format:
   - analyze: --fatal-infos .
-    sdk:
-    - dev
   - format:
     sdk:
     - dev
