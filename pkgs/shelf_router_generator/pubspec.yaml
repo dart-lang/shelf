@@ -1,5 +1,5 @@
 name: shelf_router_generator
-version: 1.0.7-dev
+version: 1.0.7-wip
 description: >
   A package:build-compatible builder for generating request routers for the
   shelf web-framework based on source annotations.
@@ -10,16 +10,16 @@ topics:
   - shelf
 
 environment:
-  sdk: '>=2.19.0 <3.0.0'
+  sdk: ^3.0.0
 
 dependencies:
-  analyzer: '>=4.6.0 <6.0.0'
+  analyzer: '>=4.6.0 <7.0.0'
   build: ^2.0.0
   build_config: ^1.0.0
   code_builder: ^4.2.0
   http_methods: ^1.0.0
   shelf: ^1.1.0
-  shelf_router: ^1.0.0
+  shelf_router: ^1.1.0
   source_gen: ^1.0.0
 
 dev_dependencies:
