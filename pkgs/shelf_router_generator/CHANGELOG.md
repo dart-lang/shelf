@@ -1,6 +1,7 @@
-## 1.0.7-dev
+## 1.1.0-dev
 
 * Require `sdk: '>=2.19.0 <3.0.0'`
+* Remove trailing slash requirement when using `mount`.
 
 ## 1.0.6
 

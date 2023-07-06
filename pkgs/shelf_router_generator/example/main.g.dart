@@ -24,7 +24,7 @@ Router _$ServiceRouter(Service service) {
     service._wave,
   );
   router.mount(
-    r'/api/',
+    r'/api',
     service._api.call,
   );
   router.all(
