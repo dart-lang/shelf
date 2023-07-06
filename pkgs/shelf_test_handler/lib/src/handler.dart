@@ -39,7 +39,7 @@ class ShelfTestHandler {
         _zone = Zone.current;
 
   /// Expects that a single HTTP request with the given [method] and [path] will
-  /// be made to [this].
+  /// be made to `this`.
   ///
   /// The [path] should be root-relative; that is, it shuld start with "/".
   ///
@@ -51,7 +51,7 @@ class ShelfTestHandler {
     _expectations.add(Expectation(method, path, handler));
   }
 
-  /// Expects that a single HTTP request will be made to [this].
+  /// Expects that a single HTTP request will be made to `this`.
   ///
   /// When a request is made, [handler] is used to handle that request.
   ///

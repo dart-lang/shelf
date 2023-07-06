@@ -19,6 +19,8 @@
 /// (the default), streamed responses will be buffered to improve performance.
 /// If `false`, all chunks will be pushed over the wire as they're received.
 /// See [HttpResponse.bufferOutput] for more information.
+library;
+
 import 'dart:async';
 import 'dart:io';
 
@@ -39,6 +41,14 @@ export 'src/io_server.dart' show IOServer;
 ///
 /// See the documentation for [HttpServer.bind] and [HttpServer.bindSecure]
 /// for more details on [address], [port], [backlog], and [shared].
+///
+/// {@template shelf_io_header_defaults}
+/// Every response will get a "date" header and an "X-Powered-By" header.
+/// If the either header is present in the `Response`, it will not be
+/// overwritten.
+/// Pass [poweredByHeader] to set the default content for "X-Powered-By",
+/// pass `null` to omit this header.
+/// {@endtemplate}
 Future<HttpServer> serve(
   Handler handler,
   Object address,
@@ -46,6 +56,7 @@ Future<HttpServer> serve(
   SecurityContext? securityContext,
   int? backlog,
   bool shared = false,
+  String? poweredByHeader = 'Dart with package:shelf',
 }) async {
   backlog ??= 0;
   var server = await (securityContext == null
@@ -57,7 +68,7 @@ Future<HttpServer> serve(
           backlog: backlog,
           shared: shared,
         ));
-  serveRequests(server, handler);
+  serveRequests(server, handler, poweredByHeader: poweredByHeader);
   return server;
 }
 
@@ -70,9 +81,16 @@ Future<HttpServer> serve(
 /// console and cause a 500 response with no body. Errors thrown asynchronously
 /// by [handler] will be printed to the console or, if there's an active error
 /// zone, passed to that zone.
-void serveRequests(Stream<HttpRequest> requests, Handler handler) {
+///
+/// {@macro shelf_io_header_defaults}
+void serveRequests(
+  Stream<HttpRequest> requests,
+  Handler handler, {
+  String? poweredByHeader = 'Dart with package:shelf',
+}) {
   catchTopLevelErrors(() {
-    requests.listen((request) => handleRequest(request, handler));
+    requests.listen((request) =>
+        handleRequest(request, handler, poweredByHeader: poweredByHeader));
   }, (error, stackTrace) {
     _logTopLevelError('Asynchronous error\n$error', stackTrace);
   });
@@ -81,10 +99,17 @@ void serveRequests(Stream<HttpRequest> requests, Handler handler) {
 /// Uses [handler] to handle [request].
 ///
 /// Returns a [Future] which completes when the request has been handled.
-Future<void> handleRequest(HttpRequest request, Handler handler) async {
+///
+/// {@macro shelf_io_header_defaults}
+Future<void> handleRequest(
+  HttpRequest request,
+  Handler handler, {
+  String? poweredByHeader = 'Dart with package:shelf',
+}) async {
   Request shelfRequest;
   try {
     shelfRequest = _fromHttpRequest(request);
+    // ignore: avoid_catching_errors
   } on ArgumentError catch (error, stackTrace) {
     if (error.name == 'method' || error.name == 'requestedUri') {
       // TODO: use a reduced log level when using package:logging
@@ -94,17 +119,17 @@ Future<void> handleRequest(HttpRequest request, Handler handler) async {
         body: 'Bad Request',
         headers: {HttpHeaders.contentTypeHeader: 'text/plain'},
       );
-      await _writeResponse(response, request.response);
+      await _writeResponse(response, request.response, poweredByHeader);
     } else {
       _logTopLevelError('Error parsing request.\n$error', stackTrace);
       final response = Response.internalServerError();
-      await _writeResponse(response, request.response);
+      await _writeResponse(response, request.response, poweredByHeader);
     }
     return;
   } catch (error, stackTrace) {
     _logTopLevelError('Error parsing request.\n$error', stackTrace);
     final response = Response.internalServerError();
-    await _writeResponse(response, request.response);
+    await _writeResponse(response, request.response, poweredByHeader);
     return;
   }
 
@@ -136,11 +161,12 @@ Future<void> handleRequest(HttpRequest request, Handler handler) async {
     await _writeResponse(
         _logError(
             shelfRequest, 'null response from handler.', StackTrace.current),
-        request.response);
+        request.response,
+        poweredByHeader);
     return;
   }
   if (shelfRequest.canHijack) {
-    await _writeResponse(response, request.response);
+    await _writeResponse(response, request.response, poweredByHeader);
     return;
   }
 
@@ -179,7 +205,8 @@ Request _fromHttpRequest(HttpRequest request) {
   );
 }
 
-Future<void> _writeResponse(Response response, HttpResponse httpResponse) {
+Future<void> _writeResponse(
+    Response response, HttpResponse httpResponse, String? poweredByHeader) {
   if (response.context.containsKey('shelf.io.buffer_output')) {
     httpResponse.bufferOutput =
         response.context['shelf.io.buffer_output'] as bool;
@@ -217,9 +244,9 @@ Future<void> _writeResponse(Response response, HttpResponse httpResponse) {
     httpResponse.headers.set(HttpHeaders.transferEncodingHeader, 'chunked');
   }
 
-  if (!response.headers.containsKey(_xPoweredByResponseHeader)) {
-    httpResponse.headers
-        .set(_xPoweredByResponseHeader, 'Dart with package:shelf');
+  if (poweredByHeader != null &&
+      !response.headers.containsKey(_xPoweredByResponseHeader)) {
+    httpResponse.headers.set(_xPoweredByResponseHeader, poweredByHeader);
   }
 
   if (!response.headers.containsKey(HttpHeaders.dateHeader)) {

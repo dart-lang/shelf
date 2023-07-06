@@ -202,6 +202,8 @@ Future<Response> _handleFile(Request request, File file,
       );
 }
 
+final _bytesMatcher = RegExp(r'^bytes=(\d*)-(\d*)$');
+
 /// Serves a range of [file], if [request] is valid 'bytes' range request.
 ///
 /// If the request does not specify a range, specifies a range of the wrong
@@ -215,7 +217,7 @@ Response? _fileRangeResponse(
     Request request, File file, Map<String, Object> headers) {
   final range = request.headers[HttpHeaders.rangeHeader];
   if (range == null) return null;
-  final matches = RegExp(r'^bytes=(\d*)\-(\d*)$').firstMatch(range);
+  final matches = _bytesMatcher.firstMatch(range);
   // Ignore ranges other than bytes
   if (matches == null) return null;
 

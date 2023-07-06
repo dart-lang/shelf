@@ -104,10 +104,11 @@ void main() {
   test("doesn't swallow handler errors", () {
     runZonedGuarded(() async {
       var handler = ShelfTestHandler();
-      handler.expect('GET', '/', (_) => throw 'oh heck');
+      handler.expect('GET', '/', (_) => throw StateError('oh heck'));
       await handler(_get('/'));
     }, expectAsync2((error, stack) {
-      expect(error, equals('oh heck'));
+      expect(error,
+          isA<StateError>().having((p0) => p0.message, 'message', 'oh heck'));
     }));
   });
 }

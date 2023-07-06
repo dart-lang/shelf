@@ -36,3 +36,6 @@ Future<Response> makeSimpleRequest(Handler handler) =>
 final _request = Request('GET', localhostUri);
 
 final localhostUri = Uri.parse('http://localhost/');
+
+final isOhNoStateError =
+    isA<StateError>().having((p0) => p0.message, 'message', 'oh no');

@@ -22,7 +22,6 @@ import 'package:code_builder/code_builder.dart' as code;
 import 'package:http_methods/http_methods.dart' show isHttpMethod;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
-
 // ignore: implementation_imports
 import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 import 'package:source_gen/source_gen.dart' as g;
@@ -34,7 +33,7 @@ const _responseType = g.TypeChecker.fromRuntime(shelf.Response);
 const _requestType = g.TypeChecker.fromRuntime(shelf.Request);
 const _stringType = g.TypeChecker.fromRuntime(String);
 
-/// A representation of a handler that was annotated with [Route].
+/// A representation of a handler that was annotated with [shelf_router.Route].
 class _Handler {
   final String verb, route;
   final ExecutableElement element;
@@ -68,7 +67,10 @@ code.Method _buildRouterMethod({
         ..body = code.Block(
           (b) => b
             ..addExpression(
-                code.refer('Router').newInstance([]).assignFinal('router'))
+              code
+                  .declareFinal('router')
+                  .assign(code.refer('Router').newInstance([])),
+            )
             ..statements.addAll(handlers.map((h) => _buildAddHandlerCode(
                   router: code.refer('router'),
                   service: code.refer('service'),
@@ -88,7 +90,7 @@ code.Code _buildAddHandlerCode({
     case r'$mount':
       return router.property('mount').call([
         code.literalString(handler.route, raw: true),
-        service.property(handler.element.name),
+        service.property(handler.element.name).property('call'),
       ]).statement;
     case r'$all':
       return router.property('all').call([
@@ -188,6 +190,7 @@ void _typeCheckHandler(_Handler h) {
   List<String> params;
   try {
     params = RouterEntry(h.verb, h.route, () => null).params;
+    // ignore: avoid_catching_errors
   } on ArgumentError catch (e) {
     throw g.InvalidGenerationSourceError(
       e.toString(),

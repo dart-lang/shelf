@@ -1,6 +1,17 @@
-## 1.4.0-dev
+## 1.4.2-dev
+
+* Require Dart >= 2.19
+
+## 1.4.1
+
+* Added package topics to the pubspec file.
+
+## 1.4.0
 
 * Add Response.unauthorized() constructor
+* Add `poweredByHeader` argument to `serve`, `serveRequests`, and
+  `handleRequest`.
+* Require Dart >= 2.17
 
 ## 1.3.2
 

@@ -294,9 +294,9 @@ class _OnHijack {
 
   _OnHijack(this._callback);
 
-  /// Calls [this].
+  /// Calls `this`.
   ///
-  /// Throws a [StateError] if [this] has already been called.
+  /// Throws a [StateError] if `this` has already been called.
   void run(void Function(StreamChannel<List<int>>) callback) {
     if (called) throw StateError('This request has already been hijacked.');
     called = true;

@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.3.0
+# Created with package:mono_repo v6.5.7
 name: Dart CI
 on:
   push:
@@ -21,138 +21,123 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: stable
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.3.0
+        run: dart pub global activate mono_repo 6.5.7
       - name: mono_repo self validate
         run: dart pub global run mono_repo generate --validate
   job_002:
-    name: "analyze_and_format; linux; Dart 2.14.0; PKGS: pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart analyze --fatal-infos .`"
+    name: "analyze_and_format; linux; Dart 2.19.0; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart analyze --fatal-infos .`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0;packages:pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:analyze"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:analyze"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0;packages:pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
-          sdk: "2.14.0"
+          sdk: "2.19.0"
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_shelf_packages_handler_pub_upgrade
-        name: pkgs/shelf_packages_handler; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
-        run: dart pub upgrade
-      - name: "pkgs/shelf_packages_handler; dart analyze --fatal-infos ."
-        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
-        run: dart analyze --fatal-infos .
-      - id: pkgs_shelf_proxy_pub_upgrade
-        name: pkgs/shelf_proxy; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_proxy
-        run: dart pub upgrade
-      - name: "pkgs/shelf_proxy; dart analyze --fatal-infos ."
-        if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_proxy
-        run: dart analyze --fatal-infos .
-      - id: pkgs_shelf_router_pub_upgrade
-        name: pkgs/shelf_router; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_router
-        run: dart pub upgrade
-      - name: "pkgs/shelf_router; dart analyze --fatal-infos ."
-        if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_router
-        run: dart analyze --fatal-infos .
-      - id: pkgs_shelf_router_generator_pub_upgrade
-        name: pkgs/shelf_router_generator; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_router_generator
-        run: dart pub upgrade
-      - name: "pkgs/shelf_router_generator; dart analyze --fatal-infos ."
-        if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_router_generator
-        run: dart analyze --fatal-infos .
-      - id: pkgs_shelf_static_pub_upgrade
-        name: pkgs/shelf_static; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-        run: dart pub upgrade
-      - name: "pkgs/shelf_static; dart analyze --fatal-infos ."
-        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-        run: dart analyze --fatal-infos .
-      - id: pkgs_shelf_test_handler_pub_upgrade
-        name: pkgs/shelf_test_handler; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
-      - name: "pkgs/shelf_test_handler; dart analyze --fatal-infos ."
-        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: dart analyze --fatal-infos .
-      - id: pkgs_shelf_web_socket_pub_upgrade
-        name: pkgs/shelf_web_socket; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
-        run: dart pub upgrade
-      - name: "pkgs/shelf_web_socket; dart analyze --fatal-infos ."
-        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
-        run: dart analyze --fatal-infos .
-  job_003:
-    name: "analyze_and_format; linux; Dart 2.16.0; PKG: pkgs/shelf; `dart analyze --fatal-infos .`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0;packages:pkgs/shelf;commands:analyze"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0;packages:pkgs/shelf
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.16.0"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart pub upgrade
       - name: "pkgs/shelf; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf
+      - id: pkgs_shelf_packages_handler_pub_upgrade
+        name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - name: "pkgs/shelf_packages_handler; dart analyze --fatal-infos ."
         run: dart analyze --fatal-infos .
-  job_004:
+        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - id: pkgs_shelf_proxy_pub_upgrade
+        name: pkgs/shelf_proxy; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_proxy
+      - name: "pkgs/shelf_proxy; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
+        if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_proxy
+      - id: pkgs_shelf_router_pub_upgrade
+        name: pkgs/shelf_router; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_router
+      - name: "pkgs/shelf_router; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
+        if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_router
+      - id: pkgs_shelf_router_generator_pub_upgrade
+        name: pkgs/shelf_router_generator; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_router_generator
+      - name: "pkgs/shelf_router_generator; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
+        if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_router_generator
+      - id: pkgs_shelf_static_pub_upgrade
+        name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - name: "pkgs/shelf_static; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
+        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - id: pkgs_shelf_test_handler_pub_upgrade
+        name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: "pkgs/shelf_test_handler; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
+        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - id: pkgs_shelf_web_socket_pub_upgrade
+        name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+      - name: "pkgs/shelf_web_socket; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
+        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+  job_003:
     name: "analyze_and_format; linux; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart analyze --fatal-infos .`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:analyze"
@@ -161,89 +146,91 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: dev
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart pub upgrade
       - name: "pkgs/shelf; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart analyze --fatal-infos .
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_packages_handler; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: dart analyze --fatal-infos .
       - id: pkgs_shelf_proxy_pub_upgrade
         name: pkgs/shelf_proxy; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: dart pub upgrade
       - name: "pkgs/shelf_proxy; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: dart analyze --fatal-infos .
       - id: pkgs_shelf_router_pub_upgrade
         name: pkgs/shelf_router; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: dart pub upgrade
       - name: "pkgs/shelf_router; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: dart analyze --fatal-infos .
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: dart pub upgrade
       - name: "pkgs/shelf_router_generator; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: dart analyze --fatal-infos .
       - id: pkgs_shelf_static_pub_upgrade
         name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: dart pub upgrade
       - name: "pkgs/shelf_static; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: dart analyze --fatal-infos .
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_test_handler; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart analyze --fatal-infos .
       - id: pkgs_shelf_web_socket_pub_upgrade
         name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: dart pub upgrade
       - name: "pkgs/shelf_web_socket; dart analyze --fatal-infos ."
+        run: dart analyze --fatal-infos .
         if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: dart analyze --fatal-infos .
-  job_005:
+  job_004:
     name: "analyze_and_format; linux; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart format --output=none --set-exit-if-changed .`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:format"
@@ -252,279 +239,233 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: dev
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart pub upgrade
       - name: "pkgs/shelf; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: "dart format --output=none --set-exit-if-changed ."
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_packages_handler; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: "dart format --output=none --set-exit-if-changed ."
       - id: pkgs_shelf_proxy_pub_upgrade
         name: pkgs/shelf_proxy; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: dart pub upgrade
       - name: "pkgs/shelf_proxy; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: "dart format --output=none --set-exit-if-changed ."
       - id: pkgs_shelf_router_pub_upgrade
         name: pkgs/shelf_router; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: dart pub upgrade
       - name: "pkgs/shelf_router; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: "dart format --output=none --set-exit-if-changed ."
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: dart pub upgrade
       - name: "pkgs/shelf_router_generator; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: "dart format --output=none --set-exit-if-changed ."
       - id: pkgs_shelf_static_pub_upgrade
         name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: dart pub upgrade
       - name: "pkgs/shelf_static; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: "dart format --output=none --set-exit-if-changed ."
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_test_handler; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: "dart format --output=none --set-exit-if-changed ."
       - id: pkgs_shelf_web_socket_pub_upgrade
         name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: dart pub upgrade
       - name: "pkgs/shelf_web_socket; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
         if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: "dart format --output=none --set-exit-if-changed ."
-  job_006:
-    name: "unit_test; linux; Dart 2.14.0; PKGS: pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
+  job_005:
+    name: "unit_test; linux; Dart 2.19.0; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0;packages:pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_1"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0;packages:pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0;packages:pkgs/shelf-pkgs/shelf_test_handler
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
-          sdk: "2.14.0"
+          sdk: "2.19.0"
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - id: pkgs_shelf_pub_upgrade
+        name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf
+      - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random -p chrome"
+        run: "dart test --test-randomize-ordering-seed=random -p chrome"
+        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf
+      - id: pkgs_shelf_test_handler_pub_upgrade
+        name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random -p chrome"
+        run: "dart test --test-randomize-ordering-seed=random -p chrome"
+        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_006:
+    name: "unit_test; linux; Dart 2.19.0; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_0"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket
+            os:ubuntu-latest;pub-cache-hosted;sdk:2.19.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: "2.19.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - id: pkgs_shelf_pub_upgrade
+        name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf
+      - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_packages_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_proxy_pub_upgrade
         name: pkgs/shelf_proxy; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: dart pub upgrade
       - name: "pkgs/shelf_proxy; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_router_pub_upgrade
         name: pkgs/shelf_router; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: dart pub upgrade
       - name: "pkgs/shelf_router; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: dart pub upgrade
       - name: "pkgs/shelf_router_generator; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_static_pub_upgrade
         name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: dart pub upgrade
       - name: "pkgs/shelf_static; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_web_socket_pub_upgrade
         name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: dart pub upgrade
       - name: "pkgs/shelf_web_socket; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: "dart test --test-randomize-ordering-seed=random"
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-      - job_005
   job_007:
-    name: "unit_test; linux; Dart 2.14.0; PKG: pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0;packages:pkgs/shelf_test_handler;commands:test_1"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0;packages:pkgs/shelf_test_handler
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.14.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.14.0"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_shelf_test_handler_pub_upgrade
-        name: pkgs/shelf_test_handler; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
-      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random -p chrome"
-        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random -p chrome"
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-      - job_005
-  job_008:
-    name: "unit_test; linux; Dart 2.16.0; PKG: pkgs/shelf; `dart test --test-randomize-ordering-seed=random -p chrome`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0;packages:pkgs/shelf;commands:test_1"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0;packages:pkgs/shelf
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.16.0"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_shelf_pub_upgrade
-        name: pkgs/shelf; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf
-        run: dart pub upgrade
-      - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random -p chrome"
-        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf
-        run: "dart test --test-randomize-ordering-seed=random -p chrome"
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-      - job_005
-  job_009:
-    name: "unit_test; linux; Dart 2.16.0; PKG: pkgs/shelf; `dart test --test-randomize-ordering-seed=random`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0;packages:pkgs/shelf;commands:test_0"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0;packages:pkgs/shelf
-            os:ubuntu-latest;pub-cache-hosted;sdk:2.16.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.16.0"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_shelf_pub_upgrade
-        name: pkgs/shelf; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf
-        run: dart pub upgrade
-      - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf
-        run: "dart test --test-randomize-ordering-seed=random"
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-      - job_005
-  job_010:
     name: "unit_test; linux; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_test_handler;commands:test_1"
@@ -533,41 +474,42 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: dev
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart pub upgrade
       - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random -p chrome"
+        run: "dart test --test-randomize-ordering-seed=random -p chrome"
         if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: "dart test --test-randomize-ordering-seed=random -p chrome"
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random -p chrome"
+        run: "dart test --test-randomize-ordering-seed=random -p chrome"
         if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random -p chrome"
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-      - job_005
-  job_011:
+  job_008:
     name: "unit_test; linux; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_packages_handler, pkgs/shelf_proxy, pkgs/shelf_router, pkgs/shelf_router_generator, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@4504faf7e9bcf8f3ed0bc863c4e1d21499ab8ef8
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf-pkgs/shelf_packages_handler-pkgs/shelf_proxy-pkgs/shelf_router-pkgs/shelf_router_generator-pkgs/shelf_static-pkgs/shelf_test_handler-pkgs/shelf_web_socket;commands:test_0"
@@ -576,269 +518,294 @@ jobs:
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: dev
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart pub upgrade
       - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_packages_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_proxy_pub_upgrade
         name: pkgs/shelf_proxy; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: dart pub upgrade
       - name: "pkgs/shelf_proxy; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_proxy_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_proxy
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_router_pub_upgrade
         name: pkgs/shelf_router; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: dart pub upgrade
       - name: "pkgs/shelf_router; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_router_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: dart pub upgrade
       - name: "pkgs/shelf_router_generator; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_router_generator
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_static_pub_upgrade
         name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: dart pub upgrade
       - name: "pkgs/shelf_static; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_web_socket_pub_upgrade
         name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: dart pub upgrade
       - name: "pkgs/shelf_web_socket; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: "dart test --test-randomize-ordering-seed=random"
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-      - job_005
-  job_012:
-    name: "unit_test; windows; Dart 2.14.0; PKGS: pkgs/shelf_packages_handler, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
-    runs-on: windows-latest
+  job_009:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/shelf_router_generator; `dart test --run-skipped -t presubmit-only`"
+    runs-on: ubuntu-latest
     steps:
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
-          sdk: "2.14.0"
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf_router_generator;commands:test_2"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/shelf_router_generator
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: dev
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_shelf_packages_handler_pub_upgrade
-        name: pkgs/shelf_packages_handler; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - id: pkgs_shelf_router_generator_pub_upgrade
+        name: pkgs/shelf_router_generator; dart pub upgrade
         run: dart pub upgrade
-      - name: "pkgs/shelf_packages_handler; dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_packages_handler
-        run: "dart test --test-randomize-ordering-seed=random"
-      - id: pkgs_shelf_static_pub_upgrade
-        name: pkgs/shelf_static; dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-        run: dart pub upgrade
-      - name: "pkgs/shelf_static; dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_static
-        run: "dart test --test-randomize-ordering-seed=random"
-      - id: pkgs_shelf_test_handler_pub_upgrade
-        name: pkgs/shelf_test_handler; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
-      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random"
-      - id: pkgs_shelf_web_socket_pub_upgrade
-        name: pkgs/shelf_web_socket; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
-        run: dart pub upgrade
-      - name: "pkgs/shelf_web_socket; dart test --test-randomize-ordering-seed=random"
-        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_web_socket
-        run: "dart test --test-randomize-ordering-seed=random"
+        working-directory: pkgs/shelf_router_generator
+      - name: "pkgs/shelf_router_generator; dart test --run-skipped -t presubmit-only"
+        run: dart test --run-skipped -t presubmit-only
+        if: "always() && steps.pkgs_shelf_router_generator_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_router_generator
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-      - job_005
-  job_013:
-    name: "unit_test; windows; Dart 2.14.0; PKG: pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
+  job_010:
+    name: "unit_test; windows; Dart 2.19.0; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: windows-latest
     steps:
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
-          sdk: "2.14.0"
+          sdk: "2.19.0"
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
-      - id: pkgs_shelf_test_handler_pub_upgrade
-        name: pkgs/shelf_test_handler; dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
-      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random -p chrome"
-        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random -p chrome"
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-      - job_005
-  job_014:
-    name: "unit_test; windows; Dart 2.16.0; PKG: pkgs/shelf; `dart test --test-randomize-ordering-seed=random -p chrome`"
-    runs-on: windows-latest
-    steps:
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
-        with:
-          sdk: "2.16.0"
-      - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart pub upgrade
       - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random -p chrome"
+        run: "dart test --test-randomize-ordering-seed=random -p chrome"
         if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf
+      - id: pkgs_shelf_test_handler_pub_upgrade
+        name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random -p chrome"
         run: "dart test --test-randomize-ordering-seed=random -p chrome"
+        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-      - job_005
-  job_015:
+  job_011:
+    name: "unit_test; windows; Dart 2.19.0; PKGS: pkgs/shelf_packages_handler, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
+    runs-on: windows-latest
+    steps:
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: "2.19.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - id: pkgs_shelf_packages_handler_pub_upgrade
+        name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - name: "pkgs/shelf_packages_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_packages_handler
+      - id: pkgs_shelf_static_pub_upgrade
+        name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - name: "pkgs/shelf_static; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_static
+      - id: pkgs_shelf_test_handler_pub_upgrade
+        name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_test_handler
+      - id: pkgs_shelf_web_socket_pub_upgrade
+        name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+      - name: "pkgs/shelf_web_socket; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
+        if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/shelf_web_socket
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_012:
     name: "unit_test; windows; Dart dev; PKGS: pkgs/shelf, pkgs/shelf_test_handler; `dart test --test-randomize-ordering-seed=random -p chrome`"
     runs-on: windows-latest
     steps:
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: dev
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: dart pub upgrade
       - name: "pkgs/shelf; dart test --test-randomize-ordering-seed=random -p chrome"
+        run: "dart test --test-randomize-ordering-seed=random -p chrome"
         if: "always() && steps.pkgs_shelf_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf
-        run: "dart test --test-randomize-ordering-seed=random -p chrome"
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random -p chrome"
+        run: "dart test --test-randomize-ordering-seed=random -p chrome"
         if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random -p chrome"
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-      - job_005
-  job_016:
+  job_013:
     name: "unit_test; windows; Dart dev; PKGS: pkgs/shelf_packages_handler, pkgs/shelf_static, pkgs/shelf_test_handler, pkgs/shelf_web_socket; `dart test --test-randomize-ordering-seed=random`"
     runs-on: windows-latest
     steps:
-      - uses: dart-lang/setup-dart@6a218f2413a3e78e9087f638a238f6b40893203d
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
         with:
           sdk: dev
       - id: checkout
-        uses: actions/checkout@d0651293c4a5a52e711f25b41b05b2212f385d28
+        name: Checkout repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_packages_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_packages_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_packages_handler
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_static_pub_upgrade
         name: pkgs/shelf_static; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: dart pub upgrade
       - name: "pkgs/shelf_static; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_static_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_static
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: dart pub upgrade
       - name: "pkgs/shelf_test_handler; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_test_handler_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_test_handler
-        run: "dart test --test-randomize-ordering-seed=random"
       - id: pkgs_shelf_web_socket_pub_upgrade
         name: pkgs/shelf_web_socket; dart pub upgrade
+        run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: dart pub upgrade
       - name: "pkgs/shelf_web_socket; dart test --test-randomize-ordering-seed=random"
+        run: "dart test --test-randomize-ordering-seed=random"
         if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
-        run: "dart test --test-randomize-ordering-seed=random"
     needs:
       - job_001
       - job_002
       - job_003
       - job_004
-      - job_005

@@ -47,12 +47,12 @@ void main() {
       gotLog = true;
       expect(isError, isTrue);
       expect(msg, contains('\tGET\t/'));
-      expect(msg, contains('testing logging throw'));
+      expect(msg, contains('oh no'));
     })).addHandler((request) {
-      throw 'testing logging throw';
+      throw StateError('oh no');
     });
 
-    expect(makeSimpleRequest(handler), throwsA('testing logging throw'));
+    expect(makeSimpleRequest(handler), throwsA(isOhNoStateError));
   });
 
   test("doesn't log a HijackException", () {

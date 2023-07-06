@@ -1,3 +1,12 @@
+## 2.0.3-dev
+
+* Require Dart `2.19`.
+
+## 2.0.2
+
+* Added package topics to the pubspec file.
+* Require Dart `2.17`.
+
 ## 2.0.1
 
 * Require Dart `2.14`.

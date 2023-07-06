@@ -1,19 +1,23 @@
 name: shelf_router
-version: 1.1.3
+version: 1.1.5-dev
 description: >
-  A convinent request router for the shelf web-framework, with support for
+  A convenient request router for the shelf web-framework, with support for
   URL-parameters, nested routers and routers generated from source annotations.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_router
 
+topics:
+  - server
+  - shelf
+
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.19.0 <3.0.0'
 
 dependencies:
+  http_methods: ^1.1.0
   meta: ^1.3.0
   shelf: ^1.0.0
-  http_methods: ^1.1.0
 
 dev_dependencies:
+  dart_flutter_team_lints: ^1.0.0
+  http: '>=0.13.0 <2.0.0'
   test: ^1.16.0
-  lints: ^1.0.0
-  http: ^0.13.0

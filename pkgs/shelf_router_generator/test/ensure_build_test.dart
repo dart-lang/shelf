@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+@Tags(['presubmit-only'])
+@Timeout.factor(4)
+library;
+
 import 'package:build_verify/build_verify.dart';
 import 'package:test/test.dart';
 
@@ -20,5 +24,5 @@ void main() {
     await expectBuildClean(
       packageRelativeDirectory: 'pkgs/shelf_router_generator',
     );
-  }, timeout: const Timeout(Duration(minutes: 5)));
+  });
 }

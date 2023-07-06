@@ -73,7 +73,7 @@ class _HandlerServer implements Server {
 
   /// A future that fires once [mount] has been called.
   Future<void> get _onMounted => _onMountedCompleter.future;
-  final _onMountedCompleter = Completer();
+  final _onMountedCompleter = Completer<void>();
 
   _HandlerServer(this.url, this._onClose);
 
@@ -91,5 +91,5 @@ class _HandlerServer implements Server {
   Future<void> close() => _closeMemo.runOnce(() {
         return _onClose == null ? null : _onClose!();
       });
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
 }

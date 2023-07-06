@@ -1,3 +1,16 @@
+## 1.0.5-dev
+
+* Require Dart `2.19`.
+
+## 1.0.4
+
+* Added package topics to the pubspec file.
+
+## 1.0.3
+
+* Require Dart `2.17`.
+* Fix checking for binary callbacks with strong null safety.
+
 ## 1.0.2
 
 * Require Dart `2.14`.

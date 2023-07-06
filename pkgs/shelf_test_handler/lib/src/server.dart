@@ -35,7 +35,7 @@ class ShelfTestServer {
       {bool log = true, String? description}) async {
     var server = await HttpMultiServer.loopback(0);
     var handler = ShelfTestHandler(log: log, description: description);
-    serveRequests(server, handler);
+    serveRequests(server, handler.call);
     return ShelfTestServer._(server, handler);
   }
 

@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -119,6 +121,7 @@ void main() {
     var request =
         http.StreamedRequest('POST', Uri.http('localhost:$_serverPort', ''));
     request.sink.add([1, 2, 3, 4]);
+    // ignore: unawaited_futures
     request.sink.close();
 
     var response = await request.send();
@@ -231,11 +234,11 @@ void main() {
       request.hijack(expectAsync1((channel) {
         expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
 
-        channel.sink.add(('HTTP/1.1 404 Not Found\r\n'
+        channel.sink.add('HTTP/1.1 404 Not Found\r\n'
                 'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
                 'Content-Length: 13\r\n'
                 '\r\n'
-                'Hello, world!')
+                'Hello, world!'
             .codeUnits);
         channel.sink.close();
       }));
@@ -259,7 +262,7 @@ void main() {
   test('passes asynchronous exceptions to the parent error zone', () async {
     await runZonedGuarded(() async {
       var server = await shelf_io.serve((request) {
-        Future(() => throw 'oh no');
+        Future(() => throw StateError('oh no'));
         return syncHandler(request);
       }, 'localhost', 0);
 
@@ -268,14 +271,14 @@ void main() {
       expect(response.body, 'Hello from /');
       await server.close();
     }, expectAsync2((error, stack) {
-      expect(error, equals('oh no'));
+      expect(error, isOhNoStateError);
     }));
   });
 
   test("doesn't pass asynchronous exceptions to the root error zone", () async {
     var response = await Zone.root.run(() async {
       var server = await shelf_io.serve((request) {
-        Future(() => throw 'oh no');
+        Future(() => throw StateError('oh no'));
         return syncHandler(request);
       }, 'localhost', 0);
 
@@ -365,13 +368,56 @@ void main() {
       );
     });
 
-    test('defers to header in response', () async {
+    test('defers to header in response when default', () async {
       await _scheduleServer((request) {
         return Response.ok('test', headers: {poweredBy: 'myServer'});
       });
 
       var response = await _get();
       expect(response.headers, containsPair(poweredBy, 'myServer'));
+    });
+
+    test('can be set at the server level', () async {
+      _server = await shelf_io.serve(
+        syncHandler,
+        'localhost',
+        0,
+        poweredByHeader: 'ourServer',
+      );
+      var response = await _get();
+      expect(
+        response.headers,
+        containsPair(poweredBy, 'ourServer'),
+      );
+    });
+
+    test('defers to header in response when set at the server level', () async {
+      _server = await shelf_io.serve(
+        (request) {
+          return Response.ok('test', headers: {poweredBy: 'myServer'});
+        },
+        'localhost',
+        0,
+        poweredByHeader: 'ourServer',
+      );
+
+      var response = await _get();
+      expect(response.headers, containsPair(poweredBy, 'myServer'));
+    });
+
+    test('is omitted when set to null', () async {
+      _server = await shelf_io.serve(
+        syncHandler,
+        'localhost',
+        0,
+        poweredByHeader: null,
+      );
+
+      var response = await _get();
+      expect(
+        response.headers,
+        isNot(contains(poweredBy)),
+      );
     });
   });
 
