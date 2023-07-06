@@ -279,10 +279,10 @@ void _typeCheckMount(_Handler h) {
   }
 
   // Sanity checks for the prefix
-  if (!h.route.startsWith('/') || !h.route.endsWith('/')) {
+  if (!h.route.startsWith('/')) {
     throw g.InvalidGenerationSourceError(
         'The prefix "${h.route}" in shelf_router.Route.mount(prefix) '
-        'annotation must begin and end with a slash',
+        'annotation must begin with a slash',
         element: h.element);
   }
   if (h.route.contains('<')) {

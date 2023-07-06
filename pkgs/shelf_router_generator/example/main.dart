@@ -43,7 +43,7 @@ class Service {
   }
 
   // Other routers can be mounted...
-  @Route.mount('/api/')
+  @Route.mount('/api')
   Router get _api => Api().router;
 
   // You can catch all verbs and use a URL-parameter with a regular expression
