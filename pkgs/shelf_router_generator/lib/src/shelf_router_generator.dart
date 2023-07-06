@@ -85,26 +85,22 @@ code.Code _buildAddHandlerCode({
   required code.Reference router,
   required code.Reference service,
   required _Handler handler,
-}) {
-  switch (handler.verb) {
-    case r'$mount':
-      return router.property('mount').call([
-        code.literalString(handler.route, raw: true),
-        service.property(handler.element.name).property('call'),
-      ]).statement;
-    case r'$all':
-      return router.property('all').call([
-        code.literalString(handler.route, raw: true),
-        service.property(handler.element.name),
-      ]).statement;
-    default:
-      return router.property('add').call([
-        code.literalString(handler.verb.toUpperCase()),
-        code.literalString(handler.route, raw: true),
-        service.property(handler.element.name),
-      ]).statement;
-  }
-}
+}) =>
+    switch (handler.verb) {
+      r'$mount' => router.property('mount').call([
+          code.literalString(handler.route, raw: true),
+          service.property(handler.element.name).property('call'),
+        ]).statement,
+      r'$all' => router.property('all').call([
+          code.literalString(handler.route, raw: true),
+          service.property(handler.element.name),
+        ]).statement,
+      _ => router.property('add').call([
+          code.literalString(handler.verb.toUpperCase()),
+          code.literalString(handler.route, raw: true),
+          service.property(handler.element.name),
+        ]).statement
+    };
 
 class ShelfRouterGenerator extends g.Generator {
   @override

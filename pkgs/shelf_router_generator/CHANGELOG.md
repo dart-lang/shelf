@@ -1,6 +1,7 @@
-## 1.1.0-dev
+## 1.1.0-wip
 
-* Require `sdk: '>=2.19.0 <3.0.0'`
+* Require `sdk: ^3.0.0`
+* Require `analyzer: '>=4.6.0 <7.0.0'`
 * Remove trailing slash requirement when using `mount`.
 
 ## 1.0.6
