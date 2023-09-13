@@ -141,7 +141,7 @@ void main() {
     var app = Router();
     app.mount(
       '/api/',
-      Pipeline().addMiddleware(middleware).addHandler(api.call),
+      middleware.addHandler(api.call),
     );
 
     server.mount(app.call);
