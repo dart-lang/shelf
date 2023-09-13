@@ -1,6 +1,6 @@
 ## 1.4.2-dev
 
-* Require Dart >= 2.19
+* Require Dart ^3.0.0
 
 ## 1.4.1
 

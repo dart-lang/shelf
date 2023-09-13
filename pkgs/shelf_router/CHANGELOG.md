@@ -1,6 +1,6 @@
-## 1.1.5-dev
+## 1.1.5-wip
 
-* Require Dart `2.19`.
+* Require Dart `^3.0.0`.
 
 ## 1.1.4
 
