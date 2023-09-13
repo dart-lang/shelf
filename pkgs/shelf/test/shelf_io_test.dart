@@ -332,7 +332,7 @@ void main() {
       // Update beforeRequest to be one second earlier. HTTP dates only have
       // second-level granularity and the request will likely take less than a
       // second.
-      var beforeRequest = DateTime.now().subtract(Duration(seconds: 1));
+      var beforeRequest = DateTime.now().subtract(const Duration(seconds: 1));
 
       var response = await _get();
       expect(response.headers, contains('date'));
@@ -484,7 +484,7 @@ void main() {
 
       test('status code is 1xx', () async {
         await _scheduleServer((request) {
-          return Response(123, body: Stream<List<int>>.empty());
+          return Response(123, body: const Stream<List<int>>.empty());
         });
 
         var response = await _get();
@@ -495,7 +495,7 @@ void main() {
 
       test('status code is 204', () async {
         await _scheduleServer((request) {
-          return Response(204, body: Stream<List<int>>.empty());
+          return Response(204, body: const Stream<List<int>>.empty());
         });
 
         var response = await _get();
@@ -506,7 +506,7 @@ void main() {
 
       test('status code is 304', () async {
         await _scheduleServer((request) {
-          return Response(304, body: Stream<List<int>>.empty());
+          return Response(304, body: const Stream<List<int>>.empty());
         });
 
         var response = await _get();
@@ -543,10 +543,8 @@ void main() {
 
   test('includes the dart:io HttpConnectionInfo in request context', () async {
     await _scheduleServer((request) {
-      expect(
-          request.context,
-          containsPair(
-              'shelf.io.connection_info', TypeMatcher<HttpConnectionInfo>()));
+      expect(request.context,
+          containsPair('shelf.io.connection_info', isA<HttpConnectionInfo>()));
 
       var connectionInfo =
           request.context['shelf.io.connection_info'] as HttpConnectionInfo;

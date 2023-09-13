@@ -6,6 +6,8 @@ analyzer:
     strict-casts: true
     strict-inference: true
     strict-raw-types: true
+  errors:
+    comment_references: ignore # too many false positives
 
 linter:
   rules:
@@ -16,7 +18,4 @@ linter:
     - no_adjacent_strings_in_list
     - no_runtimeType_toString
     - package_api_docs
-    - prefer_relative_imports
-    - test_types_in_equals
     - unnecessary_await_in_return
-    - use_super_parameters

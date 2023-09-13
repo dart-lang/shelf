@@ -222,13 +222,14 @@ void main() {
     });
 
     test('is null for a stream body', () {
-      var request = _createMessage(body: Stream<List<int>>.empty());
+      var request = _createMessage(body: const Stream<List<int>>.empty());
       expect(request.contentLength, isNull);
     });
 
     test('uses the content-length header for a stream body', () {
       var request = _createMessage(
-          body: Stream<List<int>>.empty(), headers: {'content-length': '42'});
+          body: const Stream<List<int>>.empty(),
+          headers: {'content-length': '42'});
       expect(request.contentLength, 42);
     });
 

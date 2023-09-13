@@ -13,7 +13,7 @@ const helloBytes = [104, 101, 108, 108, 111, 44];
 // " world"
 const worldBytes = [32, 119, 111, 114, 108, 100];
 
-final Matcher throwsHijackException = throwsA(TypeMatcher<HijackException>());
+final Matcher throwsHijackException = throwsA(isA<HijackException>());
 
 /// A simple, synchronous handler for [Request].
 ///

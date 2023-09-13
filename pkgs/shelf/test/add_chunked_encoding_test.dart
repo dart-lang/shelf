@@ -30,36 +30,36 @@ void main() {
   });
 
   test("doesn't add chunked encoding with status 1xx", () async {
-    var response =
-        await _chunkResponse(Response(123, body: Stream<List<int>>.empty()));
+    var response = await _chunkResponse(
+        Response(123, body: const Stream<List<int>>.empty()));
     expect(response.headers, isNot(contains('transfer-encoding')));
     expect(response.read().toList(), completion(isEmpty));
   });
 
   test("doesn't add chunked encoding with status 204", () async {
-    var response =
-        await _chunkResponse(Response(204, body: Stream<List<int>>.empty()));
+    var response = await _chunkResponse(
+        Response(204, body: const Stream<List<int>>.empty()));
     expect(response.headers, isNot(contains('transfer-encoding')));
     expect(response.read().toList(), completion(isEmpty));
   });
 
   test("doesn't add chunked encoding with status 304", () async {
-    var response =
-        await _chunkResponse(Response(204, body: Stream<List<int>>.empty()));
+    var response = await _chunkResponse(
+        Response(204, body: const Stream<List<int>>.empty()));
     expect(response.headers, isNot(contains('transfer-encoding')));
     expect(response.read().toList(), completion(isEmpty));
   });
 
   test("doesn't add chunked encoding with status 204", () async {
-    var response =
-        await _chunkResponse(Response(204, body: Stream<List<int>>.empty()));
+    var response = await _chunkResponse(
+        Response(204, body: const Stream<List<int>>.empty()));
     expect(response.headers, isNot(contains('transfer-encoding')));
     expect(response.read().toList(), completion(isEmpty));
   });
 
   test("doesn't add chunked encoding with status 204", () async {
-    var response =
-        await _chunkResponse(Response(204, body: Stream<List<int>>.empty()));
+    var response = await _chunkResponse(
+        Response(204, body: const Stream<List<int>>.empty()));
     expect(response.headers, isNot(contains('transfer-encoding')));
     expect(response.read().toList(), completion(isEmpty));
   });
