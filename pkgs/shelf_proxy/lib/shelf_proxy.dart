@@ -7,6 +7,9 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// A handler that proxies requests to [url].
 ///
@@ -35,7 +38,35 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
   proxyName ??= 'shelf_proxy';
 
   return (serverRequest) async {
-    // TODO(nweiz): Support WebSocket requests.
+    if (serverRequest.headers['Upgrade'] == 'websocket') {
+      final socketUri = Uri(
+        scheme: uri.scheme == 'https' ? 'wss' : 'ws',
+        host: uri.host,
+        port: uri.port,
+        path: uri.path,
+        query: uri.query,
+        userInfo: uri.userInfo,
+        fragment: uri.fragment,
+      );
+
+      final handler = webSocketHandler((WebSocketChannel serverChannel) {
+        final headers = Map<String, String>.from(serverRequest.headers);
+
+        // Add a Via header. See
+        // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+        _addHeader(
+            headers, 'via', '${serverRequest.protocolVersion} $proxyName');
+
+        final clientChannel = IOWebSocketChannel.connect(
+          socketUri,
+          headers: headers,
+        );
+        clientChannel.stream.pipe(serverChannel.sink);
+        serverChannel.stream.pipe(clientChannel.sink);
+      });
+
+      return handler(serverRequest);
+    }
 
     // TODO(nweiz): Handle TRACE requests correctly. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
