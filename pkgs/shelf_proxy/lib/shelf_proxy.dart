@@ -38,15 +38,19 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
   proxyName ??= 'shelf_proxy';
 
   return (serverRequest) async {
+    final requestUrl = uri.resolve(serverRequest.url.toString());
+
     if (serverRequest.headers['Upgrade'] == 'websocket') {
-      final socketUri = Uri(
-        scheme: uri.scheme == 'https' ? 'wss' : 'ws',
-        host: uri.host,
-        port: uri.port,
-        path: uri.path,
-        query: uri.query,
-        userInfo: uri.userInfo,
-        fragment: uri.fragment,
+      final isSecure =
+          requestUrl.isScheme('https') || requestUrl.isScheme('wss');
+
+      final wsRequestUrl = Uri(
+        scheme: isSecure ? 'wss' : 'ws',
+        userInfo: requestUrl.userInfo,
+        host: requestUrl.host,
+        port: requestUrl.port,
+        path: requestUrl.path,
+        query: requestUrl.query,
       );
 
       final handler = webSocketHandler((WebSocketChannel serverChannel) {
@@ -58,7 +62,7 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
             headers, 'via', '${serverRequest.protocolVersion} $proxyName');
 
         final clientChannel = IOWebSocketChannel.connect(
-          socketUri,
+          wsRequestUrl,
           headers: headers,
         );
         clientChannel.stream.pipe(serverChannel.sink);
@@ -70,7 +74,6 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
 
     // TODO(nweiz): Handle TRACE requests correctly. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
-    final requestUrl = uri.resolve(serverRequest.url.toString());
     final clientRequest = http.StreamedRequest(serverRequest.method, requestUrl)
       ..followRedirects = false
       ..headers.addAll(serverRequest.headers)
