@@ -82,11 +82,9 @@ Handler createStaticHandler(String fileSystemPath,
     }
 
     if (fileFound == null) {
-      return Response.notFound(
-        'Not Found',
-        context: _buildResponseContext(fileNotFound: fileFound),
-      );
+      return Response.notFound('Not Found');
     }
+
     final file = fileFound;
 
     if (!serveFilesOutsidePath) {
