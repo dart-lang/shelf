@@ -39,6 +39,11 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 ///
 /// Specify a custom [contentTypeResolver] to customize automatic content type
 /// detection.
+///
+/// The [Response.context] will be populated with "shelf_static:file" or
+/// "shelf_static:file_not_found" with the resolved [File] for the [Response],
+/// while respecting [serveFilesOutsidePath] to prevent exposing a [File] path
+/// outside of the [fileSystemPath].
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath = false,
     String? defaultDocument,
@@ -82,7 +87,18 @@ Handler createStaticHandler(String fileSystemPath,
     }
 
     if (fileFound == null) {
-      return Response.notFound('Not Found');
+      File? fileNotFound = File(fsPath);
+
+      // Do not expose a file path outside of the original fileSystemPath:
+      if (!serveFilesOutsidePath &&
+          !p.isWithin(fileSystemPath, fileNotFound.path)) {
+        fileNotFound = null;
+      }
+
+      return Response.notFound(
+        'Not Found',
+        context: _buildResponseContext(fileNotFound: fileNotFound),
+      );
     }
 
     final file = fileFound;
