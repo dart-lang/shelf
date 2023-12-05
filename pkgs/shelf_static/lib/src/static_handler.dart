@@ -82,7 +82,10 @@ Handler createStaticHandler(String fileSystemPath,
     }
 
     if (fileFound == null) {
-      return Response.notFound('Not Found');
+      return Response.notFound(
+        'Not Found',
+        context: _buildResponseContext(fileNotFound: fileFound),
+      );
     }
     final file = fileFound;
 
@@ -117,6 +120,18 @@ Handler createStaticHandler(String fileSystemPath,
         return mimeResolver.lookup(file.path);
       }
     });
+  };
+}
+
+Map<String, Object>? _buildResponseContext({File? file, File? fileNotFound}) {
+  if (file == null && fileNotFound == null) return null;
+
+  // Ensure other Shelf `Middleware` can identify
+  // the processed file in the `Response` by
+  // including `file` and `file_not_found` in the context:
+  return {
+    if (file != null) 'shelf_static:file': file,
+    if (fileNotFound != null) 'shelf_static:file_not_found': fileNotFound,
   };
 }
 
@@ -184,7 +199,9 @@ Future<Response> _handleFile(Request request, File file,
   if (ifModifiedSince != null) {
     final fileChangeAtSecResolution = toSecondResolution(stat.modified);
     if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
-      return Response.notModified();
+      return Response.notModified(
+        context: _buildResponseContext(file: file),
+      );
     }
   }
 
@@ -199,6 +216,7 @@ Future<Response> _handleFile(Request request, File file,
       Response.ok(
         request.method == 'HEAD' ? null : file.openRead(),
         headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
+        context: _buildResponseContext(file: file),
       );
 }
 
