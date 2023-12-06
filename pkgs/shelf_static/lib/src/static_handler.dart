@@ -41,9 +41,10 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 /// detection.
 ///
 /// The [Response.context] will be populated with "shelf_static:file" or
-/// "shelf_static:file_not_found" with the resolved [File] for the [Response],
-/// while respecting [serveFilesOutsidePath] to prevent exposing a [File] path
-/// outside of the [fileSystemPath].
+/// "shelf_static:file_not_found" with the resolved [File] for the [Response].
+/// If the file is considered not found because it is outside of the
+/// [fileSystemPath] and [serveFilesOutsidePath] is false, then neither key
+/// will be included in the context.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath = false,
     String? defaultDocument,
@@ -140,7 +141,7 @@ Handler createStaticHandler(String fileSystemPath,
 Map<String, Object>? _buildResponseContext({File? file, File? fileNotFound}) {
   if (file == null && fileNotFound == null) return null;
 
-  // Ensure other Shelf `Middleware` can identify
+  // Ensure other shelf `Middleware` can identify
   // the processed file in the `Response` by
   // including `file` and `file_not_found` in the context:
   return {
