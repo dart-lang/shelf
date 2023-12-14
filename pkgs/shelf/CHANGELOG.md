@@ -1,4 +1,4 @@
-## 1.4.2-dev
+## 1.4.2-wip
 
 * Require Dart ^3.0.0
 
