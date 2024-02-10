@@ -1,3 +1,5 @@
+# Shelf Proxy
+
 [![pub package](https://img.shields.io/pub/v/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy/publisher)
 
@@ -8,6 +10,8 @@ server. It can be served directly and used as a proxy server, or it can be
 mounted within a larger application to proxy only certain URLs.
 
 [Shelf]: https://pub.dev/packages/shelf
+
+## Example
 
 ```dart
 import 'package:shelf/shelf_io.dart' as shelf_io;

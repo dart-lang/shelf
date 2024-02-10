@@ -1,7 +1,9 @@
+# Shelf Router Generator
+
 [![pub package](https://img.shields.io/pub/v/shelf_router_generator.svg)](https://pub.dev/packages/shelf_router_generator)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_router_generator.svg)](https://pub.dev/packages/shelf_router_generator/publisher)
 
-## Shelf Router Generator
+## Generator
 
 [Shelf](https://pub.dartlang.org/packages/shelf) makes it easy to build web
 applications in Dart by composing request handlers. The `shelf_router` package
@@ -68,5 +70,3 @@ void main() async {
   var server = await io.serve(router.handler, 'localhost', 8080);
 }
 ```
-
-

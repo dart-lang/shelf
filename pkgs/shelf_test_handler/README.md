@@ -1,3 +1,5 @@
+# Shelf Test Handler
+
 [![pub package](https://img.shields.io/pub/v/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler/publisher)
 
@@ -12,6 +14,8 @@ HTTP server, whose URL can be passed to client code.
 
 [ShelfTestHandler]: https://www.dartdocs.org/documentation/shelf_test_handler/latest/shelf_test_handler/ShelfTestHandler-class.html
 [ShelfTestServer]: https://www.dartdocs.org/documentation/shelf_test_handler/latest/shelf_test_handler/ShelfTestServer-class.html
+
+## Example
 
 ```dart
 import 'package:shelf/shelf.dart' as shelf;

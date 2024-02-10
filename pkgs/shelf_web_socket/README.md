@@ -1,3 +1,5 @@
+# Shelf Web Socket
+
 [![pub package](https://img.shields.io/pub/v/shelf_web_socket.svg)](https://pub.dev/packages/shelf_web_socket)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_web_socket.svg)](https://pub.dev/packages/shelf_web_socket/publisher)
 
@@ -15,6 +17,8 @@ connection that's established.
 [webSocketHandler]: https://pub.dev/documentation/shelf_web_socket/latest/shelf_web_socket/webSocketHandler.html
 
 [WebSocketChannel]: https://pub.dev/documentation/web_socket_channel/latest/web_socket_channel/WebSocketChannel-class.html
+
+## Example
 
 ```dart
 import 'package:shelf/shelf_io.dart' as shelf_io;

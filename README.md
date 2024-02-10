@@ -1,3 +1,5 @@
+# Shelf
+
 [![Build Status](https://github.com/dart-lang/shelf/workflows/Dart%20CI/badge.svg)](https://github.com/dart-lang/shelf/actions?query=workflow%3A"Dart+CI"+branch%3Amaster)
 
 ## About Shelf
@@ -30,4 +32,4 @@ See the [package:shelf readme](pkgs/shelf/) for more information.
 ## Publishing automation
 
 For information about our publishing automation and release process, see
-https://github.com/dart-lang/ecosystem/wiki/Publishing-automation.
+<https://github.com/dart-lang/ecosystem/wiki/Publishing-automation>.
