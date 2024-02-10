@@ -11,12 +11,14 @@ import 'package:shelf_static/shelf_static.dart';
 void main(List<String> args) {
   final parser = _getParser();
 
+  String address;
   int port;
   bool logging;
   bool listDirectories;
 
   try {
     final result = parser.parse(args);
+    address = result['address'] as String;
     port = int.parse(result['port'] as String);
     logging = result['logging'] as bool;
     listDirectories = result['list-directories'] as bool;
@@ -47,14 +49,16 @@ void main(List<String> args) {
   final handler = pipeline.addHandler(createStaticHandler('example/files',
       defaultDocument: defaultDoc, listDirectories: listDirectories));
 
-  io.serve(handler, 'localhost', port).then((server) {
+  io.serve(handler, address, port).then((server) {
     print('Serving at http://${server.address.host}:${server.port}');
   });
 }
 
 ArgParser _getParser() => ArgParser()
-  ..addFlag('logging', abbr: 'l', defaultsTo: true)
-  ..addOption('port', abbr: 'p', defaultsTo: '8080')
+  ..addFlag('logging', abbr: 'l', defaultsTo: true, help: 'Enable logging')
+  ..addOption('port', abbr: 'p', defaultsTo: '8080', help: 'Port to listen on')
+  ..addOption('address',
+      abbr: 'a', defaultsTo: 'localhost', help: 'Address to listen on')
   ..addFlag('list-directories',
       abbr: 'f',
       negatable: false,
