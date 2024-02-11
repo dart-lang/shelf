@@ -1,5 +1,3 @@
-# Shelf
-
 [![pub package](https://img.shields.io/pub/v/shelf.svg)](https://pub.dev/packages/shelf)
 [![package publisher](https://img.shields.io/pub/publisher/shelf.svg)](https://pub.dev/packages/shelf/publisher)
 

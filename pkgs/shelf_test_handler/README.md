@@ -1,5 +1,3 @@
-# Shelf Test Handler
-
 [![pub package](https://img.shields.io/pub/v/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler/publisher)
 

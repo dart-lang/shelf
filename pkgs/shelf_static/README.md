@@ -1,5 +1,3 @@
-# Shelf Static
-
 [![pub package](https://img.shields.io/pub/v/shelf_static.svg)](https://pub.dev/packages/shelf_static)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_static.svg)](https://pub.dev/packages/shelf_static/publisher)
 

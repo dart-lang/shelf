@@ -1,5 +1,3 @@
-# Shelf Proxy
-
 [![pub package](https://img.shields.io/pub/v/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_proxy.svg)](https://pub.dev/packages/shelf_proxy/publisher)
 

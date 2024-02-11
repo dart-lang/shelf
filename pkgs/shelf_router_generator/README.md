@@ -1,5 +1,3 @@
-# Shelf Router Generator
-
 [![pub package](https://img.shields.io/pub/v/shelf_router_generator.svg)](https://pub.dev/packages/shelf_router_generator)
 [![package publisher](https://img.shields.io/pub/publisher/shelf_router_generator.svg)](https://pub.dev/packages/shelf_router_generator/publisher)
 
