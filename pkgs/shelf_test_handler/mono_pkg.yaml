@@ -17,3 +17,5 @@ stages:
     os:
     - linux
     - windows
+  - test: --test-randomize-ordering-seed=random -p chrome -c dart2wasm
+    sdk: dev
