@@ -53,7 +53,11 @@ class Service {
       return Response.notFound('Page not found');
     });
 
-    return router.call;
+    // Set up your Pipeline with any middleware you want to use and set the
+    // router as the handler.
+    return const Pipeline()
+        .addMiddleware(logRequests())
+        .addHandler(router.call);
   }
 }
 
