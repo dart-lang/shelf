@@ -18,15 +18,22 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
 
-var app = Router();
+// instantiate a router and configure your routes
+var router = Router();
 
-app.get('/hello', (Request request) {
+router.get('/hello', (Request request) {
   return Response.ok('hello-world');
 });
 
-app.get('/user/<user>', (Request request, String user) {
+router.get('/user/<user>', (Request request, String user) {
   return Response.ok('hello $user');
 });
+
+// use a Pipeline to configure your middleware,
+// then add the router as the handler
+final app = const Pipeline()
+  .addMiddleware(logRequests())
+  .addHandler(router);
 
 var server = await io.serve(app, 'localhost', 8080);
 ```
