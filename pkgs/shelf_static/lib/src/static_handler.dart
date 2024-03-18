@@ -39,6 +39,12 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 ///
 /// Specify a custom [contentTypeResolver] to customize automatic content type
 /// detection.
+///
+/// The [Response.context] will be populated with "shelf_static:file" or
+/// "shelf_static:file_not_found" with the resolved [File] for the [Response].
+/// If the file is considered not found because it is outside of the
+/// [fileSystemPath] and [serveFilesOutsidePath] is false, then neither key
+/// will be included in the context.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath = false,
     String? defaultDocument,
@@ -82,8 +88,20 @@ Handler createStaticHandler(String fileSystemPath,
     }
 
     if (fileFound == null) {
-      return Response.notFound('Not Found');
+      File? fileNotFound = File(fsPath);
+
+      // Do not expose a file path outside of the original fileSystemPath:
+      if (!serveFilesOutsidePath &&
+          !p.isWithin(fileSystemPath, fileNotFound.path)) {
+        fileNotFound = null;
+      }
+
+      return Response.notFound(
+        'Not Found',
+        context: _buildResponseContext(fileNotFound: fileNotFound),
+      );
     }
+
     final file = fileFound;
 
     if (!serveFilesOutsidePath) {
@@ -117,6 +135,18 @@ Handler createStaticHandler(String fileSystemPath,
         return mimeResolver.lookup(file.path);
       }
     });
+  };
+}
+
+Map<String, Object>? _buildResponseContext({File? file, File? fileNotFound}) {
+  if (file == null && fileNotFound == null) return null;
+
+  // Ensure other shelf `Middleware` can identify
+  // the processed file in the `Response` by
+  // including `file` and `file_not_found` in the context:
+  return {
+    if (file != null) 'shelf_static:file': file,
+    if (fileNotFound != null) 'shelf_static:file_not_found': fileNotFound,
   };
 }
 
@@ -184,7 +214,9 @@ Future<Response> _handleFile(Request request, File file,
   if (ifModifiedSince != null) {
     final fileChangeAtSecResolution = toSecondResolution(stat.modified);
     if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
-      return Response.notModified();
+      return Response.notModified(
+        context: _buildResponseContext(file: file),
+      );
     }
   }
 
@@ -199,6 +231,7 @@ Future<Response> _handleFile(Request request, File file,
       Response.ok(
         request.method == 'HEAD' ? null : file.openRead(),
         headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
+        context: _buildResponseContext(file: file),
       );
 }
 
