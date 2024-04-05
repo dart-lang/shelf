@@ -1,4 +1,4 @@
-## 1.9.9-wip
+## 2.0.0-wip
 
 * Require Dart `^3.0.0`.
 * **BREAKING:**: Remove support for hijacking WebSocket requests that are not

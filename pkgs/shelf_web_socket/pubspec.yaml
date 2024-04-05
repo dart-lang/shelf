@@ -1,5 +1,5 @@
 name: shelf_web_socket
-version: 1.9.9-wip  # DO NOT SUBMIT! Should be 2.0.0-wip.
+version: 2.0.0-wip
 description: >
   A shelf handler that wires up a listener for every connection.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_web_socket
