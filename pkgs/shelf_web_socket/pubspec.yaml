@@ -1,5 +1,5 @@
 name: shelf_web_socket
-version: 1.0.5-wip
+version: 1.9.9-wip  # DO NOT SUBMIT! Should be 2.0.0.
 description: >
   A shelf handler that wires up a listener for every connection.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_web_socket
@@ -14,7 +14,7 @@ environment:
 dependencies:
   shelf: ^1.1.0
   stream_channel: ^2.1.0
-  web_socket_channel: ^2.0.0
+  web_socket_channel: '>=2.0.0 <=4.0.0'
 
 dev_dependencies:
   dart_flutter_team_lints: ^2.0.0

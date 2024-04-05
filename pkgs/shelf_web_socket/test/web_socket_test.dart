@@ -5,8 +5,10 @@
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -101,6 +103,32 @@ void main() {
     } finally {
       await server.close();
     }
+  });
+
+  test('cannot hijack non-Socket StreamChannel', () async {
+    final handler =
+        webSocketHandler((WebSocketChannel webSocket, String? protocol) {
+      expect(protocol, isNull);
+      webSocket.sink.close();
+    });
+
+    expect(
+        () => handler(Request('GET', Uri.parse('ws://example.com/'),
+                protocolVersion: '1.1',
+                headers: {
+                  'Host': 'example.com',
+                  'Upgrade': 'websocket',
+                  'Connection': 'Upgrade',
+                  'Sec-WebSocket-Key': 'x3JJHMbDL1EzLkh9GBhXDw==',
+                  'Sec-WebSocket-Version': '13',
+                  'Origin': 'http://example.com',
+                }, onHijack: (fn) {
+              // `.foreign` is not a Socket so hijacking the request should
+              // fail.
+              expect(() => fn(StreamChannelController<List<int>>().foreign),
+                  throwsArgumentError);
+            })),
+        throwsA(isA<HijackException>()));
   });
 
   group('with a set of allowed origins', () {

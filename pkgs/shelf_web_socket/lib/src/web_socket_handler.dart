@@ -3,8 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:shelf/shelf.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// A class that exposes a handler for upgrading WebSocket requests.
@@ -78,9 +80,16 @@ class WebSocketHandler {
       if (protocol != null) sink.add('Sec-WebSocket-Protocol: $protocol\r\n');
       sink.add('\r\n');
 
+      if (channel.sink is! Socket) {
+        throw ArgumentError('channel.sink must be a dart:io `Socket`.');
+      }
+
+      final webSocket = WebSocket.fromUpgradedSocket(channel.sink as Socket,
+          protocol: protocol, serverSide: true)
+        ..pingInterval = _pingInterval;
+
       // ignore: avoid_dynamic_calls
-      _onConnection(
-          WebSocketChannel(channel, pingInterval: _pingInterval), protocol);
+      _onConnection(IOWebSocketChannel(webSocket), protocol);
     });
   }
 
