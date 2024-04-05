@@ -1,6 +1,8 @@
-## 1.0.5-wip
+## 2.0.0-wip
 
 * Require Dart `^3.0.0`.
+* **BREAKING:**: Remove support for hijacking WebSocket requests that are not
+  being transported using `dart:io` `Socket`s.
 
 ## 1.0.4
 
