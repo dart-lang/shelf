@@ -1,8 +1,5 @@
 ## 2.0.1-wip
 
-* Replace `dependency_overrides` on `package:test` `1.25.2` with a
-  `dev_dependencies` on that package version.
-
 ## 2.0.0
 
 * Require Dart `^3.0.0`.
