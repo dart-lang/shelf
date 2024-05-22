@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import 'dart:async' show Future;
+import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
@@ -83,8 +85,30 @@ class Api {
 }
 
 // Run shelf server and host a [Service] instance on port 8080.
-void main() async {
+void main(List<String> args) async {
+  final parser = _getParser();
+
+  String address;
+  int port;
+  try {
+    final result = parser.parse(args);
+    address = result['address'] as String;
+    port = int.parse(result['port'] as String);
+  } on FormatException catch (e) {
+    stderr
+      ..writeln(e.message)
+      ..writeln(parser.usage);
+    // http://linux.die.net/include/sysexits.h
+    // #define EX_USAGE	64	/* command line usage error */
+    exit(64);
+  }
+
   final service = Service();
-  final server = await shelf_io.serve(service.handler, 'localhost', 8080);
+  final server = await shelf_io.serve(service.handler, address, port);
   print('Server running on localhost:${server.port}');
 }
+
+ArgParser _getParser() => ArgParser()
+  ..addOption('port', abbr: 'p', defaultsTo: '8080', help: 'Port to listen on')
+  ..addOption('address',
+      abbr: 'a', defaultsTo: 'localhost', help: 'Address to listen on');
