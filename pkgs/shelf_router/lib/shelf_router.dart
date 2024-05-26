@@ -76,7 +76,7 @@
 ///   await io.serve(service.router.handler, 'localhost', 8080);
 /// }
 /// ```
-library shelf_router;
+library;
 
 import 'src/route.dart';
 import 'src/router.dart';
