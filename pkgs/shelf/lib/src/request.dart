@@ -60,7 +60,7 @@ class Request extends Message {
   ///
   /// This will be `false` either if the adapter doesn't support hijacking, or
   /// if the request has already been hijacked.
-  bool get canHijack => _onHijack != null && !_onHijack!.called;
+  bool get canHijack => _onHijack != null && !_onHijack.called;
 
   /// If this is non-`null` and the requested resource hasn't been modified
   /// since this date and time, the server should return a 304 Not Modified
@@ -280,7 +280,7 @@ class Request extends Message {
       throw StateError("This request can't be hijacked.");
     }
 
-    _onHijack!.run(callback);
+    _onHijack.run(callback);
 
     throw const HijackException();
   }

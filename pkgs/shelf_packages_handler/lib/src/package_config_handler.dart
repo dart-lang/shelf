@@ -36,7 +36,7 @@ class PackageConfigHandler {
       _packageHandlers.putIfAbsent(packageName, () async {
         Uri? packageUri;
         if (_packageMap != null) {
-          packageUri = _packageMap![packageName];
+          packageUri = _packageMap[packageName];
         } else {
           final fakeResolvedUri = await Isolate.resolvePackageUri(
               Uri(scheme: 'package', path: '$packageName/'));

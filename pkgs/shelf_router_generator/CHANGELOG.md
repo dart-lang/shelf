@@ -1,3 +1,7 @@
+## 1.1.1-wip
+
+* Require `sdk: ^3.3.0`
+
 ## 1.1.0
 
 * Require `sdk: ^3.0.0`
