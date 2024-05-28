@@ -89,7 +89,7 @@ class _HandlerServer implements Server {
 
   @override
   Future<void> close() => _closeMemo.runOnce(() {
-        return _onClose == null ? null : _onClose!();
+        return _onClose == null ? null : _onClose();
       });
   final _closeMemo = AsyncMemoizer<void>();
 }

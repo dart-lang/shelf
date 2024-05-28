@@ -18,7 +18,7 @@
 /// This is **not intended** for consumption, this library should be used by
 /// running `pub run build_runner build`. Using this library through other means
 /// is not supported and may break arbitrarily.
-library builder;
+library;
 
 import 'package:build/build.dart';
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
