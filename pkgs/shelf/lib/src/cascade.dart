@@ -73,7 +73,7 @@ class Cascade {
 
     return (request) {
       if (_parent!._handler == null) return handler(request);
-      return Future.sync(() => _parent!.handler(request)).then((response) {
+      return Future.sync(() => _parent.handler(request)).then((response) {
         if (_shouldCascade(response)) return handler(request);
         return response;
       });
