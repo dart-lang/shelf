@@ -199,7 +199,7 @@ Handler createFileHandler(String path, {String? url, String? contentType}) {
   return (request) {
     if (request.url.path != url) {
       var fileNotFound =
-          File(p.joinAll([parent.path, ...p.split(request.url.path)]));
+          File(p.joinAll([parent.path, ...request.url.pathSegments]));
       return Response.notFound(
         'Not Found',
         context: buildResponseContext(fileNotFound: fileNotFound),
