@@ -1,7 +1,9 @@
 ## 1.4.2-wip
 
 * `Headers`:
-  * Optimize constructor `_`: use `CaseInsensitiveMap.fromEntries`.
+  * Added the constructor `Headers.fromEntries`.
+  * Added the internal constructor `_fromEntries`, which uses `CaseInsensitiveMap.fromEntries` for optimization.
+  * Renamed the internal constructor `_` to `_from`, redirecting it to `this._fromEntries`.
 
 * Require Dart `^3.3.0`.
 
