@@ -77,7 +77,8 @@ void main() {
 
     expect(
       response.context.toFilePath(),
-      equals({'shelf_static:file': p.join(d.sandbox, 'files/with space.txt')}),
+      equals(
+          {'shelf_static:file': p.join(d.sandbox, 'files', 'with space.txt')}),
     );
   });
 

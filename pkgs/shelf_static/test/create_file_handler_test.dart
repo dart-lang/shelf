@@ -37,8 +37,9 @@ void main() {
 
     expect(
       response.context.toFilePath(),
-      equals(
-          {'shelf_static:file_not_found': p.join(d.sandbox, 'foo/file.txt')}),
+      equals({
+        'shelf_static:file_not_found': p.join(d.sandbox, 'foo', 'file.txt')
+      }),
     );
   });
 

@@ -47,8 +47,9 @@ void main() {
 
       expect(
         response.context.toFilePath(),
-        equals(
-            {'shelf_static:file': p.join(d.sandbox, 'originals/index.html')}),
+        equals({
+          'shelf_static:file': p.join(d.sandbox, 'originals', 'index.html')
+        }),
       );
     });
 
@@ -81,8 +82,9 @@ void main() {
 
         expect(
           response.context.toFilePath(),
-          equals(
-              {'shelf_static:file': p.join(d.sandbox, 'link_dir/index.html')}),
+          equals({
+            'shelf_static:file': p.join(d.sandbox, 'link_dir', 'index.html')
+          }),
         );
       });
     });
