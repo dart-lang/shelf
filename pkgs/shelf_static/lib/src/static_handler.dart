@@ -82,7 +82,9 @@ Handler createStaticHandler(String fileSystemPath,
       fileFound = _tryDefaultFile(fsPath, defaultDocument);
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
-        if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
+        if (!uri.path.endsWith('/')) {
+          return _redirectToAddTrailingSlash(uri, fsPath);
+        }
         return listDirectory(fileSystemPath, fsPath);
       }
     }
@@ -92,13 +94,14 @@ Handler createStaticHandler(String fileSystemPath,
 
       // Do not expose a file path outside of the original fileSystemPath:
       if (!serveFilesOutsidePath &&
-          !p.isWithin(fileSystemPath, fileNotFound.path)) {
+          !p.isWithin(fileSystemPath, fileNotFound.path) &&
+          !p.equals(fileSystemPath, fileNotFound.path)) {
         fileNotFound = null;
       }
 
       return Response.notFound(
         'Not Found',
-        context: _buildResponseContext(fileNotFound: fileNotFound),
+        context: buildResponseContext(fileNotFound: fileNotFound),
       );
     }
 
@@ -118,7 +121,7 @@ Handler createStaticHandler(String fileSystemPath,
     final uri = request.requestedUri;
     if (entityType == FileSystemEntityType.directory &&
         !uri.path.endsWith('/')) {
-      return _redirectToAddTrailingSlash(uri);
+      return _redirectToAddTrailingSlash(uri, fsPath);
     }
 
     return _handleFile(request, file, () async {
@@ -138,19 +141,7 @@ Handler createStaticHandler(String fileSystemPath,
   };
 }
 
-Map<String, Object>? _buildResponseContext({File? file, File? fileNotFound}) {
-  if (file == null && fileNotFound == null) return null;
-
-  // Ensure other shelf `Middleware` can identify
-  // the processed file in the `Response` by
-  // including `file` and `file_not_found` in the context:
-  return {
-    if (file != null) 'shelf_static:file': file,
-    if (fileNotFound != null) 'shelf_static:file_not_found': fileNotFound,
-  };
-}
-
-Response _redirectToAddTrailingSlash(Uri uri) {
+Response _redirectToAddTrailingSlash(Uri uri, String fsPath) {
   final location = Uri(
       scheme: uri.scheme,
       userInfo: uri.userInfo,
@@ -159,7 +150,8 @@ Response _redirectToAddTrailingSlash(Uri uri) {
       path: '${uri.path}/',
       query: uri.query);
 
-  return Response.movedPermanently(location.toString());
+  return Response.movedPermanently(location.toString(),
+      context: buildResponseContext(directory: Directory(fsPath)));
 }
 
 File? _tryDefaultFile(String dirPath, String? defaultFile) {
@@ -192,11 +184,19 @@ Handler createFileHandler(String path, {String? url, String? contentType}) {
     throw ArgumentError.value(url, 'url', 'must be relative.');
   }
 
+  final parent = file.parent;
+
   final mimeType = contentType ?? _defaultMimeTypeResolver.lookup(path);
   url ??= p.toUri(p.basename(path)).toString();
 
   return (request) {
-    if (request.url.path != url) return Response.notFound('Not Found');
+    if (request.url.path != url) {
+      var fileNotFound = File(p.join(parent.path, request.url.path));
+      return Response.notFound(
+        'Not Found',
+        context: buildResponseContext(fileNotFound: fileNotFound),
+      );
+    }
     return _handleFile(request, file, () => mimeType);
   };
 }
@@ -215,7 +215,7 @@ Future<Response> _handleFile(Request request, File file,
     final fileChangeAtSecResolution = toSecondResolution(stat.modified);
     if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
       return Response.notModified(
-        context: _buildResponseContext(file: file),
+        context: buildResponseContext(file: file),
       );
     }
   }
@@ -231,7 +231,7 @@ Future<Response> _handleFile(Request request, File file,
       Response.ok(
         request.method == 'HEAD' ? null : file.openRead(),
         headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
-        context: _buildResponseContext(file: file),
+        context: buildResponseContext(file: file),
       );
 }
 
@@ -281,6 +281,7 @@ Response? _fileRangeResponse(
     return Response(
       HttpStatus.requestedRangeNotSatisfiable,
       headers: headers,
+      context: buildResponseContext(file: file),
     );
   }
   return Response(
@@ -289,5 +290,6 @@ Response? _fileRangeResponse(
     headers: headers
       ..[HttpHeaders.contentLengthHeader] = (end - start + 1).toString()
       ..[HttpHeaders.contentRangeHeader] = 'bytes $start-$end/$actualLength',
+    context: buildResponseContext(file: file),
   );
 }
