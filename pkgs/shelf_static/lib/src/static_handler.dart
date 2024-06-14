@@ -42,9 +42,10 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 ///
 /// The [Response.context] will be populated with "shelf_static:file" or
 /// "shelf_static:file_not_found" with the resolved [File] for the [Response].
-/// If the file is considered not found because it is outside of the
-/// [fileSystemPath] and [serveFilesOutsidePath] is false, then neither key
-/// will be included in the context.
+/// If the path resolves to a [Directory], it will populate
+/// "shelf_static:directory". If the path is considered not found because it is
+/// outside of the [fileSystemPath] and [serveFilesOutsidePath] is false,
+/// then none of the keys will be included in the context.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath = false,
     String? defaultDocument,
@@ -176,6 +177,12 @@ File? _tryDefaultFile(String dirPath, String? defaultFile) {
 /// This uses the given [contentType] for the Content-Type header. It defaults
 /// to looking up a content type based on [path]'s file extension, and failing
 /// that doesn't sent a [contentType] header at all.
+///
+/// The [Response.context] will be populated with "shelf_static:file" or
+/// "shelf_static:file_not_found" with the resolved [File] for the [Response].
+/// If the path is considered not found because it is
+/// outside of the [fileSystemPath] and [serveFilesOutsidePath] is false,
+/// then neither key will be included in the context.
 Handler createFileHandler(String path, {String? url, String? contentType}) {
   final file = File(path);
   if (!file.existsSync()) {
