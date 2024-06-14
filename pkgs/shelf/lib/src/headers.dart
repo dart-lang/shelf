@@ -29,9 +29,9 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
   }
 
   Headers._(Map<String, List<String>> values)
-      : super(CaseInsensitiveMap.from(Map.fromEntries(values.entries
+      : super(CaseInsensitiveMap.fromEntries(values.entries
             .where((e) => e.value.isNotEmpty)
-            .map((e) => MapEntry(e.key, List.unmodifiable(e.value))))));
+            .map((e) => MapEntry(e.key, List.unmodifiable(e.value)))));
 
   Headers._empty() : super(const {});
 

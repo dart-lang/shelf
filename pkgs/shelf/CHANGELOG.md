@@ -1,5 +1,8 @@
 ## 1.4.2-wip
 
+* `Headers`:
+  * Optimize constructor `_`: use `CaseInsensitiveMap.fromEntries`.
+
 * Require Dart `^3.3.0`.
 
 ## 1.4.1
