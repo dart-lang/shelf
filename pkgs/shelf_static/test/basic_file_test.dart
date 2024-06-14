@@ -46,6 +46,11 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 8);
     expect(response.readAsString(), completion('root txt'));
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file': p.join(d.sandbox, 'root.txt')}),
+    );
   });
 
   test('HEAD', () async {
@@ -55,6 +60,11 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 8);
     expect(await response.readAsString(), isEmpty);
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file': p.join(d.sandbox, 'root.txt')}),
+    );
   });
 
   test('access root file with space', () async {
@@ -64,6 +74,11 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
     expect(response.readAsString(), completion('with space content'));
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file': p.join(d.sandbox, 'files/with space.txt')}),
+    );
   });
 
   test('access root file with unencoded space', () async {
@@ -89,6 +104,12 @@ void main() {
 
     final response = await makeRequest(handler, '/not_here.txt');
     expect(response.statusCode, HttpStatus.notFound);
+
+    expect(
+      response.context.toFilePath(),
+      equals(
+          {'shelf_static:file_not_found': p.join(d.sandbox, 'not_here.txt')}),
+    );
   });
 
   test('last modified', () async {
@@ -99,6 +120,11 @@ void main() {
 
     final response = await makeRequest(handler, '/root.txt');
     expect(response.lastModified, atSameTimeToSecond(modified));
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file': p.join(d.sandbox, 'root.txt')}),
+    );
   });
 
   group('if modified since', () {
@@ -116,6 +142,11 @@ void main() {
           await makeRequest(handler, '/root.txt', headers: headers);
       expect(response.statusCode, HttpStatus.notModified);
       expect(response.contentLength, 0);
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'root.txt')}),
+      );
     });
 
     test('before last modified', () async {

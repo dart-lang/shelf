@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -45,6 +46,11 @@ void main() {
       expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'index.html')}),
+      );
     });
 
     test('access "/"', () async {
@@ -52,6 +58,11 @@ void main() {
 
       final response = await makeRequest(handler, '/');
       expect(response.statusCode, HttpStatus.notFound);
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file_not_found': d.sandbox}),
+      );
     });
 
     test('access "/files"', () async {
@@ -59,6 +70,11 @@ void main() {
 
       final response = await makeRequest(handler, '/files');
       expect(response.statusCode, HttpStatus.notFound);
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file_not_found': p.join(d.sandbox, 'files')}),
+      );
     });
 
     test('access "/files/" dir', () async {
@@ -66,6 +82,11 @@ void main() {
 
       final response = await makeRequest(handler, '/files/');
       expect(response.statusCode, HttpStatus.notFound);
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file_not_found': p.join(d.sandbox, 'files')}),
+      );
     });
   });
 
@@ -79,6 +100,11 @@ void main() {
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
       expect(response.mimeType, 'text/html');
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'index.html')}),
+      );
     });
 
     test('access "/"', () async {
@@ -90,6 +116,11 @@ void main() {
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
       expect(response.mimeType, 'text/html');
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'index.html')}),
+      );
     });
 
     test('access "/files"', () async {
@@ -100,6 +131,11 @@ void main() {
       expect(response.statusCode, HttpStatus.movedPermanently);
       expect(response.headers,
           containsPair(HttpHeaders.locationHeader, 'http://localhost/files/'));
+
+      expect(
+        response.context.toDirectoryPath(),
+        equals({'shelf_static:directory': p.join(d.sandbox, 'files')}),
+      );
     });
 
     test('access "/files/" dir', () async {
@@ -112,6 +148,11 @@ void main() {
       expect(response.readAsString(),
           completion('<html><body>files</body></html>'));
       expect(response.mimeType, 'text/html');
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'files/index.html')}),
+      );
     });
   });
 }

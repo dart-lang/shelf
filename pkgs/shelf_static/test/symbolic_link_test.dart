@@ -44,6 +44,12 @@ void main() {
       expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 13);
       expect(response.readAsString(), completion('<html></html>'));
+
+      expect(
+        response.context.toFilePath(),
+        equals(
+            {'shelf_static:file': p.join(d.sandbox, 'originals/index.html')}),
+      );
     });
 
     group('links under root dir', () {
@@ -56,6 +62,11 @@ void main() {
           expect(response.statusCode, HttpStatus.ok);
           expect(response.contentLength, 13);
           expect(response.readAsString(), completion('<html></html>'));
+
+          expect(
+            response.context.toFilePath(),
+            equals({'shelf_static:file': p.join(d.sandbox, 'link_index.html')}),
+          );
         },
         onPlatform: _skipSymlinksOnWindows,
       );
@@ -67,6 +78,12 @@ void main() {
         expect(response.statusCode, HttpStatus.ok);
         expect(response.contentLength, 13);
         expect(response.readAsString(), completion('<html></html>'));
+
+        expect(
+          response.context.toFilePath(),
+          equals(
+              {'shelf_static:file': p.join(d.sandbox, 'link_dir/index.html')}),
+        );
       });
     });
 
@@ -76,6 +93,11 @@ void main() {
 
         final response = await makeRequest(handler, '/link_index.html');
         expect(response.statusCode, HttpStatus.notFound);
+
+        expect(
+          response.context.toFilePath(),
+          equals({}), // outside of the root path: empty context.
+        );
       });
 
       test('access file in sym linked dir', () async {
@@ -83,6 +105,11 @@ void main() {
 
         final response = await makeRequest(handler, '/link_dir/index.html');
         expect(response.statusCode, HttpStatus.notFound);
+
+        expect(
+          response.context.toFilePath(),
+          equals({}), // outside of the root path: empty context.
+        );
       });
     });
   });

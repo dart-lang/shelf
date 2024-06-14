@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
 import 'package:shelf_static/src/util.dart';
@@ -69,3 +71,11 @@ class _SecondResolutionDateTimeMatcher extends Matcher {
 
 bool _datesEqualToSecond(DateTime d1, DateTime d2) =>
     toSecondResolution(d1).isAtSameMomentAs(toSecondResolution(d2));
+
+extension ResponseContextExtension on Map<String, Object> {
+  Map<String, String> toFilePath() =>
+      map((k, v) => MapEntry(k, v is File ? v.path : '$v'));
+
+  Map<String, String> toDirectoryPath() =>
+      map((k, v) => MapEntry(k, v is Directory ? v.path : '$v'));
+}
