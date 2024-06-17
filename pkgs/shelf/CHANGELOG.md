@@ -1,12 +1,8 @@
-## 1.4.2-wip
+## 1.4.2
 
-* `Headers`:
-  * Added the constructor `Headers.fromEntries`.
-  * Added the internal constructor `_fromEntries`, which uses `CaseInsensitiveMap.fromEntries` for optimization.
-  * Renamed the internal constructor `_` to `_from`, redirecting it to `this._fromEntries`.
-
+* `Headers`: added the `fromEntries`  constructor.
+* Require `http_parser`: ^4.1.0
 * Require Dart `^3.3.0`.
-* http_parser: ^4.1.0
 
 ## 1.4.1
 
