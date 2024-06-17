@@ -24,7 +24,7 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
     } else if (values is Headers) {
       return values;
     } else {
-      return Headers._fromEntries(values.entries);
+      return Headers._(values.entries);
     }
   }
 
@@ -33,11 +33,11 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
     if (values == null || (values is List && values.isEmpty)) {
       return _emptyHeaders;
     } else {
-      return Headers._fromEntries(values);
+      return Headers._(values);
     }
   }
 
-  Headers._fromEntries(Iterable<MapEntry<String, List<String>>> entries)
+  Headers._(Iterable<MapEntry<String, List<String>>> entries)
       : super(CaseInsensitiveMap.fromEntries(entries
             .where((e) => e.value.isNotEmpty)
             .map((e) => MapEntry(e.key, List.unmodifiable(e.value)))));
