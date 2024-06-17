@@ -24,7 +24,7 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
     } else if (values is Headers) {
       return values;
     } else {
-      return Headers._from(values);
+      return Headers._fromEntries(values.entries);
     }
   }
 
@@ -36,9 +36,6 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
       return Headers._fromEntries(values);
     }
   }
-
-  Headers._from(Map<String, List<String>> values)
-      : this._fromEntries(values.entries);
 
   Headers._fromEntries(Iterable<MapEntry<String, List<String>>> entries)
       : super(CaseInsensitiveMap.fromEntries(entries
