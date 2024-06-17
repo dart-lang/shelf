@@ -6,6 +6,7 @@
   * Renamed the internal constructor `_` to `_from`, redirecting it to `this._fromEntries`.
 
 * Require Dart `^3.3.0`.
+* http_parser: ^4.1.0
 
 ## 1.4.1
 
