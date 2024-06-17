@@ -2,7 +2,7 @@
 
 * `Headers`: added the `fromEntries`  constructor.
 * Require `http_parser`: ^4.1.0
-* Require Dart `^3.3.0`.
+* Require Dart `^3.4.0`.
 
 ## 1.4.1
 
