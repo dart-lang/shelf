@@ -56,6 +56,40 @@ extension RouterParams on Request {
     }
     return _emptyParams;
   }
+
+  /// Get URL parameters captured by the [Router.mount].
+  /// They can be accessed from inside the mounted routes.
+  ///
+  /// **Example**
+  /// ```dart
+  /// Router createUsersRouter() {
+  ///   var router = Router();
+  ///
+  ///   String getUser(Request r) => r.mountedParams['user']!;
+  ///
+  ///   router.get('/self', (Request request) {
+  ///     return Response.ok("I'm ${getUser(request)}");
+  ///   });
+  ///
+  ///   return router;
+  /// }
+  ///
+  /// var app = Router();
+  ///
+  /// final usersRouter = createUsersRouter();
+  /// app.mount('/users/<user>', (Request r, String user) => usersRouter(r));
+  /// ```
+  ///
+  /// If no parameters are captured this returns an empty map.
+  ///
+  /// The returned map is unmodifiable.
+  Map<String, String> get mountedParams {
+    final p = context['shelf_router/mountedParams'];
+    if (p is Map<String, String>) {
+      return UnmodifiableMapView(p);
+    }
+    return _emptyParams;
+  }
 }
 
 /// Middleware to remove body from request.
@@ -113,6 +147,12 @@ class Router {
   final List<RouterEntry> _routes = [];
   final Handler _notFoundHandler;
 
+  /// Name of the parameter used for matching the rest of te path in a mounted
+  /// route.
+  /// Prefixed with two underscores to avoid conflicts
+  /// with user defined path parameters
+  static const _kRestPathParam = '__path';
+
   /// Creates a new [Router] routing requests to handlers.
   ///
   /// The [notFoundHandler] will be invoked for requests where no matching route
@@ -142,31 +182,100 @@ class Router {
 
   /// Handle all request to [route] using [handler].
   void all(String route, Function handler) {
-    _routes.add(RouterEntry('ALL', route, handler));
+    _all(route, handler, applyParamsOnHandle: true);
+  }
+
+  void _all(String route, Function handler,
+      {required bool applyParamsOnHandle}) {
+    _routes.add(RouterEntry(
+      'ALL',
+      route,
+      handler,
+      applyParamsOnHandle: applyParamsOnHandle,
+    ));
   }
 
   /// Mount a handler below a prefix.
-  ///
-  /// In this case prefix may not contain any parameters, nor
-  void mount(String prefix, Handler handler) {
+  void mount(String prefix, Function handler) {
     if (!prefix.startsWith('/')) {
       throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
     }
 
-    // first slash is always in request.handlerPath
-    final path = prefix.substring(1);
+    const restPathParam = _kRestPathParam;
+
     if (prefix.endsWith('/')) {
-      all('$prefix<path|[^]*>', (Request request) {
-        return handler(request.change(path: path));
-      });
+      _all(
+        '$prefix<$restPathParam|[^]*>',
+        (Request request, RouterEntry route) {
+          // Remove path param from extracted route params
+          final paramsList = [...route.params]..removeLast();
+          return _invokeMountedHandler(request, handler, paramsList);
+        },
+        applyParamsOnHandle: false,
+      );
     } else {
-      all(prefix, (Request request) {
-        return handler(request.change(path: path));
-      });
-      all('$prefix/<path|[^]*>', (Request request) {
-        return handler(request.change(path: '$path/'));
-      });
+      _all(
+        prefix,
+        (Request request, RouterEntry route) {
+          return _invokeMountedHandler(request, handler, route.params);
+        },
+        applyParamsOnHandle: false,
+      );
+      _all(
+        '$prefix/<$restPathParam|[^]*>',
+        (Request request, RouterEntry route) {
+          // Remove path param from extracted route params
+          final paramsList = [...route.params]..removeLast();
+          return _invokeMountedHandler(request, handler, paramsList);
+        },
+        applyParamsOnHandle: false,
+      );
     }
+  }
+
+  Future<Response> _invokeMountedHandler(
+      Request request, Function handler, List<String> pathParams) async {
+    final paramsMap = request.params;
+    final effectivePath = _getEffectiveMountPath(request.url.path, paramsMap);
+
+    final modifiedRequest = request.change(
+      path: effectivePath,
+      context: {
+        // Include the parameters captured here as mounted parameters.
+        // We also include previous mounted params in case there is double
+        // nesting of `mount`s
+        'shelf_router/mountedParams': {
+          ...request.mountedParams,
+          ...paramsMap,
+        },
+      },
+    );
+
+    return await Function.apply(handler, [
+      modifiedRequest,
+      ...pathParams.map((param) => paramsMap[param]),
+    ]) as Response;
+  }
+
+  /// Removes the "rest path" from the requested [urlPath] in mounted routes.
+  /// This new path is then used to update the scope of the mounted handler with
+  /// [Request.change]
+  String _getEffectiveMountPath(
+    String urlPath,
+    Map<String, String> paramsMap,
+  ) {
+    final pathParamSegment = paramsMap[_kRestPathParam];
+    late final String effectivePath;
+    if (pathParamSegment != null && pathParamSegment.isNotEmpty) {
+      /// If we encounter the "rest path" parameter we remove it
+      /// from the request path that shelf will handle.
+      effectivePath =
+          urlPath.substring(0, urlPath.length - pathParamSegment.length);
+    } else {
+      // No parameters in the requested path
+      effectivePath = urlPath;
+    }
+    return effectivePath;
   }
 
   /// Route incoming requests to registered handlers.
