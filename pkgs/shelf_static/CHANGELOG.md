@@ -1,4 +1,4 @@
-## 1.1.3-wip
+## 1.1.3
 
 * Require Dart `^3.3.0`.
 * Update `package:mime` constraint to `>=1.0.0 <3.0.0`. 
