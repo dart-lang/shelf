@@ -30,7 +30,7 @@ typedef Middleware = Handler Function(Handler innerHandler);
 /// Creates a [Middleware] using the provided functions.
 ///
 /// If provided, [requestHandler] receives a [Request]. It can respond to
-/// the request by returning a [Response] or [Future<Response>].
+/// the request by returning a [Response] or `Future<Response>`.
 /// [requestHandler] can also return `null` for some or all requests in which
 /// case the request is sent to the inner [Handler].
 ///
@@ -39,7 +39,7 @@ typedef Middleware = Handler Function(Handler innerHandler);
 /// sent to [responseHandler].
 ///
 /// [responseHandler] should return either a [Response] or
-/// [Future<Response>]. It may return the response parameter it receives or
+/// `Future<Response>`. It may return the response parameter it receives or
 /// create a new response object.
 ///
 /// If provided, [errorHandler] receives errors thrown by the inner handler. It
