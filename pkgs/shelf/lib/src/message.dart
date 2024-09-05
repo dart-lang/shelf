@@ -67,9 +67,9 @@ abstract class Message {
 
   /// Creates a new [Message].
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
+  /// [body] is the response body. It may be either a [String], a `List<int>`, a
+  /// `Stream<List<int>>`, or `null` to indicate no body. If it's a [String],
+  /// [encoding] is used to encode it to a `Stream<List<int>>`. It defaults to
   /// UTF-8.
   ///
   /// If [headers] is `null`, it is treated as empty.
