@@ -190,6 +190,21 @@ class Router {
     return _notFoundHandler(request);
   }
 
+  /// Get URL parameters captured by the [Router].
+  /// Returns `null` if no parameters are captured.
+  Map<String, String>? getParams(Request request) {
+    for (var route in _routes) {
+      if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
+        continue;
+      }
+      var params = route.match('/${request.url.path}');
+      if (params != null) {
+        return params;
+      }
+    }
+    return null;
+  }
+
   // Handlers for all methods
 
   /// Handle `GET` request to [route] using [handler].
