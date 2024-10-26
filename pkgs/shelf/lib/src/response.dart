@@ -167,8 +167,8 @@ class Response extends Message {
   /// This indicates that the server has received a malformed request.
   ///
   /// {@macro shelf_response_body_and_encoding_param}
-  Response.badRequest({
-    Object? body,
+  Response.badRequest(
+    Object? body, {
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
@@ -242,8 +242,8 @@ class Response extends Message {
   /// from fulfilling the request.
   ///
   /// {@macro shelf_response_body_and_encoding_param}
-  Response.internalServerError({
-    Object? body,
+  Response.internalServerError(
+    Object? body, {
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
