@@ -1,8 +1,6 @@
-## 1.1.6
+## 1.2.0-wip
 
 * Added function `getParams` to the `Router` class to get the parameters from a request
-
-## 1.1.5-wip
 
 * Require Dart `^3.3.0`.
 
