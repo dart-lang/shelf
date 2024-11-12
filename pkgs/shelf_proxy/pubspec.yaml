@@ -2,6 +2,7 @@ name: shelf_proxy
 version: 1.0.5-wip
 description: A shelf handler for proxying HTTP requests to another server.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_proxy
+issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_proxy
 
 topics:
   - server
