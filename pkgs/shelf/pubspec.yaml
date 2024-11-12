@@ -3,6 +3,7 @@ version: 1.4.3-wip
 description: >
   A model for web server middleware that encourages composition and easy reuse.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf
+issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf
 
 topics:
   - server
