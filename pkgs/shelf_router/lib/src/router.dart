@@ -191,6 +191,7 @@ class Router {
   }
 
   /// Get URL parameters captured by the [Router].
+  ///
   /// Returns `null` if no parameters are captured.
   Map<String, String>? getParams(Request request) {
     for (var route in _routes) {
