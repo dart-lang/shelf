@@ -74,7 +74,7 @@ Future<HttpServer> serve(
 
 /// Serve a [Stream] of [HttpRequest]s.
 ///
-/// [HttpServer] implements [Stream<HttpRequest>] so it can be passed directly
+/// [HttpServer] implements `Stream<HttpRequest>` so it can be passed directly
 /// to [serveRequests].
 ///
 /// Errors thrown by [handler] while serving a request will be printed to the

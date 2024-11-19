@@ -89,9 +89,9 @@ class Request extends Message {
   /// and [url] to `requestedUri.path` without the initial `/`. If only one is
   /// passed, the other will be inferred.
   ///
-  /// [body] is the request body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. The default
+  /// [body] is the request body. It may be either a [String], a `List<int>`, a
+  /// `Stream<List<int>>`, or `null` to indicate no body. If it's a [String],
+  /// [encoding] is used to encode it to a `Stream<List<int>>`. The default
   /// encoding is UTF-8.
   ///
   /// If [encoding] is passed, the "encoding" field of the Content-Type header
@@ -225,8 +225,8 @@ class Request extends Message {
   /// All other context and header values from the [Request] will be
   /// included in the copied [Request] unchanged.
   ///
-  /// [body] is the request body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
+  /// [body] is the request body. It may be either a [String], a `List<int>`, a
+  /// `Stream<List<int>>`, or `null` to indicate no body.
   ///
   /// [path] is used to update both [handlerPath] and [url]. It's designed for
   /// routing middleware, and represents the path from the current handler to
@@ -268,7 +268,7 @@ class Request extends Message {
   ///
   /// Synchronously, this throws a [HijackException] that indicates to the
   /// adapter that it shouldn't emit a response itself. Asynchronously,
-  /// [callback] is called with a [StreamChannel<List<int>>] that provides
+  /// [callback] is called with a `StreamChannel<List<int>>` that provides
   /// access to the underlying request socket.
   ///
   /// This may only be called when using a Shelf adapter that supports

@@ -1,37 +1,37 @@
-# Configuration for .github/workflows/pull_request_label.yml. 
+# Configuration for .github/workflows/pull_request_label.yml.
 
-'infra':
+'type-infra':
   - changed-files:
-      - any-glob-to-any-file: '.github/**'
+    - any-glob-to-any-file: '.github/**'
 
 'package:shelf':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf/**'
+    - any-glob-to-any-file: 'pkgs/shelf/**'
 
 'package:shelf_packages_handler':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf_packages_handler/**'
+    - any-glob-to-any-file: 'pkgs/shelf_packages_handler/**'
 
 'package:shelf_proxy':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf_proxy/**'
+    - any-glob-to-any-file: 'pkgs/shelf_proxy/**'
 
 'package:shelf_router':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf_router/**'
+    - any-glob-to-any-file: 'pkgs/shelf_router/**'
 
 'package:shelf_router_generator':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf_router_generator/**'
+    - any-glob-to-any-file: 'pkgs/shelf_router_generator/**'
 
 'package:shelf_static':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf_static/**'
+    - any-glob-to-any-file: 'pkgs/shelf_static/**'
 
 'package:shelf_test_handler':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf_test_handler/**'
+    - any-glob-to-any-file: 'pkgs/shelf_test_handler/**'
 
 'package:shelf_web_socket':
   - changed-files:
-      - any-glob-to-any-file: 'pkgs/shelf_web_socket/**'
+    - any-glob-to-any-file: 'pkgs/shelf_web_socket/**'

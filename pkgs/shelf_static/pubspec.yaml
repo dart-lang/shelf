@@ -1,7 +1,8 @@
 name: shelf_static
-version: 1.1.3-wip
+version: 1.1.3
 description: Static file server support for the shelf package and ecosystem.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_static
+issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_static
 
 topics:
   - server
@@ -13,7 +14,7 @@ environment:
 dependencies:
   convert: ^3.0.0
   http_parser: ^4.0.0
-  mime: ^1.0.0
+  mime: '>=1.0.0 <3.0.0'
   path: ^1.8.0
   # shelf version that allows correctly setting content-length w/ HEAD
   shelf: ^1.1.2
