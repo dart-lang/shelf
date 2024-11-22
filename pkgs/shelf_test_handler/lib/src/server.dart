@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:http_multi_server/http_multi_server.dart';
 import 'package:shelf/shelf_io.dart';
+import 'package:test/test.dart';
 
 import 'handler.dart';
 
