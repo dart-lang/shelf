@@ -1,5 +1,9 @@
 ## 1.1.3
 
+* `Response`:
+  * Populate `context` with the file system paths used for resolution.
+    * Possible entries: `shelf_static:file`, `shelf_static:file_not_found`, and `shelf_static:directory`.
+
 * Require Dart `^3.3.0`.
 * Update `package:mime` constraint to `>=1.0.0 <3.0.0`. 
 
