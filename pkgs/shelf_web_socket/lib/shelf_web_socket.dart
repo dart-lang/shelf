@@ -39,16 +39,12 @@ import 'src/web_socket_handler.dart';
 /// If [pingInterval] is specified, it will get passed to the created
 /// channel instance, enabling round-trip disconnect detection.
 /// See [WebSocketChannel] for more details.
-Handler webSocketHandler(Function onConnection,
-    {Iterable<String>? protocols,
-    Iterable<String>? allowedOrigins,
-    Duration? pingInterval}) {
-  if (onConnection is! void Function(Never, Never)) {
-    final innerOnConnection = onConnection;
-    // ignore: inference_failure_on_untyped_parameter, avoid_dynamic_calls
-    onConnection = (webSocket, _) => innerOnConnection(webSocket);
-  }
-
+Handler webSocketHandler(
+  ConnectionCallback onConnection, {
+  Iterable<String>? protocols,
+  Iterable<String>? allowedOrigins,
+  Duration? pingInterval,
+}) {
   return WebSocketHandler(
     onConnection,
     protocols?.toSet(),

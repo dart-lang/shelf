@@ -9,10 +9,13 @@ import 'package:shelf/shelf.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+typedef ConnectionCallback = void Function(
+    WebSocketChannel webSocket, String? subprotocol);
+
 /// A class that exposes a handler for upgrading WebSocket requests.
 class WebSocketHandler {
   /// The function to call when a request is upgraded.
-  final Function _onConnection;
+  final ConnectionCallback _onConnection;
 
   /// The set of protocols the user supports, or `null`.
   final Set<String>? _protocols;
