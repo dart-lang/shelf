@@ -5,6 +5,7 @@
   one or two parameters. This now requires a `ConnectionCallback`; a typedef
   taking two parameters. See also https://github.com/dart-lang/shelf/issues/457.
 * Add a API usage example.
+* Require Dart `^3.5.0`.
 
 Note that most clients seeing analysis issues from the above breaking change can
 fix it by adding a second parameter to their callback. So, they would change
