@@ -21,8 +21,7 @@ Map<String, String> get _handshakeHeaders => {
 
 void main() {
   test('can communicate with a dart:io WebSocket client', () async {
-    final server =
-        await shelf_io.serve(webSocketHandler((WebSocketChannel webSocket) {
+    final server = await shelf_io.serve(webSocketHandler((webSocket, _) {
       webSocket.sink.add('hello!');
       webSocket.stream.first.then((request) {
         expect(request, equals('ping'));
@@ -73,8 +72,7 @@ void main() {
   });
 
   test('handles protocol header without allowed protocols', () async {
-    final server =
-        await shelf_io.serve(webSocketHandler((WebSocketChannel webSocket) {
+    final server = await shelf_io.serve(webSocketHandler((webSocket, _) {
       webSocket.sink.close();
     }), 'localhost', 0);
 
@@ -136,7 +134,7 @@ void main() {
     late Uri url;
     setUp(() async {
       server = await shelf_io.serve(
-          webSocketHandler((WebSocketChannel webSocket) {
+          webSocketHandler((webSocket, _) {
             webSocket.sink.close();
           }, allowedOrigins: ['pub.dartlang.org', 'GoOgLe.CoM']),
           'localhost',
@@ -177,8 +175,7 @@ void main() {
 
   // Regression test for issue 21894.
   test('allows a Connection header with multiple values', () async {
-    final server =
-        await shelf_io.serve(webSocketHandler((WebSocketChannel webSocket) {
+    final server = await shelf_io.serve(webSocketHandler((webSocket, _) {
       webSocket.sink.close();
     }), 'localhost', 0);
 
@@ -193,7 +190,7 @@ void main() {
     late HttpServer server;
     late Uri url;
     setUp(() async {
-      server = await shelf_io.serve(webSocketHandler((_) {
+      server = await shelf_io.serve(webSocketHandler((_, __) {
         fail('should not create a WebSocket');
       }), 'localhost', 0);
       url = Uri.http('localhost:${server.port}', '');

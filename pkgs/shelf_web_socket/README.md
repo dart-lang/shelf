@@ -19,12 +19,11 @@ connection that's established.
 ```dart
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
-  var handler = webSocketHandler((webSocket) {
+  var handler = webSocketHandler((webSocket, _) {
     webSocket.stream.listen((message) {
-      webSocket.sink.add("echo $message");
+      webSocket.sink.add('echo $message');
     });
   });
 

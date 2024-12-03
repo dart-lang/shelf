@@ -1,12 +1,43 @@
+## 3.0.0-wip
+
+* **BREAKING:**: Change the signature of the `webSocketHandler` method's
+  `onConnection` callback. Previously this took an untyped function with either
+  one or two parameters. This now requires a `ConnectionCallback`; a typedef
+  taking two parameters. See also https://github.com/dart-lang/shelf/issues/457.
+* Add a API usage example.
+* Require Dart `^3.5.0`.
+
+Note that most clients seeing analysis issues from the above breaking change can
+fix it by adding a second parameter to their callback. So, they would change
+this:
+
+```dart
+webSocketHandler((webSocket) {
+  webSocket.stream.listen((message) {
+    webSocket.sink.add('echo $message');
+  });
+});
+```
+
+to this:
+
+```
+webSocketHandler((webSocket, _) {
+  webSocket.stream.listen((message) {
+    webSocket.sink.add('echo $message');
+  });
+});
+```
+
 ## 2.0.1
 
 * Require Dart `^3.3.0`.
 
 ## 2.0.0
 
-* Require Dart `^3.0.0`.
 * **BREAKING:**: Remove support for hijacking WebSocket requests that are not
   being transported using `dart:io` `Socket`s.
+* Require Dart `^3.0.0`.
 
 ## 1.0.4
 
