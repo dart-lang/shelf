@@ -29,7 +29,7 @@ void main() {
     addTearDown(server.close);
 
     server.handler.expect('GET', '/',
-        webSocketHandler((WebSocketChannel webSocket) {
+        webSocketHandler((WebSocketChannel webSocket, _) {
       webSocket.sink.add('hello!');
       webSocket.sink.close();
     }));

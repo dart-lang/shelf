@@ -18,12 +18,12 @@ import 'src/web_socket_handler.dart';
 /// This means that this can be placed first in a [Cascade] and only upgrade
 /// requests will be handled.
 ///
-/// The [onConnection] must take a [WebSocketChannel] as its first argument. It
-/// may also take a string, the [WebSocket subprotocol][], as its second
-/// argument. The subprotocol is determined by looking at the client's
+/// The [onConnection] takes a [WebSocketChannel] as its first argument and a
+/// nullable string, the [WebSocket subprotocol][], as its second argument.
+/// The subprotocol is determined by looking at the client's
 /// `Sec-WebSocket-Protocol` header and selecting the first entry that also
 /// appears in [protocols]. If no subprotocols are shared between the client and
-/// the server, `null` will be passed instead and no subprotocol heaader will be
+/// the server, `null` will be passed instead and no subprotocol header will be
 /// sent to the client which may cause it to disconnect.
 ///
 /// [WebSocket subprotocol]: https://tools.ietf.org/html/rfc6455#section-1.9
@@ -37,18 +37,14 @@ import 'src/web_socket_handler.dart';
 /// [origin considerations]: https://tools.ietf.org/html/rfc6455#section-10.2
 ///
 /// If [pingInterval] is specified, it will get passed to the created
-/// channel instance, enabling round-trip disconnect detection.
-/// See [WebSocketChannel] for more details.
-Handler webSocketHandler(Function onConnection,
-    {Iterable<String>? protocols,
-    Iterable<String>? allowedOrigins,
-    Duration? pingInterval}) {
-  if (onConnection is! void Function(Never, Never)) {
-    final innerOnConnection = onConnection;
-    // ignore: inference_failure_on_untyped_parameter, avoid_dynamic_calls
-    onConnection = (webSocket, _) => innerOnConnection(webSocket);
-  }
-
+/// channel instance, enabling round-trip disconnect detection. See
+/// [WebSocketChannel] for more details.
+Handler webSocketHandler(
+  ConnectionCallback onConnection, {
+  Iterable<String>? protocols,
+  Iterable<String>? allowedOrigins,
+  Duration? pingInterval,
+}) {
   return WebSocketHandler(
     onConnection,
     protocols?.toSet(),
