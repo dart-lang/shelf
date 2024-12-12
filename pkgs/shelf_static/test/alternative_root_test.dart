@@ -4,6 +4,7 @@
 
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:shelf_static/shelf_static.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -27,6 +28,11 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 8);
     expect(response.readAsString(), completion('root txt'));
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file': p.join(d.sandbox, 'root.txt')}),
+    );
   });
 
   test('access root file with space', () async {
