@@ -7,6 +7,9 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import 'package:shelf/shelf.dart';
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// A handler that proxies requests to [url].
 ///
@@ -35,11 +38,42 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
   proxyName ??= 'shelf_proxy';
 
   return (serverRequest) async {
-    // TODO(nweiz): Support WebSocket requests.
+    final requestUrl = uri.resolve(serverRequest.url.toString());
+
+    if (serverRequest.headers['Upgrade'] == 'websocket') {
+      final isSecure =
+          requestUrl.isScheme('https') || requestUrl.isScheme('wss');
+
+      final wsRequestUrl = Uri(
+        scheme: isSecure ? 'wss' : 'ws',
+        userInfo: requestUrl.userInfo,
+        host: requestUrl.host,
+        port: requestUrl.port,
+        path: requestUrl.path,
+        query: requestUrl.query,
+      );
+
+      final handler = webSocketHandler((WebSocketChannel serverChannel) {
+        final headers = Map<String, String>.from(serverRequest.headers);
+
+        // Add a Via header. See
+        // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+        _addHeader(
+            headers, 'via', '${serverRequest.protocolVersion} $proxyName');
+
+        final clientChannel = IOWebSocketChannel.connect(
+          wsRequestUrl,
+          headers: headers,
+        );
+        clientChannel.stream.pipe(serverChannel.sink);
+        serverChannel.stream.pipe(clientChannel.sink);
+      });
+
+      return handler(serverRequest);
+    }
 
     // TODO(nweiz): Handle TRACE requests correctly. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
-    final requestUrl = uri.resolve(serverRequest.url.toString());
     final clientRequest = http.StreamedRequest(serverRequest.method, requestUrl)
       ..followRedirects = false
       ..headers.addAll(serverRequest.headers)
