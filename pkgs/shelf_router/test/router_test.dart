@@ -86,6 +86,21 @@ void main() {
     expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
   });
 
+  test('get params via getParams', () async {
+    var app = Router();
+
+    app.get(
+      r'/user/<user>/groups/<group|\d+>',
+      (Request request) => Response.ok(''),
+    );
+
+    final params =
+        app.getParams(Request('GET', Uri.http('', '/user/jonasfj/groups/42')))!;
+
+    expect(params['user'], 'jonasfj');
+    expect(params['group'], '42');
+  });
+
   test('params by arguments', () async {
     var app = Router();
 
