@@ -1,4 +1,4 @@
-## 1.1.1-wip
+## 1.1.1
 
 * Support the latest `package:analyzer` and `package:source_gen`
 * Require `sdk: ^3.3.0`
