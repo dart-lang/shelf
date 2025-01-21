@@ -1,4 +1,4 @@
-## 3.0.0-wip
+## 3.0.0
 
 * **BREAKING:**: Change the signature of the `webSocketHandler` method's
   `onConnection` callback. Previously this took an untyped function with either
