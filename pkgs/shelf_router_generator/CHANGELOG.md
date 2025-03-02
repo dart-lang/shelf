@@ -1,3 +1,7 @@
+## 1.1.2
+
+* Updated `README.md` with current example from `examples/main.dart`.
+
 ## 1.1.1
 
 * Support the latest `package:analyzer` and `package:source_gen`
