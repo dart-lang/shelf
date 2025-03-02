@@ -9,7 +9,9 @@ import 'package:http/testing.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_proxy/shelf_proxy.dart';
+import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:test/test.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// The URI of the server the current proxy server is proxying to.
 late Uri targetUri;
@@ -167,6 +169,28 @@ void main() {
     expect(response.headers,
         containsPair('warning', '214 shelf_proxy "GZIP decoded"'));
   });
+
+  test('proxy websockets echo', () async {
+    await createWebSocketServer((webSocket) {
+      webSocket.stream.listen((message) {
+        webSocket.sink.add('echo $message');
+      });
+    });
+
+    final client = WebSocketChannel.connect(proxyUri);
+
+    final completer = Completer<String>();
+
+    client.sink.add('hello');
+
+    client.stream.listen((event) {
+      completer.complete(event as String);
+    });
+
+    final message = await completer.future;
+
+    expect(message, 'echo hello');
+  });
 }
 
 /// Creates a proxy server proxying to a server running [handler].
@@ -205,4 +229,26 @@ Future<http.Response> get({Map<String, String>? headers}) {
   if (headers != null) request.headers.addAll(headers);
   request.followRedirects = false;
   return request.send().then(http.Response.fromStream);
+}
+
+Future<void> createWebSocketServer(
+    void Function(WebSocketChannel webSocket) listener,
+    {String? targetPath}) async {
+  final wshandler = webSocketHandler(listener);
+
+  final handler = expectAsync1(wshandler, reason: 'target server handler');
+
+  final targetServer = await shelf_io.serve(handler, 'localhost', 0);
+  targetUri = Uri.parse('ws://localhost:${targetServer.port}');
+  if (targetPath != null) targetUri = targetUri.resolve(targetPath);
+  final proxyServerHandler =
+      expectAsync1(proxyHandler(targetUri), reason: 'proxy server handler');
+
+  final proxyServer = await shelf_io.serve(proxyServerHandler, 'localhost', 0);
+  proxyUri = Uri.parse('ws://localhost:${proxyServer.port}');
+
+  addTearDown(() {
+    proxyServer.close(force: true);
+    targetServer.close(force: true);
+  });
 }
