@@ -14,7 +14,8 @@
 
 import 'dart:async' show Future;
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element2.dart'
+    show ClassElement2, ElementKind, ExecutableElement2;
 import 'package:analyzer/dart/element/type.dart' show ParameterizedType;
 import 'package:build/build.dart' show BuildStep, log;
 import 'package:code_builder/code_builder.dart' as code;
