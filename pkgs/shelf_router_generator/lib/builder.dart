@@ -29,7 +29,5 @@ import 'src/shelf_router_generator.dart';
 /// A [Builder] that generates a `_$<className>Router(<className> service)`
 /// function for each class `<className>` containing a member annotated with
 /// [shelf_router.Route].
-Builder shelfRouter(BuilderOptions _) => SharedPartBuilder(
-      [ShelfRouterGenerator()],
-      'shelf_router',
-    );
+Builder shelfRouter(BuilderOptions _) =>
+    SharedPartBuilder([ShelfRouterGenerator()], 'shelf_router');

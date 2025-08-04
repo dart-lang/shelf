@@ -29,9 +29,5 @@ class Server {
 
   Future<void> stop() => _server.close();
 
-  Uri get uri => Uri(
-        scheme: 'http',
-        host: 'localhost',
-        port: _server.port,
-      );
+  Uri get uri => Uri(scheme: 'http', host: 'localhost', port: _server.port);
 }
