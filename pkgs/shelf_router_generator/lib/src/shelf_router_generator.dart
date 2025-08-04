@@ -14,16 +14,15 @@
 
 import 'dart:async' show Future;
 
-import 'package:analyzer/dart/element/element.dart'
-    show ClassElement, ElementKind, ExecutableElement;
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart' show ParameterizedType;
 import 'package:build/build.dart' show BuildStep, log;
 import 'package:code_builder/code_builder.dart' as code;
 import 'package:http_methods/http_methods.dart' show isHttpMethod;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
-// ignore: implementation_imports
-import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
+import 'package:shelf_router/src/router_entry.dart' // ignore: implementation_imports
+    show RouterEntry;
 import 'package:source_gen/source_gen.dart' as g;
 
 // Type checkers that we need later
@@ -36,34 +35,37 @@ const _stringType = g.TypeChecker.fromRuntime(String);
 /// A representation of a handler that was annotated with [shelf_router.Route].
 class _Handler {
   final String verb, route;
-  final ExecutableElement element;
+  final ExecutableElement2 element;
 
   _Handler(this.verb, this.route, this.element);
 }
 
 /// Find members of a class annotated with [shelf_router.Route].
-List<ExecutableElement> getAnnotatedElementsOrderBySourceOffset(
-  ClassElement cls,
-) => <ExecutableElement>[
-  ...cls.methods.where(_routeType.hasAnnotationOfExact),
-  ...cls.accessors.where(_routeType.hasAnnotationOfExact),
-]..sort((a, b) => (a.nameOffset).compareTo(b.nameOffset));
+List<ExecutableElement2> getAnnotatedElementsOrderBySourceOffset(
+  ClassElement2 cls,
+) => <ExecutableElement2>[
+  ...cls.methods2.where(_routeType.hasAnnotationOfExact),
+  ...cls.getters2.where(_routeType.hasAnnotationOfExact),
+]..sort(
+  (a, b) =>
+      (a.firstFragment.nameOffset2!).compareTo(b.firstFragment.nameOffset2!),
+);
 
 /// Generate a `_$<className>Router(<className> service)` method that returns a
 /// [shelf_router.Router] configured based on annotated handlers.
 code.Method _buildRouterMethod({
-  required ClassElement classElement,
+  required ClassElement2 classElement,
   required List<_Handler> handlers,
 }) => code.Method(
   (b) =>
       b
-        ..name = '_\$${classElement.name}Router'
+        ..name = '_\$${classElement.name3}Router'
         ..requiredParameters.add(
           code.Parameter(
             (b) =>
                 b
                   ..name = 'service'
-                  ..type = code.refer(classElement.name),
+                  ..type = code.refer(classElement.name3!),
           ),
         )
         ..returns = code.refer('Router')
@@ -97,18 +99,18 @@ code.Code _buildAddHandlerCode({
   r'$mount' =>
     router.property('mount').call([
       code.literalString(handler.route, raw: true),
-      service.property(handler.element.name).property('call'),
+      service.property(handler.element.name3!).property('call'),
     ]).statement,
   r'$all' =>
     router.property('all').call([
       code.literalString(handler.route, raw: true),
-      service.property(handler.element.name),
+      service.property(handler.element.name3!),
     ]).statement,
   _ =>
     router.property('add').call([
       code.literalString(handler.verb.toUpperCase()),
       code.literalString(handler.route, raw: true),
-      service.property(handler.element.name),
+      service.property(handler.element.name3!),
     ]).statement,
 };
 
@@ -117,13 +119,13 @@ class ShelfRouterGenerator extends g.Generator {
   Future<String?> generate(g.LibraryReader library, BuildStep buildStep) async {
     // Create a map from ClassElement to list of annotated elements sorted by
     // offset in source code, this is not type checked yet.
-    final classes = <ClassElement, List<_Handler>>{};
+    final classes = <ClassElement2, List<_Handler>>{};
     for (final cls in library.classes) {
       final elements = getAnnotatedElementsOrderBySourceOffset(cls);
       if (elements.isEmpty) {
         continue;
       }
-      log.info('found shelf_router.Route annotations in ${cls.name}');
+      log.info('found shelf_router.Route annotations in ${cls.name3}');
 
       classes[cls] =
           elements
@@ -212,14 +214,14 @@ void _typeCheckHandler(_Handler h) {
   }
 
   // Ensure that the first parameter is shelf.Request
-  if (h.element.parameters.isEmpty) {
+  if (h.element.formalParameters.isEmpty) {
     throw g.InvalidGenerationSourceError(
       'The shelf_router.Route annotation can only be used on shelf request '
       'handlers accept a shelf.Request parameter',
       element: h.element,
     );
   }
-  for (final p in h.element.parameters) {
+  for (final p in h.element.formalParameters) {
     if (p.isOptional) {
       throw g.InvalidGenerationSourceError(
         'The shelf_router.Route annotation can only be used on shelf '
@@ -230,15 +232,15 @@ void _typeCheckHandler(_Handler h) {
       );
     }
   }
-  if (!_requestType.isExactlyType(h.element.parameters.first.type)) {
+  if (!_requestType.isExactlyType(h.element.formalParameters.first.type)) {
     throw g.InvalidGenerationSourceError(
       'The shelf_router.Route annotation can only be used on shelf request '
       'handlers accept a shelf.Request parameter as first parameter',
       element: h.element,
     );
   }
-  if (h.element.parameters.length > 1) {
-    if (h.element.parameters.length != params.length + 1) {
+  if (h.element.formalParameters.length > 1) {
+    if (h.element.formalParameters.length != params.length + 1) {
       throw g.InvalidGenerationSourceError(
         'The shelf_router.Route annotation can only be used on shelf '
         'request handlers accept a shelf.Request parameter and/or a '
@@ -247,13 +249,13 @@ void _typeCheckHandler(_Handler h) {
       );
     }
     for (var i = 0; i < params.length; i++) {
-      final p = h.element.parameters[i + 1];
-      if (p.name != params[i]) {
+      final p = h.element.formalParameters[i + 1];
+      if (p.name3 != params[i]) {
         throw g.InvalidGenerationSourceError(
           'The shelf_router.Route annotation can only be used on shelf '
           'request handlers accept a shelf.Request parameter and/or a '
           'shelf.Request parameter and all string parameters in the route, '
-          'the "${p.name}" parameter should be named "${params[i]}"',
+          'the "${p.name3}" parameter should be named "${params[i]}"',
           element: p,
         );
       }
@@ -262,7 +264,7 @@ void _typeCheckHandler(_Handler h) {
           'The shelf_router.Route annotation can only be used on shelf '
           'request handlers accept a shelf.Request parameter and/or a '
           'shelf.Request parameter and all string parameters in the route, '
-          'the "${p.name}" parameter is not of type string',
+          'the "${p.name3}" parameter is not of type string',
           element: p,
         );
       }
