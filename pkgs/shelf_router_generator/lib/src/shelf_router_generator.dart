@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// While we support the older pkg:analyzer version
+// ignore_for_file: deprecated_member_use
+
 import 'dart:async' show Future;
 
 import 'package:analyzer/dart/element/element2.dart'

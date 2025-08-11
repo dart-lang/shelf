@@ -1,6 +1,6 @@
-## 1.1.2-wip
+## 1.1.2
 
-* Require `analyzer: ^7.4.0`
+* Require `analyzer: '>=7.4.0 <9.0.0'`
 * Require `build: ^3.0.0`
 * Require `build_config: ^1.1.0`
 * Require `source_gen: ^3.0.0`
