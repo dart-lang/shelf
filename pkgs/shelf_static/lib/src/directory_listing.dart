@@ -9,6 +9,8 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:shelf/shelf.dart';
 
+import 'util.dart' show buildResponseContext;
+
 String _getHeader(String sanitizedHeading) => '''<!DOCTYPE html>
 <html>
 <head>
@@ -68,8 +70,10 @@ Response listDirectory(String fileSystemPath, String dirPath) {
 
   add(_getHeader(sanitizer.convert(heading)));
 
+  var dir = Directory(dirPath);
+
   // Return a sorted listing of the directory contents asynchronously.
-  Directory(dirPath).list().toList().then((entities) {
+  dir.list().toList().then((entities) {
     entities.sort((e1, e2) {
       if (e1 is Directory && e2 is! Directory) {
         return -1;
@@ -95,5 +99,6 @@ Response listDirectory(String fileSystemPath, String dirPath) {
     controller.stream,
     encoding: encoding,
     headers: {HttpHeaders.contentTypeHeader: 'text/html'},
+    context: buildResponseContext(directory: dir),
   );
 }
