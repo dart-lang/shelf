@@ -1,3 +1,11 @@
+## 1.1.3-wip
+
+* Require `analyzer: ^8.1.1`
+* Require `build: ^4.0.0`
+* Require `build_config: ^1.2.0`
+* Require `source_gen: ^4.0.1`
+* Require `sdk: ^3.9.0`
+
 ## 1.1.2
 
 * Require `analyzer: '>=7.4.0 <9.0.0'`
