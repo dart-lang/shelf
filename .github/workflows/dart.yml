@@ -166,23 +166,23 @@ jobs:
         if: "always() && steps.pkgs_shelf_web_socket_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/shelf_web_socket
   job_005:
-    name: "analyze_and_format; linux; Dart 3.7.0; PKG: pkgs/shelf_router_generator; `dart analyze --fatal-infos .`"
+    name: "analyze_and_format; linux; Dart 3.9.0; PKG: pkgs/shelf_router_generator; `dart analyze --fatal-infos .`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/shelf_router_generator;commands:analyze"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.9.0;packages:pkgs/shelf_router_generator;commands:analyze"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/shelf_router_generator
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.9.0;packages:pkgs/shelf_router_generator
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.9.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
         with:
-          sdk: "3.7.0"
+          sdk: "3.9.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
@@ -608,23 +608,23 @@ jobs:
       - job_006
       - job_007
   job_013:
-    name: "unit_test; linux; Dart 3.7.0; PKG: pkgs/shelf_router_generator; `dart test --test-randomize-ordering-seed=random`"
+    name: "unit_test; linux; Dart 3.9.0; PKG: pkgs/shelf_router_generator; `dart test --test-randomize-ordering-seed=random`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/shelf_router_generator;commands:test_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.9.0;packages:pkgs/shelf_router_generator;commands:test_0"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/shelf_router_generator
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.9.0;packages:pkgs/shelf_router_generator
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.9.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c
         with:
-          sdk: "3.7.0"
+          sdk: "3.9.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8

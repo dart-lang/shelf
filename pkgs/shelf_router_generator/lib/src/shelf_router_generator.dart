@@ -30,11 +30,20 @@ import 'package:shelf_router/src/router_entry.dart' // ignore: implementation_im
 import 'package:source_gen/source_gen.dart' as g;
 
 // Type checkers that we need later
-const _routeType = g.TypeChecker.fromRuntime(shelf_router.Route);
-const _routerType = g.TypeChecker.fromRuntime(shelf_router.Router);
-const _responseType = g.TypeChecker.fromRuntime(shelf.Response);
-const _requestType = g.TypeChecker.fromRuntime(shelf.Request);
-const _stringType = g.TypeChecker.fromRuntime(String);
+const _routeType = g.TypeChecker.typeNamed(
+  shelf_router.Route,
+  inPackage: 'shelf_router',
+);
+const _routerType = g.TypeChecker.typeNamed(
+  shelf_router.Router,
+  inPackage: 'shelf_router',
+);
+const _responseType = g.TypeChecker.typeNamed(
+  shelf.Response,
+  inPackage: 'shelf',
+);
+const _requestType = g.TypeChecker.typeNamed(shelf.Request, inPackage: 'shelf');
+const _stringType = g.TypeChecker.typeNamed(String, inSdk: true);
 
 /// A representation of a handler that was annotated with [shelf_router.Route].
 class _Handler {
@@ -47,13 +56,15 @@ class _Handler {
 /// Find members of a class annotated with [shelf_router.Route].
 List<ExecutableElement2> getAnnotatedElementsOrderBySourceOffset(
   ClassElement2 cls,
-) => <ExecutableElement2>[
-  ...cls.methods2.where(_routeType.hasAnnotationOfExact),
-  ...cls.getters2.where(_routeType.hasAnnotationOfExact),
-]..sort(
-  (a, b) =>
-      (a.firstFragment.nameOffset2!).compareTo(b.firstFragment.nameOffset2!),
-);
+) =>
+    <ExecutableElement2>[
+      ...cls.methods2.where(_routeType.hasAnnotationOfExact),
+      ...cls.getters2.where(_routeType.hasAnnotationOfExact),
+    ]..sort(
+      (a, b) => (a.firstFragment.nameOffset2!).compareTo(
+        b.firstFragment.nameOffset2!,
+      ),
+    );
 
 /// Generate a `_$<className>Router(<className> service)` method that returns a
 /// [shelf_router.Router] configured based on annotated handlers.
@@ -61,37 +72,34 @@ code.Method _buildRouterMethod({
   required ClassElement2 classElement,
   required List<_Handler> handlers,
 }) => code.Method(
-  (b) =>
-      b
-        ..name = '_\$${classElement.name3}Router'
-        ..requiredParameters.add(
-          code.Parameter(
-            (b) =>
-                b
-                  ..name = 'service'
-                  ..type = code.refer(classElement.name3!),
+  (b) => b
+    ..name = '_\$${classElement.name3}Router'
+    ..requiredParameters.add(
+      code.Parameter(
+        (b) => b
+          ..name = 'service'
+          ..type = code.refer(classElement.name3!),
+      ),
+    )
+    ..returns = code.refer('Router')
+    ..body = code.Block(
+      (b) => b
+        ..addExpression(
+          code
+              .declareFinal('router')
+              .assign(code.refer('Router').newInstance([])),
+        )
+        ..statements.addAll(
+          handlers.map(
+            (h) => _buildAddHandlerCode(
+              router: code.refer('router'),
+              service: code.refer('service'),
+              handler: h,
+            ),
           ),
         )
-        ..returns = code.refer('Router')
-        ..body = code.Block(
-          (b) =>
-              b
-                ..addExpression(
-                  code
-                      .declareFinal('router')
-                      .assign(code.refer('Router').newInstance([])),
-                )
-                ..statements.addAll(
-                  handlers.map(
-                    (h) => _buildAddHandlerCode(
-                      router: code.refer('router'),
-                      service: code.refer('service'),
-                      handler: h,
-                    ),
-                  ),
-                )
-                ..addExpression(code.refer('router').returned),
-        ),
+        ..addExpression(code.refer('router').returned),
+    ),
 );
 
 /// Generate the code statement that adds [handler] from [service] to [router].
@@ -100,22 +108,19 @@ code.Code _buildAddHandlerCode({
   required code.Reference service,
   required _Handler handler,
 }) => switch (handler.verb) {
-  r'$mount' =>
-    router.property('mount').call([
-      code.literalString(handler.route, raw: true),
-      service.property(handler.element.name3!).property('call'),
-    ]).statement,
-  r'$all' =>
-    router.property('all').call([
-      code.literalString(handler.route, raw: true),
-      service.property(handler.element.name3!),
-    ]).statement,
-  _ =>
-    router.property('add').call([
-      code.literalString(handler.verb.toUpperCase()),
-      code.literalString(handler.route, raw: true),
-      service.property(handler.element.name3!),
-    ]).statement,
+  r'$mount' => router.property('mount').call([
+    code.literalString(handler.route, raw: true),
+    service.property(handler.element.name3!).property('call'),
+  ]).statement,
+  r'$all' => router.property('all').call([
+    code.literalString(handler.route, raw: true),
+    service.property(handler.element.name3!),
+  ]).statement,
+  _ => router.property('add').call([
+    code.literalString(handler.verb.toUpperCase()),
+    code.literalString(handler.route, raw: true),
+    service.property(handler.element.name3!),
+  ]).statement,
 };
 
 class ShelfRouterGenerator extends g.Generator {
@@ -131,21 +136,20 @@ class ShelfRouterGenerator extends g.Generator {
       }
       log.info('found shelf_router.Route annotations in ${cls.name3}');
 
-      classes[cls] =
-          elements
-              .map(
-                (e) => _routeType
-                    .annotationsOfExact(e)
-                    .map(
-                      (a) => _Handler(
-                        a.getField('verb')!.toStringValue()!,
-                        a.getField('route')!.toStringValue()!,
-                        e,
-                      ),
-                    ),
-              )
-              .expand((i) => i)
-              .toList();
+      classes[cls] = elements
+          .map(
+            (e) => _routeType
+                .annotationsOfExact(e)
+                .map(
+                  (a) => _Handler(
+                    a.getField('verb')!.toStringValue()!,
+                    a.getField('route')!.toStringValue()!,
+                    e,
+                  ),
+                ),
+          )
+          .expand((i) => i)
+          .toList();
     }
     if (classes.isEmpty) {
       return null; // nothing to do if nothing was annotated
