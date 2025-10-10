@@ -4,6 +4,8 @@
 
 import 'package:shelf/shelf.dart';
 
+import 'handler.dart';
+
 /// A single expectation for an HTTP request sent to a [ShelfTestHandler].
 class Expectation {
   /// The expected request method, or `null` if this allows any requests.

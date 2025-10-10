@@ -4,6 +4,7 @@
 
 import 'handler.dart';
 import 'middleware.dart';
+import 'request.dart';
 
 /// A helper that makes it easy to compose a set of [Middleware] and a
 /// [Handler].

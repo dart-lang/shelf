@@ -10,6 +10,9 @@ import 'package:http_parser/http_parser.dart';
 
 import 'body.dart';
 import 'headers.dart';
+import 'middleware/logger.dart';
+import 'request.dart';
+import 'response.dart';
 import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
 
@@ -171,7 +174,7 @@ abstract class Message {
       {Map<String, String> headers, Map<String, Object> context, Object? body});
 }
 
-/// Adds information about [encoding] to [headers].
+/// Adds information about encoding to [headers].
 ///
 /// Returns a new map without modifying [headers].
 Map<String, List<String>> _adjustHeaders(

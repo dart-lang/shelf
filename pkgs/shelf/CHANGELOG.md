@@ -280,7 +280,7 @@
 
 ## 0.6.1+2
 
-* `logRequests` outputs a better message a request has a query string.
+* `logRequests` outputs a better message if a request has a query string.
 
 ## 0.6.1+1
 
