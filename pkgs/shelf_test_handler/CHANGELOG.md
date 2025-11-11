@@ -1,6 +1,8 @@
 ## 2.0.3-wip
 
-* Require Dart `^3.3.0`.
+* Require `shelf: ^1.1.0`
+* Require `test: ^1.25.15`
+* Require `sdk: ^3.5.0`.
 
 ## 2.0.2
 
