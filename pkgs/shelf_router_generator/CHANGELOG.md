@@ -1,3 +1,7 @@
+## 1.1.4
+
+* Updated `README.md` with current example from `examples/main.dart`.
+
 ## 1.1.3
 
 * Require `analyzer: ^8.1.1`
