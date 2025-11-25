@@ -1,4 +1,4 @@
-## 1.1.3-wip
+## 1.1.3
 
 * Require `analyzer: ^8.1.1`
 * Require `build: ^4.0.0`
