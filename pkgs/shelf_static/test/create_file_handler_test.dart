@@ -23,12 +23,24 @@ void main() {
     expect(response.statusCode, equals(HttpStatus.ok));
     expect(response.contentLength, equals(8));
     expect(response.readAsString(), completion(equals('contents')));
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file': p.join(d.sandbox, 'file.txt')}),
+    );
   });
 
   test('serves a 404 for a non-matching URL', () async {
     final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
     final response = await makeRequest(handler, '/foo/file.txt');
     expect(response.statusCode, equals(HttpStatus.notFound));
+
+    expect(
+      response.context.toFilePath(),
+      equals({
+        'shelf_static:file_not_found': p.join(d.sandbox, 'foo', 'file.txt')
+      }),
+    );
   });
 
   test('serves the file contents under a custom URL', () async {
@@ -38,6 +50,11 @@ void main() {
     expect(response.statusCode, equals(HttpStatus.ok));
     expect(response.contentLength, equals(8));
     expect(response.readAsString(), completion(equals('contents')));
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file': p.join(d.sandbox, 'file.txt')}),
+    );
   });
 
   test("serves a 404 if the custom URL isn't matched", () async {
@@ -45,6 +62,11 @@ void main() {
         createFileHandler(p.join(d.sandbox, 'file.txt'), url: 'foo/bar');
     final response = await makeRequest(handler, '/file.txt');
     expect(response.statusCode, equals(HttpStatus.notFound));
+
+    expect(
+      response.context.toFilePath(),
+      equals({'shelf_static:file_not_found': p.join(d.sandbox, 'file.txt')}),
+    );
   });
 
   group('the content type header', () {
@@ -53,6 +75,11 @@ void main() {
       final response = await makeRequest(handler, '/file.txt');
       expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.mimeType, equals('text/plain'));
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'file.txt')}),
+      );
     });
 
     test("is omitted if it can't be inferred", () async {
@@ -89,6 +116,11 @@ void main() {
         containsPair(HttpHeaders.contentRangeHeader, 'bytes 0-4/8'),
       );
       expect(response.headers, containsPair('content-length', '5'));
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'file.txt')}),
+      );
     });
 
     test('at the end of has overflow from 0 to 9', () async {
@@ -111,6 +143,11 @@ void main() {
         containsPair(HttpHeaders.contentRangeHeader, 'bytes 0-7/8'),
       );
       expect(response.headers, containsPair('content-length', '8'));
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'file.txt')}),
+      );
     });
 
     test('at the start of has overflow from 8 to 9', () async {
@@ -129,6 +166,11 @@ void main() {
         response.statusCode,
         HttpStatus.requestedRangeNotSatisfiable,
       );
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'file.txt')}),
+      );
     });
 
     test('ignores invalid request with start > end', () async {
@@ -141,6 +183,11 @@ void main() {
       expect(response.statusCode, equals(HttpStatus.ok));
       expect(response.contentLength, equals(8));
       expect(response.readAsString(), completion(equals('contents')));
+
+      expect(
+        response.context.toFilePath(),
+        equals({'shelf_static:file': p.join(d.sandbox, 'file.txt')}),
+      );
     });
 
     test('ignores request with start > end', () async {
