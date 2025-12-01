@@ -34,7 +34,7 @@ jobs:
           sdk: stable
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - name: mono_repo self validate
         run: dart pub global activate mono_repo 6.6.3
       - name: mono_repo self validate
@@ -59,7 +59,7 @@ jobs:
           sdk: "3.3.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
@@ -116,7 +116,7 @@ jobs:
           sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -146,7 +146,7 @@ jobs:
           sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
         run: dart pub upgrade
@@ -185,7 +185,7 @@ jobs:
           sdk: "3.9.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
         run: dart pub upgrade
@@ -215,7 +215,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -308,7 +308,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -401,7 +401,7 @@ jobs:
           sdk: "3.3.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
@@ -466,7 +466,7 @@ jobs:
           sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -504,7 +504,7 @@ jobs:
           sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -542,7 +542,7 @@ jobs:
           sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
         run: dart pub upgrade
@@ -580,7 +580,7 @@ jobs:
           sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
         run: dart pub upgrade
@@ -627,7 +627,7 @@ jobs:
           sdk: "3.9.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
         run: dart pub upgrade
@@ -665,7 +665,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -712,7 +712,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -759,7 +759,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -860,7 +860,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_router_generator_pub_upgrade
         name: pkgs/shelf_router_generator; dart pub upgrade
         run: dart pub upgrade
@@ -888,7 +888,7 @@ jobs:
           sdk: "3.3.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
@@ -925,7 +925,7 @@ jobs:
           sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -953,7 +953,7 @@ jobs:
           sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
         run: dart pub upgrade
@@ -981,7 +981,7 @@ jobs:
           sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_test_handler_pub_upgrade
         name: pkgs/shelf_test_handler; dart pub upgrade
         run: dart pub upgrade
@@ -1018,7 +1018,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_pub_upgrade
         name: pkgs/shelf; dart pub upgrade
         run: dart pub upgrade
@@ -1055,7 +1055,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_shelf_packages_handler_pub_upgrade
         name: pkgs/shelf_packages_handler; dart pub upgrade
         run: dart pub upgrade
