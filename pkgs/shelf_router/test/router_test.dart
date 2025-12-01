@@ -204,4 +204,118 @@ void main() {
     final b2 = await Router.routeNotFound.readAsString();
     expect(b2, b1);
   });
+
+  test('can mount dynamic routes', () async {
+    // routes for a specific [user]. The user value
+    // is extracted from the mount
+    Router createUsersRouter() {
+      var router = Router();
+
+      String getUser(Request r) => r.mountedParams['user']!;
+
+      // Nested mount
+      // Routes for an [user] to [other]. This gets nested
+      // parameters from previous mounts
+      Router createUserToOtherRouter() {
+        var router = Router();
+
+        String getOtherUser(Request r) => r.mountedParams['other']!;
+
+        router.get('/<action>', (Request request, String action) {
+          return Response.ok(
+            '${getUser(request)} to ${getOtherUser(request)}: $action',
+          );
+        });
+
+        return router;
+      }
+
+      final userToOtherRouter = createUserToOtherRouter();
+      router.mount(
+          '/to/<other>/', (Request r, String other) => userToOtherRouter(r));
+
+      router.get('/self', (Request request) {
+        return Response.ok("I'm ${getUser(request)}");
+      });
+
+      router.get('/', (Request request) {
+        return Response.ok('${getUser(request)} root');
+      });
+      return router;
+    }
+
+    var app = Router();
+    app.get('/hello', (Request request) {
+      return Response.ok('hello-world');
+    });
+
+    final usersRouter = createUsersRouter();
+    app.mount('/users/<user>', (Request r, String user) => usersRouter(r));
+
+    app.all('/<_|[^]*>', (Request request) {
+      return Response.ok('catch-all-handler');
+    });
+
+    server.mount(app);
+
+    expect(await get('/hello'), 'hello-world');
+    expect(await get('/users/david/to/jake/salutes'), 'david to jake: salutes');
+    expect(await get('/users/jennifer/to/mary/bye'), 'jennifer to mary: bye');
+    expect(await get('/users/jennifer/self'), "I'm jennifer");
+    expect(await get('/users/jake'), 'jake root');
+    expect(await get('/users/david/no-route'), 'catch-all-handler');
+  });
+
+  test('can mount dynamic routes with multiple parameters', () async {
+    var app = Router();
+
+    final mountedRouter = () {
+      var router = Router();
+
+      String getSecond(Request r) => r.mountedParams['second']!;
+      int getFourth(Request r) => int.parse(r.mountedParams['fourth']!);
+
+      router.get(
+        '/',
+        (Request r) => Response.ok('${getSecond(r)} ${getFourth(r)}'),
+      );
+      return router;
+    }();
+
+    app.mount(
+      r'/first/<second>/third/<fourth|\d+>/last',
+      (Request r, String second, String fourth) => mountedRouter(r),
+    );
+
+    server.mount(app);
+
+    expect(await get('/first/hello/third/12/last'), 'hello 12');
+  });
+
+  test('can mount dynamic routes with regexp', () async {
+    var app = Router();
+
+    final mountedRouter = () {
+      var router = Router();
+
+      int getBookId(Request r) => int.parse(r.mountedParams['bookId']!);
+
+      router.get('/', (Request r) => Response.ok('book ${getBookId(r)}'));
+      return router;
+    }();
+
+    app.mount(
+      r'/before/<bookId|\d+>/after',
+      (Request r, String bookId) => mountedRouter(r),
+    );
+
+    app.all('/<_|[^]*>', (Request request) {
+      return Response.ok('catch-all-handler');
+    });
+
+    server.mount(app);
+
+    expect(await get('/before/123/after'), 'book 123');
+    expect(await get('/before/abc/after'), 'catch-all-handler');
+  });
 }
