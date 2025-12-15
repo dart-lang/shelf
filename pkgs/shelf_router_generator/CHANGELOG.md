@@ -1,3 +1,7 @@
+## 1.1.4-wip
+
+* Require `analyzer: '>=8.1.1 <10.0.0'
+
 ## 1.1.3
 
 * Require `analyzer: ^8.1.1`
