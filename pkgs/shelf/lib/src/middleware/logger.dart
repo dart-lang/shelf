@@ -18,10 +18,7 @@ import '../../shelf.dart';
 /// The `isError` parameter indicates whether the message is caused by an error.
 ///
 /// If [logger] is not passed, the message is just passed to [print].
-Middleware logRequests(
-        {void Function(String message, bool isError, Request request,
-                Response? response)?
-            logger}) =>
+Middleware logRequests({void Function(String message, bool isError)? logger}) =>
     (innerHandler) {
       final theLogger = logger ?? _defaultLogger;
 
@@ -33,7 +30,12 @@ Middleware logRequests(
           var msg = _message(startTime, response.statusCode,
               request.requestedUri, request.method, watch.elapsed);
 
-          theLogger(msg, false, request, response);
+          runZoned(() {
+            theLogger(msg, false);
+          }, zoneValues: {
+            _logRequestsZoneRequestKey: request,
+            _logRequestsZoneResponseKey: response,
+          });
 
           return response;
         }, onError: (Object error, StackTrace stackTrace) {
@@ -42,7 +44,9 @@ Middleware logRequests(
           var msg = _errorMessage(startTime, request.requestedUri,
               request.method, watch.elapsed, error, stackTrace);
 
-          theLogger(msg, true, request, null);
+          runZoned(() {
+            theLogger(msg, true);
+          }, zoneValues: {_logRequestsZoneRequestKey: request});
 
           // ignore: only_throw_errors
           throw error;
@@ -77,11 +81,19 @@ String _errorMessage(DateTime requestTime, Uri requestedUri, String method,
   return '$msg\n$chain';
 }
 
-void _defaultLogger(
-    String msg, bool isError, Request request, Response? response) {
+void _defaultLogger(String msg, bool isError) {
   if (isError) {
     print('[ERROR] $msg');
   } else {
     print(msg);
   }
 }
+
+const _logRequestsZoneRequestKey = 'log-requests-zone-request';
+const _logRequestsZoneResponseKey = 'log-requests-zone-response';
+
+Request getShelfLogRequestsRequest() =>
+    Zone.current[_logRequestsZoneRequestKey] as Request;
+
+Response? getShelfLogRequestsResponse() =>
+    Zone.current[_logRequestsZoneResponseKey] as Response?;
