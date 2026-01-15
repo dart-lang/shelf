@@ -76,10 +76,10 @@
 ///   await io.serve(service.router.handler, 'localhost', 8080);
 /// }
 /// ```
-///
-library shelf_router;
+library;
 
-import 'package:shelf_router/src/router.dart';
-import 'package:shelf_router/src/route.dart';
-export 'package:shelf_router/src/router.dart';
+import 'src/route.dart';
+import 'src/router.dart';
+
 export 'package:shelf_router/src/route.dart';
+export 'package:shelf_router/src/router.dart';

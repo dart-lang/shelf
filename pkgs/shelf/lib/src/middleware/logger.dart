@@ -44,6 +44,7 @@ Middleware logRequests(
 
           theLogger(msg, true, request);
 
+          // ignore: only_throw_errors
           throw error;
         });
       };

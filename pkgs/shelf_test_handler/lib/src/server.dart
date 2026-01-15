@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:http_multi_server/http_multi_server.dart';
 import 'package:shelf/shelf_io.dart';
+import 'package:test/test.dart';
 
 import 'handler.dart';
 
@@ -35,7 +36,7 @@ class ShelfTestServer {
       {bool log = true, String? description}) async {
     var server = await HttpMultiServer.loopback(0);
     var handler = ShelfTestHandler(log: log, description: description);
-    serveRequests(server, handler);
+    serveRequests(server, handler.call);
     return ShelfTestServer._(server, handler);
   }
 

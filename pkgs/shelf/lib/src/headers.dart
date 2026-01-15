@@ -24,14 +24,28 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
     } else if (values is Headers) {
       return values;
     } else {
-      return Headers._(values);
+      return Headers._(values.entries);
     }
   }
 
-  Headers._(Map<String, List<String>> values)
-      : super(CaseInsensitiveMap.from(Map.fromEntries(values.entries
-            .where((e) => e.value.isNotEmpty)
-            .map((e) => MapEntry(e.key, List.unmodifiable(e.value))))));
+  factory Headers.fromEntries(
+    Iterable<MapEntry<String, List<String>>>? entries,
+  ) {
+    if (entries == null || (entries is List && entries.isEmpty)) {
+      return _emptyHeaders;
+    } else {
+      return Headers._(entries);
+    }
+  }
+
+  Headers._(Iterable<MapEntry<String, List<String>>> entries)
+      : super(
+          CaseInsensitiveMap.fromEntries(
+            entries
+                .where((e) => e.value.isNotEmpty)
+                .map((e) => MapEntry(e.key, List.unmodifiable(e.value))),
+          ),
+        );
 
   Headers._empty() : super(const {});
 

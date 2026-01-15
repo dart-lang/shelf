@@ -18,7 +18,7 @@
 /// This is **not intended** for consumption, this library should be used by
 /// running `pub run build_runner build`. Using this library through other means
 /// is not supported and may break arbitrarily.
-library builder;
+library;
 
 import 'package:build/build.dart';
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
@@ -29,7 +29,5 @@ import 'src/shelf_router_generator.dart';
 /// A [Builder] that generates a `_$<className>Router(<className> service)`
 /// function for each class `<className>` containing a member annotated with
 /// [shelf_router.Route].
-Builder shelfRouter(BuilderOptions _) => SharedPartBuilder(
-      [ShelfRouterGenerator()],
-      'shelf_router',
-    );
+Builder shelfRouter(BuilderOptions _) =>
+    SharedPartBuilder([ShelfRouterGenerator()], 'shelf_router');

@@ -22,10 +22,7 @@ void main() {
   setUpAll(server.start);
   tearDownAll(server.stop);
 
-  void testGet({
-    required String path,
-    required String result,
-  }) =>
+  void testGet({required String path, required String result}) =>
       test('GET $path', () async {
         final result = await http.get(server.uri.resolve(path));
         expect(result, equals(result));

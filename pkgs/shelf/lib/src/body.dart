@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'message.dart';
+
 /// The body of a request or response.
 ///
 /// This tracks whether the body has been read. It's separate from [Message]
@@ -28,9 +30,9 @@ class Body {
 
   /// Converts [body] to a byte stream and wraps it in a [Body].
   ///
-  /// [body] may be either a [Body], a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null`. If it's a [String], [encoding] will be
-  /// used to convert it to a [Stream<List<int>>].
+  /// [body] may be either a [Body], a [String], a `List<int>`, a
+  /// `Stream<List<int>>`, or `null`. If it's a [String], [encoding] will be
+  /// used to convert it to a `Stream<List<int>>`.
   factory Body(Object? body, [Encoding? encoding]) {
     if (body is Body) return body;
 

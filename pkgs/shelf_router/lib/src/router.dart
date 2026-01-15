@@ -18,7 +18,8 @@ import 'dart:convert';
 import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
-import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
+
+import 'router_entry.dart' show RouterEntry;
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -155,15 +156,15 @@ class Router {
     // first slash is always in request.handlerPath
     final path = prefix.substring(1);
     if (prefix.endsWith('/')) {
-      all(prefix + '<path|[^]*>', (Request request) {
+      all('$prefix<path|[^]*>', (Request request) {
         return handler(request.change(path: path));
       });
     } else {
       all(prefix, (Request request) {
         return handler(request.change(path: path));
       });
-      all(prefix + '/<path|[^]*>', (Request request) {
-        return handler(request.change(path: path + '/'));
+      all('$prefix/<path|[^]*>', (Request request) {
+        return handler(request.change(path: '$path/'));
       });
     }
   }
@@ -178,7 +179,7 @@ class Router {
       if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
         continue;
       }
-      var params = route.match('/' + request.url.path);
+      var params = route.match('/${request.url.path}');
       if (params != null) {
         final response = await route.invoke(request, params);
         if (response != routeNotFound) {
@@ -294,7 +295,7 @@ class _RouteNotFoundResponse extends Response {
   Response change({
     Map<String, /* String | List<String> */ Object?>? headers,
     Map<String, Object?>? context,
-    body,
+    Object? body,
   }) {
     return super.change(
       headers: headers,

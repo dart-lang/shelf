@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:http_parser/http_parser.dart';
 
+import 'handler.dart';
 import 'message.dart';
 import 'util.dart';
 
@@ -46,14 +47,14 @@ class Response extends Message {
   /// This indicates that the request has succeeded.
   ///
   /// {@template shelf_response_body_and_encoding_param}
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body.
+  /// [body] is the response body. It may be either a [String], a `List<int>`, a
+  /// `Stream<List<int>>`, or `null` to indicate no body.
   ///
   /// If the body is a [String], [encoding] is used to encode it to a
-  /// [Stream<List<int>>]. It defaults to UTF-8. If it's a [String], a
-  /// [List<int>], or `null`, the Content-Length header is set automatically
+  /// `Stream<List<int>>`. It defaults to UTF-8. If it's a [String], a
+  /// `List<int>`, or `null`, the Content-Length header is set automatically
   /// unless a Transfer-Encoding header is set. Otherwise, it's a
-  /// [Stream<List<int>>] and no Transfer-Encoding header is set, the adapter
+  /// `Stream<List<int>>` and no Transfer-Encoding header is set, the adapter
   /// will set the Transfer-Encoding header to "chunked" and apply the chunked
   /// encoding to the body.
   ///
@@ -180,6 +181,25 @@ class Response extends Message {
           encoding: encoding,
         );
 
+  /// Constructs a 401 Unauthorized response.
+  ///
+  /// This indicates indicates that the client request has not been completed
+  /// because it lacks valid authentication credentials.
+  ///
+  /// {@macro shelf_response_body_and_encoding_param}
+  Response.unauthorized(
+    Object? body, {
+    Map<String, /* String | List<String> */ Object>? headers,
+    Encoding? encoding,
+    Map<String, Object>? context,
+  }) : this(
+          401,
+          headers: body == null ? _adjustErrorHeaders(headers) : headers,
+          body: body ?? 'Unauthorized',
+          context: context,
+          encoding: encoding,
+        );
+
   /// Constructs a 403 Forbidden response.
   ///
   /// This indicates that the server is refusing to fulfill the request.
@@ -270,8 +290,8 @@ class Response extends Message {
   /// All other context and header values from the [Response] will be included
   /// in the copied [Response] unchanged.
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `<int>[]` (empty list) to indicate no body.
+  /// [body] is the response body. It may be either a [String], a `List<int>`, a
+  /// `Stream<List<int>>`, or `<int>[]` (empty list) to indicate no body.
   @override
   Response change({
     Map<String, /* String | List<String> */ Object?>? headers,

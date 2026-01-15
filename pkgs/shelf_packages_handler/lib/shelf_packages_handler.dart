@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library shelf_packages_handler;
-
 import 'package:shelf/shelf.dart';
 
 import 'src/dir_handler.dart';
@@ -31,4 +29,4 @@ Handler packagesHandler({Map<String, Uri>? packageMap}) =>
 /// This is useful for ensuring that `package:` imports work for all entrypoints
 /// in Dartium.
 Handler packagesDirHandler({Map<String, Uri>? packageMap}) =>
-    DirHandler('packages', packagesHandler(packageMap: packageMap));
+    DirHandler('packages', packagesHandler(packageMap: packageMap)).call;

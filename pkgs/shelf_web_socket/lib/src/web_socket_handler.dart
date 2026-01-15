@@ -3,14 +3,23 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:shelf/shelf.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+/// Used by `webSocketHandler` report connections back to callers.
+///
+/// This takes a [WebSocketChannel] as its first argument and an optional
+/// [subprotocol] as its second argument.
+typedef ConnectionCallback = void Function(
+    WebSocketChannel webSocket, String? subprotocol);
 
 /// A class that exposes a handler for upgrading WebSocket requests.
 class WebSocketHandler {
   /// The function to call when a request is upgraded.
-  final Function _onConnection;
+  final ConnectionCallback _onConnection;
 
   /// The set of protocols the user supports, or `null`.
   final Set<String>? _protocols;
@@ -64,7 +73,7 @@ class WebSocketHandler {
     final origin = request.headers['Origin'];
     if (origin != null &&
         _allowedOrigins != null &&
-        !_allowedOrigins!.contains(origin.toLowerCase())) {
+        !_allowedOrigins.contains(origin.toLowerCase())) {
       return _forbidden('invalid origin "$origin".');
     }
 
@@ -78,8 +87,15 @@ class WebSocketHandler {
       if (protocol != null) sink.add('Sec-WebSocket-Protocol: $protocol\r\n');
       sink.add('\r\n');
 
-      _onConnection(
-          WebSocketChannel(channel, pingInterval: _pingInterval), protocol);
+      if (channel.sink is! Socket) {
+        throw ArgumentError('channel.sink must be a dart:io `Socket`.');
+      }
+
+      final webSocket = WebSocket.fromUpgradedSocket(channel.sink as Socket,
+          protocol: protocol, serverSide: true)
+        ..pingInterval = _pingInterval;
+
+      _onConnection(IOWebSocketChannel(webSocket), protocol);
     });
   }
 
@@ -92,7 +108,7 @@ class WebSocketHandler {
     if (_protocols == null) return null;
     for (var requestProtocol in requestProtocols.split(',')) {
       requestProtocol = requestProtocol.trim();
-      if (_protocols!.contains(requestProtocol)) return requestProtocol;
+      if (_protocols.contains(requestProtocol)) return requestProtocol;
     }
     return null;
   }

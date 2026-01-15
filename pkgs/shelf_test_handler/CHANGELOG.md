@@ -1,3 +1,14 @@
+## 2.0.3-wip
+
+* Require `shelf: ^1.1.0`
+* Require `test: ^1.25.15`
+* Require `sdk: ^3.5.0`.
+
+## 2.0.2
+
+* Added package topics to the pubspec file.
+* Require Dart `2.17`.
+
 ## 2.0.1
 
 * Require Dart `2.14`.

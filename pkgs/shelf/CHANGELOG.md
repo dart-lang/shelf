@@ -1,3 +1,29 @@
+## 1.4.3-wip
+
+## 1.4.2
+
+* `Headers`: added the `fromEntries`  constructor.
+* Require `http_parser`: ^4.1.0
+* Require Dart `^3.4.0`.
+
+## 1.4.1
+
+* Added package topics to the pubspec file.
+
+## 1.4.0
+
+* Add Response.unauthorized() constructor
+* Add `poweredByHeader` argument to `serve`, `serveRequests`, and
+  `handleRequest`.
+* Require Dart >= 2.17
+
+## 1.3.2
+
+* `shelf_io.dart`
+    * Started setting `X-Powered-By` response header
+      to `Dart with package:shelf`.
+    * Stopped setting `Server` header (with value `dart:io with Shelf`).
+
 ## 1.3.1
 
 * Update the pubspec `repository` field.
@@ -254,7 +280,7 @@
 
 ## 0.6.1+2
 
-* `logRequests` outputs a better message a request has a query string.
+* `logRequests` outputs a better message if a request has a query string.
 
 ## 0.6.1+1
 

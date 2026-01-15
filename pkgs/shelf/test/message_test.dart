@@ -12,8 +12,8 @@ import 'test_util.dart';
 
 class _TestMessage extends Message {
   _TestMessage(Map<String, /* String | List<String> */ Object>? headers,
-      Map<String, Object>? context, Object? body, Encoding? encoding)
-      : super(body, headers: headers, context: context, encoding: encoding);
+      Map<String, Object>? context, super.body, Encoding? encoding)
+      : super(headers: headers, context: context, encoding: encoding);
 
   @override
   Message change(
@@ -222,13 +222,14 @@ void main() {
     });
 
     test('is null for a stream body', () {
-      var request = _createMessage(body: Stream<List<int>>.empty());
+      var request = _createMessage(body: const Stream<List<int>>.empty());
       expect(request.contentLength, isNull);
     });
 
     test('uses the content-length header for a stream body', () {
       var request = _createMessage(
-          body: Stream<List<int>>.empty(), headers: {'content-length': '42'});
+          body: const Stream<List<int>>.empty(),
+          headers: {'content-length': '42'});
       expect(request.contentLength, 42);
     });
 

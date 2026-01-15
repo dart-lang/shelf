@@ -13,6 +13,8 @@
 // limitations under the License.
 
 @TestOn('vm')
+library;
+
 import 'dart:async';
 import 'dart:io';
 
@@ -59,7 +61,7 @@ void main() {
       return Response.ok('not-found');
     });
 
-    server.mount(app);
+    server.mount(app.call);
 
     expect(await get('/sync-hello'), 'hello-world');
     expect(await get('/async-hello'), 'hello-world');
@@ -79,7 +81,7 @@ void main() {
       return Response.ok('$user / $group');
     });
 
-    server.mount(app);
+    server.mount(app.call);
 
     expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
   });
@@ -92,7 +94,7 @@ void main() {
       return Response.ok('$user / $group');
     });
 
-    server.mount(app);
+    server.mount(app.call);
 
     expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
   });
@@ -108,13 +110,13 @@ void main() {
       return Response.ok('hello-world');
     });
 
-    app.mount('/api/', api);
+    app.mount('/api/', api.call);
 
     app.all('/<_|[^]*>', (Request request) {
       return Response.ok('catch-all-handler');
     });
 
-    server.mount(app);
+    server.mount(app.call);
 
     expect(await get('/hello'), 'hello-world');
     expect(await get('/api/user/jonasfj/info'), 'Hello jonasfj');
@@ -139,10 +141,10 @@ void main() {
     var app = Router();
     app.mount(
       '/api/',
-      Pipeline().addMiddleware(middleware).addHandler(api),
+      middleware.addHandler(api.call),
     );
 
-    server.mount(app);
+    server.mount(app.call);
 
     expect(await get('/api/hello'), 'Hello');
     expect(await get('/api/hello?ok'), 'middleware');
@@ -163,13 +165,13 @@ void main() {
       return Response.ok('hello-world');
     });
 
-    app.mount('/api', api);
+    app.mount('/api', api.call);
 
     app.all('/<_|[^]*>', (Request request) {
       return Response.ok('catch-all-handler');
     });
 
-    server.mount(app);
+    server.mount(app.call);
 
     expect(await get('/hello'), 'hello-world');
     expect(await get('/api'), 'Hello World!');
@@ -180,7 +182,7 @@ void main() {
 
   test('responds with 404 if no handler matches', () {
     var api = Router()..get('/hello', (request) => Response.ok('Hello'));
-    server.mount(api);
+    server.mount(api.call);
 
     expect(
         get('/hi'),
@@ -191,7 +193,7 @@ void main() {
   test('can invoke custom handler if no route matches', () {
     var api = Router(notFoundHandler: (req) => Response.ok('Not found, but ok'))
       ..get('/hello', (request) => Response.ok('Hello'));
-    server.mount(api);
+    server.mount(api.call);
 
     expect(get('/hi'), completion('Not found, but ok'));
   });

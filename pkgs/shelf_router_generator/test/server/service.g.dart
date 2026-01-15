@@ -13,7 +13,7 @@ Router _$ServiceRouter(Service service) {
   router.add('GET', r'/wave', service._wave);
   router.add('GET', r'/greet/<user>', service._greet);
   router.add('GET', r'/hi/<user>', service._hi);
-  router.mount(r'/api/', service._api);
+  router.mount(r'/api/', service._api.call);
   router.all(r'/<_|.*>', service._index);
   return router;
 }

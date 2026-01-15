@@ -1,5 +1,5 @@
 sdk:
-- 2.14.0
+- pubspec
 - dev
 
 stages:
@@ -17,3 +17,5 @@ stages:
     os:
     - linux
     - windows
+  - test: --test-randomize-ordering-seed=random -p chrome -c dart2wasm
+    sdk: dev

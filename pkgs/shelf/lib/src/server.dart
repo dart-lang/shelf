@@ -20,8 +20,8 @@ import 'handler.dart';
 /// code to a single server implementation.
 ///
 /// There are two built-in implementations of this interface. You can create a
-/// server backed by `dart:io` using [IOServer], or you can create a server
-/// that's backed by a normal [Handler] using [ServerHandler].
+/// server backed by `dart:io` using `IOServer`, or you can create a server
+/// that's backed by a normal [Handler] using `ServerHandler`.
 ///
 /// Implementations of this interface are responsible for ensuring that the
 /// members work as documented.

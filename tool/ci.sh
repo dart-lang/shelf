@@ -1,9 +1,10 @@
 #!/bin/bash
-# Created with package:mono_repo v6.3.0
+# Created with package:mono_repo v6.6.3
 
 # Support built in commands on windows out of the box.
+
 # When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
-# then "flutter" is called instead of "pub".
+# then "flutter pub" is called instead of "dart pub".
 # This assumes that the Flutter SDK has been installed in a previous step.
 function pub() {
   if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
@@ -12,18 +13,13 @@ function pub() {
     command dart pub "$@"
   fi
 }
-# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
-# then "flutter" is called instead of "pub".
-# This assumes that the Flutter SDK has been installed in a previous step.
+
 function format() {
-  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
-    command flutter format "$@"
-  else
-    command dart format "$@"
-  fi
+  command dart format "$@"
 }
+
 # When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
-# then "flutter" is called instead of "pub".
+# then "flutter analyze" is called instead of "dart analyze".
 # This assumes that the Flutter SDK has been installed in a previous step.
 function analyze() {
   if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
@@ -82,6 +78,14 @@ for PKG in ${PKGS}; do
       test_1)
         echo 'dart test --test-randomize-ordering-seed=random -p chrome'
         dart test --test-randomize-ordering-seed=random -p chrome || EXIT_CODE=$?
+        ;;
+      test_2)
+        echo 'dart test --test-randomize-ordering-seed=random -p chrome -c dart2wasm'
+        dart test --test-randomize-ordering-seed=random -p chrome -c dart2wasm || EXIT_CODE=$?
+        ;;
+      test_3)
+        echo 'dart test --run-skipped -t presubmit-only'
+        dart test --run-skipped -t presubmit-only || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"

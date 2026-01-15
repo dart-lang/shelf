@@ -13,7 +13,7 @@ const helloBytes = [104, 101, 108, 108, 111, 44];
 // " world"
 const worldBytes = [32, 119, 111, 114, 108, 100];
 
-final Matcher throwsHijackException = throwsA(TypeMatcher<HijackException>());
+final Matcher throwsHijackException = throwsA(isA<HijackException>());
 
 /// A simple, synchronous handler for [Request].
 ///
@@ -36,3 +36,6 @@ Future<Response> makeSimpleRequest(Handler handler) =>
 final _request = Request('GET', localhostUri);
 
 final localhostUri = Uri.parse('http://localhost/');
+
+final isOhNoStateError =
+    isA<StateError>().having((p0) => p0.message, 'message', 'oh no');

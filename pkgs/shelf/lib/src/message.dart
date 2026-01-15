@@ -10,6 +10,9 @@ import 'package:http_parser/http_parser.dart';
 
 import 'body.dart';
 import 'headers.dart';
+import 'middleware/logger.dart';
+import 'request.dart';
+import 'response.dart';
 import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
 
@@ -67,9 +70,9 @@ abstract class Message {
 
   /// Creates a new [Message].
   ///
-  /// [body] is the response body. It may be either a [String], a [List<int>], a
-  /// [Stream<List<int>>], or `null` to indicate no body. If it's a [String],
-  /// [encoding] is used to encode it to a [Stream<List<int>>]. It defaults to
+  /// [body] is the response body. It may be either a [String], a `List<int>`, a
+  /// `Stream<List<int>>`, or `null` to indicate no body. If it's a [String],
+  /// [encoding] is used to encode it to a `Stream<List<int>>`. It defaults to
   /// UTF-8.
   ///
   /// If [headers] is `null`, it is treated as empty.
@@ -171,7 +174,7 @@ abstract class Message {
       {Map<String, String> headers, Map<String, Object> context, Object? body});
 }
 
-/// Adds information about [encoding] to [headers].
+/// Adds information about encoding to [headers].
 ///
 /// Returns a new map without modifying [headers].
 Map<String, List<String>> _adjustHeaders(

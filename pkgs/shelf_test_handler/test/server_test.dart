@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -27,7 +29,7 @@ void main() {
     addTearDown(server.close);
 
     server.handler.expect('GET', '/',
-        webSocketHandler((WebSocketChannel webSocket) {
+        webSocketHandler((WebSocketChannel webSocket, _) {
       webSocket.sink.add('hello!');
       webSocket.sink.close();
     }));
