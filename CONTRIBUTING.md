@@ -31,7 +31,7 @@ this repository.
 [pr]: https://help.github.com/articles/creating-a-pull-request/
 
 Functional changes will require tests to be added or changed. The tests live in
-the `test/` directory, and are run with `pub run test`. If you need to create
+the `test/` directory, and are run with `dart test`. If you need to create
 new tests, use the existing tests as a guideline for what they should look like.
 
 Before you send your pull request, make sure all the tests pass!
