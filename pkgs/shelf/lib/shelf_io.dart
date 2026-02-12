@@ -156,15 +156,6 @@ Future<void> handleRequest(
     );
   }
 
-  if ((response as dynamic) == null) {
-    // Handle nulls flowing from opt-out code
-    await _writeResponse(
-        _logError(
-            shelfRequest, 'null response from handler.', StackTrace.current),
-        request.response,
-        poweredByHeader);
-    return;
-  }
   if (shelfRequest.canHijack) {
     await _writeResponse(response, request.response, poweredByHeader);
     return;
