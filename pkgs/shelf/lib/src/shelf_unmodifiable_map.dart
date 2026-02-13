@@ -69,8 +69,4 @@ class _EmptyShelfUnmodifiableMap extends MapView<String, Object>
   @override
   Object putIfAbsent(String key, Object Function() ifAbsent) =>
       super.putIfAbsent(key, () => const Object());
-
-  @override
-  // TODO: https://github.com/dart-lang/sdk/issues/44264
-  Object remove(Object? key) => super.remove(key)!;
 }
