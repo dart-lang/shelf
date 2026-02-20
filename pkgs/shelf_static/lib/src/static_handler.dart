@@ -39,6 +39,13 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 ///
 /// Specify a custom [contentTypeResolver] to customize automatic content type
 /// detection.
+///
+/// The [Response.context] will be populated with "shelf_static:file" or
+/// "shelf_static:file_not_found" with the resolved [File] for the [Response].
+/// If the path resolves to a [Directory], it will populate
+/// "shelf_static:directory". If the path is considered not found because it is
+/// outside of the [fileSystemPath] and [serveFilesOutsidePath] is false,
+/// then none of the keys will be included in the context.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath = false,
     String? defaultDocument,
@@ -76,14 +83,29 @@ Handler createStaticHandler(String fileSystemPath,
       fileFound = _tryDefaultFile(fsPath, defaultDocument);
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
-        if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
+        if (!uri.path.endsWith('/')) {
+          return _redirectToAddTrailingSlash(uri, fsPath);
+        }
         return listDirectory(fileSystemPath, fsPath);
       }
     }
 
     if (fileFound == null) {
-      return Response.notFound('Not Found');
+      File? fileNotFound = File(fsPath);
+
+      // Do not expose a file path outside of the original fileSystemPath:
+      if (!serveFilesOutsidePath &&
+          !p.isWithin(fileSystemPath, fileNotFound.path) &&
+          !p.equals(fileSystemPath, fileNotFound.path)) {
+        fileNotFound = null;
+      }
+
+      return Response.notFound(
+        'Not Found',
+        context: buildResponseContext(fileNotFound: fileNotFound),
+      );
     }
+
     final file = fileFound;
 
     if (!serveFilesOutsidePath) {
@@ -100,7 +122,7 @@ Handler createStaticHandler(String fileSystemPath,
     final uri = request.requestedUri;
     if (entityType == FileSystemEntityType.directory &&
         !uri.path.endsWith('/')) {
-      return _redirectToAddTrailingSlash(uri);
+      return _redirectToAddTrailingSlash(uri, fsPath);
     }
 
     return _handleFile(request, file, () async {
@@ -120,7 +142,7 @@ Handler createStaticHandler(String fileSystemPath,
   };
 }
 
-Response _redirectToAddTrailingSlash(Uri uri) {
+Response _redirectToAddTrailingSlash(Uri uri, String fsPath) {
   final location = Uri(
       scheme: uri.scheme,
       userInfo: uri.userInfo,
@@ -129,7 +151,8 @@ Response _redirectToAddTrailingSlash(Uri uri) {
       path: '${uri.path}/',
       query: uri.query);
 
-  return Response.movedPermanently(location.toString());
+  return Response.movedPermanently(location.toString(),
+      context: buildResponseContext(directory: Directory(fsPath)));
 }
 
 File? _tryDefaultFile(String dirPath, String? defaultFile) {
@@ -154,6 +177,12 @@ File? _tryDefaultFile(String dirPath, String? defaultFile) {
 /// This uses the given [contentType] for the Content-Type header. It defaults
 /// to looking up a content type based on [path]'s file extension, and failing
 /// that doesn't sent a [contentType] header at all.
+///
+/// The [Response.context] will be populated with "shelf_static:file" or
+/// "shelf_static:file_not_found" with the resolved [File] for the [Response].
+/// If the path is considered not found because it is
+/// outside of the [fileSystemPath] and [serveFilesOutsidePath] is false,
+/// then neither key will be included in the context.
 Handler createFileHandler(String path, {String? url, String? contentType}) {
   final file = File(path);
   if (!file.existsSync()) {
@@ -162,11 +191,20 @@ Handler createFileHandler(String path, {String? url, String? contentType}) {
     throw ArgumentError.value(url, 'url', 'must be relative.');
   }
 
+  final parent = file.parent;
+
   final mimeType = contentType ?? _defaultMimeTypeResolver.lookup(path);
   url ??= p.toUri(p.basename(path)).toString();
 
   return (request) {
-    if (request.url.path != url) return Response.notFound('Not Found');
+    if (request.url.path != url) {
+      var fileNotFound =
+          File(p.joinAll([parent.path, ...request.url.pathSegments]));
+      return Response.notFound(
+        'Not Found',
+        context: buildResponseContext(fileNotFound: fileNotFound),
+      );
+    }
     return _handleFile(request, file, () => mimeType);
   };
 }
@@ -184,7 +222,9 @@ Future<Response> _handleFile(Request request, File file,
   if (ifModifiedSince != null) {
     final fileChangeAtSecResolution = toSecondResolution(stat.modified);
     if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
-      return Response.notModified();
+      return Response.notModified(
+        context: buildResponseContext(file: file),
+      );
     }
   }
 
@@ -199,6 +239,7 @@ Future<Response> _handleFile(Request request, File file,
       Response.ok(
         request.method == 'HEAD' ? null : file.openRead(),
         headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
+        context: buildResponseContext(file: file),
       );
 }
 
@@ -248,6 +289,7 @@ Response? _fileRangeResponse(
     return Response(
       HttpStatus.requestedRangeNotSatisfiable,
       headers: headers,
+      context: buildResponseContext(file: file),
     );
   }
   return Response(
@@ -256,5 +298,6 @@ Response? _fileRangeResponse(
     headers: headers
       ..[HttpHeaders.contentLengthHeader] = (end - start + 1).toString()
       ..[HttpHeaders.contentRangeHeader] = 'bytes $start-$end/$actualLength',
+    context: buildResponseContext(file: file),
   );
 }
