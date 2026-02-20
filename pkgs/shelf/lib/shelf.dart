@@ -7,7 +7,8 @@ export 'src/handler.dart' show Handler;
 export 'src/hijack_exception.dart' show HijackException;
 export 'src/middleware.dart' show Middleware, createMiddleware;
 export 'src/middleware/add_chunked_encoding.dart' show addChunkedEncoding;
-export 'src/middleware/logger.dart' show logRequests;
+export 'src/middleware/logger.dart'
+    show getShelfLogRequestsRequest, getShelfLogRequestsResponse, logRequests;
 export 'src/middleware_extensions.dart' show MiddlewareExtensions;
 export 'src/pipeline.dart' show Pipeline;
 export 'src/request.dart' show Request;
