@@ -1,6 +1,6 @@
 ## 1.1.4
 
-* Require `analyzer: '^10.0.0'`
+* Support `analyzer: '^10.0.0'`
 
 ## 1.1.3
 
