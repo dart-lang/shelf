@@ -75,23 +75,18 @@ void main() {
   test('params', () async {
     var app = Router();
 
-    app.get(r'/user/<user>/groups/<group|\d+>', (Request request) {
-      final user = request.params['user'];
-      final group = request.params['group'];
-      return Response.ok('$user / $group');
-    });
+    test('params by arguments (deprecated, now uses Request.params)', () async {
+      var app = Router();
 
-    server.mount(app.call);
+      app.get(r'/user/:user/groups/:group', (Request request) {
+        final user = request.params['user'];
+        final group = request.params['group'];
+        return Response.ok('$user / $group');
+      });
 
-    expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
-  });
+      server.mount(app.call);
 
-  test('params by arguments', () async {
-    var app = Router();
-
-    app.get(r'/user/<user>/groups/<group|\d+>',
-        (Request request, String user, String group) {
-      return Response.ok('$user / $group');
+      expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
     });
 
     server.mount(app.call);
@@ -101,7 +96,8 @@ void main() {
 
   test('mount(Router)', () async {
     var api = Router();
-    api.get('/user/<user>/info', (Request request, String user) {
+    api.get('/user/:user/info', (Request request) {
+      final user = request.params['user'];
       return Response.ok('Hello $user');
     });
 
@@ -112,7 +108,7 @@ void main() {
 
     app.mount('/api/', api.call);
 
-    app.all('/<_|[^]*>', (Request request) {
+    app.all('/<*>', (Request request) {
       return Response.ok('catch-all-handler');
     });
 
@@ -156,7 +152,8 @@ void main() {
       return Response.ok('Hello World!');
     });
 
-    api.get('/user/<user>/info', (Request request, String user) {
+    api.get('/user/:user/info', (Request request) {
+      final user = request.params['user'];
       return Response.ok('Hello $user');
     });
 
@@ -167,7 +164,7 @@ void main() {
 
     app.mount('/api', api.call);
 
-    app.all('/<_|[^]*>', (Request request) {
+    app.all('/<*>', (Request request) {
       return Response.ok('catch-all-handler');
     });
 

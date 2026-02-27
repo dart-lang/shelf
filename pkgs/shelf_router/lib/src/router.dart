@@ -20,6 +20,7 @@ import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
 import 'router_entry.dart' show RouterEntry;
+import 'trie.dart';
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -110,6 +111,9 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 /// constructor parameter.
 @sealed
 class Router {
+  // Using TrieRouter for high-performance segment matching.
+  // The old `_routes` list is kept only for debugging and the getter.
+  final TrieRouter _trie = TrieRouter();
   final List<RouterEntry> _routes = [];
   final Handler _notFoundHandler;
 
@@ -135,13 +139,16 @@ class Router {
     if (verb == 'GET') {
       // Handling in a 'GET' request without handling a 'HEAD' request is always
       // wrong, thus, we add a default implementation that discards the body.
+      _trie.addRoute('HEAD', route, handler, _removeBody);
       _routes.add(RouterEntry('HEAD', route, handler, middleware: _removeBody));
     }
+    _trie.addRoute(verb, route, handler, null);
     _routes.add(RouterEntry(verb, route, handler));
   }
 
   /// Handle all request to [route] using [handler].
   void all(String route, Function handler) {
+    _trie.addRoute('ALL', route, handler, null);
     _routes.add(RouterEntry('ALL', route, handler));
   }
 
@@ -173,20 +180,26 @@ class Router {
   ///
   /// This method allows a Router instance to be a [Handler].
   Future<Response> call(Request request) async {
-    // Note: this is a great place to optimize the implementation by building
-    //       a trie for faster matching... left as an exercise for the reader :)
-    for (var route in _routes) {
-      if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
-        continue;
-      }
-      var params = route.match('/${request.url.path}');
-      if (params != null) {
-        final response = await route.invoke(request, params);
-        if (response != routeNotFound) {
-          return response;
-        }
+    final match = _trie.match(request.method.toUpperCase(), request.url.path);
+
+    if (match != null) {
+      final verbHandler = match.handlerInfo;
+      final params = match.params;
+
+      // We still need to call invoke similarly to how RouterEntry did to support dynamic args
+      // We will create a fake RouterEntry for backward compatibility of the invoke method for now
+      // This allows us to keep the dynamic apply logic isolated
+      // Later we will refactor the invocation into middleware
+      final fakeEntry = RouterEntry(
+          request.method, verbHandler.route, verbHandler.handler,
+          middleware: verbHandler.middleware);
+      final response = await fakeEntry.invoke(request, params);
+
+      if (response != routeNotFound) {
+        return response;
       }
     }
+
     return _notFoundHandler(request);
   }
 
