@@ -62,8 +62,12 @@ class RouterEntry {
 
       if (segment.startsWith(':')) {
         final name = segment.substring(1);
-        params.add(name);
-        pattern += '([^/]+)';
+        params.add(name.startsWith('*') ? name.substring(1) : name);
+        if (name.startsWith('*')) {
+          pattern += '(.*)';
+        } else {
+          pattern += '([^/]+)';
+        }
       } else if (segment.startsWith('<') && segment.endsWith('>')) {
         final inner = segment.substring(1, segment.length - 1);
         final parts = inner.split('|');

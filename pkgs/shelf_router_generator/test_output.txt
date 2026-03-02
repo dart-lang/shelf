@@ -1,0 +1,98 @@
+00:00 +0: loading test/ensure_build_test.dart
+00:00 +0: test/ensure_build_test.dart: (suite)
+  Skip: Should only be run during presubmit
+00:00 +0 ~1: test/server_test.dart: (setUpAll)
+Warning: Regex in "<word|.*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/to-uppercase/<word|.*>" is deprecated. Use ":word" instead.
+Warning: Regex in "<word|.*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/to-uppercase/<word|.*>" is deprecated. Use ":word" instead.
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/api/<path|[^]*>" is deprecated. Use ":path" instead.
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/<path|[^]*>" is deprecated. Use ":path" instead.
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/dot/<path|[^]*>" is deprecated. Use ":path" instead.
+00:00 +0 ~1: test/server_test.dart: GET /say-hello
+00:00 +1 ~1: test/server_test.dart: GET /say-hello/
+00:00 +2 ~1: test/server_test.dart: GET /wave
+00:00 +3 ~1: test/server_test.dart: GET /greet/jonasfj
+00:00 +4 ~1: test/server_test.dart: GET /greet/sigurdm
+00:00 +5 ~1: test/server_test.dart: GET /hi/jonasfj
+00:00 +6 ~1: test/server_test.dart: GET /hi/sigurdm
+00:00 +7 ~1: test/server_test.dart: GET /api/time
+00:00 +8 ~1: test/server_test.dart: GET /api/to-uppercase/wEiRd%20Word
+00:00 +9 ~1: test/server_test.dart: GET /api/to-uppercase/wEiRd Word
+00:00 +10 ~1: test/server_test.dart: GET /
+00:00 +11 ~1: test/server_test.dart: GET /wrong-path
+00:00 +12 ~1: test/server_test.dart: GET /hi/sigurdm/ups
+00:00 +12 ~1 -1: test/server_test.dart: GET /hi/sigurdm/ups [E]
+  Expected: 'nothing-here'
+    Actual: 'Route not found'
+     Which: is different.
+            Expected: nothing-he ...
+              Actual: Route not  ...
+                      ^
+             Differ at offset 0
+  
+  package:matcher             expect
+  test/server_test.dart 28:9  main.testGet.<fn>
+  
+00:00 +12 ~1 -1: test/server_test.dart: GET /api/to-uppercase/too/many/slashs
+00:00 +12 ~1 -2: test/server_test.dart: GET /api/to-uppercase/too/many/slashs [E]
+  Expected: 'nothing-here'
+    Actual: 'Route not found'
+     Which: is different.
+            Expected: nothing-he ...
+              Actual: Route not  ...
+                      ^
+             Differ at offset 0
+  
+  package:matcher             expect
+  test/server_test.dart 28:9  main.testGet.<fn>
+  
+00:00 +12 ~1 -2: test/server_test.dart: GET /api/
+00:00 +12 ~1 -3: test/server_test.dart: GET /api/ [E]
+  Expected: 'nothing-here'
+    Actual: 'Route not found'
+     Which: is different.
+            Expected: nothing-he ...
+              Actual: Route not  ...
+                      ^
+             Differ at offset 0
+  
+  package:matcher             expect
+  test/server_test.dart 28:9  main.testGet.<fn>
+  
+00:00 +12 ~1 -3: test/server_test.dart: GET /api/time/
+00:00 +12 ~1 -4: test/server_test.dart: GET /api/time/ [E]
+  Expected: 'nothing-here'
+    Actual: 'Route not found'
+     Which: is different.
+            Expected: nothing-he ...
+              Actual: Route not  ...
+                      ^
+             Differ at offset 0
+  
+  package:matcher             expect
+  test/server_test.dart 28:9  main.testGet.<fn>
+  
+00:00 +12 ~1 -4: test/server_test.dart: GET /api/tim
+00:00 +12 ~1 -5: test/server_test.dart: GET /api/tim [E]
+  Expected: 'nothing-here'
+    Actual: 'Route not found'
+     Which: is different.
+            Expected: nothing-he ...
+              Actual: Route not  ...
+                      ^
+             Differ at offset 0
+  
+  package:matcher             expect
+  test/server_test.dart 28:9  main.testGet.<fn>
+  
+00:00 +12 ~1 -5: test/server_test.dart: GET /dot/user/jonasfj
+00:00 +13 ~1 -5: test/server_test.dart: GET /dot/post/42/comment/123
+00:00 +14 ~1 -5: test/server_test.dart: (tearDownAll)
+00:00 +14 ~1 -5: Some tests failed.
+
+Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+For example, 'dart test --chain-stack-traces'.

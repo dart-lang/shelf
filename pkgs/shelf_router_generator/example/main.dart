@@ -26,13 +26,14 @@ class Service {
   // embed URL-parameters, and these may be taken as parameters by the handler.
   // But either all URL-parameters or none of the URL parameters must be taken
   // as parameters by the handler.
-  @Route.get('/say-hi/<name>')
+  @Route.get('/say-hi/:name')
   @Use(validateParams({'name': Rule.string(min: 5, max: 10)}))
   Response _hi(Request request, String name) => Response.ok('hi $name');
 
   // Embedded URL parameters may also be associated with a regular-expression
   // that the pattern must match.
-  @Route.get('/user/<userId|[0-9]+>')
+  @Route.get('/user/:userId')
+  @Use(validateParams({'userId': Rule.number()}))
   Response _user(Request request, String userId) =>
       Response.ok('User has the user-number: $userId');
 
@@ -49,7 +50,7 @@ class Service {
 
   // You can catch all verbs and use a URL-parameter with a regular expression
   // that matches everything to catch app.
-  @Route.all('/<ignored|.*>')
+  @Route.all('/:*ignored')
   Response _notFound(Request request) => Response.notFound('Page not found');
 
   // The generated function _$ServiceRouter can be used to get a [Handler]
@@ -65,7 +66,7 @@ class Api {
 
   // This nested catch-all, will only catch /api/.* when mounted above.
   // Notice that ordering if annotated handlers and mounts is significant.
-  @Route.all('/<ignored|.*>')
+  @Route.all('/:*ignored')
   Response _notFound(Request request) => Response.notFound('null');
 
   // The generated function _$ApiRouter can be used to expose a [Router] for

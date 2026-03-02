@@ -10,14 +10,19 @@ Router _$ServiceRouter(Service service) {
   final router = Router();
   router.add(
     'GET',
-    r'/say-hi/<name>',
+    r'/say-hi/:name',
     service._hi,
-    middleware: validateParams({'name': Rule.string(min: 500, max: 10)}),
+    middleware: validateParams({'name': Rule.string(min: 5, max: 10)}),
   );
-  router.add('GET', r'/user/<userId|[0-9]+>', service._user);
+  router.add(
+    'GET',
+    r'/user/:userId',
+    service._user,
+    middleware: validateParams({'userId': Rule.number()}),
+  );
   router.add('GET', r'/wave', service._wave);
   router.mount(r'/api', service._api.call);
-  router.all(r'/<ignored|.*>', service._notFound);
+  router.all(r'/:*ignored', service._notFound);
   return router;
 }
 
@@ -62,7 +67,7 @@ Router _$ApiRouter(Api service) {
   final router = Router();
   router.add('GET', r'/messages', service._messages);
   router.add('GET', r'/messages/', service._messages);
-  router.all(r'/<ignored|.*>', service._notFound);
+  router.all(r'/:*ignored', service._notFound);
   return router;
 }
 

@@ -22,7 +22,7 @@ class Api {
   @Route.get('/time')
   Response _time(Request request) => Response.ok('it is about now');
 
-  @Route.get('/to-uppercase/<word|.*>')
+  @Route.get('/to-uppercase/:word')
   Future<Response> _toUpperCase(Request request, String word) async =>
       Response.ok(word.toUpperCase());
 

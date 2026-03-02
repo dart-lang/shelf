@@ -33,11 +33,11 @@ class Service {
     return Response.ok('_o/');
   }
 
-  @Route.get('/greet/<user>')
+  @Route.get('/greet/:user')
   Future<Response> _greet(Request request, String user) async =>
       Response.ok('Greetings, $user');
 
-  @Route.get('/hi/<user>')
+  @Route.get('/hi/:user')
   Future<Response> _hi(Request request) async {
     final name = request.params['user'];
     return Response.ok('hi $name');
@@ -56,7 +56,7 @@ class Service {
   @Route.mount('/api/')
   Router get _api => Api().router;
 
-  @Route.all('/<_|.*>')
+  @Route.all('/:*_')
   Response _index(Request request) => Response.ok('nothing-here');
 
   Router get router => _$ServiceRouter(this);
