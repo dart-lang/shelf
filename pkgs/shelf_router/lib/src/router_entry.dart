@@ -16,13 +16,6 @@ import 'dart:async';
 
 import 'package:shelf/shelf.dart';
 
-/// Check if the [regexp] is non-capturing.
-bool _isNoCapture(String regexp) {
-  // Construct a new regular expression matching anything containing regexp,
-  // then match with empty-string and count number of groups.
-  return RegExp('^(?:$regexp)|.*\$').firstMatch('')!.groupCount == 0;
-}
-
 /// Entry in the router.
 ///
 /// This class implements the logic for matching the path pattern.
@@ -75,19 +68,19 @@ class RouterEntry {
         final inner = segment.substring(1, segment.length - 1);
         final parts = inner.split('|');
         final name = parts[0];
-        final expr = parts.length > 1 ? parts[1] : '[^/]+';
+        final expr = parts.length > 1 ? parts[1] : null;
 
-        if (expr.contains('|[^]*')) {
+        if (expr == '[^]*' ||
+            expr == '.*' ||
+            segment == '<*>' ||
+            segment.startsWith('<_')) {
           // catch-all special case
           params.add(name);
           pattern += '(.*)';
         } else {
-          if (!_isNoCapture(expr)) {
-            throw ArgumentError.value(
-                route, 'route', 'expression for "$name" is capturing');
-          }
+          // Ignore regex for performance as requested.
           params.add(name);
-          pattern += '($expr)';
+          pattern += '([^/]+)';
         }
       } else {
         pattern += RegExp.escape(segment);

@@ -54,39 +54,43 @@ class Route {
   /// HTTP route for request routed to the annotated method.
   final String route;
 
+  /// Optional middleware to be applied to this route.
+  final Object? middleware;
+
   /// Create an annotation that routes requests matching [verb] and [route] to
   /// the annotated method.
-  const Route(this.verb, this.route);
+  const Route(this.verb, this.route, {this.middleware});
 
   /// Route all requests matching [route] to annotated method.
-  const Route.all(this.route) : verb = r'$all';
+  const Route.all(this.route, {this.middleware}) : verb = r'$all';
 
   /// Route `GET` requests matching [route] to annotated method.
-  const Route.get(this.route) : verb = 'GET';
+  const Route.get(this.route, {this.middleware}) : verb = 'GET';
 
   /// Route `HEAD` requests matching [route] to annotated method.
-  const Route.head(this.route) : verb = 'HEAD';
+  const Route.head(this.route, {this.middleware}) : verb = 'HEAD';
 
   /// Route `POST` requests matching [route] to annotated method.
-  const Route.post(this.route) : verb = 'POST';
+  const Route.post(this.route, {this.middleware}) : verb = 'POST';
 
   /// Route `PUT` requests matching [route] to annotated method.
-  const Route.put(this.route) : verb = 'PUT';
+  const Route.put(this.route, {this.middleware}) : verb = 'PUT';
 
   /// Route `DELETE` requests matching [route] to annotated method.
-  const Route.delete(this.route) : verb = 'DELETE';
+  const Route.delete(this.route, {this.middleware}) : verb = 'DELETE';
 
   /// Route `CONNECT` requests matching [route] to annotated method.
-  const Route.connect(this.route) : verb = 'CONNECT';
+  const Route.connect(this.route, {this.middleware}) : verb = 'CONNECT';
 
   /// Route `OPTIONS` requests matching [route] to annotated method.
-  const Route.options(this.route) : verb = 'OPTIONS';
+  const Route.options(this.route, {this.middleware}) : verb = 'OPTIONS';
 
   /// Route `TRACE` requests matching [route] to annotated method.
-  const Route.trace(this.route) : verb = 'TRACE';
+  const Route.trace(this.route, {this.middleware}) : verb = 'TRACE';
 
   /// Route `MOUNT` requests matching [route] to annotated method.
   const Route.mount(String prefix)
       : verb = r'$mount',
-        route = prefix;
+        route = prefix,
+        middleware = null;
 }

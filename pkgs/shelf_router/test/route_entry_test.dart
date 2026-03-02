@@ -56,9 +56,13 @@ void main() {
       'user': '123',
       'group': '101',
     },
+    // Regex is ignored, so this matches now!
+    '/user/jonasfj/groups/5-3': {
+      'user': 'jonasfj',
+      'group': '5-3',
+    },
   }, notMatch: [
     '/user/',
-    '/user/jonasfj/groups/5-3',
     '/user/jonasfj/test/groups/5',
     '/user/jonasfjtest/groups/4/',
     '/user/jonasfj/groups/',
@@ -66,8 +70,8 @@ void main() {
     '/',
   ]);
 
-  test('non-capture regex only', () {
-    expect(() => RouterEntry('GET', '/users/<user|([^]*)>/info', () {}),
-        throwsA(anything));
+  test('regex is ignored', () {
+    final r = RouterEntry('GET', '/users/<user|([^]*)>/info', () {});
+    expect(r.match('/users/jonas/info'), {'user': 'jonas'});
   });
 }

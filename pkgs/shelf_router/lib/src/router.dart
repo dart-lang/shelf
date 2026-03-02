@@ -112,9 +112,7 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 @sealed
 class Router {
   // Using TrieRouter for high-performance segment matching.
-  // The old `_routes` list is kept only for debugging and the getter.
   final TrieRouter _trie = TrieRouter();
-  final List<RouterEntry> _routes = [];
   final Handler _notFoundHandler;
 
   /// Creates a new [Router] routing requests to handlers.
@@ -144,17 +142,13 @@ class Router {
           ? _removeBody
           : (Handler h) => _removeBody(middleware(h));
       _trie.addRoute('HEAD', route, handler, headMiddleware);
-      _routes
-          .add(RouterEntry('HEAD', route, handler, middleware: headMiddleware));
     }
     _trie.addRoute(verb, route, handler, middleware);
-    _routes.add(RouterEntry(verb, route, handler, middleware: middleware));
   }
 
   /// Handle all request to [route] using [handler].
   void all(String route, Function handler, {Middleware? middleware}) {
     _trie.addRoute('ALL', route, handler, middleware);
-    _routes.add(RouterEntry('ALL', route, handler, middleware: middleware));
   }
 
   /// Mount a handler below a prefix.
@@ -162,7 +156,7 @@ class Router {
   /// In this case prefix may not contain any parameters, nor
   void mount(String prefix, Handler handler) {
     if (!prefix.startsWith('/')) {
-      throw ArgumentError.value(prefix, 'prefix', 'must start with a slash');
+      prefix = '/$prefix';
     }
 
     // first slash is always in request.handlerPath
@@ -190,7 +184,6 @@ class Router {
 
     for (final match in matches) {
       final verbHandler = match.handlerInfo;
-      final params = match.params;
 
       // We still need to call invoke similarly to how RouterEntry did to support dynamic args
       // We will create a fake RouterEntry for backward compatibility of the invoke method for now
@@ -199,7 +192,8 @@ class Router {
       final fakeEntry = RouterEntry(
           request.method.toUpperCase(), verbHandler.route, verbHandler.handler,
           middleware: verbHandler.middleware);
-      final response = await fakeEntry.invoke(request, params);
+
+      final response = await fakeEntry.invoke(request, match.params);
 
       if (response != routeNotFound) {
         return response;

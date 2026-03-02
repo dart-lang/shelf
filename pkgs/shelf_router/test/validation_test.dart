@@ -31,7 +31,7 @@ void main() {
     final router = Router();
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
-    }, middleware: validate({'id': const Number()}));
+    }, middleware: validateParams({'id': const Number()}));
 
     final response =
         await router(Request('GET', Uri.parse('http://localhost/user/42')));
@@ -43,7 +43,7 @@ void main() {
     final router = Router();
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
-    }, middleware: validate({'id': const Number()}));
+    }, middleware: validateParams({'id': const Number()}));
 
     final response =
         await router(Request('GET', Uri.parse('http://localhost/user/abc')));
@@ -58,7 +58,7 @@ void main() {
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
     },
-        middleware: validate({
+        middleware: validateParams({
           'id': const Number(),
           'type': const Required(),
         }));

@@ -51,11 +51,16 @@ class TrieRouter {
 
       // Handle old <param> syntax
       if (segment.startsWith('<') && segment.endsWith('>')) {
-        print(
-            'Warning: The <param> syntax in "$route" is deprecated. Use ":param" instead.');
-
         var inner = segment.substring(1, segment.length - 1);
-        var name = inner.split('|').first;
+        var parts = inner.split('|');
+        var name = parts.first;
+
+        if (parts.length > 1) {
+          print(
+              'Warning: Regex in "$segment" is no longer supported and will be ignored for performance.');
+        }
+        print(
+            'Warning: The <param> syntax in "$route" is deprecated. Use ":$name" instead.');
 
         // Handle catch-all parameter (often used in mount)
         if (segment.contains('|[^]*>')) {

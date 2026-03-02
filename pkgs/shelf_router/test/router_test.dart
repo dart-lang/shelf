@@ -140,6 +140,21 @@ void main() {
     expect(await get('/api/hello?ok'), 'middleware');
   });
 
+  test('mount(Router) without leading slash', () async {
+    var api = Router();
+    api.get('/hello', (Request request) {
+      return Response.ok('Hello');
+    });
+
+    var app = Router();
+    // Normalization test: 'api' instead of '/api'
+    app.mount('api', api.call);
+
+    server.mount(app.call);
+
+    expect(await get('/api/hello'), 'Hello');
+  });
+
   test('mount(Router) does not require a trailing slash', () async {
     var api = Router();
     api.get('/', (Request request) {

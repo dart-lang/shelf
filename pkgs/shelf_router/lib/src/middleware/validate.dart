@@ -6,8 +6,15 @@ import '../params.dart';
 ///
 /// If validation fails, it returns a 400 Bad Request response with a JSON
 /// body containing the errors.
-Middleware validate(Map<String, RouteRule> rules) {
-  return (Handler innerHandler) {
+/// Middleware that validates route parameters against [rules].
+///
+/// If validation fails, it returns a 400 Bad Request response with a JSON
+/// body containing the errors.
+class validateParams {
+  final Map<String, RouteRule> rules;
+  const validateParams(this.rules);
+
+  Handler call(Handler innerHandler) {
     return (Request request) async {
       final params =
           (request.context['shelf_router/params'] as Map<String, String>?) ??
@@ -35,5 +42,5 @@ Middleware validate(Map<String, RouteRule> rules) {
 
       return innerHandler(request);
     };
-  };
+  }
 }
