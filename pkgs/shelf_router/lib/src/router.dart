@@ -130,7 +130,8 @@ class Router {
   /// matching [route]. This is because handling `GET` requests without handling
   /// `HEAD` is always wrong. To explicitely implement a `HEAD` handler it must
   /// be registered before the `GET` handler.
-  void add(String verb, String route, Function handler) {
+  void add(String verb, String route, Function handler,
+      {Middleware? middleware}) {
     if (!isHttpMethod(verb)) {
       throw ArgumentError.value(verb, 'verb', 'expected a valid HTTP method');
     }
@@ -139,17 +140,21 @@ class Router {
     if (verb == 'GET') {
       // Handling in a 'GET' request without handling a 'HEAD' request is always
       // wrong, thus, we add a default implementation that discards the body.
-      _trie.addRoute('HEAD', route, handler, _removeBody);
-      _routes.add(RouterEntry('HEAD', route, handler, middleware: _removeBody));
+      final headMiddleware = middleware == null
+          ? _removeBody
+          : (Handler h) => _removeBody(middleware(h));
+      _trie.addRoute('HEAD', route, handler, headMiddleware);
+      _routes
+          .add(RouterEntry('HEAD', route, handler, middleware: headMiddleware));
     }
-    _trie.addRoute(verb, route, handler, null);
-    _routes.add(RouterEntry(verb, route, handler));
+    _trie.addRoute(verb, route, handler, middleware);
+    _routes.add(RouterEntry(verb, route, handler, middleware: middleware));
   }
 
   /// Handle all request to [route] using [handler].
-  void all(String route, Function handler) {
-    _trie.addRoute('ALL', route, handler, null);
-    _routes.add(RouterEntry('ALL', route, handler));
+  void all(String route, Function handler, {Middleware? middleware}) {
+    _trie.addRoute('ALL', route, handler, middleware);
+    _routes.add(RouterEntry('ALL', route, handler, middleware: middleware));
   }
 
   /// Mount a handler below a prefix.
@@ -180,9 +185,10 @@ class Router {
   ///
   /// This method allows a Router instance to be a [Handler].
   Future<Response> call(Request request) async {
-    final match = _trie.match(request.method.toUpperCase(), request.url.path);
+    final matches =
+        _trie.findAllMatches(request.method.toUpperCase(), request.url.path);
 
-    if (match != null) {
+    for (final match in matches) {
       final verbHandler = match.handlerInfo;
       final params = match.params;
 
@@ -191,7 +197,7 @@ class Router {
       // This allows us to keep the dynamic apply logic isolated
       // Later we will refactor the invocation into middleware
       final fakeEntry = RouterEntry(
-          request.method, verbHandler.route, verbHandler.handler,
+          request.method.toUpperCase(), verbHandler.route, verbHandler.handler,
           middleware: verbHandler.middleware);
       final response = await fakeEntry.invoke(request, params);
 
@@ -209,33 +215,40 @@ class Router {
   ///
   /// If no matching handler for `HEAD` requests is registered, such requests
   /// will also be routed to the [handler] registered here.
-  void get(String route, Function handler) => add('GET', route, handler);
+  void get(String route, Function handler, {Middleware? middleware}) =>
+      add('GET', route, handler, middleware: middleware);
 
   /// Handle `HEAD` request to [route] using [handler].
-  void head(String route, Function handler) => add('HEAD', route, handler);
+  void head(String route, Function handler, {Middleware? middleware}) =>
+      add('HEAD', route, handler, middleware: middleware);
 
   /// Handle `POST` request to [route] using [handler].
-  void post(String route, Function handler) => add('POST', route, handler);
+  void post(String route, Function handler, {Middleware? middleware}) =>
+      add('POST', route, handler, middleware: middleware);
 
   /// Handle `PUT` request to [route] using [handler].
-  void put(String route, Function handler) => add('PUT', route, handler);
+  void put(String route, Function handler, {Middleware? middleware}) =>
+      add('PUT', route, handler, middleware: middleware);
 
   /// Handle `DELETE` request to [route] using [handler].
-  void delete(String route, Function handler) => add('DELETE', route, handler);
+  void delete(String route, Function handler, {Middleware? middleware}) =>
+      add('DELETE', route, handler, middleware: middleware);
 
   /// Handle `CONNECT` request to [route] using [handler].
-  void connect(String route, Function handler) =>
-      add('CONNECT', route, handler);
+  void connect(String route, Function handler, {Middleware? middleware}) =>
+      add('CONNECT', route, handler, middleware: middleware);
 
   /// Handle `OPTIONS` request to [route] using [handler].
-  void options(String route, Function handler) =>
-      add('OPTIONS', route, handler);
+  void options(String route, Function handler, {Middleware? middleware}) =>
+      add('OPTIONS', route, handler, middleware: middleware);
 
   /// Handle `TRACE` request to [route] using [handler].
-  void trace(String route, Function handler) => add('TRACE', route, handler);
+  void trace(String route, Function handler, {Middleware? middleware}) =>
+      add('TRACE', route, handler, middleware: middleware);
 
   /// Handle `PATCH` request to [route] using [handler].
-  void patch(String route, Function handler) => add('PATCH', route, handler);
+  void patch(String route, Function handler, {Middleware? middleware}) =>
+      add('PATCH', route, handler, middleware: middleware);
 
   static Response _defaultNotFound(Request request) => routeNotFound;
 

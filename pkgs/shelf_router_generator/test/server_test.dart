@@ -24,8 +24,8 @@ void main() {
 
   void testGet({required String path, required String result}) =>
       test('GET $path', () async {
-        final result = await http.get(server.uri.resolve(path));
-        expect(result, equals(result));
+        final response = await http.get(server.uri.resolve(path));
+        expect(response.body, equals(result));
       });
 
   // Test simple handlers
@@ -50,4 +50,8 @@ void main() {
   testGet(path: '/api/', result: 'nothing-here');
   testGet(path: '/api/time/', result: 'nothing-here'); // notice the extra slash
   testGet(path: '/api/tim', result: 'nothing-here');
+
+  // Test dot-notation access
+  testGet(path: '/dot/user/jonasfj', result: 'User jonasfj');
+  testGet(path: '/dot/post/42/comment/123', result: 'Post 42, Comment 123');
 }

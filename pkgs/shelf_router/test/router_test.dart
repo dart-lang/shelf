@@ -75,18 +75,10 @@ void main() {
   test('params', () async {
     var app = Router();
 
-    test('params by arguments (deprecated, now uses Request.params)', () async {
-      var app = Router();
-
-      app.get(r'/user/:user/groups/:group', (Request request) {
-        final user = request.params['user'];
-        final group = request.params['group'];
-        return Response.ok('$user / $group');
-      });
-
-      server.mount(app.call);
-
-      expect(await get('/user/jonasfj/groups/42'), 'jonasfj / 42');
+    app.get(r'/user/:user/groups/:group', (Request request) {
+      final user = request.params['user'];
+      final group = request.params['group'];
+      return Response.ok('$user / $group');
     });
 
     server.mount(app.call);

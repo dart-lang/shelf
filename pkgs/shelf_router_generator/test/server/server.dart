@@ -16,15 +16,20 @@ import 'dart:async' show Future;
 import 'dart:io' show HttpServer;
 
 import 'package:shelf/shelf_io.dart' as shelf_io;
+import 'package:shelf_router/shelf_router.dart';
 
 import 'service.dart';
+import 'dot_notation.dart';
 
 class Server {
   final _service = Service();
   late HttpServer _server;
 
   Future<void> start() async {
-    _server = await shelf_io.serve(_service.router.call, 'localhost', 0);
+    final router = Router();
+    router.mount('/', _service.router.call);
+    router.mount('/dot', DotNotationService().router.call);
+    _server = await shelf_io.serve(router.call, 'localhost', 0);
   }
 
   Future<void> stop() => _server.close();

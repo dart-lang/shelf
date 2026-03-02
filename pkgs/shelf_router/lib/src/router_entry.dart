@@ -27,9 +27,6 @@ bool _isNoCapture(String regexp) {
 ///
 /// This class implements the logic for matching the path pattern.
 class RouterEntry {
-  /// Pattern for parsing the route pattern
-  static final RegExp _parser = RegExp(r'([^<]*)(?:<([^>|]+)(?:\|([^>]*))?>)?');
-
   final String verb, route;
   final Function _handler;
   final Middleware _middleware;
@@ -63,17 +60,40 @@ class RouterEntry {
 
     final params = <String>[];
     var pattern = '';
-    for (var m in _parser.allMatches(route)) {
-      pattern += RegExp.escape(m[1]!);
-      if (m[2] != null) {
-        params.add(m[2]!);
-        if (m[3] != null && !_isNoCapture(m[3]!)) {
-          throw ArgumentError.value(
-              route, 'route', 'expression for "${m[2]}" is capturing');
+
+    // Split route by segments to handle both :param and <param>
+    final segments = route.substring(1).split('/');
+    for (var i = 0; i < segments.length; i++) {
+      final segment = segments[i];
+      pattern += '/';
+
+      if (segment.startsWith(':')) {
+        final name = segment.substring(1);
+        params.add(name);
+        pattern += '([^/]+)';
+      } else if (segment.startsWith('<') && segment.endsWith('>')) {
+        final inner = segment.substring(1, segment.length - 1);
+        final parts = inner.split('|');
+        final name = parts[0];
+        final expr = parts.length > 1 ? parts[1] : '[^/]+';
+
+        if (expr.contains('|[^]*')) {
+          // catch-all special case
+          params.add(name);
+          pattern += '(.*)';
+        } else {
+          if (!_isNoCapture(expr)) {
+            throw ArgumentError.value(
+                route, 'route', 'expression for "$name" is capturing');
+          }
+          params.add(name);
+          pattern += '($expr)';
         }
-        pattern += '(${m[3] ?? r'[^/]+'})';
+      } else {
+        pattern += RegExp.escape(segment);
       }
     }
+
     final routePattern = RegExp('^$pattern\$');
 
     return RouterEntry._(

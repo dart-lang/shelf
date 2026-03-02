@@ -165,13 +165,99 @@ class ShelfRouterGenerator extends g.Generator {
     }
 
     // Build library and emit code with all generate methods.
-    final methods = classes.entries.map(
-      (e) => _buildRouterMethod(classElement: e.key, handlers: e.value),
-    );
-    return code.Library(
-      (b) => b.body.addAll(methods),
-    ).accept(code.DartEmitter()).toString();
+    final librarySpec = code.Library((lb) {
+      for (final entry in classes.entries) {
+        final cls = entry.key;
+        final handlers = entry.value;
+
+        lb.body.add(_buildRouterMethod(classElement: cls, handlers: handlers));
+
+        // Generate Params classes and extensions for each handler
+        for (final h in handlers) {
+          if (h.verb.toLowerCase() == r'$mount') continue;
+
+          final params = RouterEntry(h.verb, h.route, () => null).params;
+          if (params.isEmpty) continue;
+
+          final handlerName = h.element.name!;
+          final paramsClassName =
+              '_\$${cls.name}${handlerName.capitalize()}Params';
+
+          // Generate Params class
+          lb.body.add(
+            code.Class(
+              (cb) => cb
+                ..name = paramsClassName
+                ..fields.add(
+                  code.Field(
+                    (fb) => fb
+                      ..name = '_params'
+                      ..type = code.refer('Map<String, String>')
+                      ..modifier = code.FieldModifier.final$,
+                  ),
+                )
+                ..constructors.add(
+                  code.Constructor(
+                    (conb) => conb
+                      ..requiredParameters.add(
+                        code.Parameter(
+                          (pb) => pb
+                            ..name = '_params'
+                            ..toThis = true,
+                        ),
+                      ),
+                  ),
+                )
+                ..methods.addAll(
+                  params.map(
+                    (p) => code.Method(
+                      (mb) => mb
+                        ..name = p
+                        ..type = code.MethodType.getter
+                        ..returns = code.refer('String')
+                        ..body = code
+                            .refer('_params')
+                            .index(code.literalString(p))
+                            .nullChecked
+                            .code,
+                    ),
+                  ),
+                ),
+            ),
+          );
+
+          // Generate Extension on Request
+          lb.body.add(
+            code.Extension(
+              (eb) => eb
+                ..name = '_\$${cls.name}${handlerName.capitalize()}Request'
+                ..on = code.refer('Request', 'package:shelf/shelf.dart')
+                ..methods.add(
+                  code.Method(
+                    (mb) => mb
+                      ..name = '${handlerName.uncapitalize()}Params'
+                      ..type = code.MethodType.getter
+                      ..returns = code.refer(paramsClassName)
+                      ..body = code.refer(paramsClassName).newInstance([
+                        code.refer('this').property('params'),
+                      ]).code,
+                  ),
+                ),
+            ),
+          );
+        }
+      }
+    });
+
+    return librarySpec.accept(code.DartEmitter()).toString();
   }
+}
+
+extension on String {
+  String capitalize() =>
+      isEmpty ? this : (this[0].toUpperCase() + substring(1));
+  String uncapitalize() =>
+      isEmpty ? this : (this[0].toLowerCase() + substring(1));
 }
 
 /// Type checks for the case where [shelf_router.Route] is used to annotate
@@ -250,8 +336,9 @@ void _typeCheckHandler(_Handler h) {
     if (h.element.formalParameters.length != params.length + 1) {
       throw g.InvalidGenerationSourceError(
         'The shelf_router.Route annotation can only be used on shelf '
-        'request handlers accept a shelf.Request parameter and/or a '
-        'shelf.Request parameter and all string parameters in the route',
+        'request handlers accept a shelf.Request parameter and all string '
+        'parameters in the route (or just a shelf.Request parameter if using '
+        'the generated Params object)',
         element: h.element,
       );
     }
