@@ -40,25 +40,23 @@ void main() {
 
   Future<String> get(String path) =>
       http.read(Uri.parse(server.url.toString() + path));
-  Future<int> head(String path) async =>
-      (await http.head(Uri.parse(server.url.toString() + path))).statusCode;
 
   test('get sync/async handler', () async {
     var app = Router();
 
     app.get('/sync-hello', (Request request) {
-      return Response.ok('hello-world');
+      return Response.ok('hello-world', headers: {'X-Handler': 'sync'});
     });
 
     app.get('/async-hello', (Request request) async {
       return Future.microtask(() {
-        return Response.ok('hello-world');
+        return Response.ok('hello-world', headers: {'X-Handler': 'async'});
       });
     });
 
     // check that catch-alls work
     app.all('/<path|[^]*>', (Request request) {
-      return Response.ok('not-found');
+      return Response.ok('not-found', headers: {'X-Handler': 'catch-all'});
     });
 
     server.mount(app.call);
@@ -67,9 +65,13 @@ void main() {
     expect(await get('/async-hello'), 'hello-world');
     expect(await get('/wrong-path'), 'not-found');
 
-    expect(await head('/sync-hello'), 200);
-    expect(await head('/async-hello'), 200);
-    expect(await head('/wrong-path'), 200);
+    Future<http.Response> headResponse(String path) =>
+        http.head(Uri.parse(server.url.toString() + path));
+
+    expect((await headResponse('/sync-hello')).headers['x-handler'], 'sync');
+    expect((await headResponse('/async-hello')).headers['x-handler'], 'async');
+    expect(
+        (await headResponse('/wrong-path')).headers['x-handler'], 'catch-all');
   });
 
   test('params', () async {
