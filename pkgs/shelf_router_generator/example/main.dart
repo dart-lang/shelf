@@ -27,6 +27,7 @@ class Service {
   // But either all URL-parameters or none of the URL parameters must be taken
   // as parameters by the handler.
   @Route.get('/say-hi/<name>')
+  @Use(validateParams({'name': Rule.string(min: 5, max: 10)}))
   Response _hi(Request request, String name) => Response.ok('hi $name');
 
   // Embedded URL parameters may also be associated with a regular-expression

@@ -17,14 +17,14 @@ Router _$ServiceRouter(Service service) {
     'GET',
     r'/user/:id',
     service._getUser,
-    middleware: validateParams({'id': Number()}),
+    middleware: validateParams({'id': Rule.number()}),
   );
   router.add(
     'GET',
     r'/middleware-test',
     service._middlewareTest,
-    middleware: (h) => validateParams({'test': Number()})(
-      validateParams({'foo': Number()})(h),
+    middleware: (h) => validateParams({'test': Rule.number()})(
+      validateParams({'foo': Rule.number()})(h),
     ),
   );
   router.mount(r'/api/', service._api.call);

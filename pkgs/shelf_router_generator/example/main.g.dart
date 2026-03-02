@@ -8,7 +8,12 @@ part of 'main.dart';
 
 Router _$ServiceRouter(Service service) {
   final router = Router();
-  router.add('GET', r'/say-hi/<name>', service._hi);
+  router.add(
+    'GET',
+    r'/say-hi/<name>',
+    service._hi,
+    middleware: validateParams({'name': Rule.string(min: 500, max: 10)}),
+  );
   router.add('GET', r'/user/<userId|[0-9]+>', service._user);
   router.add('GET', r'/wave', service._wave);
   router.mount(r'/api', service._api.call);
