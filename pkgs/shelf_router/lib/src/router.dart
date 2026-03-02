@@ -201,6 +201,18 @@ class Router {
     for (final match in matches) {
       final verbHandler = match.handlerInfo;
 
+      // Track hops in context
+      var hops = match.hops;
+      final existingHops = request.context['shelf_router.hops'];
+      if (existingHops is int) {
+        hops += existingHops;
+      }
+
+      final context = {
+        ...request.context,
+        'shelf_router.hops': hops,
+      };
+
       // We still need to call invoke similarly to how RouterEntry did to support dynamic args
       // We will create a fake RouterEntry for backward compatibility of the invoke method for now
       // This allows us to keep the dynamic apply logic isolated
@@ -209,9 +221,18 @@ class Router {
           request.method.toUpperCase(), verbHandler.route, verbHandler.handler,
           middleware: verbHandler.middleware);
 
-      final response = await fakeEntry.invoke(request, match.params);
+      var response = await fakeEntry.invoke(
+          request.change(context: context), match.params);
 
       if (response != routeNotFound) {
+        // Add hops to response context so middlewares can log it
+        var responseHops = hops;
+        final existingResponseHops = response.context['shelf_router.hops'];
+        if (existingResponseHops is int) {
+          responseHops += existingResponseHops;
+        }
+        response =
+            response.change(context: {'shelf_router.hops': responseHops});
         return response;
       }
     }

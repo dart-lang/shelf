@@ -69,8 +69,6 @@ class Api {
   @Route.all('/:*ignored')
   Response _notFound(Request request) => Response.notFound('null');
 
-  // The generated function _$ApiRouter can be used to expose a [Router] for
-  // this object.
   Router get router => _$ApiRouter(this);
 }
 
@@ -78,9 +76,14 @@ class Api {
 void main() async {
   final router = Service().router;
 
+  final pipeline = const Pipeline()
+      .addMiddleware(logRequests())
+      .addMiddleware(logHops())
+      .addHandler(router.call);
+
   print('Route Tree Visualization:');
   router.printRoutes();
 
-  final server = await shelf_io.serve(router.call, 'localhost', 8081);
+  final server = await shelf_io.serve(pipeline, 'localhost', 8083);
   print('\nServer running on localhost:${server.port}');
 }

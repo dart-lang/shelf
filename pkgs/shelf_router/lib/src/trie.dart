@@ -215,16 +215,16 @@ class TrieRouter {
     }
 
     final segments = cleanPath.split('/').map(Uri.decodeComponent).toList();
-    return _walk(root, segments, 0, {}, method);
+    return _walk(root, segments, 0, {}, method, 0);
   }
 
   Iterable<MatchResult> _walk(TrieNode node, List<String> segments,
-      int segmentIndex, Map<String, String> params, String method) sync* {
+      int segmentIndex, Map<String, String> params, String method, int hops) sync* {
     // If we reached the end of the path...
     if (segmentIndex >= segments.length) {
       final handlerInfo = node.verbHandlers[method] ?? node.verbHandlers['ALL'];
       if (handlerInfo != null) {
-        yield MatchResult(handlerInfo, Map.of(params));
+        yield MatchResult(handlerInfo, Map.of(params), hops);
       }
 
       // Smart Matching: if current path doesn't have a trailing slash,
@@ -233,7 +233,7 @@ class TrieRouter {
       if (slashNode != null) {
         final h =
             slashNode.verbHandlers[method] ?? slashNode.verbHandlers['ALL'];
-        if (h != null) yield MatchResult(h, Map.of(params));
+        if (h != null) yield MatchResult(h, Map.of(params), hops + 1);
       }
 
       // If it's a catch-all param that's empty
@@ -244,7 +244,7 @@ class TrieRouter {
         final handlerInfo = node.paramChild!.verbHandlers[method] ??
             node.paramChild!.verbHandlers['ALL'];
         if (handlerInfo != null) {
-          yield MatchResult(handlerInfo, Map.of(params));
+          yield MatchResult(handlerInfo, Map.of(params), hops + 1);
         }
         params.remove(paramName);
       }
@@ -261,14 +261,15 @@ class TrieRouter {
         !node.staticChildren.containsKey('')) {
       final handlerInfo = node.verbHandlers[method] ?? node.verbHandlers['ALL'];
       if (handlerInfo != null) {
-        yield MatchResult(handlerInfo, Map.of(params));
+        yield MatchResult(handlerInfo, Map.of(params), hops);
       }
     }
 
     // Priority 1: Exact static match
     final staticChild = node.staticChildren[segment];
     if (staticChild != null) {
-      yield* _walk(staticChild, segments, segmentIndex + 1, params, method);
+      yield* _walk(staticChild, segments, segmentIndex + 1, params, method,
+          hops + 1);
     }
 
     // Priority 2: Param match
@@ -282,13 +283,13 @@ class TrieRouter {
         final handlerInfo = node.paramChild!.verbHandlers[method] ??
             node.paramChild!.verbHandlers['ALL'];
         if (handlerInfo != null) {
-          yield MatchResult(handlerInfo, Map.of(params));
+          yield MatchResult(handlerInfo, Map.of(params), hops + 1);
         }
         params.remove(realName);
       } else {
         params[paramName] = segment;
-        yield* _walk(
-            node.paramChild!, segments, segmentIndex + 1, params, method);
+        yield* _walk(node.paramChild!, segments, segmentIndex + 1, params,
+            method, hops + 1);
         params.remove(paramName);
       }
     }
@@ -299,7 +300,7 @@ class TrieRouter {
     if (fallbackHandler != null &&
         (fallbackHandler.route.endsWith('/') ||
             fallbackHandler.route.endsWith('[^]*>'))) {
-      yield MatchResult(fallbackHandler, Map.of(params));
+      yield MatchResult(fallbackHandler, Map.of(params), hops);
     }
   }
 }
@@ -307,6 +308,7 @@ class TrieRouter {
 class MatchResult {
   final VerbHandler handlerInfo;
   final Map<String, String> params;
+  final int hops;
 
-  MatchResult(this.handlerInfo, this.params);
+  MatchResult(this.handlerInfo, this.params, this.hops);
 }

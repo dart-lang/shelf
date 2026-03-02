@@ -82,3 +82,4 @@ export 'package:shelf_router/src/route.dart';
 export 'package:shelf_router/src/router.dart';
 export 'package:shelf_router/src/params.dart';
 export 'package:shelf_router/src/middleware/validate.dart';
+export 'package:shelf_router/src/middleware/hops.dart';

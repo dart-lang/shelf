@@ -227,4 +227,31 @@ void main() {
     expect(await get('/no-slash/'), 'no-slash');
     expect(await get('/with-slash'), 'with-slash');
   });
+
+  test('hop tracking', () async {
+    var api = Router();
+    api.get('/info', (Request request) {
+      final hops = request.context['shelf_router.hops'] as int;
+      return Response.ok('api-hops:$hops');
+    });
+
+    var app = Router();
+    app.get('/hello', (Request request) {
+      final hops = request.context['shelf_router.hops'] as int;
+      return Response.ok('hello-hops:$hops');
+    });
+    app.mount('/api/', api.call);
+
+    server.mount(app.call);
+
+    // /hello is 1 segment after / -> 1 hop
+    expect(await get('/hello'), 'hello-hops:1');
+
+    // /api/info
+    // /api is 1 hop in 'app'
+    // /:*path is 1 hop in 'app' (implementation of mount)
+    // /info is 1 hop in 'api'
+    // Total should be 3
+    expect(await get('/api/info'), 'api-hops:3');
+  });
 }
