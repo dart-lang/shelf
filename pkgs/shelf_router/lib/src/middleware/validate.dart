@@ -16,15 +16,27 @@ class validateParams {
 
   Handler call(Handler innerHandler) {
     return (Request request) async {
-      final params =
+      final pathParams =
           (request.context['shelf_router/params'] as Map<String, String>?) ??
               {};
+      final queryParams = request.url.queryParameters;
       final errors = <String, String>{};
 
       for (final entry in rules.entries) {
         final paramName = entry.key;
         final rule = entry.value;
-        final value = params[paramName];
+
+        // Path parameters are always required.
+        // Query parameters are optional and only validated if present.
+        final isPathParam = pathParams.containsKey(paramName);
+        final value = pathParams[paramName] ?? queryParams[paramName];
+
+        if (isPathParam) {
+          if (value == null || value.isEmpty) {
+            errors[paramName] = 'is required';
+            continue;
+          }
+        }
 
         final error = rule.validate(value);
         if (error != null) {

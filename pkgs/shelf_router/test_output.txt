@@ -1,0 +1,63 @@
+00:00 +0: loading test/route_entry_test.dart
+00:00 +0: test/validation_test.dart: Required rule
+00:00 +1: test/validation_test.dart: Required rule
+00:00 +2: test/route_entry_test.dart: RouterEntry: "/hello" Matches "/hello"
+00:00 +3: test/route_entry_test.dart: RouterEntry: "/hello" Matches "/hello"
+00:00 +4: test/route_entry_test.dart: RouterEntry: "/hello" Matches "/hello"
+00:00 +5: test/validation_test.dart: Number rule
+00:00 +6: test/validation_test.dart: Number rule
+00:00 +7: test/validation_test.dart: Number rule
+00:00 +8: test/route_entry_test.dart: RouterEntry: "/hello" NotMatch "/not-hello"
+00:00 +9: test/rule_test.dart: Rule Constraints Rule.number throws if min > max
+00:00 +10: test/validation_test.dart: Regex rule
+00:00 +11: test/validation_test.dart: Regex rule
+00:00 +12: test/validation_test.dart: Regex rule
+00:00 +13: test/route_entry_test.dart: RouterEntry: "/user/<user>/groups/<group|\d+>" Matches "/user/jonasfj/groups/42"
+00:00 +14: test/rule_test.dart: Rule Validation Logic Rule.string length constraints
+00:00 +15: test/validation_test.dart: Validation middleware success
+00:00 +16: test/validation_test.dart: Validation middleware success
+00:00 +17: test/validation_test.dart: Validation middleware success
+00:00 +18: test/validation_test.dart: Validation middleware success
+00:00 +19: test/validation_test.dart: Validation middleware success
+00:00 +20: test/validation_test.dart: Validation middleware success
+00:00 +21: test/validation_test.dart: Validation middleware success
+00:00 +22: test/validation_test.dart: Validation middleware success
+00:00 +23: test/validation_test.dart: Validation middleware success
+00:00 +24: test/validation_test.dart: Validation middleware success
+00:00 +25: test/validation_test.dart: Validation middleware success
+00:00 +26: test/validation_test.dart: Validation middleware success
+00:00 +27: test/validation_test.dart: Validation middleware success
+00:00 +28: test/router_test.dart: get sync/async handler
+00:00 +29: test/router_test.dart: get sync/async handler
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/<path|[^]*>" is deprecated. Use ":path" instead.
+00:00 +29 -1: test/router_test.dart: get sync/async handler
+00:00 +29 -1: test/validation_test.dart: Validation middleware multiple rules [E]
+  Expected: <400>
+    Actual: <200>
+  
+  package:matcher                 expect
+  test/validation_test.dart 69:5  main.<fn>
+  
+00:00 +30 -1: test/router_test.dart: params
+00:00 +31 -1: test/router_test.dart: mount(Router)
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/api/<path|[^]*>" is deprecated. Use ":path" instead.
+Warning: The <param> syntax in "/<*>" is deprecated. Use ":*" instead.
+00:00 +32 -1: test/router_test.dart: mount(Handler) with middleware
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/api/<path|[^]*>" is deprecated. Use ":path" instead.
+00:00 +33 -1: test/router_test.dart: mount(Router) without leading slash
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/api/<path|[^]*>" is deprecated. Use ":path" instead.
+00:00 +34 -1: test/router_test.dart: mount(Router) does not require a trailing slash
+Warning: Regex in "<path|[^]*>" is no longer supported and will be ignored for performance.
+Warning: The <param> syntax in "/api/<path|[^]*>" is deprecated. Use ":path" instead.
+Warning: The <param> syntax in "/<*>" is deprecated. Use ":*" instead.
+00:00 +35 -1: test/router_test.dart: responds with 404 if no handler matches
+00:00 +36 -1: test/router_test.dart: can invoke custom handler if no route matches
+00:00 +37 -1: test/router_test.dart: can call Router.routeNotFound.read multiple times
+00:00 +38 -1: Some tests failed.
+
+Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
+For example, 'dart test --chain-stack-traces'.
