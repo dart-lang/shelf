@@ -210,4 +210,21 @@ void main() {
     final b2 = await Router.routeNotFound.readAsString();
     expect(b2, b1);
   });
+
+  test('smart trailing slash matching', () async {
+    var app = Router();
+
+    app.get('/no-slash', (Request request) => Response.ok('no-slash'));
+    app.get('/with-slash/', (Request request) => Response.ok('with-slash'));
+
+    server.mount(app.call);
+
+    // Exact matches
+    expect(await get('/no-slash'), 'no-slash');
+    expect(await get('/with-slash/'), 'with-slash');
+
+    // Smart matches (flexible trailing slash)
+    expect(await get('/no-slash/'), 'no-slash');
+    expect(await get('/with-slash'), 'with-slash');
+  });
 }

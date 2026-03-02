@@ -55,7 +55,7 @@ class Service {
 
   // The generated function _$ServiceRouter can be used to get a [Handler]
   // for this object. This can be used with [shelf_io.serve].
-  Handler get handler => _$ServiceRouter(this).call;
+  Router get router => _$ServiceRouter(this);
 }
 
 class Api {
@@ -76,7 +76,11 @@ class Api {
 
 // Run shelf server and host a [Service] instance on port 8080.
 void main() async {
-  final service = Service();
-  final server = await shelf_io.serve(service.handler, 'localhost', 8080);
-  print('Server running on localhost:${server.port}');
+  final router = Service().router;
+
+  print('Route Tree Visualization:');
+  router.printRoutes();
+
+  final server = await shelf_io.serve(router.call, 'localhost', 8081);
+  print('\nServer running on localhost:${server.port}');
 }

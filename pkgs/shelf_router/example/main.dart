@@ -28,13 +28,13 @@ class Service {
     // '<route>' may embed URL-parameters, and these may be taken as parameters
     // by the handler (but either all URL parameters or no URL parameters, must
     // be taken parameters by the handler).
-    router.get('/say-hi/<name>', (Request request, String name) {
+    router.get('/say-hi/:name', (Request request, String name) {
       return Response.ok('hi $name');
     });
 
     // Embedded URL parameters may also be associated with a regular-expression
     // that the pattern must match.
-    router.get('/user/<userId|[0-9]+>', (Request request, String userId) {
+    router.get('/user/:userId', (Request request, String userId) {
       return Response.ok('User has the user-number: $userId');
     });
 
@@ -44,14 +44,19 @@ class Service {
       return Response.ok('_o/');
     });
 
-    // Other routers can be mounted...
-    router.mount('/api/', Api().router.call);
+    // Other routers can be mounted. Pass the Router instance directly
+    // to enable recursive tree visualization.
+    router.mount('/api/', Api().router);
 
     // You can catch all verbs and use a URL-parameter with a regular expression
     // that matches everything to catch app.
-    router.all('/<ignored|.*>', (Request request) {
+    router.all('/:*ignored', (Request request) {
       return Response.notFound('Page not found');
     });
+
+    // Print the route tree to verify implementation
+    print('Route Tree Visualization:');
+    router.printRoutes();
 
     // Set up your Pipeline with any middleware you want to use and set the
     // router as the handler.
@@ -76,7 +81,7 @@ class Api {
 
     // This nested catch-all, will only catch /api/.* when mounted above.
     // Notice that ordering if annotated handlers and mounts is significant.
-    router.all('/<ignored|.*>', (Request request) => Response.notFound('null'));
+    router.all('/:*ignored', (Request request) => Response.notFound('null'));
 
     return router;
   }

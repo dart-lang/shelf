@@ -27,7 +27,7 @@ Router _$ServiceRouter(Service service) {
       validateParams({'foo': Rule.number()})(h),
     ),
   );
-  router.mount(r'/api/', service._api.call);
+  router.mount(r'/api/', service._api);
   router.all(r'/:*_', service._index);
   return router;
 }

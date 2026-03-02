@@ -21,7 +21,7 @@ Router _$ServiceRouter(Service service) {
     middleware: validateParams({'userId': Rule.number()}),
   );
   router.add('GET', r'/wave', service._wave);
-  router.mount(r'/api', service._api.call);
+  router.mount(r'/api', service._api);
   router.all(r'/:*ignored', service._notFound);
   return router;
 }

@@ -92,9 +92,7 @@ code.Code _buildAddHandlerCode({
   required code.Reference service,
   required _Handler handler,
 }) {
-  final handlerRef = handler.verb == r'$mount'
-      ? service.property(handler.element.name!).property('call')
-      : service.property(handler.element.name!);
+  final handlerRef = service.property(handler.element.name!);
 
   if (handler.verb == r'$mount') {
     return router.property('mount').call([

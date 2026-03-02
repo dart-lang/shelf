@@ -23,8 +23,10 @@ class VerbHandler {
   final Function handler;
   final Middleware? middleware;
   final String route; // Original route pattern for debugging
+  /// Callback to dump the tree of a child router, if this handler represents a mount.
+  final String Function(String indent)? childDump;
 
-  VerbHandler(this.handler, this.middleware, this.route);
+  VerbHandler(this.handler, this.middleware, this.route, {this.childDump});
 }
 
 class TrieRouter {
@@ -34,8 +36,9 @@ class TrieRouter {
     String verb,
     String route,
     Function handler,
-    Middleware? middleware,
-  ) {
+    Middleware? middleware, {
+    String Function(String indent)? childDump,
+  }) {
     var currentNode = root;
     // Strip leading slash, keep trailing
     var cleanRoute = route;
@@ -98,7 +101,110 @@ class TrieRouter {
     }
 
     // Register handler at the leaf
-    currentNode.verbHandlers[verb] = VerbHandler(handler, middleware, route);
+    currentNode.verbHandlers[verb] =
+        VerbHandler(handler, middleware, route, childDump: childDump);
+  }
+
+  /// Returns a tree-like string representation of the route trie.
+  String inspectTree({String indent = ''}) {
+    final sb = StringBuffer();
+    if (indent.isEmpty) sb.write('.\n');
+    _dump(root, sb, indent);
+    return sb.toString().trimRight();
+  }
+
+  void _dump(TrieNode node, StringBuffer sb, String indent) {
+    bool hasChildDump =
+        node.verbHandlers.values.any((h) => h.childDump != null);
+
+    final staticEntries = node.staticChildren.entries.toList();
+    final hasParam = node.paramChild != null;
+
+    final List<MapEntry<String, TrieNode>> filteredStatic = [];
+    if (!hasChildDump) {
+      for (final entry in staticEntries) {
+        if (entry.key.isNotEmpty) {
+          filteredStatic.addAll([entry]);
+        }
+      }
+    }
+
+    final showParam = hasParam && !hasChildDump;
+    final total = filteredStatic.length + (showParam ? 1 : 0);
+
+    for (var i = 0; i < total; i++) {
+      final isLast = i == total - 1;
+      final connector = isLast ? '└── ' : '├── ';
+      final nextIndent = indent + (isLast ? '    ' : '│   ');
+
+      if (i < filteredStatic.length) {
+        final entry = filteredStatic[i];
+        var label = entry.key;
+
+        // Merging trailing slash?
+        final slashChild = entry.value.staticChildren[''];
+        bool canMerge = slashChild != null &&
+            slashChild.staticChildren.isEmpty &&
+            slashChild.paramChild == null;
+
+        if (canMerge) {
+          label = '$label [/]';
+        }
+
+        sb.write('$indent$connector$label');
+        _appendHandlers(entry.value, sb, nextIndent,
+            slashNode: canMerge ? slashChild : null);
+        sb.writeln();
+
+        // If we merged, we skip the staticChild[''] in recursive dump
+        if (canMerge) {
+          // We'll create a proxy node to avoid dumping the slashChild again
+          final proxy = TrieNode();
+          entry.value.staticChildren.forEach((k, v) {
+            if (k.isNotEmpty) proxy.staticChildren[k] = v;
+          });
+          proxy.paramChild = entry.value.paramChild;
+          _dump(proxy, sb, nextIndent);
+        } else {
+          _dump(entry.value, sb, nextIndent);
+        }
+      } else {
+        final paramNode = node.paramChild!;
+        final name =
+            paramNode.paramName != null && paramNode.paramName!.startsWith('*')
+                ? ':*${paramNode.paramName!.substring(1)}'
+                : ':${paramNode.paramName}';
+        sb.write('$indent$connector$name');
+        _appendHandlers(paramNode, sb, nextIndent);
+        sb.writeln();
+        _dump(paramNode, sb, nextIndent);
+      }
+    }
+  }
+
+  void _appendHandlers(TrieNode node, StringBuffer sb, String indent,
+      {TrieNode? slashNode}) {
+    final Map<String, VerbHandler> merged = Map.from(node.verbHandlers);
+    if (slashNode != null) {
+      slashNode.verbHandlers.forEach((verb, handler) {
+        merged.putIfAbsent(verb, () => handler);
+      });
+    }
+
+    if (merged.isNotEmpty) {
+      final verbs = merged.keys.join(', ');
+      sb.write(' ($verbs)');
+
+      for (final handler in merged.values) {
+        if (handler.childDump != null) {
+          final child = handler.childDump!(indent);
+          if (child.isNotEmpty) {
+            sb.write('\n${child.trimRight()}');
+          }
+          break;
+        }
+      }
+    }
   }
 
   /// Finds all matching routes, yields them in order of priority (specificity).
@@ -121,6 +227,15 @@ class TrieRouter {
         yield MatchResult(handlerInfo, Map.of(params));
       }
 
+      // Smart Matching: if current path doesn't have a trailing slash,
+      // but a trailing slash route exists, match it.
+      final slashNode = node.staticChildren[''];
+      if (slashNode != null) {
+        final h =
+            slashNode.verbHandlers[method] ?? slashNode.verbHandlers['ALL'];
+        if (h != null) yield MatchResult(h, Map.of(params));
+      }
+
       // If it's a catch-all param that's empty
       if (node.paramChild != null &&
           node.paramChild!.paramName!.startsWith('*')) {
@@ -137,6 +252,18 @@ class TrieRouter {
     }
 
     final segment = segments[segmentIndex];
+
+    // Simple Trailing Slash Handling: if we are at the last segment and it's empty
+    // (meaning URL ends in /), but the current node has handlers, match them.
+    // We only do this if there isn't an explicit static child '' to avoid duplicates.
+    if (segmentIndex == segments.length - 1 &&
+        segment.isEmpty &&
+        !node.staticChildren.containsKey('')) {
+      final handlerInfo = node.verbHandlers[method] ?? node.verbHandlers['ALL'];
+      if (handlerInfo != null) {
+        yield MatchResult(handlerInfo, Map.of(params));
+      }
+    }
 
     // Priority 1: Exact static match
     final staticChild = node.staticChildren[segment];

@@ -129,7 +129,7 @@ class Router {
   /// `HEAD` is always wrong. To explicitely implement a `HEAD` handler it must
   /// be registered before the `GET` handler.
   void add(String verb, String route, Function handler,
-      {Middleware? middleware}) {
+      {Middleware? middleware, String Function(String indent)? childDump}) {
     if (!isHttpMethod(verb)) {
       throw ArgumentError.value(verb, 'verb', 'expected a valid HTTP method');
     }
@@ -141,36 +141,52 @@ class Router {
       final headMiddleware = middleware == null
           ? _removeBody
           : (Handler h) => _removeBody(middleware(h));
-      _trie.addRoute('HEAD', route, handler, headMiddleware);
+      _trie.addRoute('HEAD', route, handler, headMiddleware,
+          childDump: childDump);
     }
-    _trie.addRoute(verb, route, handler, middleware);
+    _trie.addRoute(verb, route, handler, middleware, childDump: childDump);
   }
 
   /// Handle all request to [route] using [handler].
-  void all(String route, Function handler, {Middleware? middleware}) {
-    _trie.addRoute('ALL', route, handler, middleware);
+  void all(String route, Function handler,
+      {Middleware? middleware, String Function(String indent)? childDump}) {
+    _trie.addRoute('ALL', route, handler, middleware, childDump: childDump);
   }
 
   /// Mount a handler below a prefix.
   ///
   /// In this case prefix may not contain any parameters, nor
-  void mount(String prefix, Handler handler) {
+  void mount(String prefix, Object handler) {
     if (!prefix.startsWith('/')) {
       prefix = '/$prefix';
+    }
+
+    // If the handler is a Router, we can provide a childDump for visualization.
+    String Function(String)? childDump;
+    late Handler finalHandler;
+
+    if (handler is Router) {
+      childDump = (indent) => handler.dumpTreeInternal(indent);
+      finalHandler = handler.call;
+    } else if (handler is Handler) {
+      finalHandler = handler;
+    } else {
+      throw ArgumentError.value(
+          handler, 'handler', 'Expected a Handler or Router');
     }
 
     // first slash is always in request.handlerPath
     final path = prefix.substring(1);
     if (prefix.endsWith('/')) {
       all('$prefix:*path', (Request request) {
-        return handler(request.change(path: path));
-      });
+        return finalHandler(request.change(path: path));
+      }, childDump: childDump);
     } else {
       all(prefix, (Request request) {
-        return handler(request.change(path: path));
-      });
+        return finalHandler(request.change(path: path));
+      }, childDump: childDump);
       all('$prefix/:*path', (Request request) {
-        return handler(request.change(path: '$path/'));
+        return finalHandler(request.change(path: '$path/'));
       });
     }
   }
@@ -297,6 +313,15 @@ class Router {
   ///   return Response.notFound('nothing found');
   /// });
   /// ```
+  ///
+  /// Returns a tree-like string representation of the routes.
+  String inspectTree() => dumpTreeInternal('');
+
+  String dumpTreeInternal(String indent) => _trie.inspectTree(indent: indent);
+
+  /// Prints the route tree to the console.
+  void printRoutes() => print(inspectTree());
+
   static final Response routeNotFound = _RouteNotFoundResponse();
 }
 
