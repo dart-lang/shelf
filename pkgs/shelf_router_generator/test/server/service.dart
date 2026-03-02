@@ -14,7 +14,7 @@
 
 import 'dart:async' show Future, FutureOr;
 
-import 'package:shelf/shelf.dart';
+import 'package:shelf/shelf.dart' hide Middleware;
 import 'package:shelf_router/shelf_router.dart';
 
 import 'api.dart';
@@ -42,6 +42,16 @@ class Service {
     final name = request.params['user'];
     return Response.ok('hi $name');
   }
+
+  @Route.get('/user/:id')
+  @Use(validateParams({'id': Number()}))
+  Response _getUser(Request request) =>
+      Response.ok('User ${request.params['id']}');
+
+  @Route.get('/middleware-test')
+  @Use(validateParams({'test': Number()}))
+  @Use(validateParams({'foo': Number()}))
+  Response _middlewareTest(Request request) => Response.ok('OK');
 
   @Route.mount('/api/')
   Router get _api => Api().router;
