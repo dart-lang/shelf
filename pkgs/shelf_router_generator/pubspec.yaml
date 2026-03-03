@@ -22,7 +22,6 @@ dependencies:
   http_methods: ^1.1.0
   shelf: ^1.1.0
   shelf_router:
-    path: ../shelf_router
   source_gen: ^4.0.1
 
 dev_dependencies:
