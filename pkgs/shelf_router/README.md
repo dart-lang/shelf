@@ -33,9 +33,20 @@ router.get('/user/<user>', (Request request, String user) {
 // then add the router as the handler
 final app = const Pipeline()
   .addMiddleware(logRequests())
-  .addHandler(router);
+  .addMiddleware(logHops()) // Log trie hops for each request
+  .addHandler(router.call);
 
 var server = await io.serve(app, 'localhost', 8080);
+```
+
+### Route Hops
+
+The router tracks the number of trie nodes (hops) traversed during route matching. This is useful for debugging and performance monitoring. You can access the hop count from the `Response.context['shelf_router.hops']` or use the included `logHops()` middleware.
+
+```dart
+final app = const Pipeline()
+  .addMiddleware(logHops((message) => print('HOPS: $message')))
+  .addHandler(router.call);
 ```
 
 See reference documentation of `Router` class for more information.

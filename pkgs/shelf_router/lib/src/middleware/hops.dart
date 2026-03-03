@@ -17,13 +17,18 @@ import 'package:shelf/shelf.dart';
 /// Middleware that logs the number of trie nodes (hops) traversed during
 /// route matching.
 ///
-/// This middleware looks for the 'shelf_router.hops' key in the response context.
-Middleware logHops() => (Handler innerHandler) {
+/// This middleware looks for the 'shelf_router.hops' key in the
+/// response context.
+///
+/// An optional [logger] can be provided to handle the log message
+/// (defaults to [print]).
+Middleware logHops([void Function(String) logger = print]) =>
+    (Handler innerHandler) {
       return (Request request) async {
         final response = await innerHandler(request);
         final hops = response.context['shelf_router.hops'];
         if (hops is int) {
-          print('Request to ${request.url.path} took $hops trie hops');
+          logger('Request to ${request.url.path} took $hops trie hops');
         }
         return response;
       };

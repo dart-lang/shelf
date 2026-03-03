@@ -62,6 +62,7 @@ class Service {
     // router as the handler.
     return const Pipeline()
         .addMiddleware(logRequests())
+        .addMiddleware(logHops())
         .addHandler(router.call);
   }
 }
