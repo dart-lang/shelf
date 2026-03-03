@@ -211,7 +211,7 @@ void main() {
     expect(b2, b1);
   });
 
-  test('smart trailing slash matching', () async {
+  test('smart trailing slash matching is strict by default', () async {
     var app = Router();
 
     app.get('/no-slash', (Request request) => Response.ok('no-slash'));
@@ -223,9 +223,15 @@ void main() {
     expect(await get('/no-slash'), 'no-slash');
     expect(await get('/with-slash/'), 'with-slash');
 
-    // Smart matches (flexible trailing slash)
-    expect(await get('/no-slash/'), 'no-slash');
-    expect(await get('/with-slash'), 'with-slash');
+    // Strict matches (no flexible trailing slash)
+    expect(
+        get('/no-slash/'),
+        throwsA(isA<http.ClientException>()
+            .having((e) => e.message, 'message', contains('404'))));
+    expect(
+        get('/with-slash'),
+        throwsA(isA<http.ClientException>()
+            .having((e) => e.message, 'message', contains('404'))));
   });
 
   test('hop tracking', () async {

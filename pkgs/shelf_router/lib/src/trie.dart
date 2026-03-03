@@ -218,22 +218,18 @@ class TrieRouter {
     return _walk(root, segments, 0, {}, method, 0);
   }
 
-  Iterable<MatchResult> _walk(TrieNode node, List<String> segments,
-      int segmentIndex, Map<String, String> params, String method, int hops) sync* {
+  Iterable<MatchResult> _walk(
+      TrieNode node,
+      List<String> segments,
+      int segmentIndex,
+      Map<String, String> params,
+      String method,
+      int hops) sync* {
     // If we reached the end of the path...
     if (segmentIndex >= segments.length) {
       final handlerInfo = node.verbHandlers[method] ?? node.verbHandlers['ALL'];
       if (handlerInfo != null) {
         yield MatchResult(handlerInfo, Map.of(params), hops);
-      }
-
-      // Smart Matching: if current path doesn't have a trailing slash,
-      // but a trailing slash route exists, match it.
-      final slashNode = node.staticChildren[''];
-      if (slashNode != null) {
-        final h =
-            slashNode.verbHandlers[method] ?? slashNode.verbHandlers['ALL'];
-        if (h != null) yield MatchResult(h, Map.of(params), hops + 1);
       }
 
       // If it's a catch-all param that's empty
@@ -253,23 +249,11 @@ class TrieRouter {
 
     final segment = segments[segmentIndex];
 
-    // Simple Trailing Slash Handling: if we are at the last segment and it's empty
-    // (meaning URL ends in /), but the current node has handlers, match them.
-    // We only do this if there isn't an explicit static child '' to avoid duplicates.
-    if (segmentIndex == segments.length - 1 &&
-        segment.isEmpty &&
-        !node.staticChildren.containsKey('')) {
-      final handlerInfo = node.verbHandlers[method] ?? node.verbHandlers['ALL'];
-      if (handlerInfo != null) {
-        yield MatchResult(handlerInfo, Map.of(params), hops);
-      }
-    }
-
     // Priority 1: Exact static match
     final staticChild = node.staticChildren[segment];
     if (staticChild != null) {
-      yield* _walk(staticChild, segments, segmentIndex + 1, params, method,
-          hops + 1);
+      yield* _walk(
+          staticChild, segments, segmentIndex + 1, params, method, hops + 1);
     }
 
     // Priority 2: Param match

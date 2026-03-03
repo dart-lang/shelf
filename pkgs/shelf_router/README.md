@@ -49,6 +49,18 @@ final app = const Pipeline()
   .addHandler(router.call);
 ```
 
+### Trailing Slash Handling
+
+By default, the router is strict and treats `/hello` and `/hello/` as distinct paths. To allow flexible matching where trailing slashes are automatically handled, you can use the `removeTrailingSlash()` middleware.
+
+```dart
+final app = const Pipeline()
+  .addMiddleware(removeTrailingSlash())
+  .addHandler(router.call);
+```
+
+When used at the beginning of your pipeline, it normalizes incoming requests by stripping trailing slashes, ensuring they match routes defined without one.
+
 See reference documentation of `Router` class for more information.
 
 ## See also

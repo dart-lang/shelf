@@ -65,8 +65,28 @@ void main() {
     final request = Request('GET', Uri.parse('http://localhost/hello/alice'));
     await handler(request);
 
-    expect(logs, hasLength(1));
-    // /hello/:name should be 2 hops
     expect(logs.first, contains('Request to hello/alice took 2 trie hops'));
+  });
+
+  test('logHops correctly counts hops in nested routers', () async {
+    final logs = <String>[];
+    void logger(String message) => logs.add(message);
+
+    final child = Router()
+      ..get('/test', (Request request) => Response.ok('ok'));
+    final parent = Router()..mount('/api', child);
+
+    final handler =
+        const Pipeline().addMiddleware(logHops(logger)).addHandler(parent.call);
+
+    final request = Request('GET', Uri.parse('http://localhost/api/test'));
+    await handler(request);
+
+    expect(logs, hasLength(1));
+    // Logical hops:
+    // Parent matches '/api/:*path' -> 2 hops
+    // Child matches '/test'        -> 1 hop
+    // Total should be 3
+    expect(logs.first, contains('Request to api/test took 3 trie hops'));
   });
 }

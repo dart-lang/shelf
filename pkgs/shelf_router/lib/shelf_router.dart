@@ -83,3 +83,4 @@ export 'package:shelf_router/src/router.dart';
 export 'package:shelf_router/src/params.dart';
 export 'package:shelf_router/src/middleware/validate.dart';
 export 'package:shelf_router/src/middleware/hops.dart';
+export 'package:shelf_router/src/middleware/remove_trailing_slash.dart';

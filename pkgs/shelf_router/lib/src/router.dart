@@ -228,8 +228,9 @@ class Router {
         // Add hops to response context so middlewares can log it
         var responseHops = hops;
         final existingResponseHops = response.context['shelf_router.hops'];
-        if (existingResponseHops is int) {
-          responseHops += existingResponseHops;
+        if (existingResponseHops is int &&
+            existingResponseHops > responseHops) {
+          responseHops = existingResponseHops;
         }
         response =
             response.change(context: {'shelf_router.hops': responseHops});

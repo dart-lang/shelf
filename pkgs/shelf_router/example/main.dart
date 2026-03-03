@@ -59,11 +59,13 @@ class Service {
     router.printRoutes();
 
     // Set up your Pipeline with any middleware you want to use and set the
-    // router as the handler.
-    return const Pipeline()
+    // Middleware pipeline with hop logging and trailing slash removal
+    final handler = const Pipeline()
         .addMiddleware(logRequests())
         .addMiddleware(logHops())
+        .addMiddleware(removeTrailingSlash())
         .addHandler(router.call);
+    return handler;
   }
 }
 
