@@ -1,4 +1,4 @@
-// Copyright 2019 Google LLC
+// Copyright 2026 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -160,7 +160,8 @@ class Router {
 
   /// Mount a handler below a prefix.
   ///
-  /// In this case prefix may not contain any parameters, nor
+  /// The [prefix] must start with a slash and must not contain any parameters.
+  /// The [handler] can be a [Handler] or another [Router].
   void mount(String prefix, Object handler) {
     if (!prefix.startsWith('/')) {
       prefix = '/$prefix';
