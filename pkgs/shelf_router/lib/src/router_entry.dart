@@ -34,6 +34,14 @@ class RouterEntry {
   final Function _handler;
   final Middleware _middleware;
 
+  /// If the arguments should be applied or not to the handler function.
+  /// This is useful to have as false when there is
+  /// internal logic that registers routes and the number of expected arguments
+  /// by the user is unknown. i.e: [Router.mount]
+  /// When this is false, this [RouterEntry] is provided as an argument along
+  /// the [Request] so that the caller can read information from the route.
+  final bool _applyParamsOnHandle;
+
   /// Expression that the request path must match.
   ///
   /// This also captures any parameters in the route pattern.
@@ -46,13 +54,14 @@ class RouterEntry {
   List<String> get params => _params.toList(); // exposed for using generator.
 
   RouterEntry._(this.verb, this.route, this._handler, this._middleware,
-      this._routePattern, this._params);
+      this._routePattern, this._params, this._applyParamsOnHandle);
 
   factory RouterEntry(
     String verb,
     String route,
     Function handler, {
     Middleware? middleware,
+    bool applyParamsOnHandle = true,
   }) {
     middleware = middleware ?? ((Handler fn) => fn);
 
@@ -77,7 +86,14 @@ class RouterEntry {
     final routePattern = RegExp('^$pattern\$');
 
     return RouterEntry._(
-        verb, route, handler, middleware, routePattern, params);
+      verb,
+      route,
+      handler,
+      middleware,
+      routePattern,
+      params,
+      applyParamsOnHandle,
+    );
   }
 
   /// Returns a map from parameter name to value, if the path matches the
@@ -102,10 +118,16 @@ class RouterEntry {
     request = request.change(context: {'shelf_router/params': params});
 
     return await _middleware((request) async {
+      if (!_applyParamsOnHandle) {
+        // We handle the request just providing this route
+        return await _handler(request, this) as Response;
+      }
+
       if (_handler is Handler || _params.isEmpty) {
         // ignore: avoid_dynamic_calls
         return await _handler(request) as Response;
       }
+
       return await Function.apply(_handler, [
         request,
         ..._params.map((n) => params[n]),
