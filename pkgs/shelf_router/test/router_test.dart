@@ -38,8 +38,7 @@ void main() {
 
   tearDown(() => server.close());
 
-  Future<String> get(String path) =>
-      http.read(Uri.parse(server.url.toString() + path));
+  Future<String> get(String path) => http.read(server.url.resolve(path));
 
   test('get sync/async handler', () async {
     var app = Router();
@@ -66,7 +65,7 @@ void main() {
     expect(await get('/wrong-path'), 'not-found');
 
     Future<http.Response> headResponse(String path) =>
-        http.head(Uri.parse(server.url.toString() + path));
+        http.head(server.url.resolve(path));
 
     expect((await headResponse('/sync-hello')).headers['x-handler'], 'sync');
     expect((await headResponse('/async-hello')).headers['x-handler'], 'async');
@@ -191,7 +190,7 @@ void main() {
     server.mount(api.call);
 
     expect(
-        get('/hi'),
+        get('hi'),
         throwsA(isA<http.ClientException>()
             .having((e) => e.message, 'message', contains('404: Not Found.'))));
   });
@@ -225,11 +224,11 @@ void main() {
 
     // Strict matches (no flexible trailing slash)
     expect(
-        get('/no-slash/'),
+        get('no-slash/'),
         throwsA(isA<http.ClientException>()
             .having((e) => e.message, 'message', contains('404'))));
     expect(
-        get('/with-slash'),
+        get('with-slash'),
         throwsA(isA<http.ClientException>()
             .having((e) => e.message, 'message', contains('404'))));
   });
@@ -259,5 +258,185 @@ void main() {
     // /info is 1 hop in 'api'
     // Total should be 3
     expect(await get('/api/info'), 'api-hops:3');
+  });
+
+  test('deprecated <param> and regex syntax', () async {
+    var app = Router();
+    // ignore: deprecated_member_use_from_same_package
+    app.get(
+        '/user/<name>', (Request request, String name) => Response.ok(name));
+    // ignore: deprecated_member_use_from_same_package
+    app.get('/ref/<id|\\d+>',
+        (Request request, String id) => Response.ok('id:$id'));
+
+    server.mount(app.call);
+
+    expect(await get('/user/alice'), 'alice');
+    expect(await get('/ref/123'), 'id:123');
+  });
+
+  test('deprecated catch-all syntax', () async {
+    var app = Router();
+    // ignore: deprecated_member_use_from_same_package
+    app.all('/static/<file|[^]*>',
+        (Request request, String file) => Response.ok(file));
+    // ignore: deprecated_member_use_from_same_package
+    app.all('/any/<*>', (Request request, String any) => Response.ok(any));
+
+    server.mount(app.call);
+
+    // Use a helper to avoid double slash issues if any
+    Future<String> getAbs(String path) => http.read(server.url.resolve(path));
+
+    expect(await getAbs('static/path/to/file.txt'), 'path/to/file.txt');
+    expect(await getAbs('any/foo/bar'), 'foo/bar');
+  });
+
+  test('conflicting parameter names throw exception', () {
+    var app = Router();
+    app.get('/:id', (Request request) => Response.ok('ok'));
+    expect(
+        () => app.get('/:name', (Request request) => Response.ok('ok')),
+        throwsA(isA<Exception>().having((e) => e.toString(), 'message',
+            contains('Conflicting parameter names'))));
+  });
+
+  test('inspectTree and printRoutes', () {
+    var app = Router();
+    app.get('/hello', (Request request) => Response.ok('ok'));
+    var api = Router();
+    api.get('/version', (Request request) => Response.ok('1'));
+    app.mount('/api', api);
+
+    final tree = app.inspectTree();
+    expect(tree, contains('hello (HEAD, GET)'));
+    expect(tree, contains('api (ALL)'));
+    expect(tree, contains('version (HEAD, GET)'));
+
+    // printRoutes just calls inspectTree, but we call it for coverage
+    expect(() => app.printRoutes(), prints(contains('hello')));
+  });
+
+  test('HEAD request and _removeBody', () async {
+    var app = Router();
+    app.get(
+        '/data',
+        (Request request) =>
+            Response.ok('some-large-body', headers: {'content-length': '15'}));
+
+    server.mount(app.call);
+
+    final response = await http.head(server.url.resolve('data'));
+    expect(response.statusCode, 200);
+    expect(response.body, isEmpty);
+    // _removeBody should set content-length to '0' or shelf might remove it
+    expect(response.headers['content-length'], anyOf('0', null));
+  });
+
+  test('mount variations', () async {
+    var app = Router();
+    var sub = Router()..get('/hi', (Request request) => Response.ok('hi'));
+
+    app.mount('/a', sub);
+    app.mount('/b/', sub);
+
+    server.mount(app.call);
+
+    expect(await get('/a/hi'), 'hi');
+    expect(await get('/b/hi'), 'hi');
+  });
+
+  test('deprecated params function', () async {
+    var app = Router();
+    app.get('/user/:name', (Request request) {
+      // ignore: deprecated_member_use_from_same_package
+      final name = params(request, 'name');
+      return Response.ok(name);
+    });
+
+    server.mount(app.call);
+    expect(await get('user/bob'), 'bob');
+
+    // Test exception case
+    final request = Request('GET', server.url.resolve('/'));
+    // ignore: deprecated_member_use_from_same_package
+    expect(() => params(request, 'non-existent'), throwsA(isA<Exception>()));
+  });
+
+  test('Route and Use annotations (smoke test)', () {
+    // Just instantiate them to get coverage on the constructors
+    const r1 = Route('GET', '/');
+    expect(r1.verb, 'GET');
+    const r2 = Route.all('/');
+    expect(r2.verb, r'$all');
+    const r3 = Route.get('/');
+    expect(r3.verb, 'GET');
+    const r4 = Route.head('/');
+    expect(r4.verb, 'HEAD');
+    const r5 = Route.post('/');
+    expect(r5.verb, 'POST');
+    const r6 = Route.put('/');
+    expect(r6.verb, 'PUT');
+    const r7 = Route.delete('/');
+    expect(r7.verb, 'DELETE');
+    const r8 = Route.connect('/');
+    expect(r8.verb, 'CONNECT');
+    const r9 = Route.options('/');
+    expect(r9.verb, 'OPTIONS');
+    const r10 = Route.trace('/');
+    expect(r10.verb, 'TRACE');
+    const r11 = Route.mount('/api');
+    expect(r11.verb, r'$mount');
+
+    const u = Use('something');
+    expect(u.middleware, 'something');
+  });
+
+  test('empty catch-all', () async {
+    var app = Router();
+    app.get('/static/:*path', (Request request) {
+      return Response.ok('path:${request.params['path']}');
+    });
+
+    server.mount(app.call);
+
+    expect(await get('static/foo'), 'path:foo');
+    expect(await get('static'), 'path:');
+    expect(await get('static/'), 'path:');
+  });
+
+  test('complex tree dump with merged slash', () {
+    var app = Router();
+    app.get('/hello', (Request request) => Response.ok('ok'));
+    app.get('/hello/', (Request request) => Response.ok('ok-slash'));
+    app.get('/hello/world', (Request request) => Response.ok('ok-world'));
+
+    final tree = app.inspectTree();
+    expect(tree, contains('hello [/] (HEAD, GET)'));
+    expect(tree, contains('└── world (HEAD, GET)'));
+  });
+
+  test('mount prefix fallback behavior', () async {
+    var app = Router();
+    // Use the actual pattern mount uses for prefixes
+    app.all('/api/:*path', (Request request) {
+      return Response.ok('api-prefix:${request.params['path']}');
+    });
+
+    // Most specific route matches first
+    app.get('/api/info', (Request request) => Response.ok('info'));
+
+    server.mount(app.call);
+
+    expect(await get('api/info'), 'info');
+    expect(await get('api/other'), 'api-prefix:other');
+    expect(await get('api/'), 'api-prefix:');
+  });
+
+  test('inspectTree with empty childDump', () {
+    var app = Router();
+    // Handler with childDump that returns empty
+    app.add('GET', '/empty', (r) => Response.ok(''), childDump: (i) => '');
+    expect(app.inspectTree(), contains('empty (HEAD, GET)'));
   });
 }

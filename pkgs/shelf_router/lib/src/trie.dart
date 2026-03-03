@@ -70,8 +70,10 @@ class TrieRouter {
           name = '*$name'; // Special marker
         }
         // Handle fallback catch-all <*>, <_>, <_|[...]> etc
-        else if (segment == '<*>' || segment.startsWith('<_')) {
-          name = '*catchAll';
+        else if (segment == '<*>') {
+          name = '**'; // Strips to '*'
+        } else if (segment.startsWith('<_')) {
+          name = '*_'; // Strips to '_'
         }
 
         if (currentNode.paramChild == null) {

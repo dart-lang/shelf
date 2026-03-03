@@ -20,26 +20,15 @@ import 'dart:async' show Future;
 import 'package:analyzer/dart/element/element.dart'
     show ClassElement, ElementKind, ExecutableElement;
 import 'package:analyzer/dart/element/type.dart' show ParameterizedType;
-import 'package:build/build.dart' show BuildStep, log;
+import 'package:build/build.dart' show BuildStep;
 import 'package:code_builder/code_builder.dart' as code;
 import 'package:http_methods/http_methods.dart' show isHttpMethod;
-import 'package:shelf/shelf.dart' as shelf;
-import 'package:shelf_router/shelf_router.dart' as shelf_router;
 import 'package:shelf_router/src/router_entry.dart' // ignore: implementation_imports
     show RouterEntry;
 import 'package:source_gen/source_gen.dart' as g;
 
-// Type checkers that we need later
-const _responseType = g.TypeChecker.typeNamed(
-  shelf.Response,
-  inPackage: 'shelf',
-);
-const _requestType = g.TypeChecker.typeNamed(shelf.Request, inPackage: 'shelf');
-const _stringType = g.TypeChecker.typeNamed(String, inSdk: true);
-const _routerType = g.TypeChecker.typeNamed(
-  shelf_router.Router,
-  inPackage: 'shelf_router',
-);
+// Type checkers have been removed as we use string-based type checks for robustness
+// across package versions in this generator.
 
 /// A representation of a handler that was annotated with [shelf_router.Route].
 class _Handler {
