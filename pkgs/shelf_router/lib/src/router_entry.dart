@@ -16,11 +16,20 @@ import 'dart:async';
 
 import 'package:shelf/shelf.dart';
 
+import '../shelf_router.dart';
+
 /// Entry in the router.
 ///
-/// This class implements the logic for matching the path pattern.
+/// This class was originally used for all routing and is now primarily used
+/// by [Router.call] to handle the invocation of handlers with dynamic arguments
+/// (parameter binding) and middleware.
 class RouterEntry {
-  final String verb, route;
+  /// The HTTP verb this entry matches.
+  final String verb;
+
+  /// The original route pattern.
+  final String route;
+
   final Function _handler;
   final Middleware _middleware;
 
@@ -114,7 +123,10 @@ class RouterEntry {
     return params;
   }
 
-  // invoke handler with given request and params
+  /// Invokes the handler associated with this entry.
+  ///
+  /// This handles parameter binding, applying middleware, and converting
+  /// the result to a [Future<Response>].
   Future<Response> invoke(Request request, Map<String, String> params) async {
     request = request.change(context: {'shelf_router/params': params});
 

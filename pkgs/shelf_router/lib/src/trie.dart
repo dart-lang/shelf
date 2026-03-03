@@ -1,37 +1,64 @@
 import 'package:shelf/shelf.dart';
 
-/// Represents a single part of a route pattern.
-/// The Trie handles static segments and parameterized segments (:id).
+import '../shelf_router.dart';
+
+/// Represents a single part of a route pattern in the [TrieRouter].
+///
+/// The Trie handles static segments and parameterized segments (:id or <id>).
 class TrieNode {
   /// Maps exact string matches to the next node.
   final Map<String, TrieNode> staticChildren = {};
 
-  /// The child node for any parameterized segment.
+  /// The child node for any parameterized segment at this level.
   TrieNode? paramChild;
 
   /// The name of the parameter if this node represents a parameterized segment.
   String? paramName;
 
-  /// Handlers registered at this node, mapped by HTTP verb.
+  /// Handlers registered at this node, mapped by HTTP verb
+  /// (e.g., 'GET', 'POST', 'ALL').
+  ///
   /// Used if this node is the leaf of a route.
   final Map<String, VerbHandler> verbHandlers = {};
 
+  /// Whether any handlers are registered at this node.
   bool get isLeaf => verbHandlers.isNotEmpty;
 }
 
+/// A wrapper for a handler with its associated metadata in the [TrieRouter].
 class VerbHandler {
+  /// The shelf handler (can be a standard [Handler] or a function with
+  /// positional parameters).
   final Function handler;
+
+  /// Middleware specific to this route.
   final Middleware? middleware;
-  final String route; // Original route pattern for debugging
-  /// Callback to dump the tree of a child router, if this handler represents a mount.
+
+  /// The original route pattern for debugging and identification.
+  final String route;
+
+  /// Optional callback to dump the tree of a nested
+  /// router, used for [Router.inspectTree].
   final String Function(String indent)? childDump;
 
   VerbHandler(this.handler, this.middleware, this.route, {this.childDump});
 }
 
+/// A routing engine based on a Trie (prefix tree) data structure.
+///
+/// This provides O(L) lookup complexity where L is the number of segments in
+/// the path, regardless of the total number of routes.
 class TrieRouter {
+  /// The root node of the trie.
   final TrieNode root = TrieNode();
 
+  /// Adds a route to the trie.
+  ///
+  /// [verb] is the HTTP method (or 'ALL').
+  /// [route] is the path pattern.
+  /// [handler] is the shelf handler.
+  /// [middleware] is optional middleware for this route.
+  /// [childDump] is an optional callback to describe nested routers.
   void addRoute(
     String verb,
     String route,
@@ -59,11 +86,11 @@ class TrieRouter {
         var name = parts.first;
 
         if (parts.length > 1) {
-          print(
-              'Warning: Regex in "$segment" is no longer supported and will be ignored for performance.');
+          print('Warning: Regex in "$segment" is no longer supported '
+              'and will be ignored for performance.');
         }
-        print(
-            'Warning: The <param> syntax in "$route" is deprecated. Use ":$name" instead.');
+        print('Warning: The <param> syntax in "$route" is '
+            'deprecated. Use ":$name" instead.');
 
         // Handle catch-all parameter (often used in mount)
         if (segment.contains('|[^]*>')) {
@@ -79,8 +106,8 @@ class TrieRouter {
         if (currentNode.paramChild == null) {
           currentNode.paramChild = TrieNode()..paramName = name;
         } else if (currentNode.paramChild!.paramName != name) {
-          throw Exception(
-              'Conflicting parameter names at the same level in route "$route"');
+          throw Exception('Conflicting parameter names at the'
+              ' same level in route "$route"');
         }
         currentNode = currentNode.paramChild!;
       }
@@ -90,14 +117,14 @@ class TrieRouter {
         if (currentNode.paramChild == null) {
           currentNode.paramChild = TrieNode()..paramName = name;
         } else if (currentNode.paramChild!.paramName != name) {
-          throw Exception(
-              'Conflicting parameter names at the same level in route "$route"');
+          throw Exception('Conflicting parameter names at the same'
+              ' level in route "$route"');
         }
         currentNode = currentNode.paramChild!;
       }
       // Static segment
       else {
-        currentNode.staticChildren.putIfAbsent(segment, () => TrieNode());
+        currentNode.staticChildren.putIfAbsent(segment, TrieNode.new);
         currentNode = currentNode.staticChildren[segment]!;
       }
     }
@@ -116,13 +143,13 @@ class TrieRouter {
   }
 
   void _dump(TrieNode node, StringBuffer sb, String indent) {
-    bool hasChildDump =
+    final hasChildDump =
         node.verbHandlers.values.any((h) => h.childDump != null);
 
     final staticEntries = node.staticChildren.entries.toList();
     final hasParam = node.paramChild != null;
 
-    final List<MapEntry<String, TrieNode>> filteredStatic = [];
+    final filteredStatic = <MapEntry<String, TrieNode>>[];
     if (!hasChildDump) {
       for (final entry in staticEntries) {
         if (entry.key.isNotEmpty) {
@@ -186,7 +213,7 @@ class TrieRouter {
 
   void _appendHandlers(TrieNode node, StringBuffer sb, String indent,
       {TrieNode? slashNode}) {
-    final Map<String, VerbHandler> merged = Map.from(node.verbHandlers);
+    final merged = Map<String, VerbHandler>.from(node.verbHandlers);
     if (slashNode != null) {
       slashNode.verbHandlers.forEach((verb, handler) {
         merged.putIfAbsent(verb, () => handler);
@@ -291,9 +318,15 @@ class TrieRouter {
   }
 }
 
+/// Represents the result of a successful match in the [TrieRouter].
 class MatchResult {
+  /// The handler and metadata associated with the matched route.
   final VerbHandler handlerInfo;
+
+  /// Parameters extracted from the path segments.
   final Map<String, String> params;
+
+  /// The number of trie nodes (hops) traversed to find this match.
   final int hops;
 
   MatchResult(this.handlerInfo, this.params, this.hops);
