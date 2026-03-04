@@ -4,6 +4,7 @@ description: >
   A model for web server middleware that encourages composition and easy reuse.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf
 issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf
+resolution: workspace
 
 topics:
   - server
@@ -11,7 +12,7 @@ topics:
   - backend
 
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.9.0
 
 dependencies:
   async: ^2.5.0

@@ -3,13 +3,14 @@ version: 2.0.3-wip
 description: A Shelf handler that makes it easy to test HTTP interactions.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_test_handler
 issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_test_handler
+resolution: workspace
 
 topics:
   - server
   - shelf
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.9.0
 
 dependencies:
   http_multi_server: ^3.0.0

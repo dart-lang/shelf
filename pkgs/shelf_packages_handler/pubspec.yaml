@@ -3,13 +3,14 @@ version: 3.0.3-wip
 description: A shelf handler for serving a `packages/` directory.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_packages_handler
 issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_packages_handler
+resolution: workspace
 
 topics:
   - server
   - shelf
 
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.9.0
 
 dependencies:
   path: ^1.8.0

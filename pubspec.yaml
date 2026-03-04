@@ -1,0 +1,14 @@
+name: shelf_workspace
+
+environment:
+  sdk: ^3.9.0
+
+workspace:
+  - pkgs/shelf
+  - pkgs/shelf_packages_handler
+  - pkgs/shelf_proxy
+  - pkgs/shelf_router
+  - pkgs/shelf_router_generator
+  - pkgs/shelf_static
+  - pkgs/shelf_test_handler
+  - pkgs/shelf_web_socket

@@ -5,13 +5,14 @@ description: >
   URL-parameters, nested routers and routers generated from source annotations.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_router
 issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_router
+resolution: workspace
 
 topics:
   - server
   - shelf
 
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.9.0
 
 dependencies:
   http_methods: ^1.1.0

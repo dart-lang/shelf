@@ -6,6 +6,7 @@ description: >
   shelf web-framework based on source annotations.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/shelf_router_generator
 issue_tracker: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_router_generator
+resolution: workspace
 
 topics:
   - server
@@ -21,7 +22,7 @@ dependencies:
   code_builder: ^4.2.0
   http_methods: ^1.1.0
   shelf: ^1.1.0
-  shelf_router:
+  shelf_router: ^1.1.0
   source_gen: ^4.0.1
 
 dev_dependencies:
