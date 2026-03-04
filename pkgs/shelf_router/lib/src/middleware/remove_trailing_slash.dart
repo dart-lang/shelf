@@ -21,7 +21,7 @@ import '../../shelf_router.dart';
 /// This allows the [Router] to match paths like `/hello/` against a route
 /// defined as `/hello`.
 ///
-/// Note: This only affects the [Request.url.path], which is what the
+/// Note: This only affects the [Request.url]'s path, which is what the
 /// [Router] matches against. It does not modify [Request.requestedUri].
 Middleware removeTrailingSlash() => (Handler innerHandler) {
       return (Request request) {
