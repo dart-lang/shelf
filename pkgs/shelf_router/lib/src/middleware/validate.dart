@@ -10,9 +10,9 @@ import '../params.dart';
 ///
 /// If validation fails, it returns a 400 Bad Request response with a JSON
 /// body containing the errors.
-class validateParams {
+class ValidateParams {
   final Map<String, RouteRule> rules;
-  const validateParams(this.rules);
+  const ValidateParams(this.rules);
 
   Handler call(Handler innerHandler) {
     return (Request request) async {
