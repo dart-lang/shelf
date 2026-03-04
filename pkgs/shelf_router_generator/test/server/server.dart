@@ -18,8 +18,8 @@ import 'dart:io' show HttpServer;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
-import 'service.dart';
 import 'dot_notation.dart';
+import 'service.dart';
 
 class Server {
   final _service = Service();

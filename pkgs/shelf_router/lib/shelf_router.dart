@@ -78,9 +78,11 @@
 /// ```
 library;
 
-export 'package:shelf_router/src/route.dart';
-export 'package:shelf_router/src/router.dart';
-export 'package:shelf_router/src/params.dart';
-export 'package:shelf_router/src/middleware/validate.dart';
+import 'shelf_router.dart' show Route, Router;
+
 export 'package:shelf_router/src/middleware/hops.dart';
 export 'package:shelf_router/src/middleware/remove_trailing_slash.dart';
+export 'package:shelf_router/src/middleware/validate.dart';
+export 'package:shelf_router/src/params.dart';
+export 'package:shelf_router/src/route.dart';
+export 'package:shelf_router/src/router.dart';

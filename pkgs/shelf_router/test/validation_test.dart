@@ -24,7 +24,7 @@ void main() {
     final router = Router();
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
-    }, middleware: validateParams({'id': const Rule.number()}));
+    }, middleware: const validateParams({'id': Rule.number()}).call);
 
     final response =
         await router(Request('GET', Uri.parse('http://localhost/user/42')));
@@ -36,7 +36,7 @@ void main() {
     final router = Router();
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
-    }, middleware: validateParams({'id': const Rule.number()}));
+    }, middleware: const validateParams({'id': Rule.number()}).call);
 
     final response =
         await router(Request('GET', Uri.parse('http://localhost/user/abc')));
@@ -51,9 +51,9 @@ void main() {
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
     },
-        middleware: validateParams({
-          'id': const Rule.number(),
-        }));
+        middleware: const validateParams({
+          'id': Rule.number(),
+        }).call);
 
     // Missing path param (this usually wouldn't match the route, but shelf_router
     // might match and pass null if the regex is loose, though here it's :id)

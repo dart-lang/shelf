@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('Rule Constraints', () {
     test('Rule.string allows valid range', () {
-      expect(() => Rule.string(min: 5, max: 10), returnsNormally);
+      expect(() => const Rule.string(min: 5, max: 10), returnsNormally);
     });
 
     test('Rule.string throws if min > max', () {
@@ -23,7 +23,7 @@ void main() {
     });
 
     test('Rule.number allows valid range', () {
-      expect(() => Rule.number(min: 0, max: 100), returnsNormally);
+      expect(() => const Rule.number(min: 0, max: 100), returnsNormally);
     });
 
     test('Rule.number throws if min > max', () {

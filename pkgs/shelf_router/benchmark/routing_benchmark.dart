@@ -50,7 +50,7 @@ void main() async {
 
   print('-----------------------------------------');
   print('Total Time for $iterations matches: ${totalMs}ms');
-  print('Average Time per Match: ${avgUs}μs');
+  print('Average Time per Match: $avgUsμs');
   print('-----------------------------------------');
 
   // Benchmark 404
@@ -71,6 +71,6 @@ void main() async {
 
   print('-----------------------------------------');
   print('Total Time for $iterations 404s: ${totalMs404}ms');
-  print('Average Time per 404: ${avgUs404}μs');
+  print('Average Time per 404: $avgUs404μs');
   print('-----------------------------------------');
 }

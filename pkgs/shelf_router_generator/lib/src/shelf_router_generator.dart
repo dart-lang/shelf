@@ -126,8 +126,9 @@ class ShelfRouterGenerator extends g.Generator {
     final unit = await buildStep.resolver.compilationUnitFor(buildStep.inputId);
 
     for (final clsDecl in unit.declarations) {
-      if (!clsDecl.runtimeType.toString().contains('ClassDeclaration'))
+      if (!clsDecl.runtimeType.toString().contains('ClassDeclaration')) {
         continue;
+      }
       final dynamic cls = clsDecl;
       final className = cls.name.lexeme.toString();
 
@@ -139,11 +140,12 @@ class ShelfRouterGenerator extends g.Generator {
 
       for (final member in (cls.members as Iterable)) {
         if (!member.runtimeType.toString().contains('MethodDeclaration') &&
-            !member.runtimeType.toString().contains('FieldDeclaration'))
+            !member.runtimeType.toString().contains('FieldDeclaration')) {
           continue;
+        }
 
         final dynamic node = member;
-        final annotations = (node.metadata as Iterable);
+        final annotations = node.metadata as Iterable;
 
         final routeAnnotations = <dynamic>[];
         final useAnnotations = <dynamic>[];
@@ -177,7 +179,7 @@ class ShelfRouterGenerator extends g.Generator {
 
         if (routeAnnotations.isEmpty) continue;
 
-        final String memberName =
+        final memberName =
             member.runtimeType.toString().contains('MethodDeclaration')
             ? node.name.lexeme.toString()
             : (node.fields.variables.first as dynamic).name.lexeme.toString();
@@ -193,14 +195,14 @@ class ShelfRouterGenerator extends g.Generator {
           final dynamic ann = annotation;
           var verb = 'GET';
           var route = '';
-          final List<String> middlewares = [...middlewareExpressions];
+          final middlewares = <String>[...middlewareExpressions];
 
           final nameStr = ann.name.toSource().toString();
           final constructorName = ann.constructorName?.name?.toString() ?? '';
 
-          if (nameStr.endsWith('.get') || constructorName == 'get')
+          if (nameStr.endsWith('.get') || constructorName == 'get') {
             verb = 'GET';
-          else if (nameStr.endsWith('.post') || constructorName == 'post')
+          } else if (nameStr.endsWith('.post') || constructorName == 'post')
             verb = 'POST';
           else if (nameStr.endsWith('.put') || constructorName == 'put')
             verb = 'PUT';

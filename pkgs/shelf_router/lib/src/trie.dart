@@ -186,7 +186,7 @@ class TrieRouter {
 
         // Merging trailing slash?
         final slashChild = entry.value.staticChildren[''];
-        bool canMerge = slashChild != null &&
+        var canMerge = slashChild != null &&
             slashChild.staticChildren.isEmpty &&
             slashChild.paramChild == null;
 

@@ -65,7 +65,7 @@ void main() {
         // or just ensure it doesn't crash the pipeline.
         .addMiddleware(
             logRequests(logger: (msg, isError) => requestLogs.add(msg)))
-        .addMiddleware(logHops((msg) => hopLogs.add(msg)))
+        .addMiddleware(logHops(hopLogs.add))
         .addHandler(router.call);
 
     // Request with trailing slash
