@@ -42,8 +42,15 @@ void main() {
         await router(Request('GET', Uri.parse('http://localhost/user/abc')));
     expect(response.statusCode, 400);
     final body = jsonDecode(await response.readAsString());
+
+    if(body is! Map<String, dynamic>) fail('Body is not a map');
+
+    final detail = body['details'];
+
+    if(detail is! Map<String, dynamic>) fail('Details is not a map');
+
     expect(body['error'], 'Validation failed');
-    expect(body['details']['id'], 'must be a number');
+    expect(body['id'], 'must be a number');
   });
 
   test('Validation middleware path param required', () async {
