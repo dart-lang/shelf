@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:async';
+
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
@@ -36,12 +38,12 @@ void main() async {
 
   // Warm up
   for (var i = 0; i < 1000; i++) {
-    router.call(request);
+    unawaited(router.call(request));
   }
 
   final stopwatch = Stopwatch()..start();
   for (var i = 0; i < iterations; i++) {
-    router.call(request);
+    unawaited(router.call(request));
   }
   stopwatch.stop();
 
@@ -61,7 +63,7 @@ void main() async {
   stopwatch.reset();
   stopwatch.start();
   for (var i = 0; i < iterations; i++) {
-    router.call(request404);
+    unawaited(router.call(request404));
   }
   stopwatch.stop();
 
