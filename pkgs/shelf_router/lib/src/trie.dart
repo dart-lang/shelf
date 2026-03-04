@@ -18,7 +18,8 @@ import '../shelf_router.dart';
 
 /// Represents a single part of a route pattern in the [TrieRouter].
 ///
-/// The Trie handles static segments and parameterized segments (:id or <id>).
+/// The Trie handles static segments and parameterized segments
+/// (:id or &lt;id&gt).
 class TrieNode {
   /// Maps exact string matches to the next node.
   final Map<String, TrieNode> staticChildren = {};
@@ -100,11 +101,15 @@ class TrieRouter {
         var name = parts.first;
 
         if (parts.length > 1) {
-          print('Warning: Regex in "$segment" is no longer supported '
-              'and will be ignored for performance.');
+          print(
+            'Warning: Regex in "$segment" is no longer supported '
+            'and will be ignored for performance.',
+          );
         }
-        print('Warning: The <param> syntax in "$route" is '
-            'deprecated. Use ":$name" instead.');
+        print(
+          'Warning: The <param> syntax in "$route" is '
+          'deprecated. Use ":$name" instead.',
+        );
 
         // Handle catch-all parameter (often used in mount)
         if (segment.contains('|[^]*>')) {
@@ -120,8 +125,10 @@ class TrieRouter {
         if (currentNode.paramChild == null) {
           currentNode.paramChild = TrieNode()..paramName = name;
         } else if (currentNode.paramChild!.paramName != name) {
-          throw Exception('Conflicting parameter names at the'
-              ' same level in route "$route"');
+          throw Exception(
+            'Conflicting parameter names at the'
+            ' same level in route "$route"',
+          );
         }
         currentNode = currentNode.paramChild!;
       }
@@ -131,8 +138,10 @@ class TrieRouter {
         if (currentNode.paramChild == null) {
           currentNode.paramChild = TrieNode()..paramName = name;
         } else if (currentNode.paramChild!.paramName != name) {
-          throw Exception('Conflicting parameter names at the same'
-              ' level in route "$route"');
+          throw Exception(
+            'Conflicting parameter names at the same'
+            ' level in route "$route"',
+          );
         }
         currentNode = currentNode.paramChild!;
       }
@@ -144,8 +153,12 @@ class TrieRouter {
     }
 
     // Register handler at the leaf
-    currentNode.verbHandlers[verb] =
-        VerbHandler(handler, middleware, route, childDump: childDump);
+    currentNode.verbHandlers[verb] = VerbHandler(
+      handler,
+      middleware,
+      route,
+      childDump: childDump,
+    );
   }
 
   /// Returns a tree-like string representation of the route trie.
@@ -157,8 +170,9 @@ class TrieRouter {
   }
 
   void _dump(TrieNode node, StringBuffer sb, String indent) {
-    final hasChildDump =
-        node.verbHandlers.values.any((h) => h.childDump != null);
+    final hasChildDump = node.verbHandlers.values.any(
+      (h) => h.childDump != null,
+    );
 
     final staticEntries = node.staticChildren.entries.toList();
     final hasParam = node.paramChild != null;
@@ -186,7 +200,8 @@ class TrieRouter {
 
         // Merging trailing slash?
         final slashChild = entry.value.staticChildren[''];
-        var canMerge = slashChild != null &&
+        var canMerge =
+            slashChild != null &&
             slashChild.staticChildren.isEmpty &&
             slashChild.paramChild == null;
 
@@ -195,8 +210,12 @@ class TrieRouter {
         }
 
         sb.write('$indent$connector$label');
-        _appendHandlers(entry.value, sb, nextIndent,
-            slashNode: canMerge ? slashChild : null);
+        _appendHandlers(
+          entry.value,
+          sb,
+          nextIndent,
+          slashNode: canMerge ? slashChild : null,
+        );
         sb.writeln();
 
         // If we merged, we skip the staticChild[''] in recursive dump
@@ -215,8 +234,8 @@ class TrieRouter {
         final paramNode = node.paramChild!;
         final name =
             paramNode.paramName != null && paramNode.paramName!.startsWith('*')
-                ? ':*${paramNode.paramName!.substring(1)}'
-                : ':${paramNode.paramName}';
+            ? ':*${paramNode.paramName!.substring(1)}'
+            : ':${paramNode.paramName}';
         sb.write('$indent$connector$name');
         _appendHandlers(paramNode, sb, nextIndent);
         sb.writeln();
@@ -225,8 +244,12 @@ class TrieRouter {
     }
   }
 
-  void _appendHandlers(TrieNode node, StringBuffer sb, String indent,
-      {TrieNode? slashNode}) {
+  void _appendHandlers(
+    TrieNode node,
+    StringBuffer sb,
+    String indent, {
+    TrieNode? slashNode,
+  }) {
     final merged = Map<String, VerbHandler>.from(node.verbHandlers);
     if (slashNode != null) {
       slashNode.verbHandlers.forEach((verb, handler) {
@@ -262,12 +285,13 @@ class TrieRouter {
   }
 
   Iterable<MatchResult> _walk(
-      TrieNode node,
-      List<String> segments,
-      int segmentIndex,
-      Map<String, String> params,
-      String method,
-      int hops) sync* {
+    TrieNode node,
+    List<String> segments,
+    int segmentIndex,
+    Map<String, String> params,
+    String method,
+    int hops,
+  ) sync* {
     // If we reached the end of the path...
     if (segmentIndex >= segments.length) {
       final handlerInfo = node.verbHandlers[method] ?? node.verbHandlers['ALL'];
@@ -280,7 +304,8 @@ class TrieRouter {
           node.paramChild!.paramName!.startsWith('*')) {
         final paramName = node.paramChild!.paramName!.substring(1);
         params[paramName] = '';
-        final handlerInfo = node.paramChild!.verbHandlers[method] ??
+        final handlerInfo =
+            node.paramChild!.verbHandlers[method] ??
             node.paramChild!.verbHandlers['ALL'];
         if (handlerInfo != null) {
           yield MatchResult(handlerInfo, Map.of(params), hops + 1);
@@ -296,7 +321,13 @@ class TrieRouter {
     final staticChild = node.staticChildren[segment];
     if (staticChild != null) {
       yield* _walk(
-          staticChild, segments, segmentIndex + 1, params, method, hops + 1);
+        staticChild,
+        segments,
+        segmentIndex + 1,
+        params,
+        method,
+        hops + 1,
+      );
     }
 
     // Priority 2: Param match
@@ -307,7 +338,8 @@ class TrieRouter {
         final realName = paramName.substring(1);
         params[realName] = segments.sublist(segmentIndex).join('/');
 
-        final handlerInfo = node.paramChild!.verbHandlers[method] ??
+        final handlerInfo =
+            node.paramChild!.verbHandlers[method] ??
             node.paramChild!.verbHandlers['ALL'];
         if (handlerInfo != null) {
           yield MatchResult(handlerInfo, Map.of(params), hops + 1);
@@ -315,8 +347,14 @@ class TrieRouter {
         params.remove(realName);
       } else {
         params[paramName] = segment;
-        yield* _walk(node.paramChild!, segments, segmentIndex + 1, params,
-            method, hops + 1);
+        yield* _walk(
+          node.paramChild!,
+          segments,
+          segmentIndex + 1,
+          params,
+          method,
+          hops + 1,
+        );
         params.remove(paramName);
       }
     }

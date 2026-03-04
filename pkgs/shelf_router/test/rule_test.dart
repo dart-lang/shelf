@@ -8,7 +8,8 @@ void main() {
     });
 
     test('Rule.string throws if min > max', () {
-      // Note: Since these are const constructors, we are testing them at runtime
+      // Note: Since these are const constructors, we are testing them
+      // at runtime
       // here, but they will also throw at compile-time.
       expect(
           () => Rule.string(min: 11, max: 10), throwsA(isA<AssertionError>()));
