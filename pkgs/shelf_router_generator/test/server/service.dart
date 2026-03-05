@@ -44,13 +44,13 @@ class Service {
   }
 
   @Route.get('/user/:id')
-  @Use(validateParams({'id': Rule.number()}))
+  @Use(ValidateParams({'id': Rule.number()}))
   Response _getUser(Request request) =>
       Response.ok('User ${request.params['id']}');
 
   @Route.get('/middleware-test')
-  @Use(validateParams({'test': Rule.number()}))
-  @Use(validateParams({'foo': Rule.number()}))
+  @Use(ValidateParams({'test': Rule.number()}))
+  @Use(ValidateParams({'foo': Rule.number()}))
   Response _middlewareTest(Request request) => Response.ok('OK');
 
   @Route.mount('/api/')

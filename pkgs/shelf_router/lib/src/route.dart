@@ -13,6 +13,8 @@
 // limitations under the License.
 
 import 'package:meta/meta.dart' show sealed;
+import '../shelf_router.dart';
+import 'middleware/annotate_middleware.dart';
 import 'router.dart';
 
 /// Annotation for handler methods that requests should be routed when using
@@ -110,7 +112,7 @@ class Route {
 @sealed
 class Use {
   /// The middleware to be applied.
-  final Object middleware;
+  final AnnotateMiddleware middleware;
 
   /// Create an annotation that applies [middleware] to the annotated method.
   const Use(this.middleware);

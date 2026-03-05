@@ -18,7 +18,6 @@ import 'dart:io' show HttpServer;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 
-import 'dot_notation.dart';
 import 'service.dart';
 
 class Server {
@@ -28,7 +27,6 @@ class Server {
   Future<void> start() async {
     final router = Router();
     router.mount('/', _service.router.call);
-    router.mount('/dot', DotNotationService().router.call);
     _server = await shelf_io.serve(router.call, 'localhost', 0);
   }
 

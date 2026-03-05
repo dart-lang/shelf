@@ -38,6 +38,10 @@ const _routerType = g.TypeChecker.typeNamed(
   shelf_router.Router,
   inPackage: 'shelf_router',
 );
+const _useType = g.TypeChecker.typeNamed(
+  shelf_router.Use,
+  inPackage: 'shelf_router',
+);
 const _responseType = g.TypeChecker.typeNamed(
   shelf.Response,
   inPackage: 'shelf',
@@ -49,8 +53,9 @@ const _stringType = g.TypeChecker.typeNamed(String, inSdk: true);
 class _Handler {
   final String verb, route;
   final ExecutableElement element;
+  final List<String> middlewares;
 
-  _Handler(this.verb, this.route, this.element);
+  _Handler(this.verb, this.route, this.element, this.middlewares);
 }
 
 /// Find members of a class annotated with [shelf_router.Route].
@@ -60,6 +65,7 @@ List<ExecutableElement> getAnnotatedElementsOrderBySourceOffset(
     <ExecutableElement>[
       ...cls.methods.where(_routeType.hasAnnotationOfExact),
       ...cls.getters.where(_routeType.hasAnnotationOfExact),
+      ...cls.methods.where(_routerType.hasAnnotationOfExact),
     ]..sort(
       (a, b) =>
           (a.firstFragment.nameOffset!).compareTo(b.firstFragment.nameOffset!),
@@ -101,6 +107,39 @@ code.Method _buildRouterMethod({
     ),
 );
 
+/// Build middleware expression from list of middleware names.
+///
+/// ex:
+/// ```dart
+/// const Pipeline()
+///         .addMiddleware(
+///           const ValidateParams({'userId': Rule.number()}).middleware,
+///         )
+///         .middleware
+/// ```
+code.Expression _buildMiddlewareExpression(List<String> middlewares) {
+  if (middlewares.isEmpty) throw Exception('No middlewares provided');
+
+  //  if only one middleware, direct mount
+  if (middlewares.length == 1) {
+    return code.declareConst(middlewares.first).property('middleware');
+  }
+
+  // Start with: const Pipeline()
+  var pipeline = code.refer('Pipeline').constInstance([]);
+
+  // Chain: .addMiddleware(M1).addMiddleware(M2)...
+  for (final m in middlewares) {
+    pipeline = pipeline.property('addMiddleware').call([
+      code.declareConst(m).property('middleware'),
+      // code.CodeExpression()..property('middleware')..assignConst(name),
+    ]);
+  }
+
+  // End with: .middleware
+  return pipeline.property('middleware');
+}
+
 /// Generate the code statement that adds [handler] from [service] to [router].
 code.Code _buildAddHandlerCode({
   required code.Reference router,
@@ -115,11 +154,21 @@ code.Code _buildAddHandlerCode({
     code.literalString(handler.route, raw: true),
     service.property(handler.element.name!),
   ]).statement,
-  _ => router.property('add').call([
-    code.literalString(handler.verb.toUpperCase()),
-    code.literalString(handler.route, raw: true),
-    service.property(handler.element.name!),
-  ]).statement,
+  _ =>
+    router
+        .property('add')
+        .call(
+          [
+            code.literalString(handler.verb.toUpperCase()),
+            code.literalString(handler.route, raw: true),
+            service.property(handler.element.name!),
+          ],
+          {
+            if (handler.middlewares.isNotEmpty)
+              'middleware': _buildMiddlewareExpression(handler.middlewares),
+          },
+        )
+        .statement,
 };
 
 class ShelfRouterGenerator extends g.Generator {
@@ -136,17 +185,34 @@ class ShelfRouterGenerator extends g.Generator {
       log.info('found shelf_router.Route annotations in ${cls.name}');
 
       classes[cls] = elements
-          .map(
-            (e) => _routeType
+          .map((e) {
+            final middleware = e.metadata.annotations
+                .where((m) {
+                  final type = m.computeConstantValue()?.type;
+                  return type != null && _useType.isExactlyType(type);
+                })
+                .map((m) {
+                  // TODO: Find a way to optimize analyzer
+                  // and code builder instead of modified simple string
+                  final raw = m.toSource();
+                  return raw.substring(
+                    raw.indexOf('(') + 1,
+                    raw.lastIndexOf(')'),
+                  );
+                })
+                .toList();
+
+            return _routeType
                 .annotationsOfExact(e)
                 .map(
                   (a) => _Handler(
                     a.getField('verb')!.toStringValue()!,
                     a.getField('route')!.toStringValue()!,
                     e,
+                    middleware,
                   ),
-                ),
-          )
+                );
+          })
           .expand((i) => i)
           .toList();
     }

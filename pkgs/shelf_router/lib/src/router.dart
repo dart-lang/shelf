@@ -136,9 +136,8 @@ class Router {
     }
     verb = verb.toUpperCase();
 
+    // Also create HEAD for GET verbs.
     if (verb == 'GET') {
-      // Handling in a 'GET' request without handling a 'HEAD' request is always
-      // wrong, thus, we add a default implementation that discards the body.
       final headMiddleware = middleware == null
           ? _removeBody
           : (Handler h) => _removeBody(middleware(h));

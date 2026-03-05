@@ -26,14 +26,16 @@ class Service {
   // embed URL-parameters, and these may be taken as parameters by the handler.
   // But either all URL-parameters or none of the URL parameters must be taken
   // as parameters by the handler.
+
   @Route.get('/say-hi/:name')
-  @Use(validateParams({'name': Rule.string(min: 5, max: 10)}))
+  @Use(ValidateParams({'name': Rule.string()}))
+  @Use(ValidateParams({'namex': Rule.string()}))
   Response _hi(Request request, String name) => Response.ok('hi $name');
 
   // Embedded URL parameters may also be associated with a regular-expression
   // that the pattern must match.
   @Route.get('/user/:userId')
-  @Use(validateParams({'userId': Rule.number()}))
+  @Use(ValidateParams({'userId': Rule.number()}))
   Response _user(Request request, String userId) =>
       Response.ok('User has the user-number: $userId');
 

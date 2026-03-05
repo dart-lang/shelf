@@ -24,7 +24,7 @@ void main() {
     final router = Router();
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
-    }, middleware: const ValidateParams({'id': Rule.number()}).call);
+    }, middleware: const ValidateParams({'id': Rule.number()}).middleware);
 
     final response =
         await router(Request('GET', Uri.parse('http://localhost/user/42')));
@@ -36,11 +36,12 @@ void main() {
     final router = Router();
     router.get('/user/:id', (Request request) {
       return Response.ok('User ${request.params['id']}');
-    }, middleware: const ValidateParams({'id': Rule.number()}).call);
+    }, middleware: const ValidateParams({'id': Rule.number()}).middleware);
 
     final response =
         await router(Request('GET', Uri.parse('http://localhost/user/abc')));
     expect(response.statusCode, 400);
+
     final body = jsonDecode(await response.readAsString());
 
     if(body is! Map<String, dynamic>) fail('Body is not a map');
@@ -50,7 +51,8 @@ void main() {
     if(detail is! Map<String, dynamic>) fail('Details is not a map');
 
     expect(body['error'], 'Validation failed');
-    expect(body['id'], 'must be a number');
+    expect(detail['id'], 'must be a number');
+
   });
 
   test('Validation middleware path param required', () async {
@@ -60,7 +62,7 @@ void main() {
     },
         middleware: const ValidateParams({
           'id': Rule.number(),
-        }).call);
+        }).middleware);
 
     // Missing path param (this usually wouldn't match the route,
     // but shelf_router
