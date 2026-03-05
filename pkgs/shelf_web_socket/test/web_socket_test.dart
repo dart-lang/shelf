@@ -190,7 +190,7 @@ void main() {
     late HttpServer server;
     late Uri url;
     setUp(() async {
-      server = await shelf_io.serve(webSocketHandler((_, __) {
+      server = await shelf_io.serve(webSocketHandler((_, _) {
         fail('should not create a WebSocket');
       }), 'localhost', 0);
       url = Uri.http('localhost:${server.port}', '');
