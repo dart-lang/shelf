@@ -192,7 +192,7 @@ Future<Response> _handleFile(Request request, File file,
   final headers = {
     HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified),
     HttpHeaders.acceptRangesHeader: 'bytes',
-    if (contentType != null) HttpHeaders.contentTypeHeader: contentType,
+    HttpHeaders.contentTypeHeader: ?contentType,
   };
 
   return _fileRangeResponse(request, file, headers) ??
