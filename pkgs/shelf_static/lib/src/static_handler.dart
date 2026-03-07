@@ -61,19 +61,19 @@ Handler createStaticHandler(String fileSystemPath,
 
   final mimeResolver = contentTypeResolver ?? _defaultMimeTypeResolver;
 
-  return (Request request) {
+  return (Request request) async {
     final segs = [fileSystemPath, ...request.url.pathSegments];
 
     final fsPath = p.joinAll(segs);
 
-    final entityType = FileSystemEntity.typeSync(fsPath);
+    final entityType = await FileSystemEntity.type(fsPath);
 
     File? fileFound;
 
     if (entityType == FileSystemEntityType.file) {
       fileFound = File(fsPath);
     } else if (entityType == FileSystemEntityType.directory) {
-      fileFound = _tryDefaultFile(fsPath, defaultDocument);
+      fileFound = await _tryDefaultFile(fsPath, defaultDocument);
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
@@ -87,7 +87,7 @@ Handler createStaticHandler(String fileSystemPath,
     final file = fileFound;
 
     if (!serveFilesOutsidePath) {
-      final resolvedPath = file.resolveSymbolicLinksSync();
+      final resolvedPath = await file.resolveSymbolicLinks();
 
       // Do not serve a file outside of the original fileSystemPath
       if (!p.isWithin(fileSystemPath, resolvedPath)) {
@@ -106,7 +106,7 @@ Handler createStaticHandler(String fileSystemPath,
     return _handleFile(request, file, () async {
       if (useHeaderBytesForContentType) {
         final length =
-            math.min(mimeResolver.magicNumbersMaxLength, file.lengthSync());
+            math.min(mimeResolver.magicNumbersMaxLength, await file.length());
 
         final byteSink = ByteAccumulatorSink();
 
@@ -132,14 +132,14 @@ Response _redirectToAddTrailingSlash(Uri uri) {
   return Response.movedPermanently(location.toString());
 }
 
-File? _tryDefaultFile(String dirPath, String? defaultFile) {
+Future<File?> _tryDefaultFile(String dirPath, String? defaultFile) async {
   if (defaultFile == null) return null;
 
   final filePath = p.join(dirPath, defaultFile);
 
   final file = File(filePath);
 
-  if (file.existsSync()) {
+  if (await file.exists()) {
     return file;
   }
 
@@ -165,7 +165,7 @@ Handler createFileHandler(String path, {String? url, String? contentType}) {
   final mimeType = contentType ?? _defaultMimeTypeResolver.lookup(path);
   url ??= p.toUri(p.basename(path)).toString();
 
-  return (request) {
+  return (request) async {
     if (request.url.path != url) return Response.notFound('Not Found');
     return _handleFile(request, file, () => mimeType);
   };
@@ -178,7 +178,7 @@ Handler createFileHandler(String path, {String? url, String? contentType}) {
 /// [getContentType] and uses it to populate the Content-Type header.
 Future<Response> _handleFile(Request request, File file,
     FutureOr<String?> Function() getContentType) async {
-  final stat = file.statSync();
+  final stat = await file.stat();
   final ifModifiedSince = request.ifModifiedSince;
 
   if (ifModifiedSince != null) {
@@ -195,7 +195,7 @@ Future<Response> _handleFile(Request request, File file,
     if (contentType != null) HttpHeaders.contentTypeHeader: contentType,
   };
 
-  return _fileRangeResponse(request, file, headers) ??
+  return _fileRangeResponse(request, file, stat.size, headers) ??
       Response.ok(
         request.method == 'HEAD' ? null : file.openRead(),
         headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
@@ -214,14 +214,13 @@ final _bytesMatcher = RegExp(r'^bytes=(\d*)-(\d*)$');
 ///
 /// Ranges that end past the end of the file are truncated.
 Response? _fileRangeResponse(
-    Request request, File file, Map<String, Object> headers) {
+    Request request, File file, int actualLength, Map<String, Object> headers) {
   final range = request.headers[HttpHeaders.rangeHeader];
   if (range == null) return null;
   final matches = _bytesMatcher.firstMatch(range);
   // Ignore ranges other than bytes
   if (matches == null) return null;
 
-  final actualLength = file.lengthSync();
   final startMatch = matches[1]!;
   final endMatch = matches[2]!;
   if (startMatch.isEmpty && endMatch.isEmpty) return null;

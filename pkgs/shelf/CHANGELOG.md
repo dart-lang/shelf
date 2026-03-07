@@ -1,5 +1,8 @@
 ## 1.4.3-wip
 
+* Optimize `Headers` allocation in `Request` and `Response` instances, reducing
+  overhead when handling and modifying HTTP headers in the pipeline.
+
 ## 1.4.2
 
 * `Headers`: added the `fromEntries`  constructor.
