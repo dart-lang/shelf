@@ -192,26 +192,19 @@ Map<String, List<String>> _adjustHeaders(
     }
   }
 
-  Map<String, List<String>> newHeaders;
-  if (headers == null) {
-    newHeaders = <String, List<String>>{};
-  } else if (headers is Headers) {
-    newHeaders = Map<String, List<String>>.from(headers);
-  } else {
-    newHeaders = CaseInsensitiveMap<List<String>>.from(headers);
-  }
+  var newHeaders = headers == null
+      ? CaseInsensitiveMap<List<String>>()
+      : CaseInsensitiveMap<List<String>>.from(headers);
 
   if (!sameEncoding) {
-    final contentTypeValue = newHeaders['content-type'] ??
-        newHeaders['Content-Type'] ??
-        newHeaders['CONTENT-TYPE'];
-    if (contentTypeValue == null) {
+    if (newHeaders['content-type'] == null) {
       newHeaders['content-type'] = [
         'application/octet-stream; charset=${body.encoding!.name}'
       ];
     } else {
-      final contentType = MediaType.parse(joinHeaderValues(contentTypeValue)!)
-          .change(parameters: {'charset': body.encoding!.name});
+      final contentType =
+          MediaType.parse(joinHeaderValues(newHeaders['content-type'])!)
+              .change(parameters: {'charset': body.encoding!.name});
       newHeaders['content-type'] = [contentType.toString()];
     }
   }
@@ -220,10 +213,7 @@ Map<String, List<String>> _adjustHeaders(
       body.contentLength == 0 && findHeader(headers, 'content-length') != null;
 
   if (body.contentLength != null && !explicitOverrideOfZeroLength) {
-    final codingValue = newHeaders['transfer-encoding'] ??
-        newHeaders['Transfer-Encoding'] ??
-        newHeaders['TRANSFER-ENCODING'];
-    final coding = joinHeaderValues(codingValue);
+    final coding = joinHeaderValues(newHeaders['transfer-encoding']);
     if (coding == null || equalsIgnoreAsciiCase(coding, 'identity')) {
       newHeaders['content-length'] = [body.contentLength.toString()];
     }

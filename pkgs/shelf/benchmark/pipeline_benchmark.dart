@@ -9,14 +9,16 @@ void main() async {
       .addMiddleware((innerHandler) => (request) => innerHandler(request))
       .addHandler((request) => Response.ok('hello world'));
 
+  final url = Uri.parse('http://localhost:8080/');
+  final headers = {
+    'Accept': 'text/html',
+    'User-Agent': 'Dart/3.0',
+    'X-Forwarded-For': '192.168.1.1',
+  };
+
   print('Warming up...');
   for (var i = 0; i < 10000; i++) {
-    final request =
-        Request('GET', Uri.parse('http://localhost:8080/'), headers: {
-      'Accept': 'text/html',
-      'User-Agent': 'Dart/3.0',
-      'X-Forwarded-For': '192.168.1.1',
-    });
+    final request = Request('GET', url, headers: headers);
     await handler(request);
   }
 
@@ -24,12 +26,7 @@ void main() async {
   final sw = Stopwatch()..start();
   const iterations = 1000000;
   for (var i = 0; i < iterations; i++) {
-    final request =
-        Request('GET', Uri.parse('http://localhost:8080/'), headers: {
-      'Accept': 'text/html',
-      'User-Agent': 'Dart/3.0',
-      'X-Forwarded-For': '192.168.1.1',
-    });
+    final request = Request('GET', url, headers: headers);
     await handler(request);
   }
   sw.stop();

@@ -245,6 +245,12 @@ void main() {
       expect(request.contentLength, isNull);
     });
 
+    test('is null for a chunked transfer encoding with a different case', () {
+      var request = _createMessage(
+          body: '1\r\na0\r\n\r\n', headers: {'Transfer-Encoding': 'chunked'});
+      expect(request.contentLength, isNull);
+    });
+
     test('is null for a non-identity transfer encoding', () {
       var request = _createMessage(
           body: '1\r\na0\r\n\r\n', headers: {'transfer-encoding': 'custom'});
@@ -254,6 +260,12 @@ void main() {
     test('is set for identity transfer encoding', () {
       var request = _createMessage(
           body: '1\r\na0\r\n\r\n', headers: {'transfer-encoding': 'identity'});
+      expect(request.contentLength, equals(9));
+    });
+
+    test('is set for identity transfer encoding with a different case', () {
+      var request = _createMessage(
+          body: '1\r\na0\r\n\r\n', headers: {'Transfer-Encoding': 'identity'});
       expect(request.contentLength, equals(9));
     });
   });
