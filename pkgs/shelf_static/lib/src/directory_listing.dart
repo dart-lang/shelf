@@ -12,52 +12,157 @@ import 'package:shelf/shelf.dart';
 String _getHeader(String sanitizedHeading) => '''<!DOCTYPE html>
 <html>
 <head>
-  <title>Directory listing for $sanitizedHeading</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Index of $sanitizedHeading</title>
   <style>
   html, body {
     margin: 0;
     padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f9fafb;
+    color: #111827;
   }
-  body {
-    font-family: sans-serif;
+  .container {
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 2rem;
   }
   h1 {
-    background-color: #4078c0;
-    color: white;
-    font-weight: normal;
-    margin: 0 0 10px 0;
-    padding: 16px 32px;
-    white-space: nowrap;
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    word-break: break-all;
   }
-  ul {
-    margin: 0;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
-  li {
-    padding: 0;
+  th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  tr:hover {
+    background-color: #f9fafb;
   }
   a {
-    line-height: 1.4em;
+    color: #2563eb;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  .icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+  .icon-dir {
+    color: #93c5fd;
+    fill: currentColor;
+  }
+  .icon-file {
+    color: #9ca3af;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .size, .date {
+    color: #6b7280;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+  .size {
+    text-align: right;
+  }
+  th.size {
+    text-align: right;
+  }
+  @media (max-width: 640px) {
+    .date {
+      display: none;
+    }
   }
   </style>
 </head>
 <body>
-  <h1>$sanitizedHeading</h1>
-  <ul>
+  <div class="container">
+    <h1>Index of $sanitizedHeading</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th class="date">Last Modified</th>
+          <th class="size">Size</th>
+        </tr>
+      </thead>
+      <tbody>
 ''';
 
-const String _trailer = '''  </ul>
+const String _trailer = '''      </tbody>
+    </table>
+  </div>
 </body>
 </html>
 ''';
 
-Response listDirectory(String fileSystemPath, String dirPath) {
-  final controller = StreamController<List<int>>();
-  const encoding = Utf8Codec();
-  const sanitizer = HtmlEscape();
+const String _dirIcon =
+    '''<svg class="icon icon-dir" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>''';
+const String _fileIcon =
+    '''<svg class="icon icon-file" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>''';
 
-  void add(String string) {
-    controller.add(encoding.encode(string));
+String _formatSize(int bytes) {
+  const kb = 1024;
+  const mb = kb * 1024;
+  const gb = mb * 1024;
+
+  if (bytes < kb) return '$bytes B';
+  if (bytes < mb) return '${(bytes / kb).toStringAsFixed(1)} KB';
+  if (bytes < gb) {
+    return '${(bytes / mb).toStringAsFixed(1)} MB';
   }
+  return '${(bytes / gb).toStringAsFixed(1)} GB';
+}
+
+String _formatDate(DateTime date) {
+  final y = date.year;
+  final m = date.month.toString().padLeft(2, '0');
+  final d = date.day.toString().padLeft(2, '0');
+  final h = date.hour.toString().padLeft(2, '0');
+  final min = date.minute.toString().padLeft(2, '0');
+  return '$y-$m-$d $h:$min';
+}
+
+Future<Response> listDirectory(String fileSystemPath, String dirPath) async {
+  if (!path.isWithin(fileSystemPath, dirPath) &&
+      !path.equals(fileSystemPath, dirPath)) {
+    return Response.notFound('Not Found');
+  }
+
+  const sanitizer = HtmlEscape();
 
   var heading = path.relative(dirPath, from: fileSystemPath);
   if (heading == '.') {
@@ -66,34 +171,64 @@ Response listDirectory(String fileSystemPath, String dirPath) {
     heading = '/$heading/';
   }
 
-  add(_getHeader(sanitizer.convert(heading)));
+  final buffer = StringBuffer();
+  buffer.write(_getHeader(sanitizer.convert(heading)));
 
-  // Return a sorted listing of the directory contents asynchronously.
-  Directory(dirPath).list().toList().then((entities) {
-    entities.sort((e1, e2) {
-      if (e1 is Directory && e2 is! Directory) {
-        return -1;
-      }
-      if (e1 is! Directory && e2 is Directory) {
-        return 1;
-      }
-      return e1.path.compareTo(e2.path);
-    });
+  if (heading != '/') {
+    buffer.write('''
+        <tr>
+          <td><a href="../">$_dirIcon ..</a></td>
+          <td class="date">-</td>
+          <td class="size">-</td>
+        </tr>
+''');
+  }
 
-    for (var entity in entities) {
-      var name = path.relative(entity.path, from: dirPath);
-      if (entity is Directory) name += '/';
-      final sanitizedName = sanitizer.convert(name);
-      add('    <li><a href="$sanitizedName">$sanitizedName</a></li>\n');
-    }
-
-    add(_trailer);
-    controller.close();
+  final entities = await Directory(dirPath).list().toList();
+  entities.sort((e1, e2) {
+    if (e1 is Directory && e2 is! Directory) return -1;
+    if (e1 is! Directory && e2 is Directory) return 1;
+    return e1.path.compareTo(e2.path);
   });
 
+  final entitiesWithStats = await Future.wait(entities.map((e) async {
+    try {
+      return (e, await e.stat());
+    } catch (_) {
+      return (e, null);
+    }
+  }));
+
+  for (final (entity, stat) in entitiesWithStats) {
+    final isDir = entity is Directory;
+    var name = path.relative(entity.path, from: dirPath);
+    if (isDir) name += '/';
+    final sanitizedName = sanitizer.convert(name);
+
+    var sizeStr = '-';
+    var dateStr = '-';
+
+    if (stat != null) {
+      if (!isDir) sizeStr = _formatSize(stat.size);
+      dateStr = _formatDate(stat.modified);
+    }
+
+    final icon = isDir ? _dirIcon : _fileIcon;
+
+    buffer.write('''
+        <tr>
+          <td><a href="./$sanitizedName">$icon $sanitizedName</a></td>
+          <td class="date">$dateStr</td>
+          <td class="size">$sizeStr</td>
+        </tr>
+''');
+  }
+
+  buffer.write(_trailer);
+
   return Response.ok(
-    controller.stream,
-    encoding: encoding,
+    buffer.toString(),
+    encoding: utf8,
     headers: {HttpHeaders.contentTypeHeader: 'text/html'},
   );
 }

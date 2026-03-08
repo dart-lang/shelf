@@ -4,7 +4,9 @@
 
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:shelf_static/shelf_static.dart';
+import 'package:shelf_static/src/directory_listing.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -63,5 +65,10 @@ void main() {
     final response = await makeRequest(handler, '/files/empty subfolder/');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.readAsString(), completes);
+  });
+
+  test('blocks directory traversal outside of root', () async {
+    final response = await listDirectory(d.sandbox, p.join(d.sandbox, '..'));
+    expect(response.statusCode, HttpStatus.notFound);
   });
 }

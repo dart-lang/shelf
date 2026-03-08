@@ -31,7 +31,7 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 /// the directory is checked for a file with that name. If it exists, it is
 /// served.
 ///
-/// If no [defaultDocument] is found and [listDirectories] is true, then the
+/// If no [defaultDocument] is found and [listDirectories] is `true`, then the
 /// handler produces a listing of the directory.
 ///
 /// If [useHeaderBytesForContentType] is `true`, the contents of the
