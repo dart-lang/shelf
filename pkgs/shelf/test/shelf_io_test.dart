@@ -564,7 +564,8 @@ void main() {
       ..useCertificateChainBytes(certChainBytes)
       ..usePrivateKeyBytes(certKeyBytes, password: 'dartdart');
 
-    var sslClient = HttpClient(context: securityContext);
+    var sslClient = HttpClient(context: securityContext)
+      ..badCertificateCallback = (cert, host, port) => true;
 
     Future<HttpClientRequest> scheduleSecureGet() =>
         sslClient.getUrl(Uri.https('localhost:${_server!.port}', ''));
