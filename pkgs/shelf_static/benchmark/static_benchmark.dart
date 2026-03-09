@@ -1,3 +1,7 @@
+// Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'dart:io';
 
 import 'package:shelf/shelf.dart';
@@ -16,47 +20,43 @@ void main() async {
 
     print('Warming up small.txt...');
     for (var i = 0; i < 1000; i++) {
-      final request =
-          Request('GET', Uri.parse('http://localhost:8080/small.txt'));
+      final request = Request('GET', Uri.http('localhost:8080', 'small.txt'));
       final response = await handler(request);
       await response.readAsString();
     }
 
     print('Running small.txt benchmark...');
-    var sw = Stopwatch()..start();
+    final smallFileStopwatch = Stopwatch()..start();
     const iterationsSmall = 50000;
     for (var i = 0; i < iterationsSmall; i++) {
-      final request =
-          Request('GET', Uri.parse('http://localhost:8080/small.txt'));
+      final request = Request('GET', Uri.http('localhost:8080', 'small.txt'));
       final response = await handler(request);
       await response.readAsString();
     }
-    sw.stop();
-    print('Total time: ${sw.elapsedMilliseconds} ms');
+    smallFileStopwatch.stop();
+    print('Total time: ${smallFileStopwatch.elapsedMilliseconds} ms');
     print(
-        'Req/sec (small.txt): ${(iterationsSmall / sw.elapsedMicroseconds * 1000000).toStringAsFixed(2)}');
+        'Req/sec (small.txt): ${(iterationsSmall / smallFileStopwatch.elapsedMicroseconds * 1000000).toStringAsFixed(2)}');
 
     print('Warming up large.txt...');
     for (var i = 0; i < 10; i++) {
-      final request =
-          Request('GET', Uri.parse('http://localhost:8080/large.txt'));
+      final request = Request('GET', Uri.http('localhost:8080', 'large.txt'));
       final response = await handler(request);
       await response.read().drain<void>();
     }
 
     print('Running large.txt benchmark...');
-    sw = Stopwatch()..start();
+    final largeFileStopwatch = Stopwatch()..start();
     const iterationsLarge = 1000;
     for (var i = 0; i < iterationsLarge; i++) {
-      final request =
-          Request('GET', Uri.parse('http://localhost:8080/large.txt'));
+      final request = Request('GET', Uri.http('localhost:8080', 'large.txt'));
       final response = await handler(request);
       await response.read().drain<void>();
     }
-    sw.stop();
-    print('Total time: ${sw.elapsedMilliseconds} ms');
+    largeFileStopwatch.stop();
+    print('Total time: ${largeFileStopwatch.elapsedMilliseconds} ms');
     print(
-        'Req/sec (large.txt): ${(iterationsLarge / sw.elapsedMicroseconds * 1000000).toStringAsFixed(2)}');
+        'Req/sec (large.txt): ${(iterationsLarge / largeFileStopwatch.elapsedMicroseconds * 1000000).toStringAsFixed(2)}');
   } finally {
     tempDir.deleteSync(recursive: true);
   }
