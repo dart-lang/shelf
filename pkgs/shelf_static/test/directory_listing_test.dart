@@ -21,7 +21,8 @@ void main() {
       d.file('with space.txt', 'with space content'),
       d.file('file_1_kb.txt', 'a' * 1024),
       d.file('file_1.5_kb.txt', 'a' * 1536),
-      d.file('file_with_<brackets>.txt', 'xss'),
+      d.file('file_with_%23.txt', 'hash'),
+      if (!Platform.isWindows) d.file('file_with_<brackets>.txt', 'xss'),
       d.dir('empty subfolder', []),
     ]).create();
   });
@@ -92,13 +93,17 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
     final html = await response.readAsString();
 
-    // Verify that potentially malicious characters like `<` and `>` in
-    // filenames are percent-encoded in the anchor `href` attribute.
-    expect(html, contains('href="./file_with_%3Cbrackets%3E.txt"'));
+    expect(html, contains('href="./file_with_%2523.txt"'));
 
-    // Verify that the displayed text for the filename is properly
-    // HTML-escaped to safely render without executing.
-    expect(html, contains('file_with_&lt;brackets&gt;.txt'));
+    if (!Platform.isWindows) {
+      // Verify that potentially malicious characters like `<` and `>` in
+      // filenames are percent-encoded in the anchor `href` attribute.
+      expect(html, contains('href="./file_with_%3Cbrackets%3E.txt"'));
+
+      // Verify that the displayed text for the filename is properly
+      // HTML-escaped to safely render without executing.
+      expect(html, contains('file_with_&lt;brackets&gt;.txt'));
+    }
   });
 
   test('blocks directory traversal outside of root', () async {
