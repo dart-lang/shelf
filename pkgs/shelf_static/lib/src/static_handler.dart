@@ -31,7 +31,7 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 /// the directory is checked for a file with that name. If it exists, it is
 /// served.
 ///
-/// If no [defaultDocument] is found and [listDirectories] is true, then the
+/// If no [defaultDocument] is found and [listDirectories] is `true`, then the
 /// handler produces a listing of the directory.
 ///
 /// If [useHeaderBytesForContentType] is `true`, the contents of the
@@ -100,7 +100,8 @@ Handler createStaticHandler(String fileSystemPath,
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
-        return listDirectory(fileSystemPath, fsPath);
+        return listDirectory(fileSystemPath, fsPath,
+            serveFilesOutsidePath: serveFilesOutsidePath);
       }
     }
 

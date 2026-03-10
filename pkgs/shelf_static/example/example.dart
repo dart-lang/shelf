@@ -17,16 +17,17 @@ void main(List<String> args) {
 
   try {
     final result = parser.parse(args);
-    port = int.parse(result['port'] as String);
-    logging = result['logging'] as bool;
-    listDirectories = result['list-directories'] as bool;
+    port = int.parse(result.option('port')!);
+    logging = result.flag('logging');
+    listDirectories = result.flag('list-directories');
   } on FormatException catch (e) {
     stderr
       ..writeln(e.message)
       ..writeln(parser.usage);
     // http://linux.die.net/include/sysexits.h
     // #define EX_USAGE	64	/* command line usage error */
-    exit(64);
+    exitCode = 64;
+    return;
   }
 
   if (!FileSystemEntity.isFileSync('example/example.dart')) {
