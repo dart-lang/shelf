@@ -39,12 +39,25 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 ///
 /// Specify a custom [contentTypeResolver] to customize automatic content type
 /// detection.
+///
+/// If [generateETag] is provided, it is used to generate an ETag for the
+/// file. The ETag is then used to handle
+/// [`If-None-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-None-Match)
+/// requests. If
+/// [generateETag] is not provided, a default ETag is generated based on the
+/// file's size and last modified time. To disable ETag generation, pass
+/// `(file, stat) => null`.
+///
+/// If [maxAge] is provided, it is used to set the `Cache-Control` header
+/// with a `max-age` value in seconds.
 Handler createStaticHandler(String fileSystemPath,
     {bool serveFilesOutsidePath = false,
     String? defaultDocument,
     bool listDirectories = false,
     bool useHeaderBytesForContentType = false,
-    MimeTypeResolver? contentTypeResolver}) {
+    MimeTypeResolver? contentTypeResolver,
+    FutureOr<String?> Function(File, FileStat)? generateETag,
+    Duration? maxAge}) {
   final rootDir = Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
     throw ArgumentError('A directory corresponding to fileSystemPath '
@@ -66,14 +79,24 @@ Handler createStaticHandler(String fileSystemPath,
 
     final fsPath = p.joinAll(segs);
 
-    final entityType = await FileSystemEntity.type(fsPath);
+    final stat = await FileStat.stat(fsPath);
+    final entityType = stat.type;
 
     File? fileFound;
+    FileStat? fileStat;
 
     if (entityType == FileSystemEntityType.file) {
       fileFound = File(fsPath);
+      fileStat = stat;
     } else if (entityType == FileSystemEntityType.directory) {
-      fileFound = await _tryDefaultFile(fsPath, defaultDocument);
+      if (defaultDocument != null) {
+        final defaultFilePath = p.join(fsPath, defaultDocument);
+        final defaultFileStat = await FileStat.stat(defaultFilePath);
+        if (defaultFileStat.type == FileSystemEntityType.file) {
+          fileFound = File(defaultFilePath);
+          fileStat = defaultFileStat;
+        }
+      }
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
@@ -116,7 +139,7 @@ Handler createStaticHandler(String fileSystemPath,
       } else {
         return mimeResolver.lookup(file.path);
       }
-    });
+    }, generateETag: generateETag, maxAge: maxAge, fileStat: fileStat);
   };
 }
 
@@ -132,20 +155,6 @@ Response _redirectToAddTrailingSlash(Uri uri) {
   return Response.movedPermanently(location.toString());
 }
 
-Future<File?> _tryDefaultFile(String dirPath, String? defaultFile) async {
-  if (defaultFile == null) return null;
-
-  final filePath = p.join(dirPath, defaultFile);
-
-  final file = File(filePath);
-
-  if (await file.exists()) {
-    return file;
-  }
-
-  return null;
-}
-
 /// Creates a shelf [Handler] that serves the file at [path].
 ///
 /// This returns a 404 response for any requests whose [Request.url] doesn't
@@ -154,7 +163,22 @@ Future<File?> _tryDefaultFile(String dirPath, String? defaultFile) async {
 /// This uses the given [contentType] for the Content-Type header. It defaults
 /// to looking up a content type based on [path]'s file extension, and failing
 /// that doesn't sent a [contentType] header at all.
-Handler createFileHandler(String path, {String? url, String? contentType}) {
+///
+/// If [generateETag] is provided, it is used to generate an ETag for the
+/// file. The ETag is then used to handle
+/// [`If-None-Match`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/If-None-Match)
+/// requests. If
+/// [generateETag] is not provided, a default ETag is generated based on the
+/// file's size and last modified time. To disable ETag generation, pass
+/// `(file, stat) => null`.
+///
+/// If [maxAge] is provided, it is used to set the `Cache-Control` header
+/// with a `max-age` value in seconds.
+Handler createFileHandler(String path,
+    {String? url,
+    String? contentType,
+    FutureOr<String?> Function(File, FileStat)? generateETag,
+    Duration? maxAge}) {
   final file = File(path);
   if (!file.existsSync()) {
     throw ArgumentError.value(path, 'path', 'does not exist.');
@@ -167,7 +191,8 @@ Handler createFileHandler(String path, {String? url, String? contentType}) {
 
   return (request) async {
     if (request.url.path != url) return Response.notFound('Not Found');
-    return _handleFile(request, file, () => mimeType);
+    return _handleFile(request, file, () => mimeType,
+        generateETag: generateETag, maxAge: maxAge);
   };
 }
 
@@ -176,21 +201,45 @@ Handler createFileHandler(String path, {String? url, String? contentType}) {
 /// This handles caching, and sends a 304 Not Modified response if the request
 /// indicates that it has the latest version of a file. Otherwise, it calls
 /// [getContentType] and uses it to populate the Content-Type header.
-Future<Response> _handleFile(Request request, File file,
-    FutureOr<String?> Function() getContentType) async {
-  final stat = await file.stat();
+Future<Response> _handleFile(
+    Request request, File file, FutureOr<String?> Function() getContentType,
+    {FutureOr<String?> Function(File, FileStat)? generateETag,
+    Duration? maxAge,
+    FileStat? fileStat}) async {
+  final stat = fileStat ?? await file.stat();
   final ifModifiedSince = request.ifModifiedSince;
+  final ifNoneMatch = request.headers[HttpHeaders.ifNoneMatchHeader];
 
-  if (ifModifiedSince != null) {
+  generateETag ??= _defaultGenerateETag;
+  final etag = await generateETag(file, stat);
+
+  final cacheHeaders = {
+    HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified),
+    if (etag != null) HttpHeaders.etagHeader: etag,
+    if (maxAge != null)
+      HttpHeaders.cacheControlHeader: 'public, max-age=${maxAge.inSeconds}',
+  };
+
+  Response notModifiedResponse() => Response.notModified(headers: cacheHeaders);
+
+  if (ifNoneMatch != null) {
+    if (ifNoneMatch == '*') return notModifiedResponse();
+    if (etag != null) {
+      final clientETags = ifNoneMatch.split(',').map((e) => e.trim());
+      if (clientETags.contains(etag)) {
+        return notModifiedResponse();
+      }
+    }
+  } else if (ifModifiedSince != null) {
     final fileChangeAtSecResolution = toSecondResolution(stat.modified);
     if (!fileChangeAtSecResolution.isAfter(ifModifiedSince)) {
-      return Response.notModified();
+      return notModifiedResponse();
     }
   }
 
   final contentType = await getContentType();
   final headers = {
-    HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified),
+    ...cacheHeaders,
     HttpHeaders.acceptRangesHeader: 'bytes',
     if (contentType != null) HttpHeaders.contentTypeHeader: contentType,
   };
@@ -201,6 +250,9 @@ Future<Response> _handleFile(Request request, File file,
         headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
       );
 }
+
+String _defaultGenerateETag(File file, FileStat stat) =>
+    'W/"${stat.size}-${stat.modified.millisecondsSinceEpoch}"';
 
 final _bytesMatcher = RegExp(r'^bytes=(\d*)-(\d*)$');
 

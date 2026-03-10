@@ -1,9 +1,12 @@
-## 1.1.4-wip
+## 1.2.0-wip
 
 * Replace static, blocking `dart:io` operations (such as `statSync()` and
   `File.existsSync()`) with their asynchronous equivalents. This prevents
   `createStaticHandler` from blocking the Dart isolate event loop, dramatically
   improving performance for highly concurrent web servers.
+* Add `generateETag` and `maxAge` parameters to `createStaticHandler` and
+  `createFileHandler` to support `ETag` and `Cache-Control` headers. 
+  Default ETags are generated based on file size and modified time.
 
 ## 1.1.3
 

@@ -181,6 +181,96 @@ void main() {
     });
   });
 
+  group('if none match', () {
+    test('matching etag', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final response1 = await makeRequest(handler, '/root.txt');
+      final etag = response1.headers[HttpHeaders.etagHeader];
+      expect(etag, isNotNull);
+
+      final headers = {HttpHeaders.ifNoneMatchHeader: etag!};
+
+      final response2 =
+          await makeRequest(handler, '/root.txt', headers: headers);
+      expect(response2.statusCode, HttpStatus.notModified);
+      expect(response2.contentLength, 0);
+    });
+
+    test('non-matching etag', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final headers = {HttpHeaders.ifNoneMatchHeader: '"not-the-right-etag"'};
+
+      final response =
+          await makeRequest(handler, '/root.txt', headers: headers);
+      expect(response.statusCode, HttpStatus.ok);
+      expect(response.contentLength, 8);
+    });
+
+    test('matching etag with multiple options', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final response1 = await makeRequest(handler, '/root.txt');
+      final etag = response1.headers[HttpHeaders.etagHeader];
+
+      final headers = {HttpHeaders.ifNoneMatchHeader: '"other-etag", $etag'};
+
+      final response2 =
+          await makeRequest(handler, '/root.txt', headers: headers);
+      expect(response2.statusCode, HttpStatus.notModified);
+    });
+
+    test('wildcard etag', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final headers = {HttpHeaders.ifNoneMatchHeader: '*'};
+
+      final response =
+          await makeRequest(handler, '/root.txt', headers: headers);
+      expect(response.statusCode, HttpStatus.notModified);
+    });
+
+    test('custom etag generator', () async {
+      final handler = createStaticHandler(d.sandbox,
+          generateETag: (file, stat) => 'custom');
+
+      final headers = {HttpHeaders.ifNoneMatchHeader: 'custom'};
+
+      final response =
+          await makeRequest(handler, '/root.txt', headers: headers);
+      expect(response.statusCode, HttpStatus.notModified);
+      expect(response.headers[HttpHeaders.etagHeader], 'custom');
+    });
+
+    test('disable etag', () async {
+      final handler =
+          createStaticHandler(d.sandbox, generateETag: (file, stat) => null);
+
+      final response = await makeRequest(handler, '/root.txt');
+      expect(response.headers.keys, isNot(contains(HttpHeaders.etagHeader)));
+    });
+  });
+
+  group('cache control', () {
+    test('maxAge adds header', () async {
+      final handler =
+          createStaticHandler(d.sandbox, maxAge: const Duration(seconds: 3600));
+
+      final response = await makeRequest(handler, '/root.txt');
+      expect(response.headers[HttpHeaders.cacheControlHeader],
+          'public, max-age=3600');
+    });
+
+    test('no maxAge means no header', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final response = await makeRequest(handler, '/root.txt');
+      expect(response.headers.keys,
+          isNot(contains(HttpHeaders.cacheControlHeader)));
+    });
+  });
+
   group('content type', () {
     test('root.txt should be text/plain', () async {
       final handler = createStaticHandler(d.sandbox);
