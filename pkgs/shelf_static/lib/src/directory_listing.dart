@@ -143,9 +143,15 @@ String _formatSize(int bytes) {
       value.toStringAsFixed(1).replaceFirst(RegExp(r'\.0$'), '');
 
   if (bytes < kb) return '$bytes B';
-  if (bytes < mb) return '${format(bytes / kb)} KB';
-  if (bytes < gb) return '${format(bytes / mb)} MB';
-  return '${format(bytes / gb)} GB';
+
+  final kbs = (bytes / kb * 10).round() / 10;
+  if (kbs < 1024) return '${format(kbs)} KB';
+
+  final mbs = (bytes / mb * 10).round() / 10;
+  if (mbs < 1024) return '${format(mbs)} MB';
+
+  final gbs = (bytes / gb * 10).round() / 10;
+  return '${format(gbs)} GB';
 }
 
 String _formatDate(DateTime date) {
@@ -208,16 +214,23 @@ Future<Response> listDirectory(String fileSystemPath, String dirPath,
   });
 
   final entitiesWithStats = (await Future.wait(entities.map((e) async {
-    try {
-      if (!serveFilesOutsidePath) {
+    if (!serveFilesOutsidePath) {
+      try {
         final resolvedPath = await e.resolveSymbolicLinks();
         if (!path.isWithin(fileSystemPath, resolvedPath) &&
             !path.equals(fileSystemPath, resolvedPath)) {
           return null;
         }
+      } catch (_) {
+        // On error resolving symlink, we can't determine if it's safe.
+        // So we don't list it.
+        return null;
       }
+    }
+    try {
       return (e, await e.stat());
     } catch (_) {
+      // On error stating file, we can still list it, just without details.
       return (e, null);
     }
   })))
