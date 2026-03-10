@@ -139,12 +139,13 @@ String _formatSize(int bytes) {
   const mb = kb * 1024;
   const gb = mb * 1024;
 
+  String format(double value) =>
+      value.toStringAsFixed(1).replaceFirst(RegExp(r'\.0$'), '');
+
   if (bytes < kb) return '$bytes B';
-  if (bytes < mb) return '${(bytes / kb).toStringAsFixed(1)} KB';
-  if (bytes < gb) {
-    return '${(bytes / mb).toStringAsFixed(1)} MB';
-  }
-  return '${(bytes / gb).toStringAsFixed(1)} GB';
+  if (bytes < mb) return '${format(bytes / kb)} KB';
+  if (bytes < gb) return '${format(bytes / mb)} MB';
+  return '${format(bytes / gb)} GB';
 }
 
 String _formatDate(DateTime date) {
@@ -156,7 +157,22 @@ String _formatDate(DateTime date) {
   return '$y-$m-$d $h:$min';
 }
 
-Future<Response> listDirectory(String fileSystemPath, String dirPath) async {
+Future<Response> listDirectory(String fileSystemPath, String dirPath,
+    {bool serveFilesOutsidePath = false}) async {
+  if (!serveFilesOutsidePath) {
+    var resolvedPath = dirPath;
+    try {
+      resolvedPath = await Directory(dirPath).resolveSymbolicLinks();
+    } catch (_) {
+      // Ignore errors resolving symlinks
+    }
+
+    if (!path.isWithin(fileSystemPath, resolvedPath) &&
+        !path.equals(fileSystemPath, resolvedPath)) {
+      return Response.notFound('Not Found');
+    }
+  }
+
   if (!path.isWithin(fileSystemPath, dirPath) &&
       !path.equals(fileSystemPath, dirPath)) {
     return Response.notFound('Not Found');
@@ -191,13 +207,22 @@ Future<Response> listDirectory(String fileSystemPath, String dirPath) async {
     return e1.path.compareTo(e2.path);
   });
 
-  final entitiesWithStats = await Future.wait(entities.map((e) async {
+  final entitiesWithStats = (await Future.wait(entities.map((e) async {
     try {
+      if (!serveFilesOutsidePath) {
+        final resolvedPath = await e.resolveSymbolicLinks();
+        if (!path.isWithin(fileSystemPath, resolvedPath) &&
+            !path.equals(fileSystemPath, resolvedPath)) {
+          return null;
+        }
+      }
       return (e, await e.stat());
     } catch (_) {
       return (e, null);
     }
-  }));
+  })))
+      .whereType<(FileSystemEntity, FileStat?)>()
+      .toList();
 
   for (final (entity, stat) in entitiesWithStats) {
     final isDir = entity is Directory;
@@ -214,10 +239,11 @@ Future<Response> listDirectory(String fileSystemPath, String dirPath) async {
     }
 
     final icon = isDir ? _dirIcon : _fileIcon;
+    final encodedName = Uri.encodeComponent(name).replaceAll('%2F', '/');
 
     buffer.write('''
         <tr>
-          <td><a href="./$sanitizedName">$icon $sanitizedName</a></td>
+          <td><a href="./$encodedName">$icon $sanitizedName</a></td>
           <td class="date">$dateStr</td>
           <td class="size">$sizeStr</td>
         </tr>

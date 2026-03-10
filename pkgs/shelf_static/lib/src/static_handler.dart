@@ -100,7 +100,8 @@ Handler createStaticHandler(String fileSystemPath,
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
-        return listDirectory(fileSystemPath, fsPath);
+        return listDirectory(fileSystemPath, fsPath,
+            serveFilesOutsidePath: serveFilesOutsidePath);
       }
     }
 
