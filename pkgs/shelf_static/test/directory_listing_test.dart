@@ -150,8 +150,8 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
 
     final html = await response.readAsString();
-    // A broken symlink should not crash the request, 
-    // but it also shouldn't be listed because we can't verify it's secure. 
+    // A broken symlink should not crash the request,
+    // but it also shouldn't be listed because we can't verify it's secure.
     expect(html, isNot(contains('broken_symlink')));
   });
 }
