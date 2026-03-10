@@ -116,6 +116,12 @@ void main() {
     expect(response.statusCode, HttpStatus.notFound);
   });
 
+  test('allows directory traversal if serveFilesOutsidePath is true', () async {
+    final response = await listDirectory(d.sandbox, p.join(d.sandbox, '..'),
+        serveFilesOutsidePath: true);
+    expect(response.statusCode, HttpStatus.ok);
+  });
+
   test('blocks directory traversal via symlinks in directory listings',
       () async {
     // Create a symlink pointing outside the `files` directory but within
@@ -137,6 +143,22 @@ void main() {
     // Symlink pointing outside should not be listed if
     // serveFilesOutsidePath is false
     expect(html, isNot(contains('symlink')));
+  });
+
+  test('allows symlinks out of root if serveFilesOutsidePath is true',
+      () async {
+    await d.dir('outside', [d.file('outside.txt', 'contents')]).create();
+    final filesDir = p.join(d.sandbox, 'files');
+
+    final linkPath = p.join(filesDir, 'symlink_out');
+    Link(linkPath).createSync(p.join(d.sandbox, 'outside'));
+
+    final response =
+        await listDirectory(filesDir, filesDir, serveFilesOutsidePath: true);
+    expect(response.statusCode, HttpStatus.ok);
+
+    final html = await response.readAsString();
+    expect(html, contains('symlink_out'));
   });
 
   test('gracefully ignores broken symlinks in directory listings', () async {

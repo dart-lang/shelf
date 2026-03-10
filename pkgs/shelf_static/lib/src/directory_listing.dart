@@ -166,6 +166,11 @@ String _formatDate(DateTime date) {
 Future<Response> listDirectory(String fileSystemPath, String dirPath,
     {bool serveFilesOutsidePath = false}) async {
   if (!serveFilesOutsidePath) {
+    if (!path.isWithin(fileSystemPath, dirPath) &&
+        !path.equals(fileSystemPath, dirPath)) {
+      return Response.notFound('Not Found');
+    }
+
     var resolvedPath = dirPath;
     try {
       resolvedPath = await Directory(dirPath).resolveSymbolicLinks();
@@ -177,11 +182,6 @@ Future<Response> listDirectory(String fileSystemPath, String dirPath,
         !path.equals(fileSystemPath, resolvedPath)) {
       return Response.notFound('Not Found');
     }
-  }
-
-  if (!path.isWithin(fileSystemPath, dirPath) &&
-      !path.equals(fileSystemPath, dirPath)) {
-    return Response.notFound('Not Found');
   }
 
   const sanitizer = HtmlEscape();
