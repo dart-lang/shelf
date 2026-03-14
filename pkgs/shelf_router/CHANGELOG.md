@@ -1,5 +1,6 @@
 ## 1.1.5-wip
 
+* Fixed automatic `HEAD` request handling to not modify content-length.
 * Require Dart `^3.3.0`.
 
 ## 1.1.4

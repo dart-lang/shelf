@@ -38,10 +38,9 @@ void main() {
 
   tearDown(() => server.close());
 
-  Future<String> get(String path) =>
-      http.read(Uri.parse(server.url.toString() + path));
-  Future<int> head(String path) async =>
-      (await http.head(Uri.parse(server.url.toString() + path))).statusCode;
+  Future<String> get(String path) => http.read(server.url.resolve(path));
+  Future<http.Response> head(String path) =>
+      http.head(server.url.resolve(path));
 
   test('get sync/async handler', () async {
     var app = Router();
@@ -67,9 +66,20 @@ void main() {
     expect(await get('/async-hello'), 'hello-world');
     expect(await get('/wrong-path'), 'not-found');
 
-    expect(await head('/sync-hello'), 200);
-    expect(await head('/async-hello'), 200);
-    expect(await head('/wrong-path'), 200);
+    final syncHead = await head('/sync-hello');
+    expect(syncHead.statusCode, 200);
+    expect(syncHead.body, isEmpty);
+    expect(syncHead.headers['content-length'], '11');
+
+    final asyncHead = await head('/async-hello');
+    expect(asyncHead.statusCode, 200);
+    expect(asyncHead.body, isEmpty);
+    expect(asyncHead.headers['content-length'], '11');
+
+    final wrongPathHead = await head('/wrong-path');
+    expect(wrongPathHead.statusCode, 200);
+    expect(wrongPathHead.body, isEmpty);
+    expect(wrongPathHead.headers['content-length'], '9');
   });
 
   test('params', () async {
