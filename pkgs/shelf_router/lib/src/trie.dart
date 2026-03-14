@@ -55,22 +55,17 @@ final class Trie {
     // If route was `/files/image_<id>.png`, we now have `files/image_`.
     final segments = route.split('/');
 
-    // We traverse all but the last segment IF the route ends with a parameter
-    // otherwise we traverse the whole thing. But wait, `split('/')` handles
-    // trailing slashes by adding an empty `''` segment.
-    var lengthToTraverse = segments.length;
-    // If we originally truncated a parameter off the end, the last segment
-    // was broken mid-word (e.g. `files/image_` became `['files', 'image_']`).
-    // The `image_` part cannot be used as a static routing node because
-    // requests will come in as `image_123.png`, not `image_`.
-    if (paramIndex != -1) {
-      lengthToTraverse -= 1;
-    }
+    // If the route contained a parameter, we don't traverse the last segment
+    // as it's not fully static. This is achieved by taking all but the last
+    // segment. This works correctly for both partial segments (e.g. `image_`
+    // from `/files/image_<id>.png`) and for full segments that are just before
+    // a parameter (e.g. the empty segment from `/users/<id>`).
+    final segmentsToTraverse =
+        (paramIndex != -1) ? segments.take(segments.length - 1) : segments;
 
-    for (var i = 0; i < lengthToTraverse; i++) {
-      final segment = segments[i];
-      currentNode.staticChildren.putIfAbsent(segment, _TrieNode.new);
-      currentNode = currentNode.staticChildren[segment]!;
+    for (final segment in segmentsToTraverse) {
+      currentNode =
+          currentNode.staticChildren.putIfAbsent(segment, _TrieNode.new);
     }
 
     // Add the entry to the deepest FULLY static node we reached.
