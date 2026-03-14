@@ -58,13 +58,16 @@ extension RouterParams on Request {
   }
 }
 
-/// Middleware to remove body from request.
-final _removeBody = createMiddleware(responseHandler: (r) {
-  if (r.headers.containsKey('content-length')) {
-    r = r.change(headers: {'content-length': '0'});
-  }
-  return r.change(body: <int>[]);
-});
+/// Middleware to remove body from response for HEAD requests.
+Handler _removeBody(Handler handler) => (request) {
+      Response processResponse(Response r) => r.change(body: const <int>[]);
+
+      final response = handler(request);
+      if (response is Future<Response>) {
+        return response.then(processResponse);
+      }
+      return processResponse(response);
+    };
 
 /// A shelf [Router] routes requests to handlers based on HTTP verb and route
 /// pattern.
