@@ -38,10 +38,9 @@ void main() {
 
   tearDown(() => server.close());
 
-  Future<String> get(String path) =>
-      http.read(Uri.parse(server.url.toString() + path));
+  Future<String> get(String path) => http.read(server.url.resolve(path));
   Future<http.Response> head(String path) =>
-      http.head(Uri.parse(server.url.toString() + path));
+      http.head(server.url.resolve(path));
 
   test('get sync/async handler', () async {
     var app = Router();
