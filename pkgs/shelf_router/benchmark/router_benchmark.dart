@@ -12,14 +12,7 @@ class RouterWorstCaseBenchmark extends AsyncBenchmarkBase {
   Future<void> setup() async {
     router = Router();
 
-    // Generate 10,000 routes across 100 different controllers/prefixes
-    for (var c = 0; c < 100; c++) {
-      for (var i = 0; i < 100; i++) {
-        router.get('/api/controller_$c/resource/$i/details', (Request request) {
-          return Response.ok('match $c $i');
-        });
-      }
-    }
+    router.populate();
 
     // Creating request for the LAST route in the VERY LAST controller to
     // trigger worst-case matching
@@ -42,15 +35,7 @@ class RouterNotFoundBenchmark extends AsyncBenchmarkBase {
   @override
   Future<void> setup() async {
     router = Router();
-
-    // Generate 10,000 routes across 100 different controllers/prefixes
-    for (var c = 0; c < 100; c++) {
-      for (var i = 0; i < 100; i++) {
-        router.get('/api/controller_$c/resource/$i/details', (Request request) {
-          return Response.ok('match $c $i');
-        });
-      }
-    }
+    router.populate();
 
     // Creating request that does not match ANY of the routes
     request =
@@ -67,4 +52,17 @@ Future<void> main() async {
   print('Running routing benchmarks...');
   await RouterWorstCaseBenchmark().report();
   await RouterNotFoundBenchmark().report();
+}
+
+extension on Router {
+  void populate({int cotrollers = 100, int routesPerController = 100}) {
+    // Generate 10,000 routes across 100 different controllers/prefixes
+    for (var c = 0; c < cotrollers; c++) {
+      for (var i = 0; i < routesPerController; i++) {
+        get('/api/controller_$c/resource/$i/details', (Request request) {
+          return Response.ok('match $c $i');
+        });
+      }
+    }
+  }
 }
