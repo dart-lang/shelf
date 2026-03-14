@@ -14,6 +14,7 @@
 
 import 'dart:async';
 
+import 'package:meta/meta.dart';
 import 'package:shelf/shelf.dart';
 
 /// Check if the [regexp] is non-capturing.
@@ -26,7 +27,13 @@ bool _isNoCapture(String regexp) {
 /// Entry in the router.
 ///
 /// This class implements the logic for matching the path pattern.
-class RouterEntry {
+@internal
+final class RouterEntry {
+  static int _nextIndex = 0;
+
+  /// Internal index used by Trie to maintain routing priority.
+  final int trieIndex;
+
   /// Pattern for parsing the route pattern
   static final RegExp _parser = RegExp(r'([^<]*)(?:<([^>|]+)(?:\|([^>]*))?>)?');
 
@@ -46,7 +53,8 @@ class RouterEntry {
   List<String> get params => _params.toList(); // exposed for using generator.
 
   RouterEntry._(this.verb, this.route, this._handler, this._middleware,
-      this._routePattern, this._params);
+      this._routePattern, this._params)
+      : trieIndex = _nextIndex++;
 
   factory RouterEntry(
     String verb,

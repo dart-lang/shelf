@@ -20,6 +20,7 @@ import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
 import 'router_entry.dart' show RouterEntry;
+import 'trie.dart';
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -110,7 +111,7 @@ final _removeBody = createMiddleware(responseHandler: (r) {
 /// constructor parameter.
 @sealed
 class Router {
-  final List<RouterEntry> _routes = [];
+  final _routes = Trie();
   final Handler _notFoundHandler;
 
   /// Creates a new [Router] routing requests to handlers.
@@ -173,9 +174,7 @@ class Router {
   ///
   /// This method allows a Router instance to be a [Handler].
   Future<Response> call(Request request) async {
-    // Note: this is a great place to optimize the implementation by building
-    //       a trie for faster matching... left as an exercise for the reader :)
-    for (var route in _routes) {
+    for (var route in _routes.getCandidates(request.url.path)) {
       if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
         continue;
       }
