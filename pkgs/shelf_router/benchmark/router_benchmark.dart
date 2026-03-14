@@ -55,9 +55,9 @@ Future<void> main() async {
 }
 
 extension on Router {
-  void populate({int cotrollers = 100, int routesPerController = 100}) {
+  void populate({int controllers = 100, int routesPerController = 100}) {
     // Generate 10,000 routes across 100 different controllers/prefixes
-    for (var c = 0; c < cotrollers; c++) {
+    for (var c = 0; c < controllers; c++) {
       for (var i = 0; i < routesPerController; i++) {
         get('/api/controller_$c/resource/$i/details', (Request request) {
           return Response.ok('match $c $i');
