@@ -29,8 +29,6 @@ bool _isNoCapture(String regexp) {
 /// This class implements the logic for matching the path pattern.
 @internal
 final class RouterEntry {
-  static int _nextIndex = 0;
-
   /// Internal index used by Trie to maintain routing priority.
   final int trieIndex;
 
@@ -53,14 +51,14 @@ final class RouterEntry {
   List<String> get params => _params.toList(); // exposed for using generator.
 
   RouterEntry._(this.verb, this.route, this._handler, this._middleware,
-      this._routePattern, this._params)
-      : trieIndex = _nextIndex++;
+      this._routePattern, this._params, this.trieIndex);
 
   factory RouterEntry(
     String verb,
     String route,
     Function handler, {
     Middleware? middleware,
+    int trieIndex = 0,
   }) {
     middleware = middleware ?? ((Handler fn) => fn);
 
@@ -85,7 +83,7 @@ final class RouterEntry {
     final routePattern = RegExp('^$pattern\$');
 
     return RouterEntry._(
-        verb, route, handler, middleware, routePattern, params);
+        verb, route, handler, middleware, routePattern, params, trieIndex);
   }
 
   /// Returns a map from parameter name to value, if the path matches the

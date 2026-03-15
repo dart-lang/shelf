@@ -19,7 +19,6 @@ import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
-import 'router_entry.dart' show RouterEntry;
 import 'trie.dart';
 
 /// Get a URL parameter captured by the [Router].
@@ -139,14 +138,14 @@ class Router {
     if (verb == 'GET') {
       // Handling in a 'GET' request without handling a 'HEAD' request is always
       // wrong, thus, we add a default implementation that discards the body.
-      _routes.add(RouterEntry('HEAD', route, handler, middleware: _removeBody));
+      _routes.add('HEAD', route, handler, middleware: _removeBody);
     }
-    _routes.add(RouterEntry(verb, route, handler));
+    _routes.add(verb, route, handler);
   }
 
   /// Handle all request to [route] using [handler].
   void all(String route, Function handler) {
-    _routes.add(RouterEntry('ALL', route, handler));
+    _routes.add('ALL', route, handler);
   }
 
   /// Mount a handler below a prefix.

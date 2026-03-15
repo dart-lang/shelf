@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:shelf/shelf.dart';
+
 import 'router_entry.dart';
 
 /// A simplified Trie node that stores routes matched by exact static path
@@ -32,28 +34,41 @@ final class _TrieNode {
 /// share the exact static prefix for RegExp evaluation.
 final class Trie {
   final _root = _TrieNode();
+  int _nextIndex = 0;
 
   /// Adds a route to the trie based on its static prefix.
-  void add(RouterEntry entry) {
+  void add(
+    String verb,
+    String route,
+    Function handler, {
+    Middleware? middleware,
+  }) {
+    final entry = RouterEntry(
+      verb,
+      route,
+      handler,
+      middleware: middleware,
+      trieIndex: _nextIndex++,
+    );
     var currentNode = _root;
     // Strip leading slash
-    var route = entry.route;
-    if (route.startsWith('/')) {
-      route = route.substring(1);
+    var path = entry.route;
+    if (path.startsWith('/')) {
+      path = path.substring(1);
     }
 
     // Completely truncate the route string at the very first parameter
     // variable `<`. Any static characters after the param are evaluated
     // exclusively by the RegExp fallback.
-    final paramIndex = route.indexOf('<');
+    final paramIndex = path.indexOf('<');
     if (paramIndex != -1) {
-      route = route.substring(0, paramIndex);
+      path = path.substring(0, paramIndex);
     }
 
     // Split what's left into static segments.
     // If route was `/users/<id>`, we now just have `users/`.
     // If route was `/files/image_<id>.png`, we now have `files/image_`.
-    final segments = route.split('/');
+    final segments = path.split('/');
 
     // If the route contained a parameter, we don't traverse the last segment
     // as it's not fully static. This is achieved by taking all but the last
