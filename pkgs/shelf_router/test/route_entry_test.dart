@@ -67,7 +67,9 @@ void main() {
   ]);
 
   test('non-capture regex only', () {
-    expect(() => RouterEntry('GET', '/users/<user|([^]*)>/info', () {}),
-        throwsA(anything));
+    expect(
+        () => RouterEntry('GET', '/users/<user|([^]*)>/info', () {}),
+        throwsA(isArgumentError.having((e) => e.message, 'message',
+            'expression for "user" is capturing')));
   });
 }

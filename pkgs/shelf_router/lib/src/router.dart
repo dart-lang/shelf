@@ -19,7 +19,7 @@ import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
-import 'router_entry.dart' show RouterEntry;
+import 'trie.dart';
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -113,7 +113,7 @@ Handler _removeBody(Handler handler) => (request) {
 /// constructor parameter.
 @sealed
 class Router {
-  final List<RouterEntry> _routes = [];
+  final _routes = Trie();
   final Handler _notFoundHandler;
 
   /// Creates a new [Router] routing requests to handlers.
@@ -138,14 +138,14 @@ class Router {
     if (verb == 'GET') {
       // Handling in a 'GET' request without handling a 'HEAD' request is always
       // wrong, thus, we add a default implementation that discards the body.
-      _routes.add(RouterEntry('HEAD', route, handler, middleware: _removeBody));
+      _routes.add('HEAD', route, handler, middleware: _removeBody);
     }
-    _routes.add(RouterEntry(verb, route, handler));
+    _routes.add(verb, route, handler);
   }
 
   /// Handle all request to [route] using [handler].
   void all(String route, Function handler) {
-    _routes.add(RouterEntry('ALL', route, handler));
+    _routes.add('ALL', route, handler);
   }
 
   /// Mount a handler below a prefix.
@@ -176,9 +176,7 @@ class Router {
   ///
   /// This method allows a Router instance to be a [Handler].
   Future<Response> call(Request request) async {
-    // Note: this is a great place to optimize the implementation by building
-    //       a trie for faster matching... left as an exercise for the reader :)
-    for (var route in _routes) {
+    for (var route in _routes.getCandidates(request.url.path)) {
       if (route.verb != request.method.toUpperCase() && route.verb != 'ALL') {
         continue;
       }
