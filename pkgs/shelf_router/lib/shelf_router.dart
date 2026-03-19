@@ -83,3 +83,4 @@ import 'src/router.dart';
 
 export 'package:shelf_router/src/route.dart';
 export 'package:shelf_router/src/router.dart';
+export 'package:shelf_router/src/http_methods.dart' show isHttpMethod;
