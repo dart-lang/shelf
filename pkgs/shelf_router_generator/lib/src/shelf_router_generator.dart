@@ -22,7 +22,7 @@ import 'package:analyzer/dart/element/element.dart'
 import 'package:analyzer/dart/element/type.dart' show ParameterizedType;
 import 'package:build/build.dart' show BuildStep, log;
 import 'package:code_builder/code_builder.dart' as code;
-import 'package:shelf_router/src/http_methods.dart' show isHttpMethod;
+import 'package:shelf_router/shelf_router.dart' show isHttpMethod;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
 import 'package:shelf_router/src/router_entry.dart' // ignore: implementation_imports
