@@ -15,7 +15,7 @@
 import 'dart:collection' show UnmodifiableMapView;
 import 'dart:convert';
 
-import 'package:http_methods/http_methods.dart';
+import 'http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
