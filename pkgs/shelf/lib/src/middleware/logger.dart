@@ -6,8 +6,7 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 
-import '../hijack_exception.dart';
-import '../middleware.dart';
+import '../../shelf.dart';
 
 /// Middleware which prints the time of the request, the elapsed time for the
 /// inner handlers, the response's status code and the request URI.
@@ -31,7 +30,12 @@ Middleware logRequests({void Function(String message, bool isError)? logger}) =>
           var msg = _message(startTime, response.statusCode,
               request.requestedUri, request.method, watch.elapsed);
 
-          theLogger(msg, false);
+          runZoned(() {
+            theLogger(msg, false);
+          }, zoneValues: {
+            _logRequestsZoneRequestKey: request,
+            _logRequestsZoneResponseKey: response,
+          });
 
           return response;
         }, onError: (Object error, StackTrace stackTrace) {
@@ -40,7 +44,9 @@ Middleware logRequests({void Function(String message, bool isError)? logger}) =>
           var msg = _errorMessage(startTime, request.requestedUri,
               request.method, watch.elapsed, error, stackTrace);
 
-          theLogger(msg, true);
+          runZoned(() {
+            theLogger(msg, true);
+          }, zoneValues: {_logRequestsZoneRequestKey: request});
 
           // ignore: only_throw_errors
           throw error;
@@ -82,3 +88,12 @@ void _defaultLogger(String msg, bool isError) {
     print(msg);
   }
 }
+
+const _logRequestsZoneRequestKey = 'log-requests-zone-request';
+const _logRequestsZoneResponseKey = 'log-requests-zone-response';
+
+Request getShelfLogRequestsRequest() =>
+    Zone.current[_logRequestsZoneRequestKey] as Request;
+
+Response? getShelfLogRequestsResponse() =>
+    Zone.current[_logRequestsZoneResponseKey] as Response?;
