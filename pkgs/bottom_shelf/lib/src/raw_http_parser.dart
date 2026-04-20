@@ -4,6 +4,7 @@
 
 import 'dart:typed_data';
 import 'header_slices.dart';
+import 'constants.dart';
 
 /// A high-performance, minimal HTTP/1.1 parser that uses byte slices.
 final class RawHttpParser {
@@ -13,11 +14,6 @@ final class RawHttpParser {
   static const int _stateHeaderKey = 3;
   static const int _stateHeaderValue = 4;
   static const int _stateEndOfHeaders = 5;
-
-  static const int _charSp = 32;
-  static const int _charCr = 13;
-  static const int _charLf = 10;
-  static const int _charColon = 58;
 
   int _state = _stateMethod;
   String? method;
@@ -72,7 +68,7 @@ final class RawHttpParser {
 
       switch (_state) {
         case _stateMethod:
-          if (byte == _charSp) {
+          if (byte == charSp) {
             method =
                 _getMethod(Uint8List.sublistView(_buffer, 0, _bufferPos - 1));
             _currentFieldStart = _bufferPos;
@@ -82,7 +78,7 @@ final class RawHttpParser {
               throw Exception('Method too long');
           }
         case _stateUrl:
-          if (byte == _charSp) {
+          if (byte == charSp) {
             url = String.fromCharCodes(
                 _buffer, _currentFieldStart, _bufferPos - 1);
             _currentFieldStart = _bufferPos;
@@ -92,7 +88,7 @@ final class RawHttpParser {
               throw Exception('URL too long');
           }
         case _stateVersion:
-          if (byte == _charLf) {
+          if (byte == charLf) {
             final v = String.fromCharCodes(
                     _buffer, _currentFieldStart, _bufferPos - 1)
                 .trim();
@@ -104,30 +100,30 @@ final class RawHttpParser {
               throw Exception('Version too long');
           }
         case _stateHeaderKey:
-          if (byte == _charColon) {
+          if (byte == charColon) {
             var start = _currentFieldStart;
             var end = _bufferPos - 1;
-            while (start < end && _buffer[start] == _charSp) start++;
-            while (end > start && _buffer[end - 1] == _charSp) end--;
+            while (start < end && _buffer[start] == charSp) start++;
+            while (end > start && _buffer[end - 1] == charSp) end--;
 
             _lastKeySlice = HeaderByteSlice(_buffer, start, end);
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderValue;
-          } else if (byte == _charLf) {
+          } else if (byte == charLf) {
             final len = _bufferPos - _currentFieldStart;
             if (len == 1 ||
-                (len == 2 && _buffer[_currentFieldStart] == _charCr)) {
+                (len == 2 && _buffer[_currentFieldStart] == charCr)) {
               _state = _stateEndOfHeaders;
               return true;
             }
             _currentFieldStart = _bufferPos;
           }
         case _stateHeaderValue:
-          if (byte == _charLf) {
+          if (byte == charLf) {
             var start = _currentFieldStart;
             var end = _bufferPos - 1;
-            while (start < end && _buffer[start] == _charSp) start++;
-            if (end > start && _buffer[end - 1] == _charCr) end--;
+            while (start < end && _buffer[start] == charSp) start++;
+            if (end > start && _buffer[end - 1] == charCr) end--;
 
             final valueSlice = HeaderByteSlice(_buffer, start, end);
             headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));

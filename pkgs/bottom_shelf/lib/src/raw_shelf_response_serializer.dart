@@ -5,13 +5,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:shelf/shelf.dart';
+import 'constants.dart';
 
 /// Serializes a [Response] directly to a [Socket].
 final class RawShelfResponseSerializer {
-  static const _charCr = 13;
-  static const _charLf = 10;
-  static const _crlf = [_charCr, _charLf];
-
   static Future<void> writeResponse(Response response, Socket socket) async {
     // Write Status Line
     socket.add(utf8.encode(
@@ -25,7 +22,7 @@ final class RawShelfResponseSerializer {
     });
 
     // End Headers
-    socket.add(_crlf);
+    socket.add(crlf);
 
     // Write Body
     await socket.addStream(response.read());
