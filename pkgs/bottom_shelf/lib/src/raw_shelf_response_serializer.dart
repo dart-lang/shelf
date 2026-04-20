@@ -76,32 +76,18 @@ final class RawShelfResponseSerializer {
     await socket.flush();
   }
 
-  static String _getStatusPhrase(int statusCode) {
-    switch (statusCode) {
-      case 200:
-        return 'OK';
-      case 201:
-        return 'Created';
-      case 204:
-        return 'No Content';
-      case 301:
-        return 'Moved Permanently';
-      case 302:
-        return 'Found';
-      case 304:
-        return 'Not Modified';
-      case 400:
-        return 'Bad Request';
-      case 401:
-        return 'Unauthorized';
-      case 403:
-        return 'Forbidden';
-      case 404:
-        return 'Not Found';
-      case 500:
-        return 'Internal Server Error';
-      default:
-        return 'Unknown';
-    }
-  }
+  static String _getStatusPhrase(int statusCode) => switch (statusCode) {
+    200 => 'OK',
+    201 => 'Created',
+    204 => 'No Content',
+    301 => 'Moved Permanently',
+    302 => 'Found',
+    304 => 'Not Modified',
+    400 => 'Bad Request',
+    401 => 'Unauthorized',
+    403 => 'Forbidden',
+    404 => 'Not Found',
+    500 => 'Internal Server Error',
+    _ => 'Unknown',
+  };
 }

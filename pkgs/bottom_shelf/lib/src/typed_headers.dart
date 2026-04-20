@@ -15,9 +15,7 @@ final class TypedHeaders {
 
   /// Returns the Content-Length as an integer, or null if missing/invalid.
   int? get contentLength {
-    if (_cache.containsKey('content-length')) {
-      return _cache['content-length'] as int?;
-    }
+    if (_cache case {'content-length': final int? value}) return value;
     for (var slice in _slices) {
       if (slice.key.matches('content-length')) {
         final value = slice.value.asString();
@@ -32,9 +30,7 @@ final class TypedHeaders {
 
   /// Returns the Content-Type as a [MediaType], or null if missing/invalid.
   MediaType? get contentType {
-    if (_cache.containsKey('content-type')) {
-      return _cache['content-type'] as MediaType?;
-    }
+    if (_cache case {'content-type': final MediaType? value}) return value;
     for (var slice in _slices) {
       if (slice.key.matches('content-type')) {
         final value = slice.value.asString();
@@ -49,9 +45,7 @@ final class TypedHeaders {
 
   /// Returns the If-Modified-Since header as a [DateTime].
   DateTime? get ifModifiedSince {
-    if (_cache.containsKey('if-modified-since')) {
-      return _cache['if-modified-since'] as DateTime?;
-    }
+    if (_cache case {'if-modified-since': final DateTime? value}) return value;
     for (var slice in _slices) {
       if (slice.key.matches('if-modified-since')) {
         final value = slice.value.asString();
@@ -66,7 +60,7 @@ final class TypedHeaders {
 
   /// Returns the Host header.
   String? get host {
-    if (_cache.containsKey('host')) return _cache['host'] as String?;
+    if (_cache case {'host': final String? value}) return value;
     for (var slice in _slices) {
       if (slice.key.matches('host')) {
         final value = slice.value.asString();
@@ -80,7 +74,7 @@ final class TypedHeaders {
 
   /// Returns true if the connection should be kept alive.
   bool isKeepAlive(String protocolVersion) {
-    if (_cache.containsKey('keep-alive')) return _cache['keep-alive'] as bool;
+    if (_cache case {'keep-alive': final bool value}) return value;
     for (var slice in _slices) {
       if (slice.key.matches('connection')) {
         final value = slice.value.asString().toLowerCase();

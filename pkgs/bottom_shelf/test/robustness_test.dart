@@ -26,7 +26,7 @@ void main() {
       );
 
       final socket = await Socket.connect('localhost', server.port);
-      final bigHeader = 'X-Big: ${"x" * 70000}\r\n'; // Over 64KB
+      final bigHeader = 'X-Big: ${"x" * 70_000}\r\n'; // Over 64KB
       socket.add(
         utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n$bigHeader\r\n'),
       );
@@ -47,7 +47,7 @@ void main() {
       );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(List.generate(10000, (i) => i % 256)); // 10KB of garbage
+      socket.add(List.generate(10_000, (i) => i % 256)); // 10KB of garbage
 
       try {
         await utf8.decodeStream(socket);
