@@ -19,8 +19,8 @@ final class RawShelfResponseSerializer {
 
     // Write Headers
     response.headersAll.forEach((key, values) {
-      for (var value in values) {
-        socket.add(utf8.encode('$key: $value\r\n'));
+      if (values.isNotEmpty) {
+        socket.add(utf8.encode('$key: ${values.join(', ')}\r\n'));
       }
     });
 

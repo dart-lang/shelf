@@ -7,14 +7,15 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  collection: ^1.15.0
+  collection: ^1.19.0
   http_parser: ^4.1.0
-  shelf: any
-  stream_channel: any
+  shelf: ^1.4.0
+  stream_channel: ^2.1.0
 
 dev_dependencies:
   dart_flutter_team_lints: ^3.0.0
-  test: ^1.16.0
+  http: ^1.0.0
+  test: ^1.16.6
 
 dependency_overrides:
   shelf:
