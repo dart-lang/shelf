@@ -217,7 +217,7 @@ void main() {
       final bigValue = 'x' * 4000;
       final server = await RawShelfServer.serve(
         (request) {
-          expect(request.headers['x-big'], bigValue);
+          expect(request.headers, containsPair('x-big', bigValue));
           return Response.ok('ok');
         },
         'localhost',

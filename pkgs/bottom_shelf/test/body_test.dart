@@ -94,7 +94,7 @@ void main() {
       final server = await RawShelfServer.serve(
         (request) async {
           final bodyBytes = await request.read().expand((e) => e).toList();
-          expect(bodyBytes.length, size);
+          expect(bodyBytes, hasLength(size));
           expect(Uint8List.fromList(bodyBytes), data);
           return Response.ok('ok');
         },

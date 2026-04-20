@@ -114,14 +114,14 @@ void main() {
     'chunked requests are un-chunked',
     () async {
       await _scheduleServer(
-        expectAsync1((request) {
+        expectAsync1((request) async {
           expect(request.contentLength, isNull);
           expect(request.method, 'POST');
           expect(
             request.headers,
             isNot(contains(HttpHeaders.transferEncodingHeader)),
           );
-          expect(
+          await expectLater(
             request.read().toList(),
             completion(
               equals([
@@ -185,10 +185,10 @@ void main() {
       },
     );
     expect(response.statusCode, HttpStatus.ok);
-    expect(response.headers['requested-values'], 'a, b');
-    expect(response.headers['requested-values-length'], '1');
-    expect(response.headers['set-cookie-values'], 'c, d');
-    expect(response.headers['set-cookie-values-length'], '2');
+    expect(response.headers, containsPair('requested-values', 'a, b'));
+    expect(response.headers, containsPair('requested-values-length', '1'));
+    expect(response.headers, containsPair('set-cookie-values', 'c, d'));
+    expect(response.headers, containsPair('set-cookie-values-length', '2'));
   });
 
   test('custom status code is received by the client', () async {
@@ -235,7 +235,7 @@ void main() {
 
     var response = await _post();
     expect(response.statusCode, HttpStatus.ok);
-    expect(response.stream.bytesToString(), completion('Hello from /'));
+    await expectLater(response.stream.bytesToString(), completion('Hello from /'));
   });
 
   test(
@@ -254,7 +254,7 @@ void main() {
 
       var response = await _post(body: 'test body');
       expect(response.statusCode, HttpStatus.ok);
-      expect(response.stream.bytesToString(), completion('Hello from /'));
+      await expectLater(response.stream.bytesToString(), completion('Hello from /'));
     },
     skip: 'RawShelfServer does not support body streaming yet',
   );
@@ -267,8 +267,8 @@ void main() {
         expect(request.method, 'POST');
 
         request.hijack(
-          expectAsync1((channel) {
-            expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
+          expectAsync1((channel) async {
+            await expectLater(channel.stream.first, completion(equals('Hello'.codeUnits)));
 
             channel.sink.add(
               'HTTP/1.1 404 Not Found\r\n'
@@ -286,7 +286,7 @@ void main() {
       var response = await _post(body: 'Hello');
       expect(response.statusCode, HttpStatus.notFound);
       expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
-      expect(
+      await expectLater(
         response.stream.bytesToString(),
         completion(equals('Hello, world!')),
       );
