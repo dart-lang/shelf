@@ -78,9 +78,9 @@ final class RawShelfServer {
 
               final contentLength = typedHeaders.contentLength ?? 0;
 
+              // TODO: Support chunked transfer encoding for requests.
               // For now, let's just handle bodies by consuming the remaining
-              // data
-              // and then resuming the subscription if needed.
+              // data and then resuming the subscription if needed.
               // A more robust implementation would use FixedLengthBodyStream.
               // But for POC speed, we'll assume small bodies for now or empty.
 
@@ -102,12 +102,15 @@ final class RawShelfServer {
 
               try {
                 final response = await _handler(request);
+                
+                var keepAlive = typedHeaders.isKeepAlive(parser.version!);
+                
                 await RawShelfResponseSerializer.writeResponse(
                   response,
                   socket,
+                  keepAlive: keepAlive,
                 );
 
-                final keepAlive = typedHeaders.isKeepAlive(parser.version!);
                 parser.reset();
 
                 if (keepAlive) {

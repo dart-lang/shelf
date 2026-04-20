@@ -9,7 +9,17 @@ import 'constants.dart';
 
 /// Serializes a [Response] directly to a [Socket].
 final class RawShelfResponseSerializer {
-  static Future<void> writeResponse(Response response, Socket socket) async {
+  static Future<void> writeResponse(
+    Response response,
+    Socket socket, {
+    required bool keepAlive,
+  }) async {
+    // TODO: Support chunked encoding for responses to avoid buffering the
+    // entire body.
+    // Consume the body to calculate content length if not provided.
+    final bodyBytes = await response.read().expand((chunk) => chunk).toList();
+    final length = bodyBytes.length;
+
     // Write Status Line
     socket.add(
       utf8.encode(
@@ -17,8 +27,16 @@ final class RawShelfResponseSerializer {
       ),
     );
 
+    final headers = Map<String, List<String>>.from(response.headersAll);
+    if (!headers.containsKey('content-length')) {
+      headers['content-length'] = [length.toString()];
+    }
+    if (!headers.containsKey('connection')) {
+      headers['connection'] = [keepAlive ? 'keep-alive' : 'close'];
+    }
+
     // Write Headers
-    response.headersAll.forEach((key, values) {
+    headers.forEach((key, values) {
       if (values.isNotEmpty) {
         socket.add(utf8.encode('$key: ${values.join(', ')}\r\n'));
       }
@@ -28,7 +46,7 @@ final class RawShelfResponseSerializer {
     socket.add(crlf);
 
     // Write Body
-    await socket.addStream(response.read());
+    socket.add(bodyBytes);
     await socket.flush();
   }
 

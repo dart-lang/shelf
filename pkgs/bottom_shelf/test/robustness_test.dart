@@ -19,41 +19,44 @@ void main() {
 
   group('Robustness', () {
     test('Header size limit exceeded', () async {
-      server = await RawShelfServer.serve(
-        (request) => Response.ok('ok'),
-        'localhost',
-        0,
-      );
+      await expectLater(() async {
+        server = await RawShelfServer.serve(
+          (request) => Response.ok('ok'),
+          'localhost',
+          0,
+        );
 
-      final socket = await Socket.connect('localhost', server.port);
-      final bigHeader = 'X-Big: ${"x" * 70000}\r\n'; // Over 64KB
-      socket.add(
-        utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n$bigHeader\r\n'),
-      );
-
-      // We expect the server to destroy the socket
-      try {
-        await utf8.decodeStream(socket);
-      } catch (e) {
-        // Expected
-      }
+        final socket = await Socket.connect('localhost', server.port);
+        final bigHeader = 'X-Big: ${"x" * 70000}\r\n'; // Over 64KB
+        
+        socket.add(
+          utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n$bigHeader\r\n'),
+        );
+        try {
+          await utf8.decodeStream(socket);
+        } catch (e) {
+          // Expected
+        }
+      }, prints(contains('Exception: Header size limit exceeded')));
     });
 
     test('Malformed request (garbage bytes)', () async {
-      server = await RawShelfServer.serve(
-        (request) => Response.ok('ok'),
-        'localhost',
-        0,
-      );
+      await expectLater(() async {
+        server = await RawShelfServer.serve(
+          (request) => Response.ok('ok'),
+          'localhost',
+          0,
+        );
 
-      final socket = await Socket.connect('localhost', server.port);
-      socket.add(List.generate(10000, (i) => i % 256)); // 10KB of garbage
-
-      try {
-        await utf8.decodeStream(socket);
-      } catch (e) {
-        // Expected
-      }
+        final socket = await Socket.connect('localhost', server.port);
+        
+        socket.add(List.generate(10000, (i) => i % 256)); // 10KB of garbage
+        try {
+          await utf8.decodeStream(socket);
+        } catch (e) {
+          // Expected
+        }
+      }, prints(contains('Exception: Version too long')));
     });
 
     test('Early client close', () async {

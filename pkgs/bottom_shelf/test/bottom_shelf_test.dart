@@ -83,27 +83,30 @@ void main() {
     test(
       'error in handler leads to socket destruction (current behavior)',
       () async {
-        server = await RawShelfServer.serve(
-          (request) {
-            throw Exception('oops');
-          },
-          'localhost',
-          0,
-        );
+        await expectLater(() async {
+          server = await RawShelfServer.serve(
+            (request) {
+              throw Exception('oops');
+            },
+            'localhost',
+            0,
+          );
 
-        final socket = await Socket.connect('localhost', server.port);
-        socket.add(
-          utf8.encode(
-            'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
-          ),
-        );
+          final socket = await Socket.connect('localhost', server.port);
+          
+          socket.add(
+            utf8.encode(
+              'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+            ),
+          );
 
-        try {
-          final result = await utf8.decodeStream(socket);
-          expect(result, isEmpty);
-        } catch (e) {
-          // Expected
-        }
+          try {
+            final result = await utf8.decodeStream(socket);
+            expect(result, isEmpty);
+          } catch (e) {
+            // Expected
+          }
+        }, prints(contains('Exception: oops')));
       },
     );
   });
