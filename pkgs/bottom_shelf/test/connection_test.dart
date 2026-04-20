@@ -45,6 +45,33 @@ void main() {
       await completer.future;
     });
 
+    test('Hijacking with buffered data', () async {
+      final completer = Completer<void>();
+      server = await RawShelfServer.serve(
+        (request) {
+          request.hijack((channel) {
+            channel.stream.listen((data) {
+              if (utf8.decode(data).contains('Pipelined Data')) {
+                if (!completer.isCompleted) completer.complete();
+              }
+            });
+          });
+        },
+        'localhost',
+        0,
+      );
+
+      final socket = await Socket.connect('localhost', server.port);
+      // Headers + data for hijacker in the same TCP chunk
+      socket.add(
+        utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\nPipelined Data'),
+      );
+      await socket.flush();
+
+      await completer.future.timeout(const Duration(seconds: 1));
+      await socket.close();
+    });
+
     test('Keep-alive behavior', () async {
       var count = 0;
       server = await RawShelfServer.serve(

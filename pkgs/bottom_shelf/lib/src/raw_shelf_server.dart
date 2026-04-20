@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:shelf/shelf.dart';
 import 'package:stream_channel/stream_channel.dart';
 
+import 'body_stream.dart';
 import 'lazy_byte_header_map.dart';
 import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
@@ -44,23 +45,78 @@ final class RawShelfServer {
 
   void _handleConnection(Socket socket) {
     final parser = RawHttpParser();
-    StreamSubscription<Uint8List>? subscription;
+    FixedLengthBodyController? bodyController;
 
     // We use a Completer to signal when we're ready for the next request in
-    // keep-alive
+    // keep-alive. This ensures we don't start parsing the next request
+    // until the current one is fully processed (including response).
     var readyForNextRequest = Completer<void>()..complete();
 
-    subscription = socket.listen(
-      (data) async {
-        try {
-          await readyForNextRequest.future;
+    StreamController<Uint8List>? hijackController;
+    var isHijacked = false;
+    var isDestroyed = false;
 
+    void destroy() {
+      if (isDestroyed) return;
+      isDestroyed = true;
+      socket.destroy();
+      bodyController?.close();
+      if (!readyForNextRequest.isCompleted) {
+        readyForNextRequest.completeError(
+          const HttpException('Socket destroyed'),
+        );
+        // Ensure the error doesn't become an unhandled top-level exception
+        readyForNextRequest.future.catchError((_) {});
+      }
+    }
+
+    socket.listen(
+      (data) async {
+        if (isHijacked) {
+          hijackController?.add(data);
+          return;
+        }
+        if (isDestroyed) return;
+
+        try {
           var currentData = data;
           while (currentData.isNotEmpty) {
+            if (isHijacked) {
+              hijackController?.add(currentData);
+              return;
+            }
+            if (isDestroyed) return;
+
+            if (bodyController != null) {
+              currentData = bodyController!.add(currentData);
+              if (currentData.isNotEmpty || bodyController!.isDone) {
+                // Body is finished, but we might have more data for next
+                // request.
+                bodyController = null;
+                // Continue loop to process currentData as next headers.
+                continue;
+              }
+              break;
+            }
+
+            if (!readyForNextRequest.isCompleted) {
+              try {
+                await readyForNextRequest.future;
+              } catch (_) {
+                return;
+              }
+            }
+
+            if (isHijacked) {
+              hijackController?.add(currentData);
+              return;
+            }
+            if (isDestroyed) return;
+
             if (parser.process(currentData)) {
               // Headers are complete
-              subscription?.pause();
               readyForNextRequest = Completer<void>();
+              final bodyDone = Completer<void>();
 
               final typedHeaders = TypedHeaders(parser.headerSlices);
               final host = typedHeaders.host ?? 'localhost';
@@ -78,89 +134,116 @@ final class RawShelfServer {
 
               final contentLength = typedHeaders.contentLength ?? 0;
 
-              // TODO: Support chunked transfer encoding for requests.
-              // For now, let's just handle bodies by consuming the remaining
-              // data and then resuming the subscription if needed.
-              // A more robust implementation would use FixedLengthBodyStream.
-              // But for POC speed, we'll assume small bodies for now or empty.
+              Stream<Uint8List> requestBody;
+              if (contentLength > 0) {
+                bodyController = FixedLengthBodyController(contentLength, () {
+                  if (!bodyDone.isCompleted) bodyDone.complete();
+                });
+                requestBody = bodyController!.stream;
+                // Process what's left in the current chunk
+                currentData = bodyController!.add(remainingInChunk);
+                if (bodyController!.isDone) {
+                  bodyController = null;
+                }
+              } else {
+                requestBody = const Stream<Uint8List>.empty();
+                currentData = remainingInChunk;
+                bodyDone.complete();
+              }
+
+              final capturedDataAtHijack = currentData;
 
               final request = Request(
                 parser.method!,
                 uri,
                 protocolVersion: parser.version!,
                 headers: LazyByteHeaderMap(parser.headerSlices),
-                // TODO: Real body streaming
-                body: contentLength == 0
-                    ? const Stream<List<int>>.empty()
-                    : Stream.value(remainingInChunk),
+                body: requestBody,
                 context: {'shelf.raw.headers': typedHeaders},
                 onHijack: (void Function(StreamChannel<List<int>>) callback) {
-                  subscription?.cancel();
-                  callback(StreamChannel(const Stream.empty(), socket));
+                  isHijacked = true;
+
+                  // Create a controller that will receive data from the
+                  // socket.listen callback from now on.
+                  hijackController = StreamController<Uint8List>(sync: true);
+
+                  // Prepend any data already read but not processed
+                  if (capturedDataAtHijack.isNotEmpty) {
+                    hijackController!.add(capturedDataAtHijack);
+                  }
+
+                  callback(StreamChannel(hijackController!.stream, socket));
                 },
               );
 
-              try {
-                final response = await _handler(request);
-                
-                var keepAlive = typedHeaders.isKeepAlive(parser.version!);
-                
-                await RawShelfResponseSerializer.writeResponse(
-                  response,
-                  socket,
-                  keepAlive: keepAlive,
-                );
+              // We don't await the handler here in a way that blocks the
+              // socket listener from receiving more body data.
+              // Instead, we let the handler run and just manage the
+              // readyForNextRequest completer.
+              unawaited(() async {
+                try {
+                  final response = await _handler(request);
+                  if (isHijacked || isDestroyed) return;
 
-                parser.reset();
+                  final keepAlive = typedHeaders.isKeepAlive(parser.version!);
 
-                if (keepAlive) {
-                  // If we had a body, we should have consumed it.
-                  // For now, we assume body was in the same chunk or empty.
-                  readyForNextRequest.complete();
+                  await RawShelfResponseSerializer.writeResponse(
+                    response,
+                    socket,
+                    keepAlive: keepAlive,
+                  );
 
-                  // If there's more in chunk, loop.
-                  // But wait, if we used remainingInChunk for body, we must
-                  // skip it.
-                  if (contentLength > 0) {
-                    // This is tricky without a real body state machine.
-                    // For now, just exit loop and wait for next chunk.
-                    subscription?.resume();
-                    break;
+                  parser.reset();
+
+                  if (keepAlive) {
+                    // Wait for body to be fully consumed/drained before next request
+                    await bodyDone.future;
+                    if (!readyForNextRequest.isCompleted) {
+                      readyForNextRequest.complete();
+                    }
+                  } else {
+                    await socket.close();
                   }
-
-                  // No body, just continue with any remaining data (pipelining)
-                  currentData = remainingInChunk;
-                  if (currentData.isEmpty) {
-                    subscription?.resume();
-                    break;
+                } on HijackException {
+                  // Handled
+                } catch (e, st) {
+                  if (!isHijacked && !isDestroyed) {
+                    print('Error in handler: $e\n$st');
+                    destroy();
                   }
-                  continue;
-                } else {
-                  await socket.close();
-                  return;
                 }
-              } on HijackException {
-                return;
+              }());
+
+              // Break the loop if we are still streaming the body.
+              // and wait for next socket data event.
+              if (bodyController != null || isHijacked) {
+                break;
               }
             } else {
               // Headers incomplete
-              return;
+              break;
             }
           }
-        } on HijackException {
-          // Handled
         } catch (e, st) {
-          print('Error handling request: $e\n$st');
-          try {
-            socket.destroy();
-          } catch (_) {}
+          if (!isHijacked && !isDestroyed) {
+            print('Error handling connection: $e\n$st');
+            destroy();
+          }
         }
       },
-      onError: (e) {
-        socket.destroy();
+      onError: (Object e) {
+        if (isHijacked) {
+          hijackController?.addError(e);
+        } else {
+          destroy();
+        }
       },
       onDone: () {
-        socket.destroy();
+        if (isHijacked) {
+          hijackController?.close();
+        } else {
+          destroy();
+        }
       },
       cancelOnError: true,
     );

@@ -13,25 +13,30 @@ This document consolidates the tasks and goals identified in `todo.md`, `review_
 ## Phase 1: Core Correctness & Review Feedback
 *Focus: Fix the fundamental issues identified in the code review and basic tests.*
 
-- [ ] **Implement Real Body Streaming (Request)**
-  - *Source*: `todo.md` (Line 92), `review_review.md` (#1)
-  - *Goal*: Support requests where the body spans multiple TCP chunks. Avoid `Stream.value` for the body.
-- [ ] **Support Chunked Encoding for Responses**
-  - *Source*: `todo.md` (Line 17), `review_review.md` (#2)
-  - *Goal*: Avoid buffering the entire body to calculate `Content-Length`. Stream response bytes in chunks.
-- [ ] **Fix Socket Hijacking Data Loss**
-  - *Source*: `review_review.md` (#3)
-  - *Goal*: Ensure any remaining data in the parser buffer is passed to the hijacked stream channel.
-- [ ] **Properly Drain Body Streams**
-  - *Source*: `review_review.md` (#4)
-  - *Goal*: Ensure that if a handler doesn't consume the body, the server drains it automatically to allow the next request on a keep-alive connection.
+- [x] **Implement Real Body Streaming (Request)**
+  - *Status*: Complete.
+  - *Implementation Notes*: Replaced `Stream.value` with `FixedLengthBodyController` to support multi-chunk request bodies. Refactored `RawShelfServer` to include a state-driven loop that transitions between header parsing and body streaming.
+  - *Verification*: Added a 1MB stress test in `test/body_test.dart` and verified throughput of ~222 MB/s with `benchmark/body_streaming_bench.dart`.
+- [x] **Support Chunked Encoding for Responses**
+  - *Status*: Complete.
+  - *Implementation Notes*: `RawShelfResponseSerializer` now uses `await for` to stream response chunks. It automatically adds `Transfer-Encoding: chunked` if the content length is unknown, avoiding full body buffering.
+  - *Verification*: Added `Chunked response encoding` and `Fixed-length response encoding` tests to `test/protocol_test.dart`.
+- [x] **Fix Socket Hijacking Data Loss**
+  - *Status*: Complete.
+  - *Implementation Notes*: Implemented a `hijackController` to manually proxy socket events to the hijacked channel. This ensures that any data already in the parser buffer or arriving during the hijack is preserved.
+  - *Verification*: Added `Hijacking with buffered data` test to `test/connection_test.dart`.
+- [x] **Properly Drain Body Streams**
+  - *Status*: Complete.
+  - *Implementation Notes*: Added logic to `RawShelfServer` to ensure `readyForNextRequest` only completes after the request body has been fully consumed or drained. `FixedLengthBodyController` handles silent draining if the handler ignores the body.
+  - *Verification*: Added `Large unconsumed body in keep-alive` test to `test/body_test.dart`.
 
 ## Phase 2: Protocol Compliance & Security
 *Focus: Implement security fixes and protocol compliance rules derived from Dart SDK history and RFCs.*
 
-- [ ] **Header Injection Sanitization**
-  - *Source*: `test_complete_bottom_shelf.md` (Section 1.1)
-  - *Goal*: Reject requests with invalid characters (NUL, LF, CR) in header values.
+- [x] **Header Injection Sanitization**
+  - *Status*: Complete.
+  - *Implementation Notes*: Added strict validation to `RawHttpParser` to reject NUL, CR, and LF in URLs, methods, and header keys/values (per RFC 9112 and SDK Issue 56636). Hardened `RawShelfServer` error handling to ensure clean socket destruction on parser errors.
+  - *Verification*: Added `NUL in headers` and updated `Malformed request` tests in `test/robustness_test.dart`.
 - [ ] **Request Smuggling Prevention**
   - *Source*: `test_complete_bottom_shelf.md` (Section 1.2)
   - *Goal*: Correctly handle or reject requests with both `Content-Length` and `Transfer-Encoding`.

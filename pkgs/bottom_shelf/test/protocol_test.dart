@@ -107,6 +107,58 @@ void main() {
       final response = await utf8.decodeStream(socket);
       expect(response, contains('200 OK'));
     });
+
+    test('Chunked response encoding', () async {
+      server = await RawShelfServer.serve(
+        (request) {
+          // Return a stream without content-length
+          final stream = Stream.fromIterable([
+            'chunk1',
+            'chunk2',
+          ]).map((s) => utf8.encode(s));
+          return Response.ok(stream);
+        },
+        'localhost',
+        0,
+      );
+
+      final socket = await Socket.connect('localhost', server.port);
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      final responseLower = response.toLowerCase();
+      expect(responseLower, contains('transfer-encoding: chunked'));
+      expect(response, contains('6\r\nchunk1\r\n'));
+      expect(response, contains('6\r\nchunk2\r\n'));
+      expect(response, contains('0\r\n\r\n'));
+    });
+
+    test('Fixed-length response encoding', () async {
+      server = await RawShelfServer.serve(
+        (request) {
+          return Response.ok('fixed', headers: {'Content-Length': '5'});
+        },
+        'localhost',
+        0,
+      );
+
+      final socket = await Socket.connect('localhost', server.port);
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      final responseLower = response.toLowerCase();
+      expect(responseLower, contains('content-length: 5'));
+      expect(responseLower, isNot(contains('transfer-encoding')));
+      expect(response, endsWith('\r\n\r\nfixed'));
+    });
   });
 
   group('Headers', () {

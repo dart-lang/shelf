@@ -4,21 +4,41 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:shelf/shelf.dart';
 import 'constants.dart';
 
 /// Serializes a [Response] directly to a [Socket].
 final class RawShelfResponseSerializer {
+  static final Uint8List _crlf = Uint8List.fromList([charCr, charLf]);
+  static final Uint8List _chunkedEnd = Uint8List.fromList([
+    48, // '0'
+    charCr, charLf,
+    charCr, charLf,
+  ]);
+
   static Future<void> writeResponse(
     Response response,
     Socket socket, {
     required bool keepAlive,
   }) async {
-    // TODO: Support chunked encoding for responses to avoid buffering the
-    // entire body.
-    // Consume the body to calculate content length if not provided.
-    final bodyBytes = await response.read().expand((chunk) => chunk).toList();
-    final length = bodyBytes.length;
+    final headers = Map<String, List<String>>.from(response.headersAll);
+
+    // Determine if we need chunked encoding
+    final hasContentLength =
+        headers.containsKey('content-length') || response.contentLength != null;
+    final isChunked = !hasContentLength;
+
+    if (isChunked) {
+      headers['transfer-encoding'] = ['chunked'];
+    } else if (!headers.containsKey('content-length') &&
+        response.contentLength != null) {
+      headers['content-length'] = [response.contentLength.toString()];
+    }
+
+    if (!headers.containsKey('connection')) {
+      headers['connection'] = [keepAlive ? 'keep-alive' : 'close'];
+    }
 
     // Write Status Line
     socket.add(
@@ -26,14 +46,6 @@ final class RawShelfResponseSerializer {
         'HTTP/1.1 ${response.statusCode} ${_getStatusPhrase(response.statusCode)}\r\n',
       ),
     );
-
-    final headers = Map<String, List<String>>.from(response.headersAll);
-    if (!headers.containsKey('content-length')) {
-      headers['content-length'] = [length.toString()];
-    }
-    if (!headers.containsKey('connection')) {
-      headers['connection'] = [keepAlive ? 'keep-alive' : 'close'];
-    }
 
     // Write Headers
     headers.forEach((key, values) {
@@ -43,10 +55,24 @@ final class RawShelfResponseSerializer {
     });
 
     // End Headers
-    socket.add(crlf);
+    socket.add(_crlf);
 
     // Write Body
-    socket.add(bodyBytes);
+    if (isChunked) {
+      await for (final chunk in response.read()) {
+        if (chunk.isEmpty) continue;
+        // Hex size
+        socket.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
+        socket.add(chunk);
+        socket.add(_crlf);
+      }
+      socket.add(_chunkedEnd);
+    } else {
+      await for (final chunk in response.read()) {
+        socket.add(chunk);
+      }
+    }
+
     await socket.flush();
   }
 

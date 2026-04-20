@@ -93,7 +93,7 @@ void main() {
           );
 
           final socket = await Socket.connect('localhost', server.port);
-          
+
           socket.add(
             utf8.encode(
               'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',

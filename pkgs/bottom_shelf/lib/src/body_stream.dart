@@ -5,68 +5,57 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-/// A stream that consumes a fixed number of bytes from an underlying
-/// subscription.
-final class FixedLengthBodyStream extends Stream<Uint8List> {
-  final StreamSubscription<Uint8List> _subscription;
+/// A stream controller for a fixed-length HTTP request body.
+final class FixedLengthBodyController {
   final int _contentLength;
   int _consumed = 0;
-
   final _controller = StreamController<Uint8List>(sync: true);
+  final void Function() _onDone;
 
-  FixedLengthBodyStream(
-    this._subscription,
-    this._contentLength,
-    Uint8List? initial,
-  ) {
-    _controller.onListen = () {
-      if (initial != null && initial.isNotEmpty) {
-        _handleData(initial);
-      }
-      if (_consumed < _contentLength) {
-        _subscription.resume();
-      } else {
-        _controller.close();
-      }
-    };
-    _controller.onPause = _subscription.pause;
-    _controller.onResume = _subscription.resume;
-    _controller.onCancel = () {
-      // Note: We don't cancel the underlying subscription because we might
-      // want to continue using the socket for keep-alive.
-      // But we must drain it if we want to continue.
-    };
-  }
+  FixedLengthBodyController(this._contentLength, this._onDone);
 
-  void _handleData(Uint8List data) {
-    final remaining = _contentLength - _consumed;
-    if (data.length <= remaining) {
-      _controller.add(data);
+  Stream<Uint8List> get stream => _controller.stream;
+
+  bool get isDone => _consumed >= _contentLength;
+
+  /// Adds [data] to the body stream.
+  ///
+  /// Returns any remaining data that was not part of the body (pipelining).
+  Uint8List add(Uint8List data) {
+    final remainingInBody = _contentLength - _consumed;
+    if (data.length <= remainingInBody) {
+      if (!_controller.isClosed) {
+        _controller.add(data);
+      }
       _consumed += data.length;
+      if (_consumed == _contentLength) {
+        _close();
+      }
+      return Uint8List(0);
     } else {
-      _controller.add(Uint8List.sublistView(data, 0, remaining));
-      _consumed += remaining;
-      // Note: The rest of 'data' belongs to the next request (pipelining)
-    }
-
-    if (_consumed >= _contentLength) {
-      _controller.close();
-      _subscription.pause();
+      if (!_controller.isClosed) {
+        _controller.add(Uint8List.sublistView(data, 0, remainingInBody));
+      }
+      _consumed = _contentLength;
+      _close();
+      return Uint8List.sublistView(data, remainingInBody);
     }
   }
 
-  @override
-  StreamSubscription<Uint8List> listen(
-    void Function(Uint8List event)? onData, {
-    Function? onError,
-    void Function()? onDone,
-    bool? cancelOnError,
-  }) {
-    return _controller.stream.listen(
-      onData,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-    );
+  void _close() {
+    if (!_controller.isClosed) {
+      _controller.close();
+      _onDone();
+    }
+  }
+
+  /// Closes the stream and stops sending data to listeners.
+  /// The controller will still track consumption for draining purposes.
+  void close() {
+    if (!_controller.isClosed) {
+      _controller.close();
+      // We don't call _onDone here because we still need to wait for
+      // the actual bytes to be 'add'ed from the socket.
+    }
   }
 }

@@ -76,6 +76,9 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateUrl;
           } else {
+            if (byte == 0 || byte == charLf || byte == charCr) {
+              throw Exception('Invalid character in method');
+            }
             if (_bufferPos - _currentFieldStart > _maxFieldSize) {
               throw Exception('Method too long');
             }
@@ -90,6 +93,9 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateVersion;
           } else {
+            if (byte == 0 || byte == charLf || byte == charCr) {
+              throw Exception('Invalid character in URL');
+            }
             if (_bufferPos - _currentFieldStart > _maxUrlSize) {
               throw Exception('URL too long');
             }
@@ -105,6 +111,7 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else {
+            if (byte == 0) throw Exception('Invalid character in version');
             if (_bufferPos - _currentFieldStart > 64) {
               throw Exception('Version too long');
             }
@@ -131,6 +138,8 @@ final class RawHttpParser {
               return true;
             }
             _currentFieldStart = _bufferPos;
+          } else if (byte == 0) {
+            throw Exception('Invalid character in header key');
           }
         case _stateHeaderValue:
           if (byte == charLf) {
@@ -145,6 +154,8 @@ final class RawHttpParser {
             headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
+          } else if (byte == 0) {
+            throw Exception('Invalid character in header value');
           }
       }
     }

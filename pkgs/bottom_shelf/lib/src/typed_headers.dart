@@ -84,9 +84,14 @@ final class TypedHeaders {
     for (var slice in _slices) {
       if (slice.key.matches('connection')) {
         final value = slice.value.asString().toLowerCase();
-        final result = value == 'keep-alive';
-        _cache['keep-alive'] = result;
-        return result;
+        if (value == 'close') {
+          _cache['keep-alive'] = false;
+          return false;
+        }
+        if (value == 'keep-alive') {
+          _cache['keep-alive'] = true;
+          return true;
+        }
       }
     }
     final result = protocolVersion == '1.1';
