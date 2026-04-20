@@ -11,15 +11,9 @@ import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late RawShelfServer server;
-
-  tearDown(() async {
-    await server.close();
-  });
-
   group('HTTP Protocol', () {
     test('HTTP/1.0 support (defaults to close)', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           expect(request.protocolVersion, '1.0');
           return Response.ok('v1.0');
@@ -27,8 +21,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(utf8.encode('GET / HTTP/1.0\r\nHost: localhost\r\n\r\n'));
 
       final response = await utf8.decodeStream(socket);
@@ -36,7 +32,7 @@ void main() {
     });
 
     test('HTTP/1.1 support (defaults to keep-alive)', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           expect(request.protocolVersion, '1.1');
           return Response.ok('v1.1');
@@ -44,8 +40,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n'));
 
       final completer = Completer<String>();
@@ -59,14 +57,13 @@ void main() {
 
       final response = await completer.future;
       expect(response, contains('v1.1'));
-      await socket.close();
     });
 
     test('All standard methods', () async {
       final methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'];
       var currentMethod = '';
 
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           expect(request.method, currentMethod);
           return Response.ok(request.method);
@@ -74,10 +71,12 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       for (var method in methods) {
         currentMethod = method;
         final socket = await Socket.connect('localhost', server.port);
+        addTearDown(socket.close);
         socket.add(
           utf8.encode(
             '$method / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
@@ -89,7 +88,7 @@ void main() {
     });
 
     test('Request with absolute URI in request line', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           expect(request.requestedUri.path, '/foo');
           return Response.ok('ok');
@@ -97,8 +96,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET http://localhost/foo HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
@@ -109,7 +110,7 @@ void main() {
     });
 
     test('Chunked response encoding', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           // Return a stream without content-length
           final stream = Stream.fromIterable([
@@ -121,8 +122,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
@@ -138,15 +141,17 @@ void main() {
     });
 
     test('Fixed-length response encoding', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           return Response.ok('fixed', headers: {'Content-Length': '5'});
         },
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
@@ -163,7 +168,7 @@ void main() {
 
   group('Headers', () {
     test('Case insensitivity', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           // Shelf should normalize to lowercase keys if accessed via
           // request.headers
@@ -174,8 +179,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nX-Upper: value\r\nConnection: close\r\n\r\n',
@@ -185,7 +192,7 @@ void main() {
     });
 
     test('Multiple header values', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           expect(request.headersAll['x-multi'], ['a', 'b']);
           expect(request.headers['x-multi'], 'a,b');
@@ -194,8 +201,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nX-Multi: a\r\nX-Multi: b\r\nConnection: close\r\n\r\n',
@@ -206,7 +215,7 @@ void main() {
 
     test('Big headers', () async {
       final bigValue = 'x' * 4000;
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           expect(request.headers['x-big'], bigValue);
           return Response.ok('ok');
@@ -214,8 +223,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nX-Big: $bigValue\r\nConnection: close\r\n\r\n',

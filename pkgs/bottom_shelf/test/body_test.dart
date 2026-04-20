@@ -11,15 +11,9 @@ import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late RawShelfServer server;
-
-  tearDown(() async {
-    await server.close();
-  });
-
   group('Body', () {
     test('Empty body', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) async {
           final body = await request.readAsString();
           expect(body, isEmpty);
@@ -28,8 +22,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
@@ -39,7 +35,7 @@ void main() {
     });
 
     test('Small body in same chunk', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) async {
           final body = await request.readAsString();
           expect(body, 'hello');
@@ -48,8 +44,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello',
@@ -61,7 +59,7 @@ void main() {
     });
 
     test('Body spanning multiple chunks', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) async {
           final body = await request.readAsString();
           expect(body, 'hello world');
@@ -70,8 +68,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 11\r\nConnection: close\r\n\r\nhello',
@@ -91,7 +91,7 @@ void main() {
         data[i] = i % 256;
       }
 
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) async {
           final bodyBytes = await request.read().expand((e) => e).toList();
           expect(bodyBytes.length, size);
@@ -101,8 +101,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'POST / HTTP/1.1\r\nHost: localhost\r\n'
@@ -122,7 +124,7 @@ void main() {
 
     test('Unconsumed body in keep-alive', () async {
       var count = 0;
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) async {
           count++;
           if (request.method != 'POST') {
@@ -137,8 +139,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
 
       // Request A with body
       socket.add(
@@ -165,7 +169,7 @@ void main() {
 
     test('Large unconsumed body in keep-alive', () async {
       final largeSize = 1024 * 1024; // 1MB
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) async {
           if (request.url.path == 'a') return Response.ok('A');
           final body = await request.readAsString();
@@ -174,8 +178,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
 
       // Request A with large body
       socket.add(

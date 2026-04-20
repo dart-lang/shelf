@@ -11,16 +11,10 @@ import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late RawShelfServer server;
-
-  tearDown(() async {
-    await server.close();
-  });
-
   group('Connections', () {
     test('Hijacking (detach socket)', () async {
       final completer = Completer<void>();
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           request.hijack((channel) {
             channel.sink.add(
@@ -35,8 +29,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n'));
 
       final response = await utf8.decodeStream(socket);
@@ -47,7 +43,7 @@ void main() {
 
     test('Hijacking with buffered data', () async {
       final completer = Completer<void>();
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           request.hijack((channel) {
             channel.stream.listen((data) {
@@ -60,8 +56,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       // Headers + data for hijacker in the same TCP chunk
       socket.add(
         utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\nPipelined Data'),
@@ -74,7 +72,7 @@ void main() {
 
     test('Keep-alive behavior', () async {
       var count = 0;
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           count++;
           return Response.ok('$count');
@@ -82,8 +80,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       final completer = Completer<String>();
       final chunks = <String>[];
 

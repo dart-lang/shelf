@@ -44,6 +44,7 @@ void main() {
 
   test(
     'thrown error leads to a 500',
+    skip: 'RawShelfServer destroys socket on error currently',
     () async {
       await _scheduleServer((request) {
         throw UnsupportedError('test');
@@ -53,7 +54,6 @@ void main() {
       expect(response.statusCode, HttpStatus.internalServerError);
       expect(response.body, 'Internal Server Error');
     },
-    skip: 'RawShelfServer destroys socket on error currently',
   );
 
   test(
@@ -261,6 +261,7 @@ void main() {
 
   test(
     'supports request hijacking',
+    skip: 'RawShelfServer does not support body streaming yet',
     () async {
       await _scheduleServer((request) {
         expect(request.method, 'POST');
@@ -290,7 +291,6 @@ void main() {
         completion(equals('Hello, world!')),
       );
     },
-    skip: 'RawShelfServer does not support body streaming yet',
   );
 
   test(
@@ -317,13 +317,13 @@ void main() {
             'localhost',
             0,
           );
+          addTearDown(server.close);
 
           var response = await http.get(
             Uri.http('localhost:${server.port}', '/'),
           );
           expect(response.statusCode, HttpStatus.ok);
           expect(response.body, 'Hello from /');
-          await server.close();
         },
         expectAsync2((error, stack) {
           expect(error, isOhNoStateError);
@@ -335,6 +335,7 @@ void main() {
 
   test(
     "doesn't pass asynchronous exceptions to the root error zone",
+    skip: 'RawShelfServer might not handle error zones correctly yet',
     () async {
       var response = await Zone.root.run(() async {
         var server = await RawShelfServer.serve(
@@ -345,18 +346,14 @@ void main() {
           'localhost',
           0,
         );
+        addTearDown(server.close);
 
-        try {
-          return await http.get(Uri.http('localhost:${server.port}', '/'));
-        } finally {
-          await server.close();
-        }
+        return http.get(Uri.http('localhost:${server.port}', '/'));
       });
 
       expect(response.statusCode, HttpStatus.ok);
       expect(response.body, 'Hello from /');
     },
-    skip: 'RawShelfServer might not handle error zones correctly yet',
   );
 
   test(
@@ -384,6 +381,7 @@ void main() {
 
   test(
     'a bad HTTP URL request results in a 400 response',
+    skip: 'RawShelfServer destroys socket on parse error currently',
     () async {
       await _scheduleServer(syncHandler);
       final socket = await Socket.connect('localhost', _serverPort);
@@ -398,12 +396,12 @@ void main() {
 
       expect(await utf8.decodeStream(socket), contains('400 Bad Request'));
     },
-    skip: 'RawShelfServer destroys socket on parse error currently',
   );
 
   group('date header', () {
     test(
       'is sent by default',
+      skip: 'RawShelfServer does not send date header by default yet',
       () async {
         await _scheduleServer(syncHandler);
 
@@ -416,7 +414,6 @@ void main() {
         expect(responseDate.isAfter(beforeRequest), isTrue);
         expect(responseDate.isBefore(DateTime.now()), isTrue);
       },
-      skip: 'RawShelfServer does not send date header by default yet',
     );
 
     test('defers to header in response', () async {
@@ -455,6 +452,7 @@ void main() {
   group('chunked coding', () {
     test(
       'is added when the transfer-encoding header is unset',
+      skip: 'RawShelfServer does not support chunked responses yet',
       () async {
         await _scheduleServer((request) {
           return Response.ok(
@@ -471,7 +469,6 @@ void main() {
         );
         expect(response.bodyBytes, equals([1, 2, 3, 4]));
       },
-      skip: 'RawShelfServer does not support chunked responses yet',
     );
   });
 

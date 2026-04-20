@@ -11,21 +11,17 @@ import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late RawShelfServer server;
-
-  tearDown(() async {
-    await server.close();
-  });
-
   group('Robustness', () {
     test('Header size limit exceeded', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) => Response.ok('ok'),
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       final bigHeader = 'X-Big: ${"x" * 70_000}\r\n'; // Over 64KB
       socket.add(
         utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n$bigHeader\r\n'),
@@ -40,13 +36,15 @@ void main() {
     });
 
     test('Malformed request (garbage bytes)', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) => Response.ok('ok'),
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(List.generate(10_000, (i) => i % 256)); // 10KB of garbage
 
       try {
@@ -58,7 +56,7 @@ void main() {
 
     test('Early client close', () async {
       final completer = Completer<void>();
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) async {
           completer.complete();
           return Response.ok('ok');
@@ -66,8 +64,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n'));
       await socket.flush();
       await socket.close();
@@ -80,13 +80,15 @@ void main() {
     });
 
     test('NUL in headers', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) => Response.ok('ok'),
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\n'

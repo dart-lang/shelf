@@ -11,23 +11,19 @@ import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late RawShelfServer server;
-
-  tearDown(() async {
-    await server.close();
-  });
-
   group('RawShelfServer', () {
     test('basic request/response', () async {
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           return Response.ok('hello world');
         },
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
@@ -41,7 +37,7 @@ void main() {
 
     test('multiple requests over keep-alive', () async {
       var count = 0;
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           count++;
           return Response.ok('request $count');
@@ -49,8 +45,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
 
       final responses = <String>[];
       final completer = Completer<void>();
@@ -77,22 +75,23 @@ void main() {
       final fullResponse = responses.join();
       expect(fullResponse, contains('request 1'));
       expect(fullResponse, contains('request 2'));
-      await socket.close();
     });
 
     test(
       'error in handler leads to socket destruction (current behavior)',
       () async {
         await expectLater(() async {
-          server = await RawShelfServer.serve(
+          final server = await RawShelfServer.serve(
             (request) {
               throw Exception('oops');
             },
             'localhost',
             0,
           );
+          addTearDown(server.close);
 
           final socket = await Socket.connect('localhost', server.port);
+          addTearDown(socket.close);
 
           socket.add(
             utf8.encode(
@@ -114,7 +113,7 @@ void main() {
   group('TypedHeaders', () {
     test('lazily parses and caches', () async {
       final completer = Completer<void>();
-      server = await RawShelfServer.serve(
+      final server = await RawShelfServer.serve(
         (request) {
           try {
             final typed = request.context['shelf.raw.headers'] as TypedHeaders;
@@ -129,8 +128,10 @@ void main() {
         'localhost',
         0,
       );
+      addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
       socket.add(
         utf8.encode(
           'GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 123\r\nConnection: close\r\n\r\n',
@@ -139,7 +140,6 @@ void main() {
 
       await completer.future;
       await socket.drain<void>();
-      await socket.close();
     });
   });
 }
