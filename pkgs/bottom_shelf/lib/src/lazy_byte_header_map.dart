@@ -6,7 +6,8 @@ import 'dart:collection';
 import 'package:http_parser/http_parser.dart';
 import 'header_slices.dart';
 
-/// A [Map] that lazily converts [HeaderEntrySlices] to strings only when accessed.
+/// A [Map] that lazily converts [HeaderEntrySlices] to strings only when
+/// accessed.
 final class LazyByteHeaderMap extends MapBase<String, List<String>> {
   final List<HeaderEntrySlices> _slices;
   CaseInsensitiveMap<List<String>>? _inner;

@@ -5,7 +5,8 @@
 import 'package:http_parser/http_parser.dart';
 import 'header_slices.dart';
 
-/// A specialized header container that uses byte slices for maximum performance.
+/// A specialized header container that uses byte slices for maximum
+/// performance.
 final class TypedHeaders {
   final List<HeaderEntrySlices> _slices;
   final Map<String, Object?> _cache = {};

@@ -135,7 +135,7 @@ void main() {
       );
 
       await completer.future;
-      await socket.drain();
+      await socket.drain<void>();
       await socket.close();
     });
   });

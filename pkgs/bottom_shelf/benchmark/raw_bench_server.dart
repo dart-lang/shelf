@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'package:shelf/shelf.dart';
+
 import 'package:bottom_shelf/bottom_shelf.dart';
+import 'package:shelf/shelf.dart';
 
 void main(List<String> args) async {
   final handler = const Pipeline()

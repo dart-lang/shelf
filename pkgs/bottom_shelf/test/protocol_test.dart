@@ -113,7 +113,8 @@ void main() {
     test('Case insensitivity', () async {
       server = await RawShelfServer.serve(
         (request) {
-          // Shelf should normalize to lowercase keys if accessed via request.headers
+          // Shelf should normalize to lowercase keys if accessed via
+          // request.headers
           expect(request.headers['x-upper'], 'value');
           expect(request.headers['X-UPPER'], 'value');
           return Response.ok('ok');
@@ -128,7 +129,7 @@ void main() {
           'GET / HTTP/1.1\r\nHost: localhost\r\nX-Upper: value\r\nConnection: close\r\n\r\n',
         ),
       );
-      await socket.drain();
+      await socket.drain<void>();
     });
 
     test('Multiple header values', () async {
@@ -148,7 +149,7 @@ void main() {
           'GET / HTTP/1.1\r\nHost: localhost\r\nX-Multi: a\r\nX-Multi: b\r\nConnection: close\r\n\r\n',
         ),
       );
-      await socket.drain();
+      await socket.drain<void>();
     });
 
     test('Big headers', () async {

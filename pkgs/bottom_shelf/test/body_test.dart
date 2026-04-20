@@ -34,7 +34,7 @@ void main() {
           'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
         ),
       );
-      await socket.drain();
+      await socket.drain<void>();
     });
 
     test('Small body in same chunk', () async {

@@ -5,13 +5,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:shelf/shelf.dart';
-import 'package:shelf/src/headers.dart';
 import 'package:stream_channel/stream_channel.dart';
+
+import 'lazy_byte_header_map.dart';
 import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
 import 'typed_headers.dart';
-import 'lazy_byte_header_map.dart';
 
 /// A high-performance Shelf server that uses raw [ServerSocket]s.
 final class RawShelfServer {
@@ -45,7 +46,8 @@ final class RawShelfServer {
     final parser = RawHttpParser();
     StreamSubscription<Uint8List>? subscription;
 
-    // We use a Completer to signal when we're ready for the next request in keep-alive
+    // We use a Completer to signal when we're ready for the next request in
+    // keep-alive
     var readyForNextRequest = Completer<void>()..complete();
 
     subscription = socket.listen(
@@ -76,7 +78,8 @@ final class RawShelfServer {
 
               final contentLength = typedHeaders.contentLength ?? 0;
 
-              // For now, let's just handle bodies by consuming the remaining data
+              // For now, let's just handle bodies by consuming the remaining
+              // data
               // and then resuming the subscription if needed.
               // A more robust implementation would use FixedLengthBodyStream.
               // But for POC speed, we'll assume small bodies for now or empty.
@@ -85,9 +88,7 @@ final class RawShelfServer {
                 parser.method!,
                 uri,
                 protocolVersion: parser.version!,
-                headers: Headers.from(
-                  LazyByteHeaderMap(parser.headerSlices) as dynamic,
-                ),
+                headers: LazyByteHeaderMap(parser.headerSlices),
                 // TODO: Real body streaming
                 body: contentLength == 0
                     ? const Stream<List<int>>.empty()
@@ -95,7 +96,7 @@ final class RawShelfServer {
                 context: {'shelf.raw.headers': typedHeaders},
                 onHijack: (void Function(StreamChannel<List<int>>) callback) {
                   subscription?.cancel();
-                  callback(StreamChannel(Stream.empty(), socket));
+                  callback(StreamChannel(const Stream.empty(), socket));
                 },
               );
 
@@ -115,7 +116,8 @@ final class RawShelfServer {
                   readyForNextRequest.complete();
 
                   // If there's more in chunk, loop.
-                  // But wait, if we used remainingInChunk for body, we must skip it.
+                  // But wait, if we used remainingInChunk for body, we must
+                  // skip it.
                   if (contentLength > 0) {
                     // This is tricky without a real body state machine.
                     // For now, just exit loop and wait for next chunk.

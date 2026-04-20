@@ -3,8 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:typed_data';
-import 'header_slices.dart';
+
 import 'constants.dart';
+import 'header_slices.dart';
 
 /// A high-performance, minimal HTTP/1.1 parser that uses byte slices.
 final class RawHttpParser {
@@ -75,8 +76,9 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateUrl;
           } else {
-            if (_bufferPos - _currentFieldStart > _maxFieldSize)
+            if (_bufferPos - _currentFieldStart > _maxFieldSize) {
               throw Exception('Method too long');
+            }
           }
         case _stateUrl:
           if (byte == charSp) {
@@ -88,8 +90,9 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateVersion;
           } else {
-            if (_bufferPos - _currentFieldStart > _maxUrlSize)
+            if (_bufferPos - _currentFieldStart > _maxUrlSize) {
               throw Exception('URL too long');
+            }
           }
         case _stateVersion:
           if (byte == charLf) {
@@ -102,15 +105,20 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else {
-            if (_bufferPos - _currentFieldStart > 64)
+            if (_bufferPos - _currentFieldStart > 64) {
               throw Exception('Version too long');
+            }
           }
         case _stateHeaderKey:
           if (byte == charColon) {
             var start = _currentFieldStart;
             var end = _bufferPos - 1;
-            while (start < end && _buffer[start] == charSp) start++;
-            while (end > start && _buffer[end - 1] == charSp) end--;
+            while (start < end && _buffer[start] == charSp) {
+              start++;
+            }
+            while (end > start && _buffer[end - 1] == charSp) {
+              end--;
+            }
 
             _lastKeySlice = HeaderByteSlice(_buffer, start, end);
             _currentFieldStart = _bufferPos;
@@ -128,7 +136,9 @@ final class RawHttpParser {
           if (byte == charLf) {
             var start = _currentFieldStart;
             var end = _bufferPos - 1;
-            while (start < end && _buffer[start] == charSp) start++;
+            while (start < end && _buffer[start] == charSp) {
+              start++;
+            }
             if (end > start && _buffer[end - 1] == charCr) end--;
 
             final valueSlice = HeaderByteSlice(_buffer, start, end);

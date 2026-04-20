@@ -60,7 +60,7 @@ void main() {
       final completer = Completer<void>();
       server = await RawShelfServer.serve(
         (request) async {
-          await Future.delayed(Duration(milliseconds: 100));
+          await Future<void>.delayed(const Duration(milliseconds: 100));
           completer.complete();
           return Response.ok('ok');
         },

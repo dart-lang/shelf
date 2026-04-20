@@ -5,7 +5,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-/// A stream that consumes a fixed number of bytes from an underlying subscription.
+/// A stream that consumes a fixed number of bytes from an underlying
+/// subscription.
 final class FixedLengthBodyStream extends Stream<Uint8List> {
   final StreamSubscription<Uint8List> _subscription;
   final int _contentLength;
@@ -28,8 +29,8 @@ final class FixedLengthBodyStream extends Stream<Uint8List> {
         _controller.close();
       }
     };
-    _controller.onPause = () => _subscription.pause();
-    _controller.onResume = () => _subscription.resume();
+    _controller.onPause = _subscription.pause;
+    _controller.onResume = _subscription.resume;
     _controller.onCancel = () {
       // Note: We don't cancel the underlying subscription because we might
       // want to continue using the socket for keep-alive.

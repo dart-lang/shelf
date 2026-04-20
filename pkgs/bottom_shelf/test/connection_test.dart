@@ -78,7 +78,7 @@ void main() {
 
       // Delay to ensure it's not all one chunk if we want to test separation,
       // but the server handles both.
-      await Future.delayed(Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
 
       // Request 2
       socket.add(

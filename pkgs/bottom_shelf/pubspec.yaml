@@ -7,9 +7,9 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
-  shelf: any
-  http_parser: ^4.1.0
   collection: ^1.15.0
+  http_parser: ^4.1.0
+  shelf: any
   stream_channel: any
 
 dev_dependencies:

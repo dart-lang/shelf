@@ -12,7 +12,8 @@ final request = utf8.encode(
   'Accept-Language: en-US,en;q=0.9\r\n'
   'Cache-Control: no-cache\r\n'
   'Pragma: no-cache\r\n'
-  'Sec-Ch-Ua: "Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"\r\n'
+  'Sec-Ch-Ua: "Not_A Brand";v="8", "Chromium";v="120", '
+  '"Google Chrome";v="120"\r\n'
   'Sec-Ch-Ua-Mobile: ?0\r\n'
   'Sec-Ch-Ua-Platform: "macOS"\r\n'
   'Sec-Fetch-Dest: document\r\n'
@@ -29,17 +30,18 @@ void main(List<String> args) async {
     return;
   }
   final port = int.parse(args[0]);
-  final duration = Duration(seconds: 5);
+  final duration = const Duration(seconds: 5);
   final concurrency = 50;
 
   print(
-    'Benchmarking localhost:$port for ${duration.inSeconds}s with $concurrency concurrent connections...',
+    'Benchmarking localhost:$port for ${duration.inSeconds}s with '
+    '$concurrency concurrent connections...',
   );
 
   var totalRequests = 0;
   final stopwatch = Stopwatch()..start();
 
-  final futures = <Future>[];
+  final futures = <Future<void>>[];
   for (var i = 0; i < concurrency; i++) {
     futures.add(_runClient(port, duration, () => totalRequests++));
   }
