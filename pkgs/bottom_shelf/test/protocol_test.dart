@@ -19,10 +19,14 @@ void main() {
 
   group('HTTP Protocol', () {
     test('HTTP/1.0 support (defaults to close)', () async {
-      server = await RawShelfServer.serve((request) {
-        expect(request.protocolVersion, '1.0');
-        return Response.ok('v1.0');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          expect(request.protocolVersion, '1.0');
+          return Response.ok('v1.0');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
       socket.add(utf8.encode('GET / HTTP/1.0\r\nHost: localhost\r\n\r\n'));
@@ -32,10 +36,14 @@ void main() {
     });
 
     test('HTTP/1.1 support (defaults to keep-alive)', () async {
-      server = await RawShelfServer.serve((request) {
-        expect(request.protocolVersion, '1.1');
-        return Response.ok('v1.1');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          expect(request.protocolVersion, '1.1');
+          return Response.ok('v1.1');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
       socket.add(utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n'));
@@ -58,30 +66,44 @@ void main() {
       final methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'];
       var currentMethod = '';
 
-      server = await RawShelfServer.serve((request) {
-        expect(request.method, currentMethod);
-        return Response.ok(request.method);
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          expect(request.method, currentMethod);
+          return Response.ok(request.method);
+        },
+        'localhost',
+        0,
+      );
 
       for (var method in methods) {
         currentMethod = method;
         final socket = await Socket.connect('localhost', server.port);
-        socket.add(utf8.encode(
-            '$method / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n'));
+        socket.add(
+          utf8.encode(
+            '$method / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+          ),
+        );
         final response = await utf8.decodeStream(socket);
         expect(response, contains(method));
       }
     });
 
     test('Request with absolute URI in request line', () async {
-      server = await RawShelfServer.serve((request) {
-        expect(request.requestedUri.path, '/foo');
-        return Response.ok('ok');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          expect(request.requestedUri.path, '/foo');
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET http://localhost/foo HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET http://localhost/foo HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
       final response = await utf8.decodeStream(socket);
       expect(response, contains('200 OK'));
     });
@@ -89,42 +111,63 @@ void main() {
 
   group('Headers', () {
     test('Case insensitivity', () async {
-      server = await RawShelfServer.serve((request) {
-        // Shelf should normalize to lowercase keys if accessed via request.headers
-        expect(request.headers['x-upper'], 'value');
-        expect(request.headers['X-UPPER'], 'value');
-        return Response.ok('ok');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          // Shelf should normalize to lowercase keys if accessed via request.headers
+          expect(request.headers['x-upper'], 'value');
+          expect(request.headers['X-UPPER'], 'value');
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nX-Upper: value\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nX-Upper: value\r\nConnection: close\r\n\r\n',
+        ),
+      );
       await socket.drain();
     });
 
     test('Multiple header values', () async {
-      server = await RawShelfServer.serve((request) {
-        expect(request.headersAll['x-multi'], ['a', 'b']);
-        expect(request.headers['x-multi'], 'a,b');
-        return Response.ok('ok');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          expect(request.headersAll['x-multi'], ['a', 'b']);
+          expect(request.headers['x-multi'], 'a,b');
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nX-Multi: a\r\nX-Multi: b\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nX-Multi: a\r\nX-Multi: b\r\nConnection: close\r\n\r\n',
+        ),
+      );
       await socket.drain();
     });
 
     test('Big headers', () async {
       final bigValue = 'x' * 4000;
-      server = await RawShelfServer.serve((request) {
-        expect(request.headers['x-big'], bigValue);
-        return Response.ok('ok');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          expect(request.headers['x-big'], bigValue);
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nX-Big: $bigValue\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nX-Big: $bigValue\r\nConnection: close\r\n\r\n',
+        ),
+      );
       final response = await utf8.decodeStream(socket);
       expect(response, contains('200 OK'));
     });

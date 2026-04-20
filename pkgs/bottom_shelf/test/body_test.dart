@@ -18,28 +18,42 @@ void main() {
 
   group('Body', () {
     test('Empty body', () async {
-      server = await RawShelfServer.serve((request) async {
-        final body = await request.readAsString();
-        expect(body, isEmpty);
-        return Response.ok('ok');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) async {
+          final body = await request.readAsString();
+          expect(body, isEmpty);
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
       await socket.drain();
     });
 
     test('Small body in same chunk', () async {
-      server = await RawShelfServer.serve((request) async {
-        final body = await request.readAsString();
-        expect(body, 'hello');
-        return Response.ok('ok');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) async {
+          final body = await request.readAsString();
+          expect(body, 'hello');
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello'));
+      socket.add(
+        utf8.encode(
+          'POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello',
+        ),
+      );
 
       final response = await utf8.decodeStream(socket);
       expect(response, contains('200 OK'));

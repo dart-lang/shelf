@@ -19,13 +19,20 @@ void main() {
 
   group('RawShelfServer', () {
     test('basic request/response', () async {
-      server = await RawShelfServer.serve((request) {
-        return Response.ok('hello world');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          return Response.ok('hello world');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
 
       final response = await utf8.decodeStream(socket);
       expect(response, contains('HTTP/1.1 200 OK'));
@@ -34,10 +41,14 @@ void main() {
 
     test('multiple requests over keep-alive', () async {
       var count = 0;
-      server = await RawShelfServer.serve((request) {
-        count++;
-        return Response.ok('request $count');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          count++;
+          return Response.ok('request $count');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
 
@@ -54,9 +65,12 @@ void main() {
       });
 
       // Send both requests (pipelined)
-      socket.add(utf8.encode(
+      socket.add(
+        utf8.encode(
           'GET /1 HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n'
-          'GET /2 HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n'));
+          'GET /2 HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
 
       await completer.future;
 
@@ -66,43 +80,59 @@ void main() {
       await socket.close();
     });
 
-    test('error in handler leads to socket destruction (current behavior)',
-        () async {
-      server = await RawShelfServer.serve((request) {
-        throw Exception('oops');
-      }, 'localhost', 0);
+    test(
+      'error in handler leads to socket destruction (current behavior)',
+      () async {
+        server = await RawShelfServer.serve(
+          (request) {
+            throw Exception('oops');
+          },
+          'localhost',
+          0,
+        );
 
-      final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n'));
+        final socket = await Socket.connect('localhost', server.port);
+        socket.add(
+          utf8.encode(
+            'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+          ),
+        );
 
-      try {
-        final result = await utf8.decodeStream(socket);
-        expect(result, isEmpty);
-      } catch (e) {
-        // Expected
-      }
-    });
+        try {
+          final result = await utf8.decodeStream(socket);
+          expect(result, isEmpty);
+        } catch (e) {
+          // Expected
+        }
+      },
+    );
   });
 
   group('TypedHeaders', () {
     test('lazily parses and caches', () async {
       final completer = Completer<void>();
-      server = await RawShelfServer.serve((request) {
-        try {
-          final typed = request.context['shelf.raw.headers'] as TypedHeaders;
-          expect(typed.contentLength, 123);
-          expect(typed.contentLength, 123); // Cache hit
-          if (!completer.isCompleted) completer.complete();
-        } catch (e, st) {
-          if (!completer.isCompleted) completer.completeError(e, st);
-        }
-        return Response.ok('ok');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          try {
+            final typed = request.context['shelf.raw.headers'] as TypedHeaders;
+            expect(typed.contentLength, 123);
+            expect(typed.contentLength, 123); // Cache hit
+            if (!completer.isCompleted) completer.complete();
+          } catch (e, st) {
+            if (!completer.isCompleted) completer.completeError(e, st);
+          }
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 123\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 123\r\nConnection: close\r\n\r\n',
+        ),
+      );
 
       await completer.future;
       await socket.drain();

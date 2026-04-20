@@ -14,7 +14,10 @@ final class FixedLengthBodyStream extends Stream<Uint8List> {
   final _controller = StreamController<Uint8List>(sync: true);
 
   FixedLengthBodyStream(
-      this._subscription, this._contentLength, Uint8List? initial) {
+    this._subscription,
+    this._contentLength,
+    Uint8List? initial,
+  ) {
     _controller.onListen = () {
       if (initial != null && initial.isNotEmpty) {
         _handleData(initial);
@@ -52,9 +55,17 @@ final class FixedLengthBodyStream extends Stream<Uint8List> {
   }
 
   @override
-  StreamSubscription<Uint8List> listen(void Function(Uint8List event)? onData,
-      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
-    return _controller.stream.listen(onData,
-        onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+  StreamSubscription<Uint8List> listen(
+    void Function(Uint8List event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    return _controller.stream.listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
   }
 }

@@ -20,14 +20,21 @@ void main() {
   group('Connections', () {
     test('Hijacking (detach socket)', () async {
       final completer = Completer<void>();
-      server = await RawShelfServer.serve((request) {
-        request.hijack((channel) {
-          channel.sink.add(utf8
-              .encode('HTTP/1.1 101 Switching Protocols\r\n\r\nCustom Data'));
-          channel.sink.close();
-          completer.complete();
-        });
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          request.hijack((channel) {
+            channel.sink.add(
+              utf8.encode(
+                'HTTP/1.1 101 Switching Protocols\r\n\r\nCustom Data',
+              ),
+            );
+            channel.sink.close();
+            completer.complete();
+          });
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
       socket.add(utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n'));
@@ -40,24 +47,31 @@ void main() {
 
     test('Keep-alive behavior', () async {
       var count = 0;
-      server = await RawShelfServer.serve((request) {
-        count++;
-        return Response.ok('$count');
-      }, 'localhost', 0);
+      server = await RawShelfServer.serve(
+        (request) {
+          count++;
+          return Response.ok('$count');
+        },
+        'localhost',
+        0,
+      );
 
       final socket = await Socket.connect('localhost', server.port);
       final completer = Completer<String>();
       final chunks = <String>[];
 
-      socket.listen((data) {
-        chunks.add(utf8.decode(data));
-        final full = chunks.join();
-        if (full.contains('2')) {
-          if (!completer.isCompleted) completer.complete(full);
-        }
-      }, onDone: () {
-        if (!completer.isCompleted) completer.complete(chunks.join());
-      });
+      socket.listen(
+        (data) {
+          chunks.add(utf8.decode(data));
+          final full = chunks.join();
+          if (full.contains('2')) {
+            if (!completer.isCompleted) completer.complete(full);
+          }
+        },
+        onDone: () {
+          if (!completer.isCompleted) completer.complete(chunks.join());
+        },
+      );
 
       // Request 1
       socket.add(utf8.encode('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n'));
@@ -67,8 +81,11 @@ void main() {
       await Future.delayed(Duration(milliseconds: 50));
 
       // Request 2
-      socket.add(utf8.encode(
-          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
 
       final response = await completer.future;
       expect(response, contains('1'));

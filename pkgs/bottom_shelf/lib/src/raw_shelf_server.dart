@@ -30,8 +30,12 @@ final class RawShelfServer {
     int backlog = 0,
     bool shared = false,
   }) async {
-    final serverSocket = await ServerSocket.bind(address, port,
-        backlog: backlog, shared: shared);
+    final serverSocket = await ServerSocket.bind(
+      address,
+      port,
+      backlog: backlog,
+      shared: shared,
+    );
     final server = RawShelfServer._(handler, serverSocket);
     serverSocket.listen(server._handleConnection);
     return server;
@@ -44,103 +48,117 @@ final class RawShelfServer {
     // We use a Completer to signal when we're ready for the next request in keep-alive
     var readyForNextRequest = Completer<void>()..complete();
 
-    subscription = socket.listen((data) async {
-      try {
-        await readyForNextRequest.future;
+    subscription = socket.listen(
+      (data) async {
+        try {
+          await readyForNextRequest.future;
 
-        var currentData = data;
-        while (currentData.isNotEmpty) {
-          if (parser.process(currentData)) {
-            // Headers are complete
-            subscription?.pause();
-            readyForNextRequest = Completer<void>();
+          var currentData = data;
+          while (currentData.isNotEmpty) {
+            if (parser.process(currentData)) {
+              // Headers are complete
+              subscription?.pause();
+              readyForNextRequest = Completer<void>();
 
-            final typedHeaders = TypedHeaders(parser.headerSlices);
-            final host = typedHeaders.host ?? 'localhost';
+              final typedHeaders = TypedHeaders(parser.headerSlices);
+              final host = typedHeaders.host ?? 'localhost';
 
-            var uri = Uri.parse(parser.url!);
-            if (!uri.hasScheme) {
-              uri = Uri.parse('http://$host${parser.url!}');
-            }
+              var uri = Uri.parse(parser.url!);
+              if (!uri.hasScheme) {
+                uri = Uri.parse('http://$host${parser.url!}');
+              }
 
-            final consumedInHeaders = parser.consumedInLastChunk;
-            final remainingInChunk =
-                Uint8List.sublistView(currentData, consumedInHeaders);
+              final consumedInHeaders = parser.consumedInLastChunk;
+              final remainingInChunk = Uint8List.sublistView(
+                currentData,
+                consumedInHeaders,
+              );
 
-            final contentLength = typedHeaders.contentLength ?? 0;
+              final contentLength = typedHeaders.contentLength ?? 0;
 
-            // For now, let's just handle bodies by consuming the remaining data
-            // and then resuming the subscription if needed.
-            // A more robust implementation would use FixedLengthBodyStream.
-            // But for POC speed, we'll assume small bodies for now or empty.
+              // For now, let's just handle bodies by consuming the remaining data
+              // and then resuming the subscription if needed.
+              // A more robust implementation would use FixedLengthBodyStream.
+              // But for POC speed, we'll assume small bodies for now or empty.
 
-            final request = Request(parser.method!, uri,
+              final request = Request(
+                parser.method!,
+                uri,
                 protocolVersion: parser.version!,
                 headers: Headers.from(
-                    LazyByteHeaderMap(parser.headerSlices) as dynamic),
+                  LazyByteHeaderMap(parser.headerSlices) as dynamic,
+                ),
                 // TODO: Real body streaming
                 body: contentLength == 0
                     ? const Stream<List<int>>.empty()
                     : Stream.value(remainingInChunk),
                 context: {'shelf.raw.headers': typedHeaders},
                 onHijack: (void Function(StreamChannel<List<int>>) callback) {
-              subscription?.cancel();
-              callback(StreamChannel(Stream.empty(), socket));
-            });
+                  subscription?.cancel();
+                  callback(StreamChannel(Stream.empty(), socket));
+                },
+              );
 
-            try {
-              final response = await _handler(request);
-              await RawShelfResponseSerializer.writeResponse(response, socket);
+              try {
+                final response = await _handler(request);
+                await RawShelfResponseSerializer.writeResponse(
+                  response,
+                  socket,
+                );
 
-              final keepAlive = typedHeaders.isKeepAlive(parser.version!);
-              parser.reset();
+                final keepAlive = typedHeaders.isKeepAlive(parser.version!);
+                parser.reset();
 
-              if (keepAlive) {
-                // If we had a body, we should have consumed it.
-                // For now, we assume body was in the same chunk or empty.
-                readyForNextRequest.complete();
+                if (keepAlive) {
+                  // If we had a body, we should have consumed it.
+                  // For now, we assume body was in the same chunk or empty.
+                  readyForNextRequest.complete();
 
-                // If there's more in chunk, loop.
-                // But wait, if we used remainingInChunk for body, we must skip it.
-                if (contentLength > 0) {
-                  // This is tricky without a real body state machine.
-                  // For now, just exit loop and wait for next chunk.
-                  subscription?.resume();
-                  break;
+                  // If there's more in chunk, loop.
+                  // But wait, if we used remainingInChunk for body, we must skip it.
+                  if (contentLength > 0) {
+                    // This is tricky without a real body state machine.
+                    // For now, just exit loop and wait for next chunk.
+                    subscription?.resume();
+                    break;
+                  }
+
+                  // No body, just continue with any remaining data (pipelining)
+                  currentData = remainingInChunk;
+                  if (currentData.isEmpty) {
+                    subscription?.resume();
+                    break;
+                  }
+                  continue;
+                } else {
+                  await socket.close();
+                  return;
                 }
-
-                // No body, just continue with any remaining data (pipelining)
-                currentData = remainingInChunk;
-                if (currentData.isEmpty) {
-                  subscription?.resume();
-                  break;
-                }
-                continue;
-              } else {
-                await socket.close();
+              } on HijackException {
                 return;
               }
-            } on HijackException {
+            } else {
+              // Headers incomplete
               return;
             }
-          } else {
-            // Headers incomplete
-            return;
           }
+        } on HijackException {
+          // Handled
+        } catch (e, st) {
+          print('Error handling request: $e\n$st');
+          try {
+            socket.destroy();
+          } catch (_) {}
         }
-      } on HijackException {
-        // Handled
-      } catch (e, st) {
-        print('Error handling request: $e\n$st');
-        try {
-          socket.destroy();
-        } catch (_) {}
-      }
-    }, onError: (e) {
-      socket.destroy();
-    }, onDone: () {
-      socket.destroy();
-    }, cancelOnError: true);
+      },
+      onError: (e) {
+        socket.destroy();
+      },
+      onDone: () {
+        socket.destroy();
+      },
+      cancelOnError: true,
+    );
   }
 
   Future<void> close() => _serverSocket.close();

@@ -11,8 +11,11 @@ import 'constants.dart';
 final class RawShelfResponseSerializer {
   static Future<void> writeResponse(Response response, Socket socket) async {
     // Write Status Line
-    socket.add(utf8.encode(
-        'HTTP/1.1 ${response.statusCode} ${_getStatusPhrase(response.statusCode)}\r\n'));
+    socket.add(
+      utf8.encode(
+        'HTTP/1.1 ${response.statusCode} ${_getStatusPhrase(response.statusCode)}\r\n',
+      ),
+    );
 
     // Write Headers
     response.headersAll.forEach((key, values) {

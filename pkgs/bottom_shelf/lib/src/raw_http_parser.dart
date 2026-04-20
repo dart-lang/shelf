@@ -69,8 +69,9 @@ final class RawHttpParser {
       switch (_state) {
         case _stateMethod:
           if (byte == charSp) {
-            method =
-                _getMethod(Uint8List.sublistView(_buffer, 0, _bufferPos - 1));
+            method = _getMethod(
+              Uint8List.sublistView(_buffer, 0, _bufferPos - 1),
+            );
             _currentFieldStart = _bufferPos;
             _state = _stateUrl;
           } else {
@@ -80,7 +81,10 @@ final class RawHttpParser {
         case _stateUrl:
           if (byte == charSp) {
             url = String.fromCharCodes(
-                _buffer, _currentFieldStart, _bufferPos - 1);
+              _buffer,
+              _currentFieldStart,
+              _bufferPos - 1,
+            );
             _currentFieldStart = _bufferPos;
             _state = _stateVersion;
           } else {
@@ -90,8 +94,10 @@ final class RawHttpParser {
         case _stateVersion:
           if (byte == charLf) {
             final v = String.fromCharCodes(
-                    _buffer, _currentFieldStart, _bufferPos - 1)
-                .trim();
+              _buffer,
+              _currentFieldStart,
+              _bufferPos - 1,
+            ).trim();
             version = v.startsWith('HTTP/') ? v.substring(5) : v;
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;

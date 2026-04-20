@@ -17,7 +17,7 @@ Handler _typedHeaderMiddleware(Handler innerHandler) {
     final typed = request.context['shelf.raw.headers'] as TypedHeaders?;
     // Access a header multiple times to benefit from caching
     final _ = typed?.ifModifiedSince;
-    final __ = typed?.contentType;
+    final _ = typed?.contentType;
     return innerHandler(request);
   };
 }

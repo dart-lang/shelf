@@ -18,9 +18,15 @@ final class LazyByteHeaderMap extends MapBase<String, List<String>> {
     final map = CaseInsensitiveMap<List<String>>();
     for (var slice in _slices) {
       final key = String.fromCharCodes(
-          slice.key.buffer, slice.key.start, slice.key.end);
+        slice.key.buffer,
+        slice.key.start,
+        slice.key.end,
+      );
       final value = String.fromCharCodes(
-          slice.value.buffer, slice.value.start, slice.value.end);
+        slice.value.buffer,
+        slice.value.start,
+        slice.value.end,
+      );
       map.putIfAbsent(key, () => []).add(value);
     }
     return _inner = map;
