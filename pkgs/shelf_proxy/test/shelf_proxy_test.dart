@@ -38,6 +38,19 @@ void main() {
       await get(headers: {'foo': 'bar', 'accept': '*/*'});
     });
 
+    test('joins multiple request cookies with a semicolon', () async {
+      final client = MockClient((request) {
+        expect(request.headers,
+            containsPair('cookie', 'cookie1=value1; cookie2=value2'));
+        return Future.value(http.Response(':)', 200));
+      });
+
+      final handler = proxyHandler('http://dartlang.org', client: client);
+      final request = shelf.Request('GET', Uri.parse('http://localhost/'),
+          headers: {'cookie': ['cookie1=value1', 'cookie2=value2']});
+      await handler(request);
+    });
+
     test('forwards request body', () async {
       await createProxy((request) {
         expect(request.readAsString(), completion(equals('hello, server')));
@@ -62,6 +75,21 @@ void main() {
 
       expect(response.headers, containsPair('foo', 'bar'));
       expect(response.headers, containsPair('accept', '*/*'));
+    });
+
+    test('preserves multiple Set-Cookie headers in response', () async {
+      await createProxy((request) {
+        return shelf.Response.ok(':)', headers: {
+          'set-cookie': ['cookie1=value1', 'cookie2=value2'],
+        });
+      });
+
+      final client = http.Client();
+      final response = await client.get(proxyUri);
+
+      // We use headersSplitValues to verify that they are preserved as separate values.
+      expect(response.headersSplitValues['set-cookie'],
+          containsAll(['cookie1=value1', 'cookie2=value2']));
     });
 
     test('forwards response body', () async {

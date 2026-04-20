@@ -41,9 +41,13 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.8
     final requestUrl = uri.resolve(serverRequest.url.toString());
     final clientRequest = http.StreamedRequest(serverRequest.method, requestUrl)
-      ..followRedirects = false
-      ..headers.addAll(serverRequest.headers)
-      ..headers['Host'] = uri.authority;
+      ..followRedirects = false;
+
+    serverRequest.headersAll.forEach((name, values) {
+      clientRequest.headers[name] =
+          values.join(name.toLowerCase() == 'cookie' ? '; ' : ', ');
+    });
+    clientRequest.headers['Host'] = uri.authority;
 
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
@@ -57,42 +61,48 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
         .whenComplete(clientRequest.sink.close)
         .ignore();
     final clientResponse = await nonNullClient.send(clientRequest);
+
+    final responseHeaders =
+        Map<String, List<String>>.from(clientResponse.headersSplitValues);
+
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-    _addHeader(clientResponse.headers, 'via', '1.1 $proxyName');
+    responseHeaders.update('via', (values) => [...values, '1.1 $proxyName'],
+        ifAbsent: () => ['1.1 $proxyName']);
 
     // Remove the transfer-encoding since the body has already been decoded by
     // [client].
-    clientResponse.headers.remove('transfer-encoding');
+    responseHeaders.remove('transfer-encoding');
 
     // If the original response was gzipped, it will be decoded by [client]
     // and we'll have no way of knowing its actual content-length.
-    if (clientResponse.headers['content-encoding'] == 'gzip') {
-      clientResponse.headers.remove('content-encoding');
-      clientResponse.headers.remove('content-length');
+    if (responseHeaders['content-encoding']?.contains('gzip') ?? false) {
+      responseHeaders.remove('content-encoding');
+      responseHeaders.remove('content-length');
 
       // Add a Warning header. See
       // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
-      _addHeader(
-          clientResponse.headers, 'warning', '214 $proxyName "GZIP decoded"');
+      responseHeaders.update(
+          'warning', (values) => [...values, '214 $proxyName "GZIP decoded"'],
+          ifAbsent: () => ['214 $proxyName "GZIP decoded"']);
     }
 
     // Make sure the Location header is pointing to the proxy server rather
     // than the destination server, if possible.
-    if (clientResponse.isRedirect &&
-        clientResponse.headers.containsKey('location')) {
+    if (clientResponse.isRedirect && responseHeaders.containsKey('location')) {
       final location =
-          requestUrl.resolve(clientResponse.headers['location']!).toString();
+          requestUrl.resolve(responseHeaders['location']!.first).toString();
       if (p.url.isWithin(uri.toString(), location)) {
-        clientResponse.headers['location'] =
-            '/${p.url.relative(location, from: uri.toString())}';
+        responseHeaders['location'] = [
+          '/${p.url.relative(location, from: uri.toString())}'
+        ];
       } else {
-        clientResponse.headers['location'] = location;
+        responseHeaders['location'] = [location];
       }
     }
 
     return Response(clientResponse.statusCode,
-        body: clientResponse.stream, headers: clientResponse.headers);
+        body: clientResponse.stream, headers: responseHeaders);
   };
 }
 

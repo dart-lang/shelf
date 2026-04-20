@@ -1,5 +1,8 @@
-## 1.0.5-wip
+## 1.0.5
 
+* Correctly handle multiple `Cookie` headers in requests and `Set-Cookie`
+  headers in responses.
+* Require `package:http` `^1.2.0`.
 * Require Dart `^3.3.0`.
 
 ## 1.0.4
