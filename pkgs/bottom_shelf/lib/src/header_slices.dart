@@ -5,7 +5,7 @@
 import 'dart:typed_data';
 
 /// A slice of bytes representing a header key or value.
-class HeaderByteSlice {
+final class HeaderByteSlice {
   final Uint8List buffer;
   final int start;
   final int end;
@@ -30,7 +30,7 @@ class HeaderByteSlice {
 }
 
 /// A pair of key/value slices.
-class HeaderEntrySlices {
+final class HeaderEntrySlices {
   final HeaderByteSlice key;
   final HeaderByteSlice value;
 

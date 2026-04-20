@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 /// A stream that consumes a fixed number of bytes from an underlying subscription.
-class FixedLengthBodyStream extends Stream<Uint8List> {
+final class FixedLengthBodyStream extends Stream<Uint8List> {
   final StreamSubscription<Uint8List> _subscription;
   final int _contentLength;
   int _consumed = 0;

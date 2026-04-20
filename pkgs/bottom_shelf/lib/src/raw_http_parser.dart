@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'header_slices.dart';
 
 /// A high-performance, minimal HTTP/1.1 parser that uses byte slices.
-class RawHttpParser {
+final class RawHttpParser {
   static const int _stateMethod = 0;
   static const int _stateUrl = 1;
   static const int _stateVersion = 2;

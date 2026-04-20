@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:shelf/shelf.dart';
 
 /// Serializes a [Response] directly to a [Socket].
-class RawShelfResponseSerializer {
+final class RawShelfResponseSerializer {
   static const _charCr = 13;
   static const _charLf = 10;
   static const _crlf = [_charCr, _charLf];

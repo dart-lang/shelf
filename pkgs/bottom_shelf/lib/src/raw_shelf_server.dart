@@ -14,7 +14,7 @@ import 'typed_headers.dart';
 import 'lazy_byte_header_map.dart';
 
 /// A high-performance Shelf server that uses raw [ServerSocket]s.
-class RawShelfServer {
+final class RawShelfServer {
   final Handler _handler;
   final ServerSocket _serverSocket;
 
