@@ -52,185 +52,171 @@ final class RawShelfServer {
     // until the current one is fully processed (including response).
     var readyForNextRequest = Completer<void>()..complete();
 
+    StreamSubscription<Uint8List>? subscription;
     StreamController<Uint8List>? hijackController;
     var isHijacked = false;
     var isDestroyed = false;
+    var clientClosed = false;
 
     void destroy() {
       if (isDestroyed) return;
       isDestroyed = true;
+      subscription?.cancel();
       socket.destroy();
       bodyController?.close();
       if (!readyForNextRequest.isCompleted) {
         readyForNextRequest.completeError(
           const HttpException('Socket destroyed'),
         );
-        // Ensure the error doesn't become an unhandled top-level exception
         readyForNextRequest.future.catchError((_) {});
       }
     }
 
-    socket.listen(
-      (data) async {
-        if (isHijacked) {
-          hijackController?.add(data);
-          return;
-        }
-        if (isDestroyed) return;
+    void processData(Uint8List data) {
+      if (isHijacked) {
+        hijackController?.add(data);
+        return;
+      }
+      if (isDestroyed || clientClosed) return;
 
-        try {
-          var currentData = data;
-          while (currentData.isNotEmpty) {
-            if (isHijacked) {
-              hijackController?.add(currentData);
-              return;
+      try {
+        var currentData = data;
+        while (currentData.isNotEmpty) {
+          if (isHijacked) {
+            hijackController?.add(currentData);
+            return;
+          }
+          if (isDestroyed) return;
+
+          if (bodyController != null) {
+            currentData = bodyController!.add(currentData);
+            if (currentData.isNotEmpty || bodyController!.isDone) {
+              bodyController = null;
+              continue;
             }
-            if (isDestroyed) return;
+            break;
+          }
 
-            if (bodyController != null) {
-              currentData = bodyController!.add(currentData);
-              if (currentData.isNotEmpty || bodyController!.isDone) {
-                // Body is finished, but we might have more data for next
-                // request.
+          if (!readyForNextRequest.isCompleted) {
+            // We shouldn't receive data while processing a request
+            // unless it's pipelined data. Pause and wait.
+            subscription?.pause(
+              readyForNextRequest.future.then((_) {
+                if (!isDestroyed && !clientClosed) {
+                  processData(currentData);
+                }
+              }),
+            );
+            return;
+          }
+
+          if (parser.process(currentData)) {
+            readyForNextRequest = Completer<void>();
+            final bodyDone = Completer<void>();
+
+            final typedHeaders = TypedHeaders(parser.headerSlices);
+            final host = typedHeaders.host ?? 'localhost';
+
+            var uri = Uri.parse(parser.url!);
+            if (!uri.hasScheme) {
+              uri = Uri.parse('http://$host${parser.url!}');
+            }
+
+            final consumedInHeaders = parser.consumedInLastChunk;
+            final remainingInChunk = Uint8List.sublistView(
+              currentData,
+              consumedInHeaders,
+            );
+
+            final contentLength = typedHeaders.contentLength ?? 0;
+
+            Stream<Uint8List> requestBody;
+            if (contentLength > 0) {
+              bodyController = FixedLengthBodyController(contentLength, () {
+                if (!bodyDone.isCompleted) bodyDone.complete();
+              });
+              requestBody = bodyController!.stream;
+              currentData = bodyController!.add(remainingInChunk);
+              if (bodyController!.isDone) {
                 bodyController = null;
-                // Continue loop to process currentData as next headers.
-                continue;
-              }
-              break;
-            }
-
-            if (!readyForNextRequest.isCompleted) {
-              try {
-                await readyForNextRequest.future;
-              } catch (_) {
-                return;
-              }
-            }
-
-            if (isHijacked) {
-              hijackController?.add(currentData);
-              return;
-            }
-            if (isDestroyed) return;
-
-            if (parser.process(currentData)) {
-              // Headers are complete
-              readyForNextRequest = Completer<void>();
-              final bodyDone = Completer<void>();
-
-              final typedHeaders = TypedHeaders(parser.headerSlices);
-              final host = typedHeaders.host ?? 'localhost';
-
-              var uri = Uri.parse(parser.url!);
-              if (!uri.hasScheme) {
-                uri = Uri.parse('http://$host${parser.url!}');
-              }
-
-              final consumedInHeaders = parser.consumedInLastChunk;
-              final remainingInChunk = Uint8List.sublistView(
-                currentData,
-                consumedInHeaders,
-              );
-
-              final contentLength = typedHeaders.contentLength ?? 0;
-
-              Stream<Uint8List> requestBody;
-              if (contentLength > 0) {
-                bodyController = FixedLengthBodyController(contentLength, () {
-                  if (!bodyDone.isCompleted) bodyDone.complete();
-                });
-                requestBody = bodyController!.stream;
-                // Process what's left in the current chunk
-                currentData = bodyController!.add(remainingInChunk);
-                if (bodyController!.isDone) {
-                  bodyController = null;
-                }
-              } else {
-                requestBody = const Stream<Uint8List>.empty();
-                currentData = remainingInChunk;
-                bodyDone.complete();
-              }
-
-              final capturedDataAtHijack = currentData;
-
-              final request = Request(
-                parser.method!,
-                uri,
-                protocolVersion: parser.version!,
-                headers: LazyByteHeaderMap(parser.headerSlices),
-                body: requestBody,
-                context: {'shelf.raw.headers': typedHeaders},
-                onHijack: (void Function(StreamChannel<List<int>>) callback) {
-                  isHijacked = true;
-
-                  // Create a controller that will receive data from the
-                  // socket.listen callback from now on.
-                  hijackController = StreamController<Uint8List>(sync: true);
-
-                  // Prepend any data already read but not processed
-                  if (capturedDataAtHijack.isNotEmpty) {
-                    hijackController!.add(capturedDataAtHijack);
-                  }
-
-                  callback(StreamChannel(hijackController!.stream, socket));
-                },
-              );
-
-              // We don't await the handler here in a way that blocks the
-              // socket listener from receiving more body data.
-              // Instead, we let the handler run and just manage the
-              // readyForNextRequest completer.
-              unawaited(() async {
-                try {
-                  final response = await _handler(request);
-                  if (isHijacked || isDestroyed) return;
-
-                  final keepAlive = typedHeaders.isKeepAlive(parser.version!);
-
-                  await RawShelfResponseSerializer.writeResponse(
-                    response,
-                    socket,
-                    keepAlive: keepAlive,
-                  );
-
-                  parser.reset();
-
-                  if (keepAlive) {
-                    // Wait for body to be fully consumed/drained before next request
-                    await bodyDone.future;
-                    if (!readyForNextRequest.isCompleted) {
-                      readyForNextRequest.complete();
-                    }
-                  } else {
-                    await socket.close();
-                  }
-                } on HijackException {
-                  // Handled
-                } catch (e, st) {
-                  if (!isHijacked && !isDestroyed) {
-                    print('Error in handler: $e\n$st');
-                    destroy();
-                  }
-                }
-              }());
-
-              // Break the loop if we are still streaming the body.
-              // and wait for next socket data event.
-              if (bodyController != null || isHijacked) {
-                break;
               }
             } else {
-              // Headers incomplete
+              requestBody = const Stream<Uint8List>.empty();
+              currentData = remainingInChunk;
+              bodyDone.complete();
+            }
+
+            final capturedDataAtHijack = currentData;
+
+            final request = Request(
+              parser.method!,
+              uri,
+              protocolVersion: parser.version!,
+              headers: LazyByteHeaderMap(parser.headerSlices),
+              body: requestBody,
+              context: {'shelf.raw.headers': typedHeaders},
+              onHijack: (void Function(StreamChannel<List<int>>) callback) {
+                isHijacked = true;
+                hijackController = StreamController<Uint8List>(sync: true);
+                if (capturedDataAtHijack.isNotEmpty) {
+                  hijackController!.add(capturedDataAtHijack);
+                }
+                callback(StreamChannel(hijackController!.stream, socket));
+              },
+            );
+
+            unawaited(() async {
+              try {
+                final response = await _handler(request);
+                if (isHijacked) return;
+
+                final keepAlive = typedHeaders.isKeepAlive(parser.version!);
+
+                await RawShelfResponseSerializer.writeResponse(
+                  response,
+                  socket,
+                  keepAlive: keepAlive,
+                );
+
+                parser.reset();
+
+                if (keepAlive) {
+                  await bodyDone.future;
+                  if (!readyForNextRequest.isCompleted) {
+                    readyForNextRequest.complete();
+                  }
+                } else {
+                  await socket.close();
+                }
+              } on HijackException {
+                // Handled
+              } catch (e) {
+                if (!isHijacked && !isDestroyed) {
+                  // Phase 4 covers proper logging.
+                  // Use print for now to pass tests.
+                  print('Error in handler: $e');
+                  destroy();
+                }
+              }
+            }());
+
+            if (bodyController != null || isHijacked) {
               break;
             }
-          }
-        } catch (e, st) {
-          if (!isHijacked && !isDestroyed) {
-            print('Error handling connection: $e\n$st');
-            destroy();
+          } else {
+            break;
           }
         }
-      },
+      } catch (e) {
+        if (!isHijacked && !isDestroyed) {
+          print('Error handling connection: $e');
+          destroy();
+        }
+      }
+    }
+
+    subscription = socket.listen(
+      processData,
       onError: (Object e) {
         if (isHijacked) {
           hijackController?.addError(e);
@@ -242,7 +228,8 @@ final class RawShelfServer {
         if (isHijacked) {
           hijackController?.close();
         } else {
-          destroy();
+          clientClosed = true;
+          bodyController?.close();
         }
       },
       cancelOnError: true,
