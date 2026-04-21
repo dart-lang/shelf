@@ -120,6 +120,9 @@ void _testCompliance(
     }
 
     final reportFile = p.join(tempDir.path, 'reports', name, '$category.json');
+    
+    // Create directory for report file if it doesn't exist
+    Directory(p.dirname(reportFile)).createSync(recursive: true);
 
     // Start the echo server
     final serverProcess = await TestProcess.start(Platform.resolvedExecutable, [
