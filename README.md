@@ -26,6 +26,7 @@ See the [package:shelf readme](pkgs/shelf/) for more information.
 | [shelf_static](pkgs/shelf_static/) | Static file server support for the shelf package and ecosystem. | [![issues](https://img.shields.io/badge/shelf__static-4774bc)][shelf_static_issues] | [![pub package](https://img.shields.io/pub/v/shelf_static.svg)](https://pub.dev/packages/shelf_static) |
 | [shelf_test_handler](pkgs/shelf_test_handler/) | A Shelf handler that makes it easy to test HTTP interactions. | [![issues](https://img.shields.io/badge/shelf__test__handler-4774bc)][shelf_test_handler_issues] | [![pub package](https://img.shields.io/pub/v/shelf_test_handler.svg)](https://pub.dev/packages/shelf_test_handler) |
 | [shelf_web_socket](pkgs/shelf_web_socket/) | A shelf handler that wires up a listener for every connection. | [![issues](https://img.shields.io/badge/shelf__web__socket-4774bc)][shelf_web_socket_issues] | [![pub package](https://img.shields.io/pub/v/shelf_web_socket.svg)](https://pub.dev/packages/shelf_web_socket) |
+| [_shelf_compliance](pkgs/_shelf_compliance/) | HTTP/1.1 compliance and hardening tests. | [![issues](https://img.shields.io/badge/_shelf__compliance-4774bc)][_shelf_compliance_issues] | *(not published)* |
 
 [shelf_issues]: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf
 [shelf_packages_handler_issues]: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_packages_handler
@@ -35,6 +36,7 @@ See the [package:shelf readme](pkgs/shelf/) for more information.
 [shelf_static_issues]: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_static
 [shelf_test_handler_issues]: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_test_handler
 [shelf_web_socket_issues]: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Ashelf_web_socket
+[_shelf_compliance_issues]: https://github.com/dart-lang/shelf/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3A_shelf_compliance
 
 ## Publishing automation
 

@@ -1,0 +1,11 @@
+sdk:
+- dev
+
+stages:
+- analyze_and_format:
+  - analyze: --fatal-infos .
+  - format:
+- compliance_test:
+  - command: tool/run_tests_with_dotnet.sh
+    os:
+    - linux
