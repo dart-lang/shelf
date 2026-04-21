@@ -35,4 +35,24 @@ void main() {
       expect(parseHex(32), -1); // space
     });
   });
+
+  group('isTchar', () {
+    const validChars =
+        "!#\$%&'*+-.^_`|~0123456789"
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        'abcdefghijklmnopqrstuvwxyz';
+
+    test('covers all 256 byte values correctly', () {
+      for (var i = 0; i < 256; i++) {
+        final char = String.fromCharCode(i);
+        final expected = validChars.contains(char);
+        expect(isTchar(i), expected, reason: 'Failed for byte $i ($char)');
+      }
+    });
+
+    test('returns false for values outside 0-255', () {
+      expect(isTchar(-1), isFalse);
+      expect(isTchar(256), isFalse);
+    });
+  });
 }

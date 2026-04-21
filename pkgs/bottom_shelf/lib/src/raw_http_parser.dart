@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'constants.dart';
 import 'exceptions.dart';
 import 'header_slices.dart';
+import 'utils.dart';
 
 /// The parsed head of an HTTP request.
 typedef HttpRequestHead = ({
@@ -178,7 +179,7 @@ final class RawHttpParser {
               );
             }
             throw const BadRequestException('Header line without colon');
-          } else if (byte != $Chars.cr && !_isTchar(byte)) {
+          } else if (byte != $Chars.cr && !isTchar(byte)) {
             throw const BadRequestException('Invalid character in header key');
           }
         case _stateHeaderValue:
@@ -214,23 +215,5 @@ final class RawHttpParser {
     _ => String.fromCharCodes(bytes),
   };
 
-  bool _isTchar(int byte) =>
-      (byte >= 65 && byte <= 90) || // A-Z
-      (byte >= 97 && byte <= 122) || // a-z
-      (byte >= 48 && byte <= 57) || // 0-9
-      byte == 33 || // !
-      byte == 35 || // #
-      byte == 36 || // $
-      byte == 37 || // %
-      byte == 38 || // &
-      byte == 39 || // '
-      byte == 42 || // *
-      byte == 43 || // +
-      byte == 45 || // -
-      byte == 46 || // .
-      byte == 94 || // ^
-      byte == 95 || // _
-      byte == 96 || // `
-      byte == 124 || // |
-      byte == 126; // ~
+
 }
