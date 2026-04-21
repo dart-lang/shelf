@@ -18,7 +18,7 @@ typedef HttpRequestHead = ({
   int consumedInLastChunk,
 });
 
-extension type const _$State(int value) {
+extension type const _$State(int _) {
   static const _$State method = _$State(0);
   static const _$State url = _$State(1);
   static const _$State version = _$State(2);
@@ -66,9 +66,8 @@ final class RawHttpParser {
       _totalHeadersReceived++;
 
       if (_totalHeadersReceived > $Limit.maxHeaderSize) {
-        throw const BadRequestException(
-          'Header size limit exceeded',
-          errorResponse: ErrorResponse.headerFieldsTooLarge,
+        throw BadRequestException.fromResponse(
+          ErrorResponse.headerFieldsTooLarge,
         );
       }
 
@@ -122,10 +121,7 @@ final class RawHttpParser {
               throw const BadRequestException('Invalid character in URL');
             }
             if (_bufferPos - _currentFieldStart > $Limit.maxUrlSize) {
-              throw const BadRequestException(
-                'URL too long',
-                errorResponse: ErrorResponse.uriTooLong,
-              );
+              throw BadRequestException.fromResponse(ErrorResponse.uriTooLong);
             }
           }
         case _$State.version:

@@ -42,12 +42,20 @@ final class BadRequestException implements Exception {
   /// The stack trace of the original exception, if any.
   final StackTrace? innerStack;
 
+  /// Constructor for custom messages. Always uses `400 Bad Request`.
   const BadRequestException(
     this.message, {
-    this.errorResponse = ErrorResponse.badRequest,
     this.innerException,
     this.innerStack,
-  });
+  }) : errorResponse = ErrorResponse.badRequest;
+
+  /// Constructor for specific error responses. Uses the phrase as the message.
+  BadRequestException.fromResponse(
+    ErrorResponse response, {
+    this.innerException,
+    this.innerStack,
+  }) : message = response.phrase,
+       errorResponse = response;
 
   @override
   String toString() {
