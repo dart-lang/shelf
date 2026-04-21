@@ -64,7 +64,6 @@ final class _HttpConnection {
   });
 
   void start() {
-    _readyForNextRequest.future.catchError((_) {});
     _startHeaderTimer();
     _subscription = socket.listen(
       _processData,
@@ -150,7 +149,6 @@ final class _HttpConnection {
         if (_parser.process(currentData)) {
           _cancelHeaderTimer();
           _readyForNextRequest = Completer<void>();
-          _readyForNextRequest.future.catchError((_) {});
           final bodyDone = Completer<void>();
 
           final typedHeaders = TypedHeaders(_parser.headerSlices);
