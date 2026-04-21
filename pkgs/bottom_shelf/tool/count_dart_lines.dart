@@ -38,12 +38,15 @@ Future<void> main(List<String> arguments) async {
 
   final codeLines = totalLines - totalBlankLines - totalCommentLines;
 
-  print('Dart Line Counter');
-  print('-----------------');
-  print('Directory: $dirPath');
-  print('Files found: $totalFiles');
-  print('Total lines: $totalLines');
-  print('Blank lines: $totalBlankLines');
-  print('Comment lines: $totalCommentLines');
-  print('Code lines: $codeLines');
+  print('''
+Dart Line Counter
+-----------------
+Directory:      ${dirPath.padLeft(6)}
+Files found:    ${totalFiles.toString().padLeft(6)}
+---
+Blank lines:    ${totalBlankLines.toString().padLeft(6)}
+Comment lines:  ${totalCommentLines.toString().padLeft(6)}
+Code lines:     ${codeLines.toString().padLeft(6)}
+---
+Total lines:    ${totalLines.toString().padLeft(6)}''');
 }
