@@ -15,6 +15,7 @@ abstract interface class BodyController {
   bool get isDone;
   Uint8List add(Uint8List data);
   void close();
+  void addError(Object error);
   Uint8List takeBufferedData();
 }
 
@@ -126,6 +127,13 @@ final class FixedLengthBodyController implements BodyController {
       _controller.close();
       // We don't call _onDone here because we still need to wait for
       // the actual bytes to be 'add'ed from the socket.
+    }
+  }
+
+  @override
+  void addError(Object error) {
+    if (!_controller.isClosed) {
+      _controller.addError(error);
     }
   }
 }
@@ -326,6 +334,13 @@ final class ChunkedBodyController implements BodyController {
   void close() {
     if (!_controller.isClosed) {
       _controller.close();
+    }
+  }
+
+  @override
+  void addError(Object error) {
+    if (!_controller.isClosed) {
+      _controller.addError(error);
     }
   }
 }

@@ -23,6 +23,7 @@ final class RawShelfResponseSerializer {
     Response response,
     Socket socket, {
     required bool keepAlive,
+    required String requestMethod,
   }) async {
     final headers = Map<String, List<String>>.from(response.headersAll);
 
@@ -61,7 +62,10 @@ final class RawShelfResponseSerializer {
     socket.add(_crlf);
 
     // Write Body
-    if (isChunked) {
+    if (requestMethod == 'HEAD') {
+      // Drain the stream to avoid leaks
+      await response.read().listen((_) {}).asFuture<void>();
+    } else if (isChunked) {
       await for (final chunk in response.read()) {
         if (chunk.isEmpty) continue;
         // Hex size

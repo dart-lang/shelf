@@ -738,6 +738,90 @@ void main() {
     },
   );
 
+  test(
+    'a request with userinfo in Host header results in a 400 response',
+    () async {
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
+
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host: user@localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with path in Host header results in a 400 response',
+    () async {
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
+
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host: localhost/path\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with incomplete body (undersend) results in connection close',
+    () async {
+      final port = await _scheduleServer((request) async {
+        await request.readAsString();
+        return Response.ok('Hello');
+      });
+      final socket = await Socket.connect('localhost', port);
+
+      try {
+        socket.write('POST / HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Content-Length: 10\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+        socket.write('hello');
+      } finally {
+        await socket.close();
+      }
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, isNot(contains('200 OK')));
+    },
+  );
+
+  test('HEAD response must not contain a message body (chunked)', () async {
+    final port = await _scheduleServer(
+      (request) => Response.ok(Stream.fromIterable(['Hello'.codeUnits])),
+    );
+    final socket = await Socket.connect('localhost', port);
+
+    try {
+      socket.write('HEAD / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('200 OK'));
+    expect(response, isNot(contains('Hello')));
+    expect(response, isNot(contains('0\r\n\r\n')));
+  });
+
   group('date header', () {
     test(
       'is sent by default',

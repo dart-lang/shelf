@@ -79,7 +79,15 @@ final class _HttpConnection {
           _hijackController?.close();
         } else {
           _clientClosed = true;
-          _bodyController?.close();
+          if (_bodyController != null && !_bodyController!.isDone) {
+            _bodyController!.addError(
+              const BadRequestException('Incomplete body'),
+            );
+            _bodyController!.close();
+            _destroy();
+          } else {
+            _bodyController?.close();
+          }
         }
       },
       cancelOnError: true,
@@ -222,6 +230,16 @@ final class _HttpConnection {
           }
 
           final host = typedHeaders.host;
+          if (host != null && (host.contains('@') || host.contains('/'))) {
+            socket.add(
+              utf8.encode(
+                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
+              ),
+            );
+            _destroy();
+            return;
+          }
+
           if (host == null && requestHead.version == '1.1') {
             socket.add(
               utf8.encode(
@@ -385,6 +403,7 @@ final class _HttpConnection {
               response,
               socket,
               keepAlive: keepAlive,
+              requestMethod: request.method,
             );
             _responseSent = true;
 
