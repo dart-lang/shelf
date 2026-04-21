@@ -76,39 +76,37 @@ void main() {
       expect(fullResponse, contains('request 2'));
     });
 
-    test('error in handler leads to 500 response',
-      () async {
-        final logs = <String>[];
-        final server = await RawShelfServer.serve(
-          (request) {
-            throw Exception('oops');
-          },
-          'localhost',
-          0,
-          onConnectionError: (message, error, stackTrace) {
-            logs.add(message);
-          },
-        );
-        addTearDown(server.close);
+    test('error in handler leads to 500 response', () async {
+      final logs = <String>[];
+      final server = await RawShelfServer.serve(
+        (request) {
+          throw Exception('oops');
+        },
+        'localhost',
+        0,
+        onConnectionError: (message, error, stackTrace) {
+          logs.add(message);
+        },
+      );
+      addTearDown(server.close);
 
-        final socket = await Socket.connect(server.address.host, server.port);
-        addTearDown(socket.close);
+      final socket = await Socket.connect(server.address.host, server.port);
+      addTearDown(socket.close);
 
-        socket.add(
-          utf8.encode(
-            'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
-          ),
-        );
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
 
-        final response = await utf8.decodeStream(socket);
-        expect(response, contains('500 Internal Server Error'));
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('500 Internal Server Error'));
 
-        // Wait a tick for the unawaited log to process
-        await Future<void>.delayed(Duration.zero);
+      // Wait a tick for the unawaited log to process
+      await Future<void>.delayed(Duration.zero);
 
-        expect(logs, ['Error in handler']);
-      },
-    );
+      expect(logs, ['Error in handler']);
+    });
   });
 
   group('TypedHeaders', () {

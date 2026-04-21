@@ -12,6 +12,7 @@ import 'package:stream_channel/stream_channel.dart';
 
 import 'body_stream.dart';
 import 'constants.dart';
+import 'exceptions.dart';
 import 'lazy_byte_header_map.dart';
 import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
@@ -76,6 +77,7 @@ final class RawShelfServer {
     var isHijacked = false;
     var isDestroyed = false;
     var clientClosed = false;
+    var responseSent = false;
 
     void destroy() {
       if (isDestroyed) return;
@@ -86,7 +88,7 @@ final class RawShelfServer {
       bodyController?.close();
       if (!readyForNextRequest.isCompleted) {
         readyForNextRequest.completeError(
-          const HttpException('Socket destroyed'),
+          const SocketException.closed(),
         );
         readyForNextRequest.future.catchError((_) {});
       }
@@ -163,9 +165,18 @@ final class RawShelfServer {
 
             final host = typedHeaders.host ?? 'localhost';
 
-            var uri = Uri.parse(parser.url!);
-            if (!uri.hasScheme) {
-              uri = Uri.parse('http://$host${parser.url!}');
+            Uri uri;
+            try {
+              uri = Uri.parse(parser.url!);
+              if (!uri.hasScheme) {
+                uri = Uri.parse('http://$host${parser.url!}');
+              }
+            } on FormatException catch (e, st) {
+              throw BadRequestException(
+                'Invalid requested URL: ${e.message}',
+                innerException: e,
+                innerStack: st,
+              );
             }
 
             final consumedInHeaders = parser.consumedInLastChunk;
@@ -218,34 +229,68 @@ final class RawShelfServer {
                   .toList();
             }
 
-            final request = Request(
-              parser.method!,
-              uri,
-              protocolVersion: parser.version!,
-              headers: LazyByteHeaderMap(finalHeaderSlices),
-              body: requestBody,
-              context: {$Context.rawHeaders: typedHeaders},
-              onHijack: (void Function(StreamChannel<List<int>>) callback) {
-                isHijacked = true;
-                hijackController = StreamController<Uint8List>(sync: true);
+            Request request;
+            try {
+              request = Request(
+                parser.method!,
+                uri,
+                protocolVersion: parser.version!,
+                headers: LazyByteHeaderMap(finalHeaderSlices),
+                body: requestBody,
+                context: {$Context.rawHeaders: typedHeaders},
+                onHijack: (void Function(StreamChannel<List<int>>) callback) {
+                  isHijacked = true;
+                  hijackController = StreamController<Uint8List>(sync: true);
 
-                if (thisRequestBodyController != null) {
-                  final buffered = thisRequestBodyController.takeBufferedData();
-                  if (buffered.isNotEmpty) {
-                    hijackController!.add(buffered);
+                  if (thisRequestBodyController != null) {
+                    final buffered = thisRequestBodyController
+                        .takeBufferedData();
+                    if (buffered.isNotEmpty) {
+                      hijackController!.add(buffered);
+                    }
                   }
-                }
 
-                if (capturedDataAtHijack.isNotEmpty) {
-                  hijackController!.add(capturedDataAtHijack);
-                }
-                callback(StreamChannel(hijackController!.stream, socket));
-              },
-            );
+                  if (capturedDataAtHijack.isNotEmpty) {
+                    hijackController!.add(capturedDataAtHijack);
+                  }
+                  callback(StreamChannel(hijackController!.stream, socket));
+                },
+              );
+              // ignore: avoid_catching_errors
+            } on ArgumentError catch (e, st) {
+              throw BadRequestException(
+                'Invalid request parameters',
+                innerException: e,
+                innerStack: st,
+              );
+            }
 
             unawaited(() async {
               try {
-                final response = await _handler(request);
+                final response = await runZonedGuarded(
+                  () async => await _handler(request),
+                  (e, st) {
+                    if (!isHijacked && !isDestroyed && !responseSent) {
+                      socket.add(
+                        utf8.encode(
+                          'HTTP/1.1 500 Internal Server Error\r\n'
+                          'Connection: close\r\n'
+                          'Content-Length: 21\r\n\r\n'
+                          'Internal Server Error',
+                        ),
+                      );
+                      _onConnectionError?.call('Error in handler', e, st);
+                      destroy();
+                    } else if (!isDestroyed) {
+                      _onConnectionError?.call(
+                        'Error in handler after response sent',
+                        e,
+                        st,
+                      );
+                    }
+                  },
+                );
+                if (response == null) return;
                 if (isHijacked) return;
 
                 final keepAlive = typedHeaders.isKeepAlive(parser.version!);
@@ -255,6 +300,7 @@ final class RawShelfServer {
                   socket,
                   keepAlive: keepAlive,
                 );
+                responseSent = true;
 
                 parser.reset();
 
@@ -273,7 +319,10 @@ final class RawShelfServer {
                 if (!isHijacked && !isDestroyed) {
                   socket.add(
                     utf8.encode(
-                      'HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\n\r\n',
+                      'HTTP/1.1 500 Internal Server Error\r\n'
+                      'Connection: close\r\n'
+                      'Content-Length: 21\r\n\r\n'
+                      'Internal Server Error',
                     ),
                   );
                   _onConnectionError?.call('Error in handler', e, st);
@@ -291,15 +340,17 @@ final class RawShelfServer {
         }
       } catch (e, st) {
         if (!isHijacked && !isDestroyed) {
-          if (e is HttpException) {
+          _onConnectionError?.call('Error in handler', e, st);
+          if (e is BadRequestException) {
             socket.add(
               utf8.encode(
                 'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
               ),
             );
+            socket.close().then((_) => destroy());
+          } else {
+            destroy();
           }
-          _onConnectionError?.call('Error in handler', e, st);
-          destroy();
         }
       }
     }

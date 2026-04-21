@@ -43,31 +43,23 @@ void main() {
     expect(response.body, 'Hello from /');
   });
 
-  test(
-    'thrown error leads to a 500',
-    skip: 'RawShelfServer destroys socket on error currently',
-    () async {
-      await _scheduleServer((request) {
-        throw UnsupportedError('test');
-      });
+  test('thrown error leads to a 500', () async {
+    await _scheduleServer((request) {
+      throw UnsupportedError('test');
+    });
 
-      final response = await _get();
-      expect(response.statusCode, HttpStatus.internalServerError);
-      expect(response.body, 'Internal Server Error');
-    },
-  );
+    final response = await _get();
+    expect(response.statusCode, HttpStatus.internalServerError);
+    expect(response.body, 'Internal Server Error');
+  });
 
-  test(
-    'async error leads to a 500',
-    () async {
-      await _scheduleServer((request) => Future.error('test'));
+  test('async error leads to a 500', () async {
+    await _scheduleServer((request) => Future.error('test'));
 
-      final response = await _get();
-      expect(response.statusCode, HttpStatus.internalServerError);
-      expect(response.body, 'Internal Server Error');
-    },
-    skip: 'RawShelfServer destroys socket on error currently',
-  );
+    final response = await _get();
+    expect(response.statusCode, HttpStatus.internalServerError);
+    expect(response.body, 'Internal Server Error');
+  });
 
   test('supports HEAD requests', () async {
     await _scheduleServer(
@@ -299,40 +291,9 @@ void main() {
     skip: 'RawShelfServer destroys socket on error currently',
   );
 
-  test(
-    'passes asynchronous exceptions to the parent error zone',
-    () async {
-      await runZonedGuarded(
-        () async {
-          final server = await RawShelfServer.serve(
-            (request) {
-              Future(() => throw StateError('oh no'));
-              return syncHandler(request);
-            },
-            'localhost',
-            0,
-          );
-          addTearDown(server.close);
-
-          final response = await http.get(
-            Uri.http('localhost:${server.port}', '/'),
-          );
-          expect(response.statusCode, HttpStatus.ok);
-          expect(response.body, 'Hello from /');
-        },
-        expectAsync2((error, stack) {
-          expect(error, isOhNoStateError);
-        }),
-      );
-    },
-    skip: 'RawShelfServer might not handle error zones correctly yet',
-  );
-
-  test(
-    "doesn't pass asynchronous exceptions to the root error zone",
-    skip: 'RawShelfServer might not handle error zones correctly yet',
-    () async {
-      final response = await Zone.root.run(() async {
+  test('passes asynchronous exceptions to the parent error zone', () async {
+    await runZonedGuarded(
+      () async {
         final server = await RawShelfServer.serve(
           (request) {
             Future(() => throw StateError('oh no'));
@@ -343,13 +304,39 @@ void main() {
         );
         addTearDown(server.close);
 
-        return http.get(Uri.http('localhost:${server.port}', '/'));
-      });
+        final response = await http.get(
+          Uri.http('localhost:${server.port}', '/'),
+        );
+        expect(response.statusCode, HttpStatus.ok);
+        expect(response.body, 'Hello from /');
+      },
+      expectAsync2((error, stack) {
+        expect(error, isOhNoStateError);
+      }),
+    );
+  });
 
-      expect(response.statusCode, HttpStatus.ok);
-      expect(response.body, 'Hello from /');
-    },
-  );
+  test("doesn't pass asynchronous exceptions to the root error zone", () async {
+    RawShelfServer? server;
+    final response = await Zone.root.run(() async {
+      server = await RawShelfServer.serve(
+        (request) {
+          Future(() => throw StateError('oh no'));
+          return syncHandler(request);
+        },
+        'localhost',
+        0,
+      );
+
+      return http.get(Uri.http('localhost:${server!.port}', '/'));
+    });
+    if (server != null) {
+      addTearDown(server!.close);
+    }
+
+    expect(response.statusCode, HttpStatus.ok);
+    expect(response.body, 'Hello from /');
+  });
 
   test(
     'a bad HTTP host request results in a 500 response',
@@ -374,24 +361,20 @@ void main() {
     skip: 'RawShelfServer destroys socket on parse error currently',
   );
 
-  test(
-    'a bad HTTP URL request results in a 400 response',
-    skip: 'RawShelfServer destroys socket on parse error currently',
-    () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+  test('a bad HTTP URL request results in a 400 response', () async {
+    await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', _serverPort);
 
-      try {
-        socket.write('GET /#/ HTTP/1.1\r\n');
-        socket.write('Host: localhost\r\n');
-        socket.write('\r\n');
-      } finally {
-        await socket.close();
-      }
+    try {
+      socket.write('GET /#/ HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
 
-      expect(await utf8.decodeStream(socket), isABadRequestResponse);
-    },
-  );
+    expect(await utf8.decodeStream(socket), isABadRequestResponse);
+  });
 
   group('date header', () {
     test(

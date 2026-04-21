@@ -2,10 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'constants.dart';
+import 'exceptions.dart';
 import 'header_slices.dart';
 
 /// A high-performance, minimal HTTP/1.1 parser that uses byte slices.
@@ -59,11 +59,11 @@ final class RawHttpParser {
       _totalHeadersReceived++;
 
       if (_totalHeadersReceived > _maxHeaderSize) {
-        throw const HttpException('Header size limit exceeded');
+        throw const BadRequestException('Header size limit exceeded');
       }
 
       if (_bufferPos >= _buffer.length) {
-        throw const HttpException('Buffer overflow');
+        throw const BadRequestException('Buffer overflow');
       }
 
       _buffer[_bufferPos++] = byte;
@@ -71,7 +71,7 @@ final class RawHttpParser {
       if (_bufferPos >= 2 &&
           _buffer[_bufferPos - 2] == $Chars.cr &&
           byte != $Chars.lf) {
-        throw const HttpException('CR must be followed by LF');
+        throw const BadRequestException('CR must be followed by LF');
       }
 
       switch (_state) {
@@ -84,10 +84,10 @@ final class RawHttpParser {
             _state = _stateUrl;
           } else {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
-              throw const HttpException('Invalid character in method');
+              throw const BadRequestException('Invalid character in method');
             }
             if (_bufferPos - _currentFieldStart > _maxFieldSize) {
-              throw const HttpException('Method too long');
+              throw const BadRequestException('Method too long');
             }
           }
         case _stateUrl:
@@ -101,16 +101,16 @@ final class RawHttpParser {
             _state = _stateVersion;
           } else {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
-              throw const HttpException('Invalid character in URL');
+              throw const BadRequestException('Invalid character in URL');
             }
             if (_bufferPos - _currentFieldStart > _maxUrlSize) {
-              throw const HttpException('URL too long');
+              throw const BadRequestException('URL too long');
             }
           }
         case _stateVersion:
           if (byte == $Chars.lf) {
             if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
-              throw const HttpException('Bare line feed not allowed');
+              throw const BadRequestException('Bare line feed not allowed');
             }
             final v = String.fromCharCodes(
               _buffer,
@@ -122,10 +122,10 @@ final class RawHttpParser {
             _state = _stateHeaderKey;
           } else {
             if (byte == 0) {
-              throw const HttpException('Invalid character in version');
+              throw const BadRequestException('Invalid character in version');
             }
             if (_bufferPos - _currentFieldStart > 64) {
-              throw const HttpException('Version too long');
+              throw const BadRequestException('Version too long');
             }
           }
         case _stateHeaderKey:
@@ -144,7 +144,7 @@ final class RawHttpParser {
             _state = _stateHeaderValue;
           } else if (byte == $Chars.lf) {
             if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
-              throw const HttpException('Bare line feed not allowed');
+              throw const BadRequestException('Bare line feed not allowed');
             }
             final len = _bufferPos - _currentFieldStart;
             if (len == 2) {
@@ -153,12 +153,12 @@ final class RawHttpParser {
             }
             _currentFieldStart = _bufferPos;
           } else if (byte == 0) {
-            throw const HttpException('Invalid character in header key');
+            throw const BadRequestException('Invalid character in header key');
           }
         case _stateHeaderValue:
           if (byte == $Chars.lf) {
             if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
-              throw const HttpException('Bare line feed not allowed');
+              throw const BadRequestException('Bare line feed not allowed');
             }
             var start = _currentFieldStart;
             final end = _bufferPos - 2; // Exclude CRLF
@@ -171,7 +171,9 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else if (byte < 32 && byte != 9 && byte != 13 || byte == 127) {
-            throw const HttpException('Invalid character in header value');
+            throw const BadRequestException(
+              'Invalid character in header value',
+            );
           }
       }
     }
