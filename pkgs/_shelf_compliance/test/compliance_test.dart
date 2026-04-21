@@ -22,16 +22,21 @@ const _categories = [
 
 void main() {
   test('Verify categories list is complete', () async {
-    final result = await Process.run('dotnet', [
+    final helpProcess = await TestProcess.start('dotnet', [
       'run',
       '--project',
       '../../vendor/Http11Probe/src/Http11Probe.Cli',
       '--',
       '--help',
-    ]);
-    expect(result.exitCode, 0);
+    ], forwardStdio: true);
 
-    final output = result.stdout as String;
+    final buffer = StringBuffer();
+    while (await helpProcess.stdout.hasNext) {
+      buffer.writeln(await helpProcess.stdout.next);
+    }
+    final output = buffer.toString();
+
+    await helpProcess.shouldExit(0);
     final categoryLine = output
         .split('\n')
         .firstWhere((line) => line.contains('--category'));
@@ -66,7 +71,8 @@ void _defineComplianceTests(String name, String serverPath) {
         '../../vendor/Http11Probe/src/Http11Probe.Cli',
         '--output',
         'tool/probe_bin',
-      ]);
+      ], forwardStdio: true);
+
       await buildProcess.shouldExit(0);
 
       // Create reports directory
