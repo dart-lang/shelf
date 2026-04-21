@@ -908,8 +908,8 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nContent_Length: 99\r\n\r\nhello world",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 11\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /echo",
-    "behavioralNote": "Dropped"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 11\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nhello world",
+    "behavioralNote": "Static response"
   },
   {
     "id": "NORM-UNDERSCORE-TE",
@@ -920,8 +920,8 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nTransfer_Encoding: chunked\r\n\r\nhello world",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 11\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /echo",
-    "behavioralNote": "Dropped"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 11\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nhello world",
+    "behavioralNote": "Static response"
   },
   {
     "id": "RFC9110-5.4-DUPLICATE-HOST",

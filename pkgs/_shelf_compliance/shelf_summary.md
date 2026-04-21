@@ -3,9 +3,9 @@
 | Category | Count |
 | --- | --- |
 | Total | 215 |
-| Passed | 107 |
+| Passed | 108 |
 | Failed | 49 |
-| Warnings | 59 |
+| Warnings | 58 |
 | Errors | 0 |
 | Skipped | 0 |
 
@@ -52,8 +52,7 @@
 | COMP-VERSION-LEADING-ZEROS | Compliance | Warn | HTTP/01.01 — leading zeros in version digits are invalid |
 | COMP-VERSION-MISSING-MINOR | Compliance | Warn | HTTP/1 with no minor version digit is invalid |
 | COMP-VERSION-WHITESPACE | Compliance | Warn | HTTP/ 1.1 — whitespace inside version token is invalid |
-| COOK-ECHO | Cookies | Fail | Basic Cookie header echoed back by /echo endpoint |
-| COOK-MULTI-HEADER | Cookies | Warn | Two separate Cookie headers — should be folded per RFC 6265 §5.4 |
+| COOK-CONTROL-CHARS | Cookies | Fail | Control characters (0x01-0x03) in cookie value — dangerous if preserved |
 | COOK-PARSED-BASIC | Cookies | Fail | Basic cookie parsed correctly by framework |
 | COOK-PARSED-MULTI | Cookies | Fail | Multiple cookies parsed correctly by framework |
 | MAL-CHUNK-EXT-64K | MalformedInput | Warn | 64KB chunk extension — tests extension length limits (CVE-2023-39326 class) |
