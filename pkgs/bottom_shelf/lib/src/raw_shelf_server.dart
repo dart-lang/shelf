@@ -46,7 +46,7 @@ final class RawShelfServer {
 
   void _handleConnection(Socket socket) {
     final parser = RawHttpParser();
-    FixedLengthBodyController? bodyController;
+    BodyController? bodyController;
 
     // We use a Completer to signal when we're ready for the next request in
     // keep-alive. This ensures we don't start parsing the next request
@@ -143,33 +143,56 @@ final class RawShelfServer {
             final contentLength = typedHeaders.contentLength ?? 0;
 
             Stream<Uint8List> requestBody;
-            if (contentLength > 0) {
+            if (typedHeaders.isChunked) {
+              bodyController = ChunkedBodyController(() {
+                if (!bodyDone.isCompleted) bodyDone.complete();
+              });
+              requestBody = bodyController!.stream;
+              currentData = bodyController!.add(remainingInChunk);
+            } else if (contentLength > 0) {
               bodyController = FixedLengthBodyController(contentLength, () {
                 if (!bodyDone.isCompleted) bodyDone.complete();
               });
               requestBody = bodyController!.stream;
               currentData = bodyController!.add(remainingInChunk);
-              if (bodyController!.isDone) {
-                bodyController = null;
-              }
             } else {
               requestBody = const Stream<Uint8List>.empty();
               currentData = remainingInChunk;
               bodyDone.complete();
             }
 
+            final thisRequestBodyController = bodyController;
             final capturedDataAtHijack = currentData;
+
+            if (bodyController?.isDone ?? false) {
+              bodyController = null;
+            }
+
+            var finalHeaderSlices = parser.headerSlices;
+            if (typedHeaders.isChunked) {
+              finalHeaderSlices = finalHeaderSlices
+                  .where((s) => !s.key.matches('transfer-encoding'))
+                  .toList();
+            }
 
             final request = Request(
               parser.method!,
               uri,
               protocolVersion: parser.version!,
-              headers: LazyByteHeaderMap(parser.headerSlices),
+              headers: LazyByteHeaderMap(finalHeaderSlices),
               body: requestBody,
               context: {'shelf.raw.headers': typedHeaders},
               onHijack: (void Function(StreamChannel<List<int>>) callback) {
                 isHijacked = true;
                 hijackController = StreamController<Uint8List>(sync: true);
+
+                if (thisRequestBodyController != null) {
+                  final buffered = thisRequestBodyController.takeBufferedData();
+                  if (buffered.isNotEmpty) {
+                    hijackController!.add(buffered);
+                  }
+                }
+
                 if (capturedDataAtHijack.isNotEmpty) {
                   hijackController!.add(capturedDataAtHijack);
                 }

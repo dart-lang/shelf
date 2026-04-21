@@ -110,42 +110,38 @@ void main() {
     expect(response.body, 'Hello from /user:42');
   });
 
-  test(
-    'chunked requests are un-chunked',
-    () async {
-      await _scheduleServer(
-        expectAsync1((request) async {
-          expect(request.contentLength, isNull);
-          expect(request.method, 'POST');
-          expect(
-            request.headers,
-            isNot(contains(HttpHeaders.transferEncodingHeader)),
-          );
-          await expectLater(
-            request.read().toList(),
-            completion(
-              equals([
-                [1, 2, 3, 4],
-              ]),
-            ),
-          );
-          return Response.ok(null);
-        }),
-      );
+  test('chunked requests are un-chunked', () async {
+    await _scheduleServer(
+      expectAsync1((request) async {
+        expect(request.contentLength, isNull);
+        expect(request.method, 'POST');
+        expect(
+          request.headers,
+          isNot(contains(HttpHeaders.transferEncodingHeader)),
+        );
+        await expectLater(
+          request.read().toList(),
+          completion(
+            equals([
+              [1, 2, 3, 4],
+            ]),
+          ),
+        );
+        return Response.ok(null);
+      }),
+    );
 
-      var request = http.StreamedRequest(
-        'POST',
-        Uri.http('localhost:$_serverPort', ''),
-      );
-      request.sink.add([1, 2, 3, 4]);
-      // ignore: unawaited_futures
-      request.sink.close();
+    var request = http.StreamedRequest(
+      'POST',
+      Uri.http('localhost:$_serverPort', ''),
+    );
+    request.sink.add([1, 2, 3, 4]);
+    // ignore: unawaited_futures
+    request.sink.close();
 
-      var response = await request.send();
-      expect(response.statusCode, HttpStatus.ok);
-    },
-    skip: 'RawShelfServer does not support chunked requests yet',
-  );
+    var response = await request.send();
+    expect(response.statusCode, HttpStatus.ok);
+  });
 
   test('custom response headers are received by the client', () async {
     await _scheduleServer((request) {
@@ -241,67 +237,59 @@ void main() {
     );
   });
 
-  test(
-    'post with request content',
-    () async {
-      await _scheduleServer((request) async {
-        expect(request.mimeType, 'text/plain');
-        expect(request.encoding, utf8);
-        expect(request.method, 'POST');
-        expect(request.contentLength, 9);
+  test('post with request content', () async {
+    await _scheduleServer((request) async {
+      expect(request.mimeType, 'text/plain');
+      expect(request.encoding, utf8);
+      expect(request.method, 'POST');
+      expect(request.contentLength, 9);
 
-        var body = await request.readAsString();
-        expect(body, 'test body');
-        return syncHandler(request);
-      });
+      var body = await request.readAsString();
+      expect(body, 'test body');
+      return syncHandler(request);
+    });
 
-      var response = await _post(body: 'test body');
-      expect(response.statusCode, HttpStatus.ok);
-      await expectLater(
-        response.stream.bytesToString(),
-        completion('Hello from /'),
+    var response = await _post(body: 'test body');
+    expect(response.statusCode, HttpStatus.ok);
+    await expectLater(
+      response.stream.bytesToString(),
+      completion('Hello from /'),
+    );
+  });
+
+  test('supports request hijacking', () async {
+    await _scheduleServer((request) {
+      expect(request.method, 'POST');
+
+      request.hijack(
+        expectAsync1((channel) async {
+          await expectLater(
+            channel.stream.first,
+            completion(equals('Hello'.codeUnits)),
+          );
+
+          channel.sink.add(
+            'HTTP/1.1 404 Not Found\r\n'
+                    'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
+                    'Content-Length: 13\r\n'
+                    '\r\n'
+                    'Hello, world!'
+                .codeUnits,
+          );
+          await channel.sink.close();
+        }),
       );
-    },
-    skip: 'RawShelfServer does not support body streaming yet',
-  );
+    });
 
-  test(
-    'supports request hijacking',
-    skip: 'RawShelfServer does not support body streaming yet',
-    () async {
-      await _scheduleServer((request) {
-        expect(request.method, 'POST');
+    var response = await _post(body: 'Hello');
 
-        request.hijack(
-          expectAsync1((channel) async {
-            await expectLater(
-              channel.stream.first,
-              completion(equals('Hello'.codeUnits)),
-            );
-
-            channel.sink.add(
-              'HTTP/1.1 404 Not Found\r\n'
-                      'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
-                      'Content-Length: 13\r\n'
-                      '\r\n'
-                      'Hello, world!'
-                  .codeUnits,
-            );
-            await channel.sink.close();
-          }),
-        );
-      });
-
-      var response = await _post(body: 'Hello');
-
-      expect(response.statusCode, HttpStatus.notFound);
-      expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
-      await expectLater(
-        response.stream.bytesToString(),
-        completion(equals('Hello, world!')),
-      );
-    },
-  );
+    expect(response.statusCode, HttpStatus.notFound);
+    expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
+    await expectLater(
+      response.stream.bytesToString(),
+      completion(equals('Hello, world!')),
+    );
+  });
 
   test(
     'reports an error if a HijackException is thrown without hijacking',
@@ -460,26 +448,22 @@ void main() {
   });
 
   group('chunked coding', () {
-    test(
-      'is added when the transfer-encoding header is unset',
-      skip: 'RawShelfServer does not support chunked responses yet',
-      () async {
-        await _scheduleServer((request) {
-          return Response.ok(
-            Stream.fromIterable([
-              [1, 2, 3, 4],
-            ]),
-          );
-        });
-
-        var response = await _get();
-        expect(
-          response.headers,
-          containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
+    test('is added when the transfer-encoding header is unset', () async {
+      await _scheduleServer((request) {
+        return Response.ok(
+          Stream.fromIterable([
+            [1, 2, 3, 4],
+          ]),
         );
-        expect(response.bodyBytes, equals([1, 2, 3, 4]));
-      },
-    );
+      });
+
+      var response = await _get();
+      expect(
+        response.headers,
+        containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
+      );
+      expect(response.bodyBytes, equals([1, 2, 3, 4]));
+    });
   });
 
   test(

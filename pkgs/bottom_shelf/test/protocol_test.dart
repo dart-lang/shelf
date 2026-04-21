@@ -87,6 +87,29 @@ void main() {
       }
     });
 
+    test('Request with IPv6 Host header', () async {
+      final server = await RawShelfServer.serve(
+        (request) {
+          expect(request.requestedUri.host, '::1');
+          expect(request.requestedUri.port, 8080);
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: [::1]:8080\r\nConnection: close\r\n\r\n',
+        ),
+      );
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('200 OK'));
+    });
+
     test('Request with absolute URI in request line', () async {
       final server = await RawShelfServer.serve(
         (request) {
@@ -163,6 +186,38 @@ void main() {
       expect(responseLower, contains('content-length: 5'));
       expect(responseLower, isNot(contains('transfer-encoding')));
       expect(response, endsWith('\r\n\r\nfixed'));
+    });
+
+    test('Split chunked request encoding', () async {
+      final server = await RawShelfServer.serve(
+        (request) async {
+          expect(request.contentLength, isNull);
+          final body = await request.readAsString();
+          expect(body, 'split chunked body');
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      socket.add(
+        utf8.encode(
+          'POST / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nTransfer-Encoding: chunked\r\n\r\n',
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      socket.add(utf8.encode('5\r\nsplit\r\n'));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      socket.add(utf8.encode('D\r\n chunked body\r\n0\r\n\r\n'));
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('200 OK'));
     });
   });
 

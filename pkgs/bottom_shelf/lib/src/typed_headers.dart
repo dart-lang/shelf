@@ -114,4 +114,20 @@ final class TypedHeaders {
     _cache['conflicting-body-headers'] = result;
     return result;
   }
+
+  /// Returns true if the request body is chunked.
+  bool get isChunked {
+    if (_cache case {'is-chunked': final bool value}) return value;
+    for (var slice in _slices) {
+      if (slice.key.matches('transfer-encoding')) {
+        final value = slice.value.asString().toLowerCase();
+        if (value.contains('chunked')) {
+          _cache['is-chunked'] = true;
+          return true;
+        }
+      }
+    }
+    _cache['is-chunked'] = false;
+    return false;
+  }
 }

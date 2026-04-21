@@ -37,15 +37,18 @@ This document consolidates the tasks and goals identified in `todo.md`, `review_
   - *Status*: Complete.
   - *Implementation Notes*: Added strict validation to `RawHttpParser` to reject NUL, CR, and LF in URLs, methods, and header keys/values (per RFC 9112 and SDK Issue 56636). Hardened `RawShelfServer` error handling to ensure clean socket destruction on parser errors.
   - *Verification*: Added `NUL in headers` and updated `Malformed request` tests in `test/robustness_test.dart`.
-- [ ] **Request Smuggling Prevention**
-  - *Source*: `test_complete_bottom_shelf.md` (Section 1.2)
-  - *Goal*: Correctly handle or reject requests with both `Content-Length` and `Transfer-Encoding`.
-- [ ] **Chunked Encoding Robustness**
-  - *Source*: `test_complete_bottom_shelf.md` (Section 2.1)
-  - *Goal*: Support chunk extensions and trailers if needed, and handle split chunks.
-- [ ] **Host Header Validation**
-  - *Source*: `test_complete_bottom_shelf.md` (Section 2.2)
-  - *Goal*: Correctly parse IPv6 addresses in the `Host` header.
+- [x] **Request Smuggling Prevention**
+  - *Status*: Complete.
+  - *Implementation Notes*: Added `hasConflictingBodyHeaders` to `TypedHeaders` to check for the presence of both `Content-Length` and `Transfer-Encoding`. If both are present, `RawShelfServer` rejects the request with a 400 Bad Request and immediately destroys the socket (RFC 9112 section 6.1).
+  - *Verification*: Added `Conflicting body headers (Request Smuggling Prevention)` test to `test/robustness_test.dart`.
+- [x] **Chunked Encoding Robustness**
+  - *Status*: Complete.
+  - *Implementation Notes*: Implemented `ChunkedBodyController` containing a state machine that robustly decodes HTTP chunked body encoding (RFC 9112) including hex sizes, chunk data, and trailing headers. Integrated this into `RawShelfServer` by checking `TypedHeaders.isChunked`. Added `takeBufferedData` to seamlessly support `hijack` even when chunks are parsed.
+  - *Verification*: Enabled `chunked requests are un-chunked` test in `test/shelf_compliance_test.dart` and added `Split chunked request encoding` test to `test/protocol_test.dart`.
+- [x] **Host Header Validation**
+  - *Status*: Complete.
+  - *Implementation Notes*: Verified that `Uri.parse` seamlessly handles IPv6 format in the `Host` header (e.g. `[::1]:8080`). No implementation changes were required in `RawShelfServer`.
+  - *Verification*: Added `Request with IPv6 Host header` test to `test/protocol_test.dart` to lock in this behavior.
 
 ## Phase 3: Robustness & DoS Mitigation
 *Focus: Stress testing and resource limits.*
