@@ -76,8 +76,7 @@ void main() {
       expect(fullResponse, contains('request 2'));
     });
 
-    test(
-      'error in handler leads to socket destruction (current behavior)',
+    test('error in handler leads to 500 response',
       () async {
         final logs = <String>[];
         final server = await RawShelfServer.serve(
@@ -101,12 +100,8 @@ void main() {
           ),
         );
 
-        try {
-          final result = await utf8.decodeStream(socket);
-          expect(result, isEmpty);
-        } catch (e) {
-          // Expected
-        }
+        final response = await utf8.decodeStream(socket);
+        expect(response, contains('500 Internal Server Error'));
 
         // Wait a tick for the unawaited log to process
         await Future<void>.delayed(Duration.zero);

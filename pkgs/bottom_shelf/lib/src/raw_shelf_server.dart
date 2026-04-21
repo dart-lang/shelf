@@ -271,6 +271,11 @@ final class RawShelfServer {
                 // Handled
               } catch (e, st) {
                 if (!isHijacked && !isDestroyed) {
+                  socket.add(
+                    utf8.encode(
+                      'HTTP/1.1 500 Internal Server Error\r\nConnection: close\r\n\r\n',
+                    ),
+                  );
                   _onConnectionError?.call('Error in handler', e, st);
                   destroy();
                 }
