@@ -18,22 +18,24 @@ typedef HttpRequestHead = ({
   int consumedInLastChunk,
 });
 
+extension type const _$State(int value) {
+  static const _$State method = _$State(0);
+  static const _$State url = _$State(1);
+  static const _$State version = _$State(2);
+  static const _$State headerKey = _$State(3);
+  static const _$State headerValue = _$State(4);
+  static const _$State endOfHeaders = _$State(5);
+}
+
 /// A high-performance, minimal HTTP/1.1 parser that uses byte slices.
 final class RawHttpParser {
-  static const int _stateMethod = 0;
-  static const int _stateUrl = 1;
-  static const int _stateVersion = 2;
-  static const int _stateHeaderKey = 3;
-  static const int _stateHeaderValue = 4;
-  static const int _stateEndOfHeaders = 5;
-
   final _headerSlices = <HeaderEntrySlices>[];
 
   /// Internal buffer to accumulate header bytes across chunks.
   final Uint8List _buffer = Uint8List(64 * 1024);
   int _bufferPos = 0;
 
-  int _state = _stateMethod;
+  _$State _state = _$State.method;
   String? _method;
   String? _url;
   String? _version;
@@ -45,7 +47,7 @@ final class RawHttpParser {
   int _consumedInLastChunk = 0;
 
   void reset() {
-    _state = _stateMethod;
+    _state = _$State.method;
     _method = null;
     _url = null;
     _version = null;
@@ -80,13 +82,13 @@ final class RawHttpParser {
       }
 
       switch (_state) {
-        case _stateMethod:
+        case _$State.method:
           if (byte == $Chars.sp) {
             _method = _getMethod(
               Uint8List.sublistView(_buffer, 0, _bufferPos - 1),
             );
             _currentFieldStart = _bufferPos;
-            _state = _stateUrl;
+            _state = _$State.url;
           } else {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
               throw const BadRequestException('Invalid character in method');
@@ -95,7 +97,7 @@ final class RawHttpParser {
               throw const BadRequestException('Method too long');
             }
           }
-        case _stateUrl:
+        case _$State.url:
           if (byte == $Chars.sp) {
             _url = String.fromCharCodes(
               _buffer,
@@ -108,7 +110,7 @@ final class RawHttpParser {
               );
             }
             _currentFieldStart = _bufferPos;
-            _state = _stateVersion;
+            _state = _$State.version;
           } else {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
               throw const BadRequestException('Invalid character in URL');
@@ -117,7 +119,7 @@ final class RawHttpParser {
               throw const BadRequestException('URL too long');
             }
           }
-        case _stateVersion:
+        case _$State.version:
           if (byte == $Chars.lf) {
             if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
               throw const BadRequestException('Bare line feed not allowed');
@@ -133,7 +135,7 @@ final class RawHttpParser {
             }
             _version = versionStr;
             _currentFieldStart = _bufferPos;
-            _state = _stateHeaderKey;
+            _state = _$State.headerKey;
           } else {
             if (byte == 0) {
               throw const BadRequestException('Invalid character in version');
@@ -142,7 +144,7 @@ final class RawHttpParser {
               throw const BadRequestException('Version too long');
             }
           }
-        case _stateHeaderKey:
+        case _$State.headerKey:
           if (byte == $Chars.colon) {
             final start = _currentFieldStart;
             final end = _bufferPos - 1;
@@ -161,14 +163,14 @@ final class RawHttpParser {
 
             _lastKeySlice = HeaderByteSlice(_buffer, start, end);
             _currentFieldStart = _bufferPos;
-            _state = _stateHeaderValue;
+            _state = _$State.headerValue;
           } else if (byte == $Chars.lf) {
             if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
               throw const BadRequestException('Bare line feed not allowed');
             }
             final len = _bufferPos - _currentFieldStart;
             if (len == 2) {
-              _state = _stateEndOfHeaders;
+              _state = _$State.endOfHeaders;
               return (
                 method: _method!,
                 url: _url!,
@@ -181,7 +183,7 @@ final class RawHttpParser {
           } else if (byte != $Chars.cr && !isTchar(byte)) {
             throw const BadRequestException('Invalid character in header key');
           }
-        case _stateHeaderValue:
+        case _$State.headerValue:
           if (byte == $Chars.lf) {
             if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
               throw const BadRequestException('Bare line feed not allowed');
@@ -195,7 +197,7 @@ final class RawHttpParser {
             final valueSlice = HeaderByteSlice(_buffer, start, end);
             _headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
             _currentFieldStart = _bufferPos;
-            _state = _stateHeaderKey;
+            _state = _$State.headerKey;
           } else if (byte < 32 && byte != 9 && byte != 13 || byte == 127) {
             throw const BadRequestException(
               'Invalid character in header value',
