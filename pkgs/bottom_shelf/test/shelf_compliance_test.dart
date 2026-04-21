@@ -301,6 +301,8 @@ void main() {
           },
           'localhost',
           0,
+          // ignore: only_throw_errors
+          onAsyncError: (e, st) => throw e,
         );
         addTearDown(server.close);
 

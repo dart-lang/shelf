@@ -27,3 +27,16 @@ final class BadRequestException implements Exception {
     return sb.toString();
   }
 }
+
+/// Directives for handling out-of-band asynchronous errors.
+enum ErrorAction {
+  /// Ignore the error and attempt to keep the connection alive.
+  ignore,
+
+  /// Destroy the socket.
+  /// This is also the default behavior if `onAsyncError` returns `null`.
+  destroy,
+
+  /// Crash the isolate by re-throwing the error to the parent zone.
+  crash,
+}

@@ -26,12 +26,15 @@ final class RawShelfServer {
   final ServerSocket _serverSocket;
   final Duration? _headerTimeout;
   final Logger? _onConnectionError;
+  final ErrorAction? Function(Object error, StackTrace stackTrace)?
+  _onAsyncError;
 
   RawShelfServer._(
     this._handler,
     this._serverSocket,
     this._headerTimeout,
     this._onConnectionError,
+    this._onAsyncError,
   );
 
   int get port => _serverSocket.port;
@@ -45,6 +48,7 @@ final class RawShelfServer {
     bool shared = false,
     Duration? headerTimeout,
     Logger? onConnectionError,
+    ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
   }) async {
     final serverSocket = await ServerSocket.bind(
       address,
@@ -57,6 +61,7 @@ final class RawShelfServer {
       serverSocket,
       headerTimeout,
       onConnectionError,
+      onAsyncError,
     );
     serverSocket.listen(server._handleConnection);
     return server;
@@ -87,10 +92,7 @@ final class RawShelfServer {
       socket.destroy();
       bodyController?.close();
       if (!readyForNextRequest.isCompleted) {
-        readyForNextRequest.completeError(
-          const SocketException.closed(),
-        );
-        readyForNextRequest.future.catchError((_) {});
+        readyForNextRequest.complete();
       }
     }
 
@@ -149,6 +151,7 @@ final class RawShelfServer {
           if (parser.process(currentData)) {
             cancelHeaderTimer();
             readyForNextRequest = Completer<void>();
+            readyForNextRequest.future.catchError((_) {});
             final bodyDone = Completer<void>();
 
             final typedHeaders = TypedHeaders(parser.headerSlices);
@@ -265,11 +268,36 @@ final class RawShelfServer {
               );
             }
 
-            unawaited(() async {
-              try {
-                final response = await runZonedGuarded(
-                  () async => await _handler(request),
-                  (e, st) {
+            unawaited(
+              runZonedGuarded(
+                () async {
+                  try {
+                    final response = await _handler(request);
+                    if (isHijacked) return;
+
+                    final keepAlive = typedHeaders.isKeepAlive(parser.version!);
+
+                    await RawShelfResponseSerializer.writeResponse(
+                      response,
+                      socket,
+                      keepAlive: keepAlive,
+                    );
+                    responseSent = true;
+
+                    parser.reset();
+
+                    if (keepAlive) {
+                      await bodyDone.future;
+                      if (!readyForNextRequest.isCompleted) {
+                        readyForNextRequest.complete();
+                        startHeaderTimer();
+                      }
+                    } else {
+                      await socket.close();
+                    }
+                  } on HijackException {
+                    // Handled
+                  } catch (e, st) {
                     if (!isHijacked && !isDestroyed && !responseSent) {
                       socket.add(
                         utf8.encode(
@@ -280,56 +308,49 @@ final class RawShelfServer {
                         ),
                       );
                       _onConnectionError?.call('Error in handler', e, st);
-                      destroy();
-                    } else if (!isDestroyed) {
+                      unawaited(socket.close().then((_) => destroy()));
+                    }
+                  }
+                },
+                (e, st) {
+                  if (e is HijackException) {
+                    return;
+                  }
+                  final action = _onAsyncError?.call(e, st);
+                  if (action == ErrorAction.ignore) {
+                    if (!isDestroyed) {
                       _onConnectionError?.call(
-                        'Error in handler after response sent',
+                        'Unhandled async error (ignored)',
                         e,
                         st,
                       );
                     }
-                  },
-                );
-                if (response == null) return;
-                if (isHijacked) return;
-
-                final keepAlive = typedHeaders.isKeepAlive(parser.version!);
-
-                await RawShelfResponseSerializer.writeResponse(
-                  response,
-                  socket,
-                  keepAlive: keepAlive,
-                );
-                responseSent = true;
-
-                parser.reset();
-
-                if (keepAlive) {
-                  await bodyDone.future;
-                  if (!readyForNextRequest.isCompleted) {
-                    readyForNextRequest.complete();
-                    startHeaderTimer();
+                  } else if (action == ErrorAction.crash) {
+                    _onConnectionError?.call(
+                      'Crashing server due to async error',
+                      e,
+                      st,
+                    );
+                    // ignore: only_throw_errors
+                    throw e; // Rethrow to parent zone!
+                  } else {
+                    // Default or ErrorAction.destroy
+                    if (!isHijacked && !isDestroyed && !responseSent) {
+                      socket.add(
+                        utf8.encode(
+                          'HTTP/1.1 500 Internal Server Error\r\n'
+                          'Connection: close\r\n'
+                          'Content-Length: 21\r\n\r\n'
+                          'Internal Server Error',
+                        ),
+                      );
+                    }
+                    _onConnectionError?.call('Error in handler', e, st);
+                    socket.close().then((_) => destroy());
                   }
-                } else {
-                  await socket.close();
-                }
-              } on HijackException {
-                // Handled
-              } catch (e, st) {
-                if (!isHijacked && !isDestroyed) {
-                  socket.add(
-                    utf8.encode(
-                      'HTTP/1.1 500 Internal Server Error\r\n'
-                      'Connection: close\r\n'
-                      'Content-Length: 21\r\n\r\n'
-                      'Internal Server Error',
-                    ),
-                  );
-                  _onConnectionError?.call('Error in handler', e, st);
-                  destroy();
-                }
-              }
-            }());
+                },
+              ),
+            );
 
             if (bodyController != null || isHijacked) {
               break;

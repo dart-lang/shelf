@@ -3,10 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:bottom_shelf/src/exceptions.dart';
 import 'package:bottom_shelf/src/raw_http_parser.dart';
 import 'package:test/test.dart';
 
@@ -28,7 +28,7 @@ void main() {
         try {
           parser.reset();
           parser.process(bytes);
-        } on HttpException {
+        } on BadRequestException {
           // Expected parse errors
         } catch (e, st) {
           fail(
@@ -58,7 +58,7 @@ void main() {
         try {
           parser.reset();
           parser.process(mutated);
-        } on HttpException {
+        } on BadRequestException {
           // Expected parse errors
         } catch (e, st) {
           fail(
