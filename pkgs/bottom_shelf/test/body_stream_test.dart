@@ -19,10 +19,10 @@ void main() {
       );
 
       final subscription = controller.stream.listen((_) {});
-      
+
       // Wait for listen to register
       await Future<void>.delayed(Duration.zero);
-      
+
       subscription.pause();
       // StreamController callbacks are async
       await Future<void>.delayed(Duration.zero);
@@ -47,9 +47,9 @@ void main() {
       );
 
       final subscription = controller.stream.listen((_) {});
-      
+
       await Future<void>.delayed(Duration.zero);
-      
+
       subscription.pause();
       await Future<void>.delayed(Duration.zero);
       expect(onPauseCalled, isTrue);
