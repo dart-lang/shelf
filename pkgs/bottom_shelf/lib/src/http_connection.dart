@@ -284,6 +284,8 @@ final class _HttpConnection {
 
           final contentLength = typedHeaders.contentLength ?? 0;
 
+          typedHeaders.validateTransferEncoding();
+
           Stream<Uint8List> requestBody;
           if (typedHeaders.isChunked) {
             _bodyController = ChunkedBodyController(

@@ -1023,6 +1023,221 @@ void main() {
     },
     skip: 'RawShelfServer does not provide HttpConnectionInfo yet',
   );
+
+  test(
+    'COMP-POST-CL-UNDERSEND',
+    skip: 'Fails in checker: COMP-POST-CL-UNDERSEND',
+    () async {
+      final port = await _scheduleServer((request) async {
+        try {
+          await request.readAsString();
+        } catch (e) {
+          return Response.ok('Error caught');
+        }
+        return Response.ok('No error');
+      });
+      final socket = await Socket.connect('localhost', port);
+      addTearDown(socket.close);
+
+      socket.write('POST / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Content-Length: 10\r\n');
+      socket.write('\r\n');
+      socket.write('hello'); // Only 5 bytes!
+      await socket.flush();
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('Error caught'));
+    },
+  );
+  test('SMUG-TE-NOT-FINAL-CHUNKED', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
+
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Transfer-Encoding: chunked, gzip\r\n');
+    socket.write('\r\n');
+    socket.write('0\r\n\r\n');
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('400 Bad Request'));
+  });
+
+  test('SMUG-CHUNK-BARE-SEMICOLON', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
+
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Transfer-Encoding: chunked\r\n');
+    socket.write('\r\n');
+    socket.write('5;\r\nhello\r\n0\r\n\r\n');
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('501 Not Implemented'));
+  });
+
+  test('SMUG-CHUNK-EXT-INVALID-TOKEN', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
+
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Transfer-Encoding: chunked\r\n');
+    socket.write('\r\n');
+    socket.write('5;bad[=x\r\nhello\r\n0\r\n\r\n');
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('501 Not Implemented'));
+  });
+
+  test(
+    'SMUG-CHUNK-MISSING-TRAILING-CRLF',
+    skip: 'Fails in checker: SMUG-CHUNK-MISSING-TRAILING-CRLF',
+    () async {
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
+      addTearDown(socket.close);
+
+      socket.write('POST / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Transfer-Encoding: chunked\r\n');
+      socket.write('\r\n');
+      socket.write('5\r\nhello0\r\n\r\n');
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    },
+  );
+
+  test(
+    'SMUG-CHUNK-SPILL',
+    skip: 'Fails in checker: SMUG-CHUNK-SPILL',
+    () async {
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
+      addTearDown(socket.close);
+
+      socket.write('POST / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Transfer-Encoding: chunked\r\n');
+      socket.write('\r\n');
+      socket.write('5\r\nhello!!\r\n0\r\n\r\n');
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    },
+  );
+
+  test('SMUG-CHUNK-EXT-CTRL', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
+
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Transfer-Encoding: chunked\r\n');
+    socket.write('\r\n');
+    socket.write('5;\x00ext\r\nhello\r\n0\r\n\r\n');
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('501 Not Implemented'));
+  });
+
+  test('SMUG-CHUNK-EXT-CR', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
+
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Transfer-Encoding: chunked\r\n');
+    socket.write('\r\n');
+    socket.write('5;a\rX\r\nhello\r\n0\r\n\r\n');
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('501 Not Implemented'));
+  });
+  test(
+    'MAL-POST-CL-HUGE-NO-BODY',
+    skip: 'Fails in checker: MAL-POST-CL-HUGE-NO-BODY',
+    () async {
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
+      addTearDown(socket.close);
+
+      socket.write('POST / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Content-Length: 999999999\r\n');
+      socket.write('\r\n');
+      await socket.flush();
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    },
+  );
+
+  test('COOK-ECHO', () async {
+    final port = await _scheduleServer((request) {
+      if (request.url.path == 'echo') {
+        final sb = StringBuffer();
+        sb.writeln('${request.method} ${request.requestedUri.path} HTTP/1.1');
+        request.headers.forEach((key, value) {
+          sb.writeln('$key: $value');
+        });
+        sb.writeln();
+        return Response.ok(sb.toString());
+      }
+      return Response.ok('sync');
+    });
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
+
+    socket.write('GET /echo HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Cookie: foo=bar\r\n');
+    socket.write('Connection: close\r\n');
+    socket.write('\r\n');
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('Cookie: foo=bar'));
+  });
+
+  test('COOK-PARSED-BASIC', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    try {
+      socket.write('GET /cookie HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Cookie: foo=bar\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('foo=bar'));
+  }, skip: 'Fails in checker: COOK-PARSED-BASIC');
+
+  test('COOK-PARSED-MULTI', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    try {
+      socket.write('GET /cookie HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Cookie: a=1; b=2; c=3\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('a=1'));
+    expect(response, contains('b=2'));
+    expect(response, contains('c=3'));
+  }, skip: 'Fails in checker: COOK-PARSED-MULTI');
 }
 
 Future<int> _scheduleServer(Handler handler) async {

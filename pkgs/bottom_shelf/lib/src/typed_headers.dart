@@ -4,6 +4,7 @@
 
 import 'package:http_parser/http_parser.dart';
 import 'constants.dart';
+import 'exceptions.dart';
 import 'header_slices.dart';
 
 /// A specialized header container that uses byte slices for maximum
@@ -98,6 +99,36 @@ final class TypedHeaders {
     }
     _cache[_CacheKey.isChunked] = false;
     return false;
+  }
+
+  /// Validates that Transfer-Encoding is valid.
+  /// Throws [BadRequestException] if invalid.
+  void validateTransferEncoding() {
+    for (var slice in _slices) {
+      if (slice.key.matches($Header.transferEncoding)) {
+        final value = slice.value.asString().toLowerCase();
+        final encodings = value.split(',').map((e) => e.trim()).toList();
+        if (encodings.isEmpty) continue;
+        final finalEncoding = encodings.last;
+        if (finalEncoding != 'chunked') {
+          if (encodings.contains('chunked')) {
+            // Chunked is present but not final! MUST be 400!
+            throw const BadRequestException(
+              'Chunked transfer encoding must be final',
+            );
+          } else {
+            // Chunked not present! We only support chunked!
+            throw BadRequestException.fromResponse(
+              ErrorResponse.notImplemented,
+            );
+          }
+        }
+        if (encodings.length > 1) {
+          // Chunked is final, but there are others! We don't support them!
+          throw BadRequestException.fromResponse(ErrorResponse.notImplemented);
+        }
+      }
+    }
   }
 
   T? _getTypedHeader<T>(String headerName, T? Function(String) parse) {

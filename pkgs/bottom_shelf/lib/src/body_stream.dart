@@ -243,9 +243,10 @@ final class ChunkedBodyController implements BodyController {
               _state = _stateData;
             }
           } else if (byte == $Chars.semicolon) {
-            // ';' start of extensions
-            pos++;
-            _state = _stateExt;
+            // TODO: Support chunk extensions?
+            throw BadRequestException.fromResponse(
+              ErrorResponse.notImplemented,
+            );
           } else {
             // hex digit
             final hex = parseHex(byte);

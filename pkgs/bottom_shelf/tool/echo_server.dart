@@ -9,7 +9,18 @@ import 'package:shelf/shelf.dart';
 import 'package:stack_trace/stack_trace.dart';
 
 void main() async {
-  Response handler(Request request) => Response.ok(request.read());
+  Response handler(Request request) {
+    if (request.url.path == 'echo') {
+      final sb = StringBuffer();
+      sb.writeln('${request.method} ${request.requestedUri.path} HTTP/1.1');
+      request.headers.forEach((key, value) {
+        sb.writeln('$key: $value');
+      });
+      sb.writeln();
+      return Response.ok(sb.toString());
+    }
+    return Response.ok(request.read());
+  }
 
   final server = await RawShelfServer.serve(
     handler,
