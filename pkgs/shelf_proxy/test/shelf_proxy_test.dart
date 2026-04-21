@@ -46,8 +46,10 @@ void main() {
       });
 
       final handler = proxyHandler('http://dartlang.org', client: client);
-      final request = shelf.Request('GET', Uri.parse('http://localhost/'),
-          headers: {'cookie': ['cookie1=value1', 'cookie2=value2']});
+      final request =
+          shelf.Request('GET', Uri.parse('http://localhost/'), headers: {
+        'cookie': ['cookie1=value1', 'cookie2=value2']
+      });
       await handler(request);
     });
 
