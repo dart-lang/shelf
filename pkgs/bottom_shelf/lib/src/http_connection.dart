@@ -379,7 +379,7 @@ final class _HttpConnection {
             final response = await handler(request);
             if (_isHijacked) return;
 
-            final keepAlive = typedHeaders.isKeepAlive(_parser.version!);
+            final keepAlive = typedHeaders.isKeepAlive(request.protocolVersion);
 
             await RawShelfResponseSerializer.writeResponse(
               response,

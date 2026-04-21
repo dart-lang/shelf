@@ -27,30 +27,29 @@ final class RawHttpParser {
   static const int _stateHeaderValue = 4;
   static const int _stateEndOfHeaders = 5;
 
-  int _state = _stateMethod;
-  String? method;
-  String? url;
-  String? version;
-
-  final headerSlices = <HeaderEntrySlices>[];
+  final _headerSlices = <HeaderEntrySlices>[];
 
   /// Internal buffer to accumulate header bytes across chunks.
   final Uint8List _buffer = Uint8List(64 * 1024);
   int _bufferPos = 0;
+
+  int _state = _stateMethod;
+  String? _method;
+  String? _url;
+  String? _version;
 
   int _currentFieldStart = 0;
   HeaderByteSlice? _lastKeySlice;
 
   int _totalHeadersReceived = 0;
   int _consumedInLastChunk = 0;
-  int get consumedInLastChunk => _consumedInLastChunk;
 
   void reset() {
     _state = _stateMethod;
-    method = null;
-    url = null;
-    version = null;
-    headerSlices.clear();
+    _method = null;
+    _url = null;
+    _version = null;
+    _headerSlices.clear();
     _bufferPos = 0;
     _currentFieldStart = 0;
     _lastKeySlice = null;
@@ -83,7 +82,7 @@ final class RawHttpParser {
       switch (_state) {
         case _stateMethod:
           if (byte == $Chars.sp) {
-            method = _getMethod(
+            _method = _getMethod(
               Uint8List.sublistView(_buffer, 0, _bufferPos - 1),
             );
             _currentFieldStart = _bufferPos;
@@ -98,12 +97,12 @@ final class RawHttpParser {
           }
         case _stateUrl:
           if (byte == $Chars.sp) {
-            url = String.fromCharCodes(
+            _url = String.fromCharCodes(
               _buffer,
               _currentFieldStart,
               _bufferPos - 1,
             );
-            if (url == '*' && method != 'OPTIONS') {
+            if (_url == '*' && _method != 'OPTIONS') {
               throw const BadRequestException(
                 'Asterisk-form only allowed for OPTIONS',
               );
@@ -132,7 +131,7 @@ final class RawHttpParser {
             if (!versionStr.startsWith('1.')) {
               throw const BadRequestException('Unsupported HTTP version');
             }
-            version = versionStr;
+            _version = versionStr;
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else {
@@ -171,10 +170,10 @@ final class RawHttpParser {
             if (len == 2) {
               _state = _stateEndOfHeaders;
               return (
-                method: method!,
-                url: url!,
-                version: version!,
-                headerSlices: List.of(headerSlices, growable: false),
+                method: _method!,
+                url: _url!,
+                version: _version!,
+                headerSlices: List.of(_headerSlices, growable: false),
                 consumedInLastChunk: _consumedInLastChunk,
               );
             }
@@ -194,7 +193,7 @@ final class RawHttpParser {
             }
 
             final valueSlice = HeaderByteSlice(_buffer, start, end);
-            headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
+            _headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else if (byte < 32 && byte != 9 && byte != 13 || byte == 127) {
