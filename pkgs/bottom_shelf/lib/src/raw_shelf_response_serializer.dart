@@ -44,6 +44,10 @@ final class RawShelfResponseSerializer {
       headers[$Header.connection] = [keepAlive ? 'keep-alive' : 'close'];
     }
 
+    if (!headers.containsKey($Header.date)) {
+      headers[$Header.date] = [HttpDate.format(DateTime.now())];
+    }
+
     // Write Status Line
     socket.add(
       utf8.encode(

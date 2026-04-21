@@ -332,6 +332,11 @@ final class ChunkedBodyController implements BodyController {
 
   @override
   void close() {
+    if (!_isDone && !_controller.isClosed) {
+      _controller.addError(
+        const BadRequestException('Incomplete chunked body'),
+      );
+    }
     if (!_controller.isClosed) {
       _controller.close();
     }

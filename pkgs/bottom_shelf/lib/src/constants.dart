@@ -18,6 +18,7 @@ abstract final class $Header {
   static const host = 'host';
   static const connection = 'connection';
   static const transferEncoding = 'transfer-encoding';
+  static const date = 'date';
 }
 
 abstract final class $Context {

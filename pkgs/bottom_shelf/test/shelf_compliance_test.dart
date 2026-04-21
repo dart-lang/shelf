@@ -874,6 +874,32 @@ void main() {
     expect(response, contains('414 URI Too Long'));
   });
 
+  test('a request with incomplete chunked body results in error', () async {
+    final port = await _scheduleServer((request) async {
+      try {
+        await request.readAsString();
+      } catch (e) {
+        return Response.ok('Error caught');
+      }
+      return Response.ok('No error');
+    });
+    final socket = await Socket.connect('localhost', port);
+
+    try {
+      socket.write('POST / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Transfer-Encoding: chunked\r\n');
+      socket.write('\r\n');
+      socket.write('5\r\nhello\r\n'); // No zero terminator!
+      await socket.flush();
+    } finally {
+      await socket.close();
+    }
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('Error caught'));
+  });
+
   test('a request with too large headers results in a 431 response', () async {
     final port = await _scheduleServer(syncHandler);
     final socket = await Socket.connect('localhost', port);
@@ -916,24 +942,18 @@ void main() {
   });
 
   group('date header', () {
-    test(
-      'is sent by default',
-      skip: 'RawShelfServer does not send date header by default yet',
-      () async {
-        final port = await _scheduleServer(syncHandler);
+    test('is sent by default', () async {
+      final port = await _scheduleServer(syncHandler);
 
-        final beforeRequest = DateTime.now().subtract(
-          const Duration(seconds: 1),
-        );
+      final beforeRequest = DateTime.now().subtract(const Duration(seconds: 1));
 
-        final response = await _get(port);
-        expect(response.headers, contains('date'));
-        final responseDate = parser.parseHttpDate(response.headers['date']!);
+      final response = await _get(port);
+      expect(response.headers, contains('date'));
+      final responseDate = parser.parseHttpDate(response.headers['date']!);
 
-        expect(responseDate.isAfter(beforeRequest), isTrue);
-        expect(responseDate.isBefore(DateTime.now()), isTrue);
-      },
-    );
+      expect(responseDate.isAfter(beforeRequest), isTrue);
+      expect(responseDate.isBefore(DateTime.now()), isTrue);
+    });
 
     test('defers to header in response', () async {
       final date = DateTime.utc(1981, 6, 5);

@@ -49,6 +49,8 @@ final class _HttpConnection {
   BodyController? _bodyController;
   var _readyForNextRequest = Completer<void>()..complete();
   StreamSubscription<Uint8List>? _subscription;
+  var _forceClose = false;
+  Completer<void>? _currentBodyDone;
   StreamController<Uint8List>? _hijackController;
   Timer? _headerTimer;
   var _isHijacked = false;
@@ -86,7 +88,10 @@ final class _HttpConnection {
               const BadRequestException('Incomplete body'),
             );
             _bodyController!.close();
-            _destroy();
+            _forceClose = true;
+            if (_currentBodyDone != null && !_currentBodyDone!.isCompleted) {
+              _currentBodyDone!.complete();
+            }
           } else {
             _bodyController?.close();
           }
@@ -397,6 +402,7 @@ final class _HttpConnection {
     TypedHeaders typedHeaders,
     Completer<void> bodyDone,
   ) {
+    _currentBodyDone = bodyDone;
     unawaited(
       runZonedGuarded(
         () async {
@@ -404,7 +410,9 @@ final class _HttpConnection {
             final response = await handler(request);
             if (_isHijacked) return;
 
-            final keepAlive = typedHeaders.isKeepAlive(request.protocolVersion);
+            final keepAlive =
+                !_forceClose &&
+                typedHeaders.isKeepAlive(request.protocolVersion);
 
             await RawShelfResponseSerializer.writeResponse(
               response,
@@ -418,12 +426,18 @@ final class _HttpConnection {
 
             if (keepAlive) {
               await bodyDone.future;
+              if (_forceClose) {
+                await socket.close();
+                _destroy();
+                return;
+              }
               if (!_readyForNextRequest.isCompleted) {
                 _readyForNextRequest.complete();
                 _startHeaderTimer();
               }
             } else {
               await socket.close();
+              _destroy();
             }
           } on HijackException {
             // Handled
