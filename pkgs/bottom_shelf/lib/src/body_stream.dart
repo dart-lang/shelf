@@ -29,7 +29,12 @@ final class FixedLengthBodyController implements BodyController {
   bool _hasListener = false;
   bool _isClosed = false;
 
-  FixedLengthBodyController(this._contentLength, this._onDone) {
+  FixedLengthBodyController(
+    this._contentLength,
+    this._onDone, {
+    void Function()? onPause,
+    void Function()? onResume,
+  }) {
     _controller = StreamController<Uint8List>(
       sync: true,
       onListen: () {
@@ -44,6 +49,8 @@ final class FixedLengthBodyController implements BodyController {
           _controller.close();
         }
       },
+      onPause: onPause,
+      onResume: onResume,
     );
   }
 
@@ -145,7 +152,11 @@ final class ChunkedBodyController implements BodyController {
   bool _hasListener = false;
   bool _isClosed = false;
 
-  ChunkedBodyController(this._onDone) {
+  ChunkedBodyController(
+    this._onDone, {
+    void Function()? onPause,
+    void Function()? onResume,
+  }) {
     _controller = StreamController<Uint8List>(
       sync: true,
       onListen: () {
@@ -160,6 +171,8 @@ final class ChunkedBodyController implements BodyController {
           _controller.close();
         }
       },
+      onPause: onPause,
+      onResume: onResume,
     );
   }
 

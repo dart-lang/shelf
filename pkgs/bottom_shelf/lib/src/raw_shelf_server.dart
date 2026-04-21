@@ -178,15 +178,24 @@ final class RawShelfServer {
 
             Stream<Uint8List> requestBody;
             if (typedHeaders.isChunked) {
-              bodyController = ChunkedBodyController(() {
-                if (!bodyDone.isCompleted) bodyDone.complete();
-              });
+              bodyController = ChunkedBodyController(
+                () {
+                  if (!bodyDone.isCompleted) bodyDone.complete();
+                },
+                onPause: () => subscription?.pause(),
+                onResume: () => subscription?.resume(),
+              );
               requestBody = bodyController!.stream;
               currentData = bodyController!.add(remainingInChunk);
             } else if (contentLength > 0) {
-              bodyController = FixedLengthBodyController(contentLength, () {
-                if (!bodyDone.isCompleted) bodyDone.complete();
-              });
+              bodyController = FixedLengthBodyController(
+                contentLength,
+                () {
+                  if (!bodyDone.isCompleted) bodyDone.complete();
+                },
+                onPause: () => subscription?.pause(),
+                onResume: () => subscription?.resume(),
+              );
               requestBody = bodyController!.stream;
               currentData = bodyController!.add(remainingInChunk);
             } else {

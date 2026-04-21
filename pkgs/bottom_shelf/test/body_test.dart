@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -207,6 +208,52 @@ void main() {
       final response = await utf8.decodeStream(socket);
       expect(response, contains('A'));
       expect(response, contains('B: world'));
+    });
+
+    test('Backpressure pauses socket reads', () async {
+      final completer = Completer<void>();
+      final dataCompleter = Completer<void>();
+      
+      final server = await RawShelfServer.serve(
+        (request) async {
+          final stream = request.read();
+          final iterator = StreamIterator(stream);
+          
+          expect(await iterator.moveNext(), isTrue);
+          expect(utf8.decode(iterator.current), 'chunk1');
+          
+          dataCompleter.complete();
+          
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+          
+          expect(await iterator.moveNext(), isTrue);
+          expect(utf8.decode(iterator.current), 'chunk2');
+          
+          expect(await iterator.moveNext(), isFalse);
+          completer.complete();
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect(server.address.host, server.port);
+      addTearDown(socket.close);
+      
+      socket.add(
+        utf8.encode(
+          'POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 12\r\nConnection: close\r\n\r\nchunk1',
+        ),
+      );
+      
+      await dataCompleter.future;
+      socket.add(utf8.encode('chunk2'));
+      
+      await completer.future;
+      
+      final resp = await utf8.decodeStream(socket);
+      expect(resp, contains('200 OK'));
     });
   });
 }
