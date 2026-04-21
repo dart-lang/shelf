@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'constants.dart';
@@ -58,11 +59,11 @@ final class RawHttpParser {
       _totalHeadersReceived++;
 
       if (_totalHeadersReceived > _maxHeaderSize) {
-        throw Exception('Header size limit exceeded');
+        throw const HttpException('Header size limit exceeded');
       }
 
       if (_bufferPos >= _buffer.length) {
-        throw Exception('Buffer overflow');
+        throw const HttpException('Buffer overflow');
       }
 
       _buffer[_bufferPos++] = byte;
@@ -77,10 +78,10 @@ final class RawHttpParser {
             _state = _stateUrl;
           } else {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
-              throw Exception('Invalid character in method');
+              throw const HttpException('Invalid character in method');
             }
             if (_bufferPos - _currentFieldStart > _maxFieldSize) {
-              throw Exception('Method too long');
+              throw const HttpException('Method too long');
             }
           }
         case _stateUrl:
@@ -94,10 +95,10 @@ final class RawHttpParser {
             _state = _stateVersion;
           } else {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
-              throw Exception('Invalid character in URL');
+              throw const HttpException('Invalid character in URL');
             }
             if (_bufferPos - _currentFieldStart > _maxUrlSize) {
-              throw Exception('URL too long');
+              throw const HttpException('URL too long');
             }
           }
         case _stateVersion:
@@ -111,9 +112,11 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else {
-            if (byte == 0) throw Exception('Invalid character in version');
+            if (byte == 0) {
+              throw const HttpException('Invalid character in version');
+            }
             if (_bufferPos - _currentFieldStart > 64) {
-              throw Exception('Version too long');
+              throw const HttpException('Version too long');
             }
           }
         case _stateHeaderKey:
@@ -139,7 +142,7 @@ final class RawHttpParser {
             }
             _currentFieldStart = _bufferPos;
           } else if (byte == 0) {
-            throw Exception('Invalid character in header key');
+            throw const HttpException('Invalid character in header key');
           }
         case _stateHeaderValue:
           if (byte == $Chars.lf) {
@@ -155,7 +158,7 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else if (byte == 0) {
-            throw Exception('Invalid character in header value');
+            throw const HttpException('Invalid character in header value');
           }
       }
     }

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'constants.dart';
@@ -227,7 +228,7 @@ final class ChunkedBodyController implements BodyController {
           } else {
             // hex digit
             final hex = parseHex(byte);
-            if (hex == -1) throw Exception('Invalid chunk size');
+            if (hex == -1) throw const HttpException('Invalid chunk size');
             _chunkSize = (_chunkSize << 4) + hex;
             pos++;
           }
