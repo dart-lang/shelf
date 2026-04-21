@@ -16,12 +16,21 @@ import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
 import 'typed_headers.dart';
 
+typedef Logger = void Function(String message, Object?, StackTrace?);
+
 /// A high-performance Shelf server that uses raw [ServerSocket]s.
 final class RawShelfServer {
   final Handler _handler;
   final ServerSocket _serverSocket;
+  final Duration? _headerTimeout;
+  final Logger? _onConnectionError;
 
-  RawShelfServer._(this._handler, this._serverSocket);
+  RawShelfServer._(
+    this._handler,
+    this._serverSocket,
+    this._headerTimeout,
+    this._onConnectionError,
+  );
 
   int get port => _serverSocket.port;
   InternetAddress get address => _serverSocket.address;
@@ -32,6 +41,8 @@ final class RawShelfServer {
     int port, {
     int backlog = 0,
     bool shared = false,
+    Duration? headerTimeout,
+    Logger? onConnectionError,
   }) async {
     final serverSocket = await ServerSocket.bind(
       address,
@@ -39,7 +50,12 @@ final class RawShelfServer {
       backlog: backlog,
       shared: shared,
     );
-    final server = RawShelfServer._(handler, serverSocket);
+    final server = RawShelfServer._(
+      handler,
+      serverSocket,
+      headerTimeout,
+      onConnectionError,
+    );
     serverSocket.listen(server._handleConnection);
     return server;
   }
@@ -55,6 +71,7 @@ final class RawShelfServer {
 
     StreamSubscription<Uint8List>? subscription;
     StreamController<Uint8List>? hijackController;
+    Timer? headerTimer;
     var isHijacked = false;
     var isDestroyed = false;
     var clientClosed = false;
@@ -62,6 +79,7 @@ final class RawShelfServer {
     void destroy() {
       if (isDestroyed) return;
       isDestroyed = true;
+      headerTimer?.cancel();
       subscription?.cancel();
       socket.destroy();
       bodyController?.close();
@@ -72,6 +90,20 @@ final class RawShelfServer {
         readyForNextRequest.future.catchError((_) {});
       }
     }
+
+    void startHeaderTimer() {
+      if (_headerTimeout != null && !isDestroyed && !clientClosed) {
+        headerTimer?.cancel();
+        headerTimer = Timer(_headerTimeout, destroy);
+      }
+    }
+
+    void cancelHeaderTimer() {
+      headerTimer?.cancel();
+      headerTimer = null;
+    }
+
+    startHeaderTimer();
 
     void processData(Uint8List data) {
       if (isHijacked) {
@@ -112,6 +144,7 @@ final class RawShelfServer {
           }
 
           if (parser.process(currentData)) {
+            cancelHeaderTimer();
             readyForNextRequest = Completer<void>();
             final bodyDone = Completer<void>();
 
@@ -219,17 +252,16 @@ final class RawShelfServer {
                   await bodyDone.future;
                   if (!readyForNextRequest.isCompleted) {
                     readyForNextRequest.complete();
+                    startHeaderTimer();
                   }
                 } else {
                   await socket.close();
                 }
               } on HijackException {
                 // Handled
-              } catch (e) {
+              } catch (e, st) {
                 if (!isHijacked && !isDestroyed) {
-                  // Phase 4 covers proper logging.
-                  // Use print for now to pass tests.
-                  print('Error in handler: $e');
+                  _onConnectionError?.call('Error in handler', e, st);
                   destroy();
                 }
               }
@@ -242,9 +274,9 @@ final class RawShelfServer {
             break;
           }
         }
-      } catch (e) {
+      } catch (e, st) {
         if (!isHijacked && !isDestroyed) {
-          print('Error handling connection: $e');
+          _onConnectionError?.call('Error in handler', e, st);
           destroy();
         }
       }

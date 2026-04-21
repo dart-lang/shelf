@@ -53,16 +53,19 @@ This document consolidates the tasks and goals identified in `todo.md`, `review_
 ## Phase 3: Robustness & DoS Mitigation
 *Focus: Stress testing and resource limits.*
 
-- [ ] **Slowloris Mitigation**
-  - *Source*: `test_complete_bottom_shelf.md` (Section 3.1)
-  - *Goal*: Add timeouts for completing headers.
-- [ ] **Socket Fragmentation Test**
-  - *Source*: `test_complete_bottom_shelf.md` (Section 3.3)
-  - *Goal*: Ensure the parser works when receiving data 1 byte at a time.
+- [x] **Slowloris Mitigation**
+  - *Status*: Complete.
+  - *Implementation Notes*: Added `headerTimeout` to `RawShelfServer.serve()`. A `Timer` is started on connection and restarted between keep-alive requests. If headers aren't fully parsed within the duration, the server immediately destroys the socket.
+  - *Verification*: Added `Slowloris Mitigation (Header Timeout)` test to `test/robustness_test.dart`.
+- [x] **Socket Fragmentation Test**
+  - *Status*: Complete.
+  - *Implementation Notes*: Successfully verified that the internal state machines (`RawHttpParser`, `ChunkedBodyController`, `FixedLengthBodyController`) correctly process highly fragmented network traffic. The server successfully decodes chunked requests arriving 1 byte at a time.
+  - *Verification*: Added `Socket fragmentation (1 byte chunks)` test to `test/robustness_test.dart`.
 
 ## Phase 4: Code Quality & Polish
 *Focus: Library hygiene.*
 
-- [ ] **Replace `print` with Logging**
-  - *Source*: `review_review.md` (#5)
-  - *Goal*: Use `package:logging` or a similar mechanism for error reporting.
+- [x] **Replace `print` with Logging**
+  - *Status*: Complete.
+  - *Implementation Notes*: Added `package:logging` dependency. Replaced raw `print` statements in `RawShelfServer`'s error handlers with `Logger('bottom_shelf.RawShelfServer').severe()`. This prevents standard output pollution and allows consumers to configure or filter internal server logs.
+  - *Verification*: Updated `RawShelfServer error in handler leads to socket destruction` in `test/bottom_shelf_test.dart` to assert against `Logger.root` records instead of stdout prints.

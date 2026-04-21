@@ -127,5 +127,72 @@ void main() {
       final response = await utf8.decodeStream(socket);
       expect(response, contains('400 Bad Request'));
     });
+
+    test('Slowloris Mitigation (Header Timeout)', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('ok'),
+        'localhost',
+        0,
+        headerTimeout: const Duration(milliseconds: 500),
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      socket.add(utf8.encode('GET / HTTP/1.1\r\n'));
+      await socket.flush();
+
+      // Wait longer than the timeout
+      await Future<void>.delayed(const Duration(seconds: 1));
+
+      try {
+        final response = await utf8.decodeStream(socket);
+        expect(response, isEmpty);
+      } catch (e) {
+        if (e is! SocketException && e is! HttpException) {
+          rethrow;
+        }
+      }
+    });
+
+    test('Socket fragmentation (1 byte chunks)', () async {
+      final server = await RawShelfServer.serve(
+        (request) async {
+          expect(request.method, 'POST');
+          expect(request.url.path, 'foo');
+          expect(request.headers, containsPair('x-custom', 'value'));
+          final body = await request.readAsString();
+          expect(body, 'hello world');
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      final payload = utf8.encode(
+        'POST /foo HTTP/1.1\r\n'
+        'Host: localhost\r\n'
+        'X-Custom: value\r\n'
+        'Transfer-Encoding: chunked\r\n'
+        'Connection: close\r\n\r\n'
+        '5\r\nhello\r\n'
+        '6\r\n world\r\n'
+        '0\r\n\r\n',
+      );
+
+      for (var byte in payload) {
+        socket.add([byte]);
+        await socket.flush();
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+      }
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('200 OK'));
+    });
   });
 }

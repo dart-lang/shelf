@@ -53,7 +53,7 @@ void main() {
       final responses = <String>[];
       final completer = Completer<void>();
 
-      socket.listen((data) {
+      socket.listen((List<int> data) {
         final chunk = utf8.decode(data);
         responses.add(chunk);
         final full = responses.join();
@@ -80,32 +80,39 @@ void main() {
     test(
       'error in handler leads to socket destruction (current behavior)',
       () async {
-        await expectLater(() async {
-          final server = await RawShelfServer.serve(
-            (request) {
-              throw Exception('oops');
-            },
-            'localhost',
-            0,
-          );
-          addTearDown(server.close);
+        final logs = <String>[];
+        final server = await RawShelfServer.serve(
+          (request) {
+            throw Exception('oops');
+          },
+          'localhost',
+          0,
+          onConnectionError: (message, error, stackTrace) {
+            logs.add(message);
+          },
+        );
+        addTearDown(server.close);
 
-          final socket = await Socket.connect('localhost', server.port);
-          addTearDown(socket.close);
+        final socket = await Socket.connect(server.address.host, server.port);
+        addTearDown(socket.close);
 
-          socket.add(
-            utf8.encode(
-              'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
-            ),
-          );
+        socket.add(
+          utf8.encode(
+            'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+          ),
+        );
 
-          try {
-            final result = await utf8.decodeStream(socket);
-            expect(result, isEmpty);
-          } catch (e) {
-            // Expected
-          }
-        }, prints(contains('Exception: oops')));
+        try {
+          final result = await utf8.decodeStream(socket);
+          expect(result, isEmpty);
+        } catch (e) {
+          // Expected
+        }
+
+        // Wait a tick for the unawaited log to process
+        await Future<void>.delayed(Duration.zero);
+
+        expect(logs, ['Error in handler']);
       },
     );
   });

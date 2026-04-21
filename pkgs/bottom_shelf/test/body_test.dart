@@ -24,7 +24,7 @@ void main() {
       );
       addTearDown(server.close);
 
-      final socket = await Socket.connect('localhost', server.port);
+      final socket = await Socket.connect(server.address.host, server.port);
       addTearDown(socket.close);
       socket.add(
         utf8.encode(
@@ -46,7 +46,7 @@ void main() {
       );
       addTearDown(server.close);
 
-      final socket = await Socket.connect('localhost', server.port);
+      final socket = await Socket.connect(server.address.host, server.port);
       addTearDown(socket.close);
       socket.add(
         utf8.encode(
@@ -70,7 +70,7 @@ void main() {
       );
       addTearDown(server.close);
 
-      final socket = await Socket.connect('localhost', server.port);
+      final socket = await Socket.connect(server.address.host, server.port);
       addTearDown(socket.close);
       socket.add(
         utf8.encode(
@@ -103,7 +103,7 @@ void main() {
       );
       addTearDown(server.close);
 
-      final socket = await Socket.connect('localhost', server.port);
+      final socket = await Socket.connect(server.address.host, server.port);
       addTearDown(socket.close);
       socket.add(
         utf8.encode(
@@ -141,7 +141,7 @@ void main() {
       );
       addTearDown(server.close);
 
-      final socket = await Socket.connect('localhost', server.port);
+      final socket = await Socket.connect(server.address.host, server.port);
       addTearDown(socket.close);
 
       // Request A with body
@@ -180,7 +180,7 @@ void main() {
       );
       addTearDown(server.close);
 
-      final socket = await Socket.connect('localhost', server.port);
+      final socket = await Socket.connect(server.address.host, server.port);
       addTearDown(socket.close);
 
       // Request A with large body
