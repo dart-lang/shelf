@@ -7,7 +7,7 @@ import 'package:bottom_shelf/bottom_shelf.dart';
 import 'package:shelf/shelf.dart';
 
 void main() async {
-  final size = 10 * 1024 * 1024; // 10MB
+  const size = 10 * 1024 * 1024; // 10MB
   final data = Uint8List(size);
 
   final server = await RawShelfServer.serve(
@@ -47,7 +47,7 @@ void main() async {
   print(response.split('\r\n\r\n').last);
   print('Total client-side time: ${sw.elapsedMilliseconds}ms');
 
-  final mb = size / (1024 * 1024);
+  const mb = size / (1024 * 1024);
   final sec = sw.elapsedMilliseconds / 1000;
   print('Throughput: ${(mb / sec).toStringAsFixed(2)} MB/s');
 

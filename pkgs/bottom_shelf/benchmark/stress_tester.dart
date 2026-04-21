@@ -30,8 +30,8 @@ void main(List<String> args) async {
     return;
   }
   final port = int.parse(args[0]);
-  final duration = const Duration(seconds: 5);
-  final concurrency = 50;
+  const duration = Duration(seconds: 5);
+  const concurrency = 50;
 
   print(
     'Benchmarking localhost:$port for ${duration.inSeconds}s with '

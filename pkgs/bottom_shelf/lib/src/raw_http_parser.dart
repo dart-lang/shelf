@@ -21,7 +21,7 @@ final class RawHttpParser {
   String? url;
   String? version;
 
-  final List<HeaderEntrySlices> headerSlices = [];
+  final headerSlices = <HeaderEntrySlices>[];
 
   /// Internal buffer to accumulate header bytes across chunks.
   final Uint8List _buffer = Uint8List(64 * 1024);
@@ -162,13 +162,11 @@ final class RawHttpParser {
     return false;
   }
 
-  String _getMethod(Uint8List bytes) {
-    return switch (bytes) {
-      [71, 69, 84] => 'GET',
-      [80, 79, 83, 84] => 'POST',
-      [80, 85, 84] => 'PUT',
-      [68, 69, 76, 69, 84, 69] => 'DELETE',
-      _ => String.fromCharCodes(bytes),
-    };
-  }
+  String _getMethod(Uint8List bytes) => switch (bytes) {
+    [71, 69, 84] => 'GET',
+    [80, 79, 83, 84] => 'POST',
+    [80, 85, 84] => 'PUT',
+    [68, 69, 76, 69, 84, 69] => 'DELETE',
+    _ => String.fromCharCodes(bytes),
+  };
 }

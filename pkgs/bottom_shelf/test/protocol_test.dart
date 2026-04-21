@@ -165,9 +165,7 @@ void main() {
 
     test('Fixed-length response encoding', () async {
       final server = await RawShelfServer.serve(
-        (request) {
-          return Response.ok('fixed', headers: {'Content-Length': '5'});
-        },
+        (request) => Response.ok('fixed', headers: {'Content-Length': '5'}),
         'localhost',
         0,
       );

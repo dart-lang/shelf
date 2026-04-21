@@ -85,7 +85,7 @@ void main() {
     });
 
     test('Large body with many chunks', () async {
-      final size = 1024 * 1024; // 1MB
+      const size = 1024 * 1024; // 1MB
       final data = Uint8List(size);
       for (var i = 0; i < size; i++) {
         data[i] = i % 256;
@@ -168,7 +168,7 @@ void main() {
     });
 
     test('Large unconsumed body in keep-alive', () async {
-      final largeSize = 1024 * 1024; // 1MB
+      const largeSize = 1024 * 1024; // 1MB
       final server = await RawShelfServer.serve(
         (request) async {
           if (request.url.path == 'a') return Response.ok('A');

@@ -11,6 +11,7 @@ import 'package:shelf/shelf.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import 'body_stream.dart';
+import 'constants.dart';
 import 'lazy_byte_header_map.dart';
 import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
@@ -204,7 +205,7 @@ final class RawShelfServer {
             var finalHeaderSlices = parser.headerSlices;
             if (typedHeaders.isChunked) {
               finalHeaderSlices = finalHeaderSlices
-                  .where((s) => !s.key.matches('transfer-encoding'))
+                  .where((s) => !s.key.matches($Header.transferEncoding))
                   .toList();
             }
 

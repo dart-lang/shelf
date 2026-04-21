@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'constants.dart';
+import 'utils.dart';
 
 /// A common interface for body controllers.
 abstract interface class BodyController {
@@ -23,7 +24,7 @@ final class FixedLengthBodyController implements BodyController {
   late final StreamController<Uint8List> _controller;
   final void Function() _onDone;
 
-  final List<Uint8List> _bufferedChunks = [];
+  final _bufferedChunks = <Uint8List>[];
   bool _hasListener = false;
   bool _isClosed = false;
 
@@ -54,10 +55,10 @@ final class FixedLengthBodyController implements BodyController {
   @override
   Uint8List takeBufferedData() {
     if (_bufferedChunks.isEmpty) return Uint8List(0);
-    final totalLength = _bufferedChunks.fold<int>(
-      0,
-      (len, chunk) => len + chunk.length,
-    );
+    var totalLength = 0;
+    for (final chunk in _bufferedChunks) {
+      totalLength += chunk.length;
+    }
     final result = Uint8List(totalLength);
     var offset = 0;
     for (var chunk in _bufferedChunks) {
@@ -139,7 +140,7 @@ final class ChunkedBodyController implements BodyController {
   late final StreamController<Uint8List> _controller;
   final void Function() _onDone;
 
-  final List<Uint8List> _bufferedChunks = [];
+  final _bufferedChunks = <Uint8List>[];
   bool _hasListener = false;
   bool _isClosed = false;
 
@@ -170,10 +171,10 @@ final class ChunkedBodyController implements BodyController {
   @override
   Uint8List takeBufferedData() {
     if (_bufferedChunks.isEmpty) return Uint8List(0);
-    final totalLength = _bufferedChunks.fold<int>(
-      0,
-      (len, chunk) => len + chunk.length,
-    );
+    var totalLength = 0;
+    for (final chunk in _bufferedChunks) {
+      totalLength += chunk.length;
+    }
     final result = Uint8List(totalLength);
     var offset = 0;
     for (var chunk in _bufferedChunks) {
@@ -225,7 +226,7 @@ final class ChunkedBodyController implements BodyController {
             _state = _stateExt;
           } else {
             // hex digit
-            final hex = _parseHex(byte);
+            final hex = parseHex(byte);
             if (hex == -1) throw Exception('Invalid chunk size');
             _chunkSize = (_chunkSize << 4) + hex;
             pos++;
@@ -290,13 +291,6 @@ final class ChunkedBodyController implements BodyController {
       }
     }
     return Uint8List(0);
-  }
-
-  int _parseHex(int byte) {
-    if (byte >= 48 && byte <= 57) return byte - 48; // 0-9
-    if (byte >= 97 && byte <= 102) return byte - 97 + 10; // a-f
-    if (byte >= 65 && byte <= 70) return byte - 65 + 10; // A-F
-    return -1;
   }
 
   void _close() {

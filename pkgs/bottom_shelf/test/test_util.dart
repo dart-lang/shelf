@@ -23,13 +23,11 @@ Response syncHandler(
   Request request, {
   int? statusCode,
   Map<String, String>? headers,
-}) {
-  return Response(
-    statusCode ?? 200,
-    headers: headers,
-    body: 'Hello from ${request.requestedUri.path}',
-  );
-}
+}) => Response(
+  statusCode ?? 200,
+  headers: headers,
+  body: 'Hello from ${request.requestedUri.path}',
+);
 
 /// Calls [syncHandler] and wraps the response in a [Future].
 Future<Response> asyncHandler(Request request) =>

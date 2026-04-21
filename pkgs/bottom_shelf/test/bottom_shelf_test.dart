@@ -14,9 +14,7 @@ void main() {
   group('RawShelfServer', () {
     test('basic request/response', () async {
       final server = await RawShelfServer.serve(
-        (request) {
-          return Response.ok('hello world');
-        },
+        (request) => Response.ok('hello world'),
         'localhost',
         0,
       );
