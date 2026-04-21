@@ -8,6 +8,15 @@ import 'constants.dart';
 import 'exceptions.dart';
 import 'header_slices.dart';
 
+/// The parsed head of an HTTP request.
+typedef HttpRequestHead = ({
+  String method,
+  String url,
+  String version,
+  List<HeaderEntrySlices> headerSlices,
+  int consumedInLastChunk,
+});
+
 /// A high-performance, minimal HTTP/1.1 parser that uses byte slices.
 final class RawHttpParser {
   static const int _stateMethod = 0;
@@ -51,7 +60,7 @@ final class RawHttpParser {
     _totalHeadersReceived = 0;
   }
 
-  bool process(Uint8List data) {
+  HttpRequestHead? process(Uint8List data) {
     _consumedInLastChunk = 0;
     for (var i = 0; i < data.length; i++) {
       _consumedInLastChunk++;
@@ -149,7 +158,13 @@ final class RawHttpParser {
             final len = _bufferPos - _currentFieldStart;
             if (len == 2) {
               _state = _stateEndOfHeaders;
-              return true;
+              return (
+                method: method!,
+                url: url!,
+                version: version!,
+                headerSlices: List.of(headerSlices, growable: false),
+                consumedInLastChunk: _consumedInLastChunk,
+              );
             }
             _currentFieldStart = _bufferPos;
           } else if (byte == 0) {
@@ -177,7 +192,7 @@ final class RawHttpParser {
           }
       }
     }
-    return false;
+    return null;
   }
 
   String _getMethod(Uint8List bytes) => switch (bytes) {

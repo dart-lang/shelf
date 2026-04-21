@@ -146,12 +146,12 @@ final class _HttpConnection {
           return;
         }
 
-        if (_parser.process(currentData)) {
+        if (_parser.process(currentData) case final requestHead?) {
           _cancelHeaderTimer();
           _readyForNextRequest = Completer<void>();
           final bodyDone = Completer<void>();
 
-          final typedHeaders = TypedHeaders(_parser.headerSlices);
+          final typedHeaders = TypedHeaders(requestHead.headerSlices);
 
           if (typedHeaders.hasConflictingBodyHeaders) {
             socket.add(
@@ -167,9 +167,9 @@ final class _HttpConnection {
 
           Uri uri;
           try {
-            uri = Uri.parse(_parser.url!);
+            uri = Uri.parse(requestHead.url);
             if (!uri.hasScheme) {
-              uri = Uri.parse('http://$host${_parser.url!}');
+              uri = Uri.parse('http://$host${requestHead.url}');
             }
           } on FormatException catch (e, st) {
             throw BadRequestException(
@@ -179,7 +179,7 @@ final class _HttpConnection {
             );
           }
 
-          final consumedInHeaders = _parser.consumedInLastChunk;
+          final consumedInHeaders = requestHead.consumedInLastChunk;
           final remainingInChunk = Uint8List.sublistView(
             currentData,
             consumedInHeaders,
@@ -222,7 +222,7 @@ final class _HttpConnection {
             _bodyController = null;
           }
 
-          var finalHeaderSlices = _parser.headerSlices;
+          var finalHeaderSlices = requestHead.headerSlices;
           if (typedHeaders.isChunked) {
             finalHeaderSlices = finalHeaderSlices
                 .where((s) => !s.key.matches($Header.transferEncoding))
@@ -252,9 +252,9 @@ final class _HttpConnection {
 
           try {
             request = Request(
-              _parser.method!,
+              requestHead.method,
               uri,
-              protocolVersion: _parser.version!,
+              protocolVersion: requestHead.version,
               headers: LazyByteHeaderMap(finalHeaderSlices),
               body: requestBody,
               context: {$Context.rawHeaders: typedHeaders},
