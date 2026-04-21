@@ -72,6 +72,18 @@ final class TypedHeaders {
     return result;
   }
 
+  /// Returns true if the request contains duplicate Host headers.
+  bool get hasDuplicateHost {
+    var count = 0;
+    for (var slice in _slices) {
+      if (slice.key.matches($Header.host)) {
+        count++;
+        if (count > 1) return true;
+      }
+    }
+    return false;
+  }
+
   /// Returns true if the request body is chunked.
   bool get isChunked {
     if (_cache case {_CacheKey.isChunked: final bool value}) return value;

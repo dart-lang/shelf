@@ -163,6 +163,64 @@ final class _HttpConnection {
             return;
           }
 
+          if (typedHeaders.hasDuplicateHost) {
+            socket.add(
+              utf8.encode(
+                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
+              ),
+            );
+            _destroy();
+            return;
+          }
+
+          var contentLengthHeaderCount = 0;
+          var clValid = true;
+          for (var slice in requestHead.headerSlices) {
+            if (slice.key.matches($Header.contentLength)) {
+              contentLengthHeaderCount++;
+              final value = slice.value.asString();
+              if (value.isEmpty ||
+                  !value.codeUnits.every((c) => c >= 48 && c <= 57)) {
+                clValid = false;
+              }
+            }
+          }
+
+          if (contentLengthHeaderCount > 1 ||
+              !clValid ||
+              (contentLengthHeaderCount == 1 &&
+                  typedHeaders.contentLength == null)) {
+            socket.add(
+              utf8.encode(
+                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
+              ),
+            );
+            _destroy();
+            return;
+          }
+
+          var hasTransferEncoding = false;
+          var isChunked = false;
+          for (var slice in requestHead.headerSlices) {
+            if (slice.key.matches($Header.transferEncoding)) {
+              hasTransferEncoding = true;
+              final value = slice.value.asString().toLowerCase();
+              if (value.contains('chunked')) {
+                isChunked = true;
+              }
+            }
+          }
+
+          if (hasTransferEncoding && !isChunked) {
+            socket.add(
+              utf8.encode(
+                'HTTP/1.1 501 Not Implemented\r\nConnection: close\r\n\r\n',
+              ),
+            );
+            _destroy();
+            return;
+          }
+
           final host = typedHeaders.host;
           if (host == null && requestHead.version == '1.1') {
             socket.add(

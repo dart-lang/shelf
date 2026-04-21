@@ -436,6 +436,255 @@ void main() {
     },
   );
 
+  test('non-ASCII character in header key results in a 400 response', () async {
+    await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', _serverPort);
+
+    try {
+      socket.write('GET / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.add([
+        88,
+        45,
+        84,
+        101,
+        115,
+        116,
+        255,
+        58,
+        32,
+        118,
+        97,
+        108,
+        117,
+        101,
+        13,
+        10,
+      ]);
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    expect(await utf8.decodeStream(socket), isABadRequestResponse);
+  });
+
+  test('a request with invalid character (brackets) in header key results '
+      'in a 400 response', () async {
+    await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', _serverPort);
+
+    try {
+      socket.write('GET / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Bad[Name]: value\r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    expect(await utf8.decodeStream(socket), isABadRequestResponse);
+  });
+
+  test(
+    'a request with obs-fold in headers results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('X-Test: value\r\n');
+        socket.write(' continued\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test('a request with empty header name results in a 400 response', () async {
+    await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', _serverPort);
+
+    try {
+      socket.write('GET / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write(': empty-name\r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    expect(await utf8.decodeStream(socket), isABadRequestResponse);
+  });
+
+  test(
+    'a request with header line without colon results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('NoColonHere\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with duplicate Host headers results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Host: other.localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with non-numeric Content-Length results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('POST / HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Content-Length: abc\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'Content-Length containing plus sign results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('POST / HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Content-Length: +5\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+        socket.write('hello');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with unknown Transfer-Encoding results in a 501 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('POST / HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Transfer-Encoding: gzip\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('501 Not Implemented'));
+    },
+  );
+
+  test(
+    'a request with invalid HTTP version results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET / HTTP/9.9\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with asterisk-form for GET results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET * HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with HTTP version missing minor digit results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET / HTTP/1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
   group('date header', () {
     test(
       'is sent by default',

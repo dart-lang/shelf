@@ -102,6 +102,11 @@ final class RawHttpParser {
               _currentFieldStart,
               _bufferPos - 1,
             );
+            if (url == '*' && method != 'OPTIONS') {
+              throw const BadRequestException(
+                'Asterisk-form only allowed for OPTIONS',
+              );
+            }
             _currentFieldStart = _bufferPos;
             _state = _stateVersion;
           } else {
@@ -123,6 +128,10 @@ final class RawHttpParser {
               _bufferPos - 2,
             ).trim();
             version = v.startsWith('HTTP/') ? v.substring(5) : v;
+
+            if (version != '1.0' && version != '1.1') {
+              throw const BadRequestException('Unsupported HTTP version');
+            }
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else {
@@ -146,6 +155,10 @@ final class RawHttpParser {
               );
             }
 
+            if (start == end) {
+              throw const BadRequestException('Empty header name');
+            }
+
             _lastKeySlice = HeaderByteSlice(_buffer, start, end);
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderValue;
@@ -164,8 +177,8 @@ final class RawHttpParser {
                 consumedInLastChunk: _consumedInLastChunk,
               );
             }
-            _currentFieldStart = _bufferPos;
-          } else if (byte == 0) {
+            throw const BadRequestException('Header line without colon');
+          } else if (byte != $Chars.cr && !_isTchar(byte)) {
             throw const BadRequestException('Invalid character in header key');
           }
         case _stateHeaderValue:
@@ -200,4 +213,24 @@ final class RawHttpParser {
     [68, 69, 76, 69, 84, 69] => 'DELETE',
     _ => String.fromCharCodes(bytes),
   };
+
+  bool _isTchar(int byte) =>
+      (byte >= 65 && byte <= 90) || // A-Z
+      (byte >= 97 && byte <= 122) || // a-z
+      (byte >= 48 && byte <= 57) || // 0-9
+      byte == 33 || // !
+      byte == 35 || // #
+      byte == 36 || // $
+      byte == 37 || // %
+      byte == 38 || // &
+      byte == 39 || // '
+      byte == 42 || // *
+      byte == 43 || // +
+      byte == 45 || // -
+      byte == 46 || // .
+      byte == 94 || // ^
+      byte == 95 || // _
+      byte == 96 || // `
+      byte == 124 || // |
+      byte == 126; // ~
 }
