@@ -214,6 +214,4 @@ final class RawHttpParser {
     [68, 69, 76, 69, 84, 69] => 'DELETE',
     _ => String.fromCharCodes(bytes),
   };
-
-
 }

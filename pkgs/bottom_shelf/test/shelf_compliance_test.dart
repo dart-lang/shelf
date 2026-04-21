@@ -20,59 +20,52 @@ import 'test_shared.dart';
 import 'test_util.dart';
 
 void main() {
-  tearDown(() async {
-    if (_server != null) {
-      await _server!.close();
-      _server = null;
-    }
-  });
-
   test('sync handler returns a value to the client', () async {
-    await _scheduleServer(syncHandler);
+    final port = await _scheduleServer(syncHandler);
 
-    final response = await _get();
+    final response = await _get(port);
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
   test('async handler returns a value to the client', () async {
-    await _scheduleServer(asyncHandler);
+    final port = await _scheduleServer(asyncHandler);
 
-    final response = await _get();
+    final response = await _get(port);
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
   test('thrown error leads to a 500', () async {
-    await _scheduleServer((request) {
+    final port = await _scheduleServer((request) {
       throw UnsupportedError('test');
     });
 
-    final response = await _get();
+    final response = await _get(port);
     expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
   test('async error leads to a 500', () async {
-    await _scheduleServer((request) => Future.error('test'));
+    final port = await _scheduleServer((request) => Future.error('test'));
 
-    final response = await _get();
+    final response = await _get(port);
     expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
   test('supports HEAD requests', () async {
-    await _scheduleServer(
+    final port = await _scheduleServer(
       (request) => Response(200, headers: {'content-length': '1'}),
     );
-    final response = await _head();
+    final response = await _head(port);
     expect(response.headers['content-length'], '1');
   });
 
   test('Request is populated correctly', () async {
     late Uri uri;
 
-    await _scheduleServer((request) {
+    final port = await _scheduleServer((request) {
       expect(request.method, 'GET');
 
       expect(request.requestedUri, uri);
@@ -86,7 +79,7 @@ void main() {
       return syncHandler(request);
     });
 
-    uri = Uri.http('localhost:$_serverPort', '/foo/bar', {'qs': 'value'});
+    uri = Uri.http('localhost:$port', '/foo/bar', {'qs': 'value'});
     final response = await http.get(uri);
 
     expect(response.statusCode, HttpStatus.ok);
@@ -94,15 +87,15 @@ void main() {
   });
 
   test('Request can handle colon in first path segment', () async {
-    await _scheduleServer(syncHandler);
+    final port = await _scheduleServer(syncHandler);
 
-    final response = await _get(path: 'user:42');
+    final response = await _get(port, path: 'user:42');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /user:42');
   });
 
   test('chunked requests are un-chunked', () async {
-    await _scheduleServer(
+    final port = await _scheduleServer(
       expectAsync1((request) async {
         expect(request.contentLength, isNull);
         expect(request.method, 'POST');
@@ -122,10 +115,7 @@ void main() {
       }),
     );
 
-    final request = http.StreamedRequest(
-      'POST',
-      Uri.http('localhost:$_serverPort'),
-    );
+    final request = http.StreamedRequest('POST', Uri.http('localhost:$port'));
     request.sink.add([1, 2, 3, 4]);
     // ignore: unawaited_futures
     request.sink.close();
@@ -135,21 +125,21 @@ void main() {
   });
 
   test('custom response headers are received by the client', () async {
-    await _scheduleServer(
+    final port = await _scheduleServer(
       (request) => Response.ok(
         'Hello from /',
         headers: {'test-header': 'test-value', 'test-list': 'a, b, c'},
       ),
     );
 
-    final response = await _get();
+    final response = await _get(port);
     expect(response.statusCode, HttpStatus.ok);
     expect(response.headers['test-header'], 'test-value');
     expect(response.body, 'Hello from /');
   });
 
   test('multiple headers are received from the client', () async {
-    await _scheduleServer(
+    final port = await _scheduleServer(
       (request) => Response.ok(
         'Hello from /',
         headers: {
@@ -166,6 +156,7 @@ void main() {
     );
 
     final response = await _get(
+      port,
       headers: {
         'request-values': ['a', 'b'],
         'set-cookie': ['c', 'd'],
@@ -179,15 +170,17 @@ void main() {
   });
 
   test('custom status code is received by the client', () async {
-    await _scheduleServer((request) => Response(299, body: 'Hello from /'));
+    final port = await _scheduleServer(
+      (request) => Response(299, body: 'Hello from /'),
+    );
 
-    final response = await _get();
+    final response = await _get(port);
     expect(response.statusCode, 299);
     expect(response.body, 'Hello from /');
   });
 
   test('custom request headers are received by the handler', () async {
-    await _scheduleServer((request) {
+    final port = await _scheduleServer((request) {
       expect(request.headers, containsPair('custom-header', 'client value'));
 
       // dart:io HttpServer splits multi-value headers into an array
@@ -201,13 +194,13 @@ void main() {
       'multi-header': 'foo,bar,baz',
     };
 
-    final response = await _get(headers: headers);
+    final response = await _get(port, headers: headers);
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
   test('post with empty content', () async {
-    await _scheduleServer((request) async {
+    final port = await _scheduleServer((request) async {
       expect(request.mimeType, isNull);
       expect(request.encoding, isNull);
       expect(request.method, 'POST');
@@ -218,7 +211,7 @@ void main() {
       return syncHandler(request);
     });
 
-    final response = await _post();
+    final response = await _post(port);
     expect(response.statusCode, HttpStatus.ok);
     await expectLater(
       response.stream.bytesToString(),
@@ -227,7 +220,7 @@ void main() {
   });
 
   test('post with request content', () async {
-    await _scheduleServer((request) async {
+    final port = await _scheduleServer((request) async {
       expect(request.mimeType, 'text/plain');
       expect(request.encoding, utf8);
       expect(request.method, 'POST');
@@ -238,7 +231,7 @@ void main() {
       return syncHandler(request);
     });
 
-    final response = await _post(body: 'test body');
+    final response = await _post(port, body: 'test body');
     expect(response.statusCode, HttpStatus.ok);
     await expectLater(
       response.stream.bytesToString(),
@@ -247,7 +240,7 @@ void main() {
   });
 
   test('supports request hijacking', () async {
-    await _scheduleServer((request) {
+    final port = await _scheduleServer((request) {
       expect(request.method, 'POST');
 
       request.hijack(
@@ -270,7 +263,7 @@ void main() {
       );
     });
 
-    final response = await _post(body: 'Hello');
+    final response = await _post(port, body: 'Hello');
 
     expect(response.statusCode, HttpStatus.notFound);
     expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
@@ -283,9 +276,11 @@ void main() {
   test(
     'reports an error if a HijackException is thrown without hijacking',
     () async {
-      await _scheduleServer((request) => throw const HijackException());
+      final port = await _scheduleServer(
+        (request) => throw const HijackException(),
+      );
 
-      final response = await _get();
+      final response = await _get(port);
       expect(response.statusCode, HttpStatus.internalServerError);
     },
     skip: 'RawShelfServer destroys socket on error currently',
@@ -343,9 +338,9 @@ void main() {
   test(
     'a bad HTTP host request results in a 500 response',
     () async {
-      await _scheduleServer(syncHandler);
+      final port = await _scheduleServer(syncHandler);
 
-      final socket = await Socket.connect('localhost', _serverPort);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/1.1\r\n');
@@ -364,8 +359,8 @@ void main() {
   );
 
   test('a bad HTTP URL request results in a 400 response', () async {
-    await _scheduleServer(syncHandler);
-    final socket = await Socket.connect('localhost', _serverPort);
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
 
     try {
       socket.write('GET /#/ HTTP/1.1\r\n');
@@ -381,8 +376,8 @@ void main() {
   test(
     'a request with whitespace in header key results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/1.1\r\n');
@@ -399,8 +394,8 @@ void main() {
   test(
     'a request without Host header in HTTP/1.1 results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/1.1\r\n');
@@ -416,11 +411,11 @@ void main() {
   test(
     'a request with path not starting with slash handles it correctly',
     () async {
-      await _scheduleServer((request) {
+      final port = await _scheduleServer((request) {
         expect(request.url.path, 'foo');
         return Response.ok('Hello');
       });
-      final socket = await Socket.connect('localhost', _serverPort);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET foo HTTP/1.1\r\n');
@@ -437,8 +432,8 @@ void main() {
   );
 
   test('non-ASCII character in header key results in a 400 response', () async {
-    await _scheduleServer(syncHandler);
-    final socket = await Socket.connect('localhost', _serverPort);
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
 
     try {
       socket.write('GET / HTTP/1.1\r\n');
@@ -472,8 +467,8 @@ void main() {
 
   test('a request with invalid character (brackets) in header key results '
       'in a 400 response', () async {
-    await _scheduleServer(syncHandler);
-    final socket = await Socket.connect('localhost', _serverPort);
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
 
     try {
       socket.write('GET / HTTP/1.1\r\n');
@@ -491,8 +486,8 @@ void main() {
   test(
     'a request with obs-fold in headers results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/1.1\r\n');
@@ -510,8 +505,8 @@ void main() {
   );
 
   test('a request with empty header name results in a 400 response', () async {
-    await _scheduleServer(syncHandler);
-    final socket = await Socket.connect('localhost', _serverPort);
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
 
     try {
       socket.write('GET / HTTP/1.1\r\n');
@@ -529,8 +524,8 @@ void main() {
   test(
     'a request with header line without colon results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/1.1\r\n');
@@ -549,8 +544,8 @@ void main() {
   test(
     'a request with duplicate Host headers results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/1.1\r\n');
@@ -569,8 +564,8 @@ void main() {
   test(
     'a request with non-numeric Content-Length results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('POST / HTTP/1.1\r\n');
@@ -589,8 +584,8 @@ void main() {
   test(
     'Content-Length containing plus sign results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('POST / HTTP/1.1\r\n');
@@ -610,8 +605,8 @@ void main() {
   test(
     'a request with unknown Transfer-Encoding results in a 501 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('POST / HTTP/1.1\r\n');
@@ -631,8 +626,8 @@ void main() {
   test(
     'a request with invalid HTTP version results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/9.9\r\n');
@@ -650,8 +645,8 @@ void main() {
   test(
     'a request with asterisk-form for GET results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET * HTTP/1.1\r\n');
@@ -669,8 +664,8 @@ void main() {
   test(
     'a request with HTTP version missing minor digit results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/1\r\n');
@@ -688,8 +683,8 @@ void main() {
   test(
     'HTTP version containing leading zeros results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/01.01\r\n');
@@ -707,8 +702,8 @@ void main() {
   test(
     'a request with whitespace in HTTP version results in a 400 response',
     () async {
-      await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', _serverPort);
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
 
       try {
         socket.write('GET / HTTP/ 1.1\r\n');
@@ -728,13 +723,13 @@ void main() {
       'is sent by default',
       skip: 'RawShelfServer does not send date header by default yet',
       () async {
-        await _scheduleServer(syncHandler);
+        final port = await _scheduleServer(syncHandler);
 
         final beforeRequest = DateTime.now().subtract(
           const Duration(seconds: 1),
         );
 
-        final response = await _get();
+        final response = await _get(port);
         expect(response.headers, contains('date'));
         final responseDate = parser.parseHttpDate(response.headers['date']!);
 
@@ -745,14 +740,14 @@ void main() {
 
     test('defers to header in response', () async {
       final date = DateTime.utc(1981, 6, 5);
-      await _scheduleServer(
+      final port = await _scheduleServer(
         (request) => Response.ok(
           'test',
           headers: {HttpHeaders.dateHeader: parser.formatHttpDate(date)},
         ),
       );
 
-      final response = await _get();
+      final response = await _get(port);
       expect(response.headers, contains('date'));
       final responseDate = parser.parseHttpDate(response.headers['date']!);
       expect(responseDate, date);
@@ -764,9 +759,9 @@ void main() {
     test(
       'defaults to "Dart with package:shelf"',
       () async {
-        await _scheduleServer(syncHandler);
+        final port = await _scheduleServer(syncHandler);
 
-        final response = await _get();
+        final response = await _get(port);
         expect(
           response.headers,
           containsPair(poweredBy, 'Dart with package:shelf'),
@@ -778,7 +773,7 @@ void main() {
 
   group('chunked coding', () {
     test('is added when the transfer-encoding header is unset', () async {
-      await _scheduleServer(
+      final port = await _scheduleServer(
         (request) => Response.ok(
           Stream.fromIterable([
             [1, 2, 3, 4],
@@ -786,7 +781,7 @@ void main() {
         ),
       );
 
-      final response = await _get();
+      final response = await _get(port);
       expect(
         response.headers,
         containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
@@ -798,7 +793,7 @@ void main() {
   test(
     'includes the dart:io HttpConnectionInfo in request context',
     () async {
-      await _scheduleServer((request) {
+      final port = await _scheduleServer((request) {
         expect(
           request.context,
           containsPair('shelf.io.connection_info', isA<HttpConnectionInfo>()),
@@ -806,45 +801,50 @@ void main() {
         return syncHandler(request);
       });
 
-      final response = await _get();
+      final response = await _get(port);
       expect(response.statusCode, HttpStatus.ok);
     },
     skip: 'RawShelfServer does not provide HttpConnectionInfo yet',
   );
 }
 
-int get _serverPort => _server!.port;
-
-RawShelfServer? _server;
-
-Future<void> _scheduleServer(Handler handler) async {
-  assert(_server == null);
-  _server = await RawShelfServer.serve(handler, 'localhost', 0);
+Future<int> _scheduleServer(Handler handler) async {
+  final server = await RawShelfServer.serve(handler, 'localhost', 0);
+  addTearDown(server.close);
+  return server.port;
 }
 
-Future<http.Response> _get({
-  Map<String, /* String | List<String> */ Object>? headers,
-  String path = '',
-}) =>
-    _request((client, url) => client.getUrl(url), headers: headers, path: path);
-
-Future<http.Response> _head({
+Future<http.Response> _get(
+  int port, {
   Map<String, /* String | List<String> */ Object>? headers,
   String path = '',
 }) => _request(
+  port,
+  (client, url) => client.getUrl(url),
+  headers: headers,
+  path: path,
+);
+
+Future<http.Response> _head(
+  int port, {
+  Map<String, /* String | List<String> */ Object>? headers,
+  String path = '',
+}) => _request(
+  port,
   (client, url) => client.headUrl(url),
   headers: headers,
   path: path,
 );
 
 Future<http.Response> _request(
+  int port,
   Future<HttpClientRequest> Function(HttpClient, Uri) request, {
   Map<String, /* String | List<String> */ Object>? headers,
   String path = '',
 }) async {
   final client = HttpClient();
   try {
-    final rq = await request(client, Uri.http('localhost:$_serverPort', path));
+    final rq = await request(client, Uri.http('localhost:$port', path));
     if (headers != null) {
       for (var entry in headers.entries) {
         final value = entry.value;
@@ -870,11 +870,12 @@ Future<http.Response> _request(
   }
 }
 
-Future<http.StreamedResponse> _post({
+Future<http.StreamedResponse> _post(
+  int port, {
   Map<String, String>? headers,
   String? body,
 }) {
-  final request = http.Request('POST', Uri.http('localhost:$_serverPort'));
+  final request = http.Request('POST', Uri.http('localhost:$port'));
 
   if (headers != null) request.headers.addAll(headers);
   if (body != null) request.body = body;
