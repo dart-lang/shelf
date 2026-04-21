@@ -66,7 +66,10 @@ final class RawHttpParser {
       _totalHeadersReceived++;
 
       if (_totalHeadersReceived > $Limit.maxHeaderSize) {
-        throw const BadRequestException('Header size limit exceeded');
+        throw const BadRequestException(
+          'Header size limit exceeded',
+          errorResponse: ErrorResponse.headerFieldsTooLarge,
+        );
       }
 
       if (_bufferPos >= _buffer.length) {
@@ -112,11 +115,17 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _$State.version;
           } else {
-            if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
+            if (byte == 0 ||
+                byte == $Chars.lf ||
+                byte == $Chars.cr ||
+                byte > 127) {
               throw const BadRequestException('Invalid character in URL');
             }
             if (_bufferPos - _currentFieldStart > $Limit.maxUrlSize) {
-              throw const BadRequestException('URL too long');
+              throw const BadRequestException(
+                'URL too long',
+                errorResponse: ErrorResponse.uriTooLong,
+              );
             }
           }
         case _$State.version:

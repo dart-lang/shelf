@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bottom_shelf/bottom_shelf.dart';
+import 'package:bottom_shelf/src/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as parser;
 import 'package:shelf/shelf.dart';
@@ -800,6 +801,98 @@ void main() {
       expect(response, isNot(contains('200 OK')));
     },
   );
+
+  test(
+    'a request with non-ASCII character in URL results in a 400 response',
+    () async {
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
+
+      try {
+        socket.write('GET /foo');
+        socket.add([255]); // Non-ASCII byte!
+        socket.write(' HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test('a CONNECT request results in a 405 response', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+
+    try {
+      socket.write('CONNECT example.com:443 HTTP/1.1\r\n');
+      socket.write('Host: example.com:443\r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    expect(await utf8.decodeStream(socket), contains('405 Method Not Allowed'));
+  });
+
+  test('a request with empty Host header results in a 400 response', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+
+    try {
+      socket.write('GET / HTTP/1.1\r\n');
+      socket.write('Host: \r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    expect(await utf8.decodeStream(socket), isABadRequestResponse);
+  });
+
+  test('a request with too long URL results in a 414 response', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+
+    try {
+      socket.write('GET /');
+      socket.write('a' * ($Limit.maxUrlSize + 1));
+      socket.write(' HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('414 URI Too Long'));
+  });
+
+  test('a request with too large headers results in a 431 response', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+
+    try {
+      socket.write('GET / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Large-Header: ');
+      socket.write('a' * ($Limit.maxHeaderSize + 1));
+      socket.write('\r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('431 Request Header Fields Too Large'));
+  });
 
   test('HEAD response must not contain a message body (chunked)', () async {
     final port = await _scheduleServer(

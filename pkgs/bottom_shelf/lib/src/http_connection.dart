@@ -18,10 +18,6 @@ import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
 import 'typed_headers.dart';
 
-final _badRequestResponseBytes = utf8.encode(
-  'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
-);
-
 /// Starts handling a single HTTP connection for `RawShelfServer`.
 void handleHttpConnection({
   required Socket socket,
@@ -46,6 +42,9 @@ final class _HttpConnection {
   final ConnectionErrorCallback? onConnectionError;
   final ErrorAction? Function(Object, StackTrace)? onAsyncError;
 
+  final InternetAddress remoteAddress;
+  final int remotePort;
+
   final _parser = RawHttpParser();
   BodyController? _bodyController;
   var _readyForNextRequest = Completer<void>()..complete();
@@ -63,7 +62,8 @@ final class _HttpConnection {
     this.headerTimeout,
     this.onConnectionError,
     this.onAsyncError,
-  });
+  }) : remoteAddress = socket.remoteAddress,
+       remotePort = socket.remotePort;
 
   void start() {
     _startHeaderTimer();
@@ -164,13 +164,13 @@ final class _HttpConnection {
           final typedHeaders = TypedHeaders(requestHead.headerSlices);
 
           if (typedHeaders.hasConflictingBodyHeaders) {
-            socket.add(_badRequestResponseBytes);
+            socket.add(ErrorResponse.badRequest.bytes);
             _destroy();
             return;
           }
 
           if (typedHeaders.hasDuplicateHost) {
-            socket.add(_badRequestResponseBytes);
+            socket.add(ErrorResponse.badRequest.bytes);
             _destroy();
             return;
           }
@@ -192,7 +192,7 @@ final class _HttpConnection {
               !clValid ||
               (contentLengthHeaderCount == 1 &&
                   typedHeaders.contentLength == null)) {
-            socket.add(_badRequestResponseBytes);
+            socket.add(ErrorResponse.badRequest.bytes);
             _destroy();
             return;
           }
@@ -210,25 +210,46 @@ final class _HttpConnection {
           }
 
           if (hasTransferEncoding && !isChunked) {
+            socket.add(ErrorResponse.notImplemented.bytes);
+            socket.flush().then((_) {
+              socket.close().then((_) => _destroy());
+            });
+            return;
+          }
+          if (requestHead.method == 'CONNECT') {
+            socket.add(ErrorResponse.methodNotAllowed.bytes);
+            socket.flush().then((_) {
+              socket.close().then((_) => _destroy());
+            });
+            return;
+          }
+          if (requestHead.method == 'CONNECT') {
             socket.add(
               utf8.encode(
-                'HTTP/1.1 501 Not Implemented\r\nConnection: close\r\n\r\n',
+                'HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n\r\n',
               ),
             );
-            _destroy();
+            socket.flush().then((_) {
+              socket.close().then((_) => _destroy());
+            });
             return;
           }
 
           final host = typedHeaders.host;
           if (host != null && (host.contains('@') || host.contains('/'))) {
-            socket.add(_badRequestResponseBytes);
-            _destroy();
+            socket.add(ErrorResponse.badRequest.bytes);
+            socket.flush().then((_) {
+              socket.close().then((_) => _destroy());
+            });
             return;
           }
 
-          if (host == null && requestHead.version == '1.1') {
-            socket.add(_badRequestResponseBytes);
-            _destroy();
+          if ((host == null || host.trim().isEmpty) &&
+              requestHead.version == '1.1') {
+            socket.add(ErrorResponse.badRequest.bytes);
+            socket.flush().then((_) {
+              socket.close().then((_) => _destroy());
+            });
             return;
           }
           final effectiveHost = host ?? 'localhost';
@@ -356,12 +377,14 @@ final class _HttpConnection {
           'Error in handler',
           e,
           st,
-          remoteAddress: socket.remoteAddress,
-          remotePort: socket.remotePort,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
         );
         if (e is BadRequestException) {
-          socket.add(_badRequestResponseBytes);
-          socket.close().then((_) => _destroy());
+          socket.add(e.errorResponse.bytes);
+          socket.flush().then((_) {
+            socket.close().then((_) => _destroy());
+          });
         } else {
           _destroy();
         }
@@ -418,8 +441,8 @@ final class _HttpConnection {
                 'Error in handler',
                 e,
                 st,
-                remoteAddress: socket.remoteAddress,
-                remotePort: socket.remotePort,
+                remoteAddress: remoteAddress,
+                remotePort: remotePort,
               );
               unawaited(socket.close().then((_) => _destroy()));
             }
@@ -436,8 +459,8 @@ final class _HttpConnection {
                 'Unhandled async error (ignored)',
                 e,
                 st,
-                remoteAddress: socket.remoteAddress,
-                remotePort: socket.remotePort,
+                remoteAddress: remoteAddress,
+                remotePort: remotePort,
               );
             }
           } else if (action == ErrorAction.crash) {
@@ -445,8 +468,8 @@ final class _HttpConnection {
               'Crashing server due to async error',
               e,
               st,
-              remoteAddress: socket.remoteAddress,
-              remotePort: socket.remotePort,
+              remoteAddress: remoteAddress,
+              remotePort: remotePort,
             );
             // ignore: only_throw_errors
             throw e; // Rethrow to parent zone!
@@ -466,8 +489,8 @@ final class _HttpConnection {
               'Error in handler',
               e,
               st,
-              remoteAddress: socket.remoteAddress,
-              remotePort: socket.remotePort,
+              remoteAddress: remoteAddress,
+              remotePort: remotePort,
             );
             socket.close().then((_) => _destroy());
           }

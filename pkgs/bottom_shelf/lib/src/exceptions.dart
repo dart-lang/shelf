@@ -2,7 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 typedef ConnectionErrorCallback =
     void Function(
@@ -13,9 +15,26 @@ typedef ConnectionErrorCallback =
       required int remotePort,
     });
 
+enum ErrorResponse {
+  badRequest(400, 'Bad Request'),
+  methodNotAllowed(405, 'Method Not Allowed'),
+  uriTooLong(414, 'URI Too Long'),
+  headerFieldsTooLarge(431, 'Request Header Fields Too Large'),
+  notImplemented(501, 'Not Implemented');
+
+  final int code;
+  final String phrase;
+
+  const ErrorResponse(this.code, this.phrase);
+
+  Uint8List get bytes =>
+      ascii.encode('HTTP/1.1 $code $phrase\r\nConnection: close\r\n\r\n');
+}
+
 /// Exception thrown when a request is malformed or violates protocol limits.
 final class BadRequestException implements Exception {
   final String message;
+  final ErrorResponse errorResponse;
 
   /// The original exception that caused this bad request, if any.
   final Object? innerException;
@@ -25,6 +44,7 @@ final class BadRequestException implements Exception {
 
   const BadRequestException(
     this.message, {
+    this.errorResponse = ErrorResponse.badRequest,
     this.innerException,
     this.innerStack,
   });

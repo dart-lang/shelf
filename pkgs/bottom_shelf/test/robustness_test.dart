@@ -31,7 +31,7 @@ void main() {
 
       // We expect the server to destroy the socket
       final response = await utf8.decodeStream(socket);
-      expect(response, isABadRequestResponse);
+      expect(response, contains('431 Request Header Fields Too Large'));
     });
 
     test('Malformed request (garbage bytes)', () async {
