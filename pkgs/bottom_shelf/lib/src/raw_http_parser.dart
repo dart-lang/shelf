@@ -32,7 +32,7 @@ final class RawHttpParser {
   final _headerSlices = <HeaderEntrySlices>[];
 
   /// Internal buffer to accumulate header bytes across chunks.
-  final Uint8List _buffer = Uint8List(64 * 1024);
+  final Uint8List _buffer = Uint8List($Limit.maxHeaderSize);
   int _bufferPos = 0;
 
   _$State _state = _$State.method;
