@@ -18,6 +18,10 @@ import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
 import 'typed_headers.dart';
 
+final _badRequestResponseBytes = utf8.encode(
+  'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
+);
+
 /// Starts handling a single HTTP connection for `RawShelfServer`.
 void handleHttpConnection({
   required Socket socket,
@@ -162,21 +166,13 @@ final class _HttpConnection {
           final typedHeaders = TypedHeaders(requestHead.headerSlices);
 
           if (typedHeaders.hasConflictingBodyHeaders) {
-            socket.add(
-              utf8.encode(
-                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
-              ),
-            );
+            socket.add(_badRequestResponseBytes);
             _destroy();
             return;
           }
 
           if (typedHeaders.hasDuplicateHost) {
-            socket.add(
-              utf8.encode(
-                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
-              ),
-            );
+            socket.add(_badRequestResponseBytes);
             _destroy();
             return;
           }
@@ -198,11 +194,7 @@ final class _HttpConnection {
               !clValid ||
               (contentLengthHeaderCount == 1 &&
                   typedHeaders.contentLength == null)) {
-            socket.add(
-              utf8.encode(
-                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
-              ),
-            );
+            socket.add(_badRequestResponseBytes);
             _destroy();
             return;
           }
@@ -231,21 +223,13 @@ final class _HttpConnection {
 
           final host = typedHeaders.host;
           if (host != null && (host.contains('@') || host.contains('/'))) {
-            socket.add(
-              utf8.encode(
-                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
-              ),
-            );
+            socket.add(_badRequestResponseBytes);
             _destroy();
             return;
           }
 
           if (host == null && requestHead.version == '1.1') {
-            socket.add(
-              utf8.encode(
-                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
-              ),
-            );
+            socket.add(_badRequestResponseBytes);
             _destroy();
             return;
           }
@@ -372,11 +356,7 @@ final class _HttpConnection {
       if (!_isHijacked && !_isDestroyed) {
         onConnectionError?.call('Error in handler', e, st);
         if (e is BadRequestException) {
-          socket.add(
-            utf8.encode(
-              'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
-            ),
-          );
+          socket.add(_badRequestResponseBytes);
           socket.close().then((_) => _destroy());
         } else {
           _destroy();
