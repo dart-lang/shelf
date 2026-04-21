@@ -10,11 +10,13 @@ import 'constants.dart';
 
 /// Serializes a [Response] directly to a [Socket].
 final class RawShelfResponseSerializer {
-  static final Uint8List _crlf = Uint8List.fromList([charCr, charLf]);
+  static final Uint8List _crlf = Uint8List.fromList([$Chars.cr, $Chars.lf]);
   static final Uint8List _chunkedEnd = Uint8List.fromList([
-    48, // '0'
-    charCr, charLf,
-    charCr, charLf,
+    $Chars.zero,
+    $Chars.cr,
+    $Chars.lf,
+    $Chars.cr,
+    $Chars.lf,
   ]);
 
   static Future<void> writeResponse(
@@ -26,18 +28,19 @@ final class RawShelfResponseSerializer {
 
     // Determine if we need chunked encoding
     final hasContentLength =
-        headers.containsKey('content-length') || response.contentLength != null;
+        headers.containsKey($Header.contentLength) ||
+        response.contentLength != null;
     final isChunked = !hasContentLength;
 
     if (isChunked) {
-      headers['transfer-encoding'] = ['chunked'];
-    } else if (!headers.containsKey('content-length') &&
+      headers[$Header.transferEncoding] = ['chunked'];
+    } else if (!headers.containsKey($Header.contentLength) &&
         response.contentLength != null) {
-      headers['content-length'] = [response.contentLength.toString()];
+      headers[$Header.contentLength] = [response.contentLength.toString()];
     }
 
-    if (!headers.containsKey('connection')) {
-      headers['connection'] = [keepAlive ? 'keep-alive' : 'close'];
+    if (!headers.containsKey($Header.connection)) {
+      headers[$Header.connection] = [keepAlive ? 'keep-alive' : 'close'];
     }
 
     // Write Status Line

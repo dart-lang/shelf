@@ -69,14 +69,14 @@ final class RawHttpParser {
 
       switch (_state) {
         case _stateMethod:
-          if (byte == charSp) {
+          if (byte == $Chars.sp) {
             method = _getMethod(
               Uint8List.sublistView(_buffer, 0, _bufferPos - 1),
             );
             _currentFieldStart = _bufferPos;
             _state = _stateUrl;
           } else {
-            if (byte == 0 || byte == charLf || byte == charCr) {
+            if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
               throw Exception('Invalid character in method');
             }
             if (_bufferPos - _currentFieldStart > _maxFieldSize) {
@@ -84,7 +84,7 @@ final class RawHttpParser {
             }
           }
         case _stateUrl:
-          if (byte == charSp) {
+          if (byte == $Chars.sp) {
             url = String.fromCharCodes(
               _buffer,
               _currentFieldStart,
@@ -93,7 +93,7 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateVersion;
           } else {
-            if (byte == 0 || byte == charLf || byte == charCr) {
+            if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
               throw Exception('Invalid character in URL');
             }
             if (_bufferPos - _currentFieldStart > _maxUrlSize) {
@@ -101,7 +101,7 @@ final class RawHttpParser {
             }
           }
         case _stateVersion:
-          if (byte == charLf) {
+          if (byte == $Chars.lf) {
             final v = String.fromCharCodes(
               _buffer,
               _currentFieldStart,
@@ -117,23 +117,23 @@ final class RawHttpParser {
             }
           }
         case _stateHeaderKey:
-          if (byte == charColon) {
+          if (byte == $Chars.colon) {
             var start = _currentFieldStart;
             var end = _bufferPos - 1;
-            while (start < end && _buffer[start] == charSp) {
+            while (start < end && _buffer[start] == $Chars.sp) {
               start++;
             }
-            while (end > start && _buffer[end - 1] == charSp) {
+            while (end > start && _buffer[end - 1] == $Chars.sp) {
               end--;
             }
 
             _lastKeySlice = HeaderByteSlice(_buffer, start, end);
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderValue;
-          } else if (byte == charLf) {
+          } else if (byte == $Chars.lf) {
             final len = _bufferPos - _currentFieldStart;
             if (len == 1 ||
-                (len == 2 && _buffer[_currentFieldStart] == charCr)) {
+                (len == 2 && _buffer[_currentFieldStart] == $Chars.cr)) {
               _state = _stateEndOfHeaders;
               return true;
             }
@@ -142,13 +142,13 @@ final class RawHttpParser {
             throw Exception('Invalid character in header key');
           }
         case _stateHeaderValue:
-          if (byte == charLf) {
+          if (byte == $Chars.lf) {
             var start = _currentFieldStart;
             var end = _bufferPos - 1;
-            while (start < end && _buffer[start] == charSp) {
+            while (start < end && _buffer[start] == $Chars.sp) {
               start++;
             }
-            if (end > start && _buffer[end - 1] == charCr) end--;
+            if (end > start && _buffer[end - 1] == $Chars.cr) end--;
 
             final valueSlice = HeaderByteSlice(_buffer, start, end);
             headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));

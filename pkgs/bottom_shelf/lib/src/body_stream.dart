@@ -5,6 +5,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'constants.dart';
+
 /// A common interface for body controllers.
 abstract interface class BodyController {
   Stream<Uint8List> get stream;
@@ -205,10 +207,10 @@ final class ChunkedBodyController implements BodyController {
       switch (_state) {
         case _stateSize:
           final byte = data[pos];
-          if (byte == 13) {
+          if (byte == $Chars.cr) {
             // CR, ignore
             pos++;
-          } else if (byte == 10) {
+          } else if (byte == $Chars.lf) {
             // LF, end of size
             pos++;
             if (_chunkSize == 0) {
@@ -217,7 +219,7 @@ final class ChunkedBodyController implements BodyController {
               _chunkBytesRead = 0;
               _state = _stateData;
             }
-          } else if (byte == 59) {
+          } else if (byte == $Chars.semicolon) {
             // ';' start of extensions
             pos++;
             _state = _stateExt;
@@ -230,7 +232,7 @@ final class ChunkedBodyController implements BodyController {
           }
         case _stateExt:
           final byte = data[pos];
-          if (byte == 10) {
+          if (byte == $Chars.lf) {
             // LF, end of ext
             pos++;
             if (_chunkSize == 0) {
@@ -259,7 +261,7 @@ final class ChunkedBodyController implements BodyController {
           }
         case _stateDataCRLF:
           final byte = data[pos];
-          if (byte == 10) {
+          if (byte == $Chars.lf) {
             // LF, end of CRLF
             pos++;
             _chunkSize = 0;
@@ -270,9 +272,9 @@ final class ChunkedBodyController implements BodyController {
         case _stateTrailers:
           final byte = data[pos];
           pos++;
-          if (byte == 13) {
+          if (byte == $Chars.cr) {
             // ignore
-          } else if (byte == 10) {
+          } else if (byte == $Chars.lf) {
             if (_trailerState == 0) {
               // empty line
               _isDone = true;

@@ -8,46 +8,30 @@ import 'header_slices.dart';
 
 /// A [Map] that lazily converts [HeaderEntrySlices] to strings only when
 /// accessed.
-final class LazyByteHeaderMap extends MapBase<String, List<String>> {
+final class LazyByteHeaderMap
+    extends UnmodifiableMapBase<String, List<String>> {
   final List<HeaderEntrySlices> _slices;
   CaseInsensitiveMap<List<String>>? _inner;
 
   LazyByteHeaderMap(this._slices);
 
   CaseInsensitiveMap<List<String>> get _map {
-    if (_inner != null) return _inner!;
-    final map = CaseInsensitiveMap<List<String>>();
-    for (var slice in _slices) {
-      final key = String.fromCharCodes(
-        slice.key.buffer,
-        slice.key.start,
-        slice.key.end,
-      );
-      final value = String.fromCharCodes(
-        slice.value.buffer,
-        slice.value.start,
-        slice.value.end,
-      );
-      map.putIfAbsent(key, () => []).add(value);
+    if (_inner == null) {
+      final map = _inner = CaseInsensitiveMap<List<String>>();
+      for (var slice in _slices) {
+        map
+            .putIfAbsent(slice.key.asString(), () => [])
+            .add(slice.value.asString());
+      }
     }
-    return _inner = map;
+    return _inner!;
   }
 
   @override
   List<String>? operator [](Object? key) => _map[key];
 
   @override
-  void operator []=(String key, List<String> value) =>
-      throw UnsupportedError('Unmodifiable');
-
-  @override
-  void clear() => throw UnsupportedError('Unmodifiable');
-
-  @override
   Iterable<String> get keys => _map.keys;
-
-  @override
-  List<String>? remove(Object? key) => throw UnsupportedError('Unmodifiable');
 
   @override
   bool containsKey(Object? key) => _map.containsKey(key);
