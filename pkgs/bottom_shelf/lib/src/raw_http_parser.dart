@@ -128,11 +128,11 @@ final class RawHttpParser {
               _currentFieldStart,
               _bufferPos - 2,
             ).trim();
-            version = v.startsWith('HTTP/') ? v.substring(5) : v;
-
-            if (version != '1.0' && version != '1.1') {
+            final versionStr = v.startsWith('HTTP/') ? v.substring(5) : v;
+            if (!versionStr.startsWith('1.')) {
               throw const BadRequestException('Unsupported HTTP version');
             }
+            version = versionStr;
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
           } else {

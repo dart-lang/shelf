@@ -718,6 +718,26 @@ void main() {
     },
   );
 
+  test(
+    'a request with HTTP/1.2 version is accepted as HTTP/1.x compatible',
+    () async {
+      final port = await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', port);
+
+      try {
+        socket.write('GET / HTTP/1.2\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('200 OK'));
+    },
+  );
+
   group('date header', () {
     test(
       'is sent by default',
