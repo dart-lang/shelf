@@ -16,6 +16,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/src/util.dart';
 import 'package:test/test.dart';
 
+import 'test_shared.dart';
 import 'test_util.dart';
 
 void main() {
@@ -388,7 +389,7 @@ void main() {
         await socket.close();
       }
 
-      expect(await utf8.decodeStream(socket), contains('400 Bad Request'));
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
     },
   );
 

@@ -10,6 +10,8 @@ import 'package:bottom_shelf/bottom_shelf.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
+import 'test_shared.dart';
+
 void main() {
   group('Robustness', () {
     test('Header size limit exceeded', () async {
@@ -28,11 +30,8 @@ void main() {
       );
 
       // We expect the server to destroy the socket
-      try {
-        await utf8.decodeStream(socket);
-      } catch (e) {
-        // Expected
-      }
+      final response = await utf8.decodeStream(socket);
+      expect(response, isABadRequestResponse);
     });
 
     test('Malformed request (garbage bytes)', () async {
@@ -47,11 +46,8 @@ void main() {
       addTearDown(socket.close);
       socket.add(List.generate(10_000, (i) => i % 256)); // 10KB of garbage
 
-      try {
-        await utf8.decodeStream(socket);
-      } catch (e) {
-        // Expected
-      }
+      final response = await utf8.decodeStream(socket);
+      expect(response, isABadRequestResponse);
     });
 
     test('Early client close', () async {
@@ -96,14 +92,10 @@ void main() {
         ),
       );
 
-      try {
-        final response = await utf8
-            .decodeStream(socket)
-            .timeout(const Duration(seconds: 1));
-        expect(response, isNot(contains('200 OK')));
-      } catch (e) {
-        // Expected
-      }
+      final response = await utf8
+          .decodeStream(socket)
+          .timeout(const Duration(seconds: 1));
+      expect(response, isABadRequestResponse);
     });
 
     test('Conflicting body headers (Request Smuggling Prevention)', () async {
@@ -125,7 +117,7 @@ void main() {
       );
 
       final response = await utf8.decodeStream(socket);
-      expect(response, contains('400 Bad Request'));
+      expect(response, isABadRequestResponse);
     });
 
     test('Slowloris Mitigation (Header Timeout)', () async {
@@ -214,7 +206,7 @@ void main() {
       );
 
       final response = await utf8.decodeStream(socket);
-      expect(response, contains('400 Bad Request'));
+      expect(response, isABadRequestResponse);
     });
 
     test('Strict CRLF - rejects isolated CR', () async {
@@ -236,7 +228,7 @@ void main() {
       );
 
       final response = await utf8.decodeStream(socket);
-      expect(response, contains('400 Bad Request'));
+      expect(response, isABadRequestResponse);
     });
 
     test('Header sanitization - rejects control characters in value', () async {
@@ -258,7 +250,7 @@ void main() {
       );
 
       final response = await utf8.decodeStream(socket);
-      expect(response, contains('400 Bad Request'));
+      expect(response, isABadRequestResponse);
     });
   });
 }
