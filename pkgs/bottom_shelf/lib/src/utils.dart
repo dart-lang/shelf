@@ -2,34 +2,73 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:typed_data';
+
 /// Parses a single hex character byte (0-9, a-f, A-F) to its integer value.
 /// Returns -1 if the byte is not a valid hex character.
 int parseHex(int byte) {
-  // TODO(kevmoo): consider using a lookup table.
-
-  if (byte >= 48 && byte <= 57) return byte - 48; // 0-9
-  if (byte >= 97 && byte <= 102) return byte - 97 + 10; // a-f
-  if (byte >= 65 && byte <= 70) return byte - 65 + 10; // A-F
-  return -1;
+  if (byte < 0 || byte > 255) return -1;
+  final entry = _charFlags[byte];
+  return (entry & 0x10) != 0 ? (entry & 0x0F) : -1;
 }
 
 /// Returns true if the byte is a valid HTTP token character (tchar).
-bool isTchar(int byte) =>
-    (byte >= 65 && byte <= 90) || // A-Z
-    (byte >= 97 && byte <= 122) || // a-z
-    (byte >= 48 && byte <= 57) || // 0-9
-    byte == 33 || // !
-    byte == 35 || // #
-    byte == 36 || // $
-    byte == 37 || // %
-    byte == 38 || // &
-    byte == 39 || // '
-    byte == 42 || // *
-    byte == 43 || // +
-    byte == 45 || // -
-    byte == 46 || // .
-    byte == 94 || // ^
-    byte == 95 || // _
-    byte == 96 || // `
-    byte == 124 || // |
-    byte == 126; // ~
+bool isTchar(int byte) {
+  if (byte < 0 || byte > 255) return false;
+  return (_charFlags[byte] & 0x20) != 0;
+}
+
+/// A lookup table for character classification and parsing.
+///
+/// This table contains 256 entries, one for each possible byte value.
+/// Each entry is a bit mask that encodes multiple properties of the character:
+///
+/// *   **Bits 0-3:** The numeric value of the hex digit (0-15), if applicable.
+/// *   **Bit 4 (0x10):** Flag indicating the character is a valid hex digit
+///     (0-9, a-f, A-F).
+/// *   **Bit 5 (0x20):** Flag indicating the character is a valid HTTP token
+///     character (tchar).
+///
+/// This layout allows extremely fast checks in performance-critical parsing
+/// loops by avoiding multiple conditional branches.
+final Uint8List _charFlags = _generateFlags();
+
+Uint8List _generateFlags() {
+  final list = Uint8List(256);
+  for (var i = 0; i < 256; i++) {
+    var flags = 0;
+    // isTchar
+    if ((i >= 65 && i <= 90) ||
+        (i >= 97 && i <= 122) ||
+        (i >= 48 && i <= 57) ||
+        [
+          33,
+          35,
+          36,
+          37,
+          38,
+          39,
+          42,
+          43,
+          45,
+          46,
+          94,
+          95,
+          96,
+          124,
+          126,
+        ].contains(i)) {
+      flags |= 0x20;
+    }
+    // isHex
+    if (i >= 48 && i <= 57) {
+      flags |= 0x10 | (i - 48);
+    } else if (i >= 97 && i <= 102) {
+      flags |= 0x10 | (i - 97 + 10);
+    } else if (i >= 65 && i <= 70) {
+      flags |= 0x10 | (i - 65 + 10);
+    }
+    list[i] = flags;
+  }
+  return list;
+}
