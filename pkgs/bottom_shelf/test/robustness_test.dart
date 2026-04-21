@@ -194,5 +194,71 @@ void main() {
       final response = await utf8.decodeStream(socket);
       expect(response, contains('200 OK'));
     });
+
+    test('Strict CRLF - rejects bare line feed', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('ok'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      // Send request with bare LF (\n instead of \r\n) in headers
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\nConnection: close\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    });
+
+    test('Strict CRLF - rejects isolated CR', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('ok'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      // Send request with isolated CR (\r not followed by \n)
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\rHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    });
+
+    test('Header sanitization - rejects control characters in value', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('ok'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      // Send request with control character (ASCII 7 - Bell) in header value
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nX-Bad: value\x07here\r\nConnection: close\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    });
   });
 }

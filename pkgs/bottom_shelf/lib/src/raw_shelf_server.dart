@@ -286,6 +286,13 @@ final class RawShelfServer {
         }
       } catch (e, st) {
         if (!isHijacked && !isDestroyed) {
+          if (e is HttpException) {
+            socket.add(
+              utf8.encode(
+                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
+              ),
+            );
+          }
           _onConnectionError?.call('Error in handler', e, st);
           destroy();
         }

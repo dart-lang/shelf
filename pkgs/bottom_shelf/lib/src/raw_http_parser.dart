@@ -68,6 +68,12 @@ final class RawHttpParser {
 
       _buffer[_bufferPos++] = byte;
 
+      if (_bufferPos >= 2 &&
+          _buffer[_bufferPos - 2] == $Chars.cr &&
+          byte != $Chars.lf) {
+        throw const HttpException('CR must be followed by LF');
+      }
+
       switch (_state) {
         case _stateMethod:
           if (byte == $Chars.sp) {
@@ -103,10 +109,13 @@ final class RawHttpParser {
           }
         case _stateVersion:
           if (byte == $Chars.lf) {
+            if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
+              throw const HttpException('Bare line feed not allowed');
+            }
             final v = String.fromCharCodes(
               _buffer,
               _currentFieldStart,
-              _bufferPos - 1,
+              _bufferPos - 2,
             ).trim();
             version = v.startsWith('HTTP/') ? v.substring(5) : v;
             _currentFieldStart = _bufferPos;
@@ -134,9 +143,11 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderValue;
           } else if (byte == $Chars.lf) {
+            if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
+              throw const HttpException('Bare line feed not allowed');
+            }
             final len = _bufferPos - _currentFieldStart;
-            if (len == 1 ||
-                (len == 2 && _buffer[_currentFieldStart] == $Chars.cr)) {
+            if (len == 2) {
               _state = _stateEndOfHeaders;
               return true;
             }
@@ -146,18 +157,20 @@ final class RawHttpParser {
           }
         case _stateHeaderValue:
           if (byte == $Chars.lf) {
+            if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
+              throw const HttpException('Bare line feed not allowed');
+            }
             var start = _currentFieldStart;
-            var end = _bufferPos - 1;
+            final end = _bufferPos - 2; // Exclude CRLF
             while (start < end && _buffer[start] == $Chars.sp) {
               start++;
             }
-            if (end > start && _buffer[end - 1] == $Chars.cr) end--;
 
             final valueSlice = HeaderByteSlice(_buffer, start, end);
             headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
             _currentFieldStart = _bufferPos;
             _state = _stateHeaderKey;
-          } else if (byte == 0) {
+          } else if (byte < 32 && byte != 9 && byte != 13 || byte == 127) {
             throw const HttpException('Invalid character in header value');
           }
       }
