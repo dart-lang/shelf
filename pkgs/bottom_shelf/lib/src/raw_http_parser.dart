@@ -139,13 +139,15 @@ final class RawHttpParser {
           }
         case _stateHeaderKey:
           if (byte == $Chars.colon) {
-            var start = _currentFieldStart;
-            var end = _bufferPos - 1;
-            while (start < end && _buffer[start] == $Chars.sp) {
-              start++;
-            }
-            while (end > start && _buffer[end - 1] == $Chars.sp) {
-              end--;
+            final start = _currentFieldStart;
+            final end = _bufferPos - 1;
+
+            if (end > start &&
+                (_buffer[start] == $Chars.sp ||
+                    _buffer[end - 1] == $Chars.sp)) {
+              throw const BadRequestException(
+                'Invalid whitespace in header key',
+              );
             }
 
             _lastKeySlice = HeaderByteSlice(_buffer, start, end);

@@ -163,13 +163,26 @@ final class _HttpConnection {
             return;
           }
 
-          final host = typedHeaders.host ?? 'localhost';
+          final host = typedHeaders.host;
+          if (host == null && requestHead.version == '1.1') {
+            socket.add(
+              utf8.encode(
+                'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
+              ),
+            );
+            _destroy();
+            return;
+          }
+          final effectiveHost = host ?? 'localhost';
 
           Uri uri;
           try {
             uri = Uri.parse(requestHead.url);
             if (!uri.hasScheme) {
-              uri = Uri.parse('http://$host${requestHead.url}');
+              final path = requestHead.url.startsWith('/')
+                  ? requestHead.url
+                  : '/${requestHead.url}';
+              uri = Uri.parse('http://$effectiveHost$path');
             }
           } on FormatException catch (e, st) {
             throw BadRequestException(

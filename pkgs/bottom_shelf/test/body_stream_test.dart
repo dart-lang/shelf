@@ -3,7 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:bottom_shelf/src/body_stream.dart';
+import 'package:bottom_shelf/src/exceptions.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -59,6 +61,14 @@ void main() {
       expect(onResumeCalled, isTrue);
 
       await subscription.cancel();
+    });
+
+    test('throws BadRequestException on chunk size overflow', () {
+      final controller = ChunkedBodyController(() {});
+
+      expect(() {
+        controller.add(Uint8List.fromList('FFFFFFFFFFFFFFFF'.codeUnits));
+      }, throwsA(isA<BadRequestException>()));
     });
   });
 }

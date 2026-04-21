@@ -378,6 +378,64 @@ void main() {
     expect(await utf8.decodeStream(socket), isABadRequestResponse);
   });
 
+  test(
+    'a request with whitespace in header key results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host : localhost\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request without Host header in HTTP/1.1 results in a 400 response',
+    () async {
+      await _scheduleServer(syncHandler);
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      expect(await utf8.decodeStream(socket), isABadRequestResponse);
+    },
+  );
+
+  test(
+    'a request with path not starting with slash handles it correctly',
+    () async {
+      await _scheduleServer((request) {
+        expect(request.url.path, 'foo');
+        return Response.ok('Hello');
+      });
+      final socket = await Socket.connect('localhost', _serverPort);
+
+      try {
+        socket.write('GET foo HTTP/1.1\r\n');
+        socket.write('Host: localhost\r\n');
+        socket.write('Connection: close\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('200 OK'));
+    },
+  );
+
   group('date header', () {
     test(
       'is sent by default',
