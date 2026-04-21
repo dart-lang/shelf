@@ -58,6 +58,21 @@ void _defineComplianceTests(String name, String serverPath) {
 
     setUpAll(() async {
       print('Temp directory for $name: ${tempDir.path}');
+
+      print('Building Http11Probe...');
+      // Build the probe tool once
+      final buildResult = await Process.start('dotnet', [
+        'build',
+        '../../vendor/Http11Probe/src/Http11Probe.Cli',
+        '--output',
+        'tool/probe_bin',
+      ], mode: ProcessStartMode.inheritStdio);
+
+      final buildExit = await buildResult.exitCode;
+      if (buildExit != 0) {
+        fail('Failed to build Http11Probe - exit code $buildExit');
+      }
+
       // Create reports directory
       Directory(
         p.join(tempDir.path, 'reports', name),
@@ -102,6 +117,10 @@ void _defineComplianceTests(String name, String serverPath) {
           fail('Generated summary does not match golden.');
         }
       }
+
+      // Clean up temp directory
+      print('Cleaning up temp directory: ${tempDir.path}');
+      tempDir.deleteSync(recursive: true);
     });
   });
 }
@@ -113,14 +132,8 @@ void _testCompliance(
   Directory tempDir,
 ) {
   test('Category: $category', () async {
-    // Verify dotnet is present
-    final dotnetResult = await Process.run('dotnet', ['--version']);
-    if (dotnetResult.exitCode != 0) {
-      fail('dotnet is not installed or not in PATH');
-    }
-
     final reportFile = p.join(tempDir.path, 'reports', name, '$category.json');
-    
+
     // Create directory for report file if it doesn't exist
     Directory(p.dirname(reportFile)).createSync(recursive: true);
 
@@ -133,12 +146,8 @@ void _testCompliance(
     final portLine = await serverProcess.stdout.next;
     final port = int.parse(portLine.split(': ').last);
 
-    // Run the probe
     final probeProcess = await TestProcess.start('dotnet', [
-      'run',
-      '--project',
-      '../../vendor/Http11Probe/src/Http11Probe.Cli',
-      '--',
+      'tool/probe_bin/Http11Probe.Cli.dll',
       '--host',
       '127.0.0.1',
       '--port',

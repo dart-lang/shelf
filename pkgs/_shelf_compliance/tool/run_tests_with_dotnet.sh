@@ -10,8 +10,8 @@ curl -sSL https://dot.net/v1/dotnet-install.sh -O
 # Make it executable
 chmod +x ./dotnet-install.sh
 
-# Install .NET 10.0.106
-./dotnet-install.sh --version 10.0.106
+# Install .NET 10 latest patch
+./dotnet-install.sh --channel 10.0
 
 # Add to PATH
 export PATH="$PATH:$HOME/.dotnet"
