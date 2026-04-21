@@ -105,5 +105,27 @@ void main() {
         // Expected
       }
     });
+
+    test('Conflicting body headers (Request Smuggling Prevention)', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('ok'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+      socket.add(
+        utf8.encode(
+          'POST / HTTP/1.1\r\nHost: localhost\r\n'
+          'Content-Length: 5\r\nTransfer-Encoding: chunked\r\n\r\n'
+          '0\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    });
   });
 }

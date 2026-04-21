@@ -235,7 +235,10 @@ void main() {
 
     var response = await _post();
     expect(response.statusCode, HttpStatus.ok);
-    await expectLater(response.stream.bytesToString(), completion('Hello from /'));
+    await expectLater(
+      response.stream.bytesToString(),
+      completion('Hello from /'),
+    );
   });
 
   test(
@@ -254,7 +257,10 @@ void main() {
 
       var response = await _post(body: 'test body');
       expect(response.statusCode, HttpStatus.ok);
-      await expectLater(response.stream.bytesToString(), completion('Hello from /'));
+      await expectLater(
+        response.stream.bytesToString(),
+        completion('Hello from /'),
+      );
     },
     skip: 'RawShelfServer does not support body streaming yet',
   );
@@ -268,7 +274,10 @@ void main() {
 
         request.hijack(
           expectAsync1((channel) async {
-            await expectLater(channel.stream.first, completion(equals('Hello'.codeUnits)));
+            await expectLater(
+              channel.stream.first,
+              completion(equals('Hello'.codeUnits)),
+            );
 
             channel.sink.add(
               'HTTP/1.1 404 Not Found\r\n'
@@ -278,12 +287,13 @@ void main() {
                       'Hello, world!'
                   .codeUnits,
             );
-            channel.sink.close();
+            await channel.sink.close();
           }),
         );
       });
 
       var response = await _post(body: 'Hello');
+
       expect(response.statusCode, HttpStatus.notFound);
       expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
       await expectLater(

@@ -92,4 +92,26 @@ final class TypedHeaders {
     _cache['keep-alive'] = result;
     return result;
   }
+
+  /// Returns true if both Content-Length and Transfer-Encoding are present.
+  /// This is a sign of HTTP request smuggling (RFC 9112 section 6.1).
+  bool get hasConflictingBodyHeaders {
+    if (_cache case {'conflicting-body-headers': final bool value}) {
+      return value;
+    }
+    var hasContentLength = false;
+    var hasTransferEncoding = false;
+
+    for (var slice in _slices) {
+      if (slice.key.matches('content-length')) {
+        hasContentLength = true;
+      } else if (slice.key.matches('transfer-encoding')) {
+        hasTransferEncoding = true;
+      }
+    }
+
+    final result = hasContentLength && hasTransferEncoding;
+    _cache['conflicting-body-headers'] = result;
+    return result;
+  }
 }

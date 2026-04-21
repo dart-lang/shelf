@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -115,6 +116,17 @@ final class RawShelfServer {
             final bodyDone = Completer<void>();
 
             final typedHeaders = TypedHeaders(parser.headerSlices);
+
+            if (typedHeaders.hasConflictingBodyHeaders) {
+              socket.add(
+                utf8.encode(
+                  'HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n',
+                ),
+              );
+              destroy();
+              return;
+            }
+
             final host = typedHeaders.host ?? 'localhost';
 
             var uri = Uri.parse(parser.url!);
