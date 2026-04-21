@@ -19,6 +19,18 @@ void main() async {
       sb.writeln();
       return Response.ok(sb.toString());
     }
+    if (request.url.path == 'cookie') {
+      final cookieHeader = request.headers['cookie'];
+      if (cookieHeader == null) {
+        return Response.ok('No cookies');
+      }
+      final cookies = cookieHeader.split(';').map((e) => e.trim()).toList();
+      final sb = StringBuffer();
+      for (var cookie in cookies) {
+        sb.writeln(cookie);
+      }
+      return Response.ok(sb.toString());
+    }
     return Response.ok(request.read());
   }
 

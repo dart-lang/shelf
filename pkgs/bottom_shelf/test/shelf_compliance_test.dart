@@ -1201,36 +1201,60 @@ void main() {
   });
 
   test('COOK-PARSED-BASIC', () async {
-    final port = await _scheduleServer(syncHandler);
+    final port = await _scheduleServer((request) {
+      if (request.url.path == 'cookie') {
+        final cookieHeader = request.headers['cookie'];
+        if (cookieHeader == null) return Response.ok('No cookies');
+        final cookies = cookieHeader.split(';').map((e) => e.trim()).toList();
+        final sb = StringBuffer();
+        for (var cookie in cookies) {
+          sb.writeln(cookie);
+        }
+        return Response.ok(sb.toString());
+      }
+      return Response.ok('sync');
+    });
     final socket = await Socket.connect('localhost', port);
-    try {
-      socket.write('GET /cookie HTTP/1.1\r\n');
-      socket.write('Host: localhost\r\n');
-      socket.write('Cookie: foo=bar\r\n');
-      socket.write('\r\n');
-    } finally {
-      await socket.close();
-    }
+    addTearDown(socket.close);
+
+    socket.write('GET /cookie HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Cookie: foo=bar\r\n');
+    socket.write('Connection: close\r\n');
+    socket.write('\r\n');
+
     final response = await utf8.decodeStream(socket);
     expect(response, contains('foo=bar'));
-  }, skip: 'Fails in checker: COOK-PARSED-BASIC');
+  });
 
   test('COOK-PARSED-MULTI', () async {
-    final port = await _scheduleServer(syncHandler);
+    final port = await _scheduleServer((request) {
+      if (request.url.path == 'cookie') {
+        final cookieHeader = request.headers['cookie'];
+        if (cookieHeader == null) return Response.ok('No cookies');
+        final cookies = cookieHeader.split(';').map((e) => e.trim()).toList();
+        final sb = StringBuffer();
+        for (var cookie in cookies) {
+          sb.writeln(cookie);
+        }
+        return Response.ok(sb.toString());
+      }
+      return Response.ok('sync');
+    });
     final socket = await Socket.connect('localhost', port);
-    try {
-      socket.write('GET /cookie HTTP/1.1\r\n');
-      socket.write('Host: localhost\r\n');
-      socket.write('Cookie: a=1; b=2; c=3\r\n');
-      socket.write('\r\n');
-    } finally {
-      await socket.close();
-    }
+    addTearDown(socket.close);
+
+    socket.write('GET /cookie HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Cookie: a=1; b=2; c=3\r\n');
+    socket.write('Connection: close\r\n');
+    socket.write('\r\n');
+
     final response = await utf8.decodeStream(socket);
     expect(response, contains('a=1'));
     expect(response, contains('b=2'));
     expect(response, contains('c=3'));
-  }, skip: 'Fails in checker: COOK-PARSED-MULTI');
+  });
 }
 
 Future<int> _scheduleServer(Handler handler) async {
