@@ -352,7 +352,13 @@ final class _HttpConnection {
       }
     } catch (e, st) {
       if (!_isHijacked && !_isDestroyed) {
-        onConnectionError?.call('Error in handler', e, st);
+        onConnectionError?.call(
+          'Error in handler',
+          e,
+          st,
+          remoteAddress: socket.remoteAddress,
+          remotePort: socket.remotePort,
+        );
         if (e is BadRequestException) {
           socket.add(_badRequestResponseBytes);
           socket.close().then((_) => _destroy());
@@ -408,7 +414,13 @@ final class _HttpConnection {
                   'Internal Server Error',
                 ),
               );
-              onConnectionError?.call('Error in handler', e, st);
+              onConnectionError?.call(
+                'Error in handler',
+                e,
+                st,
+                remoteAddress: socket.remoteAddress,
+                remotePort: socket.remotePort,
+              );
               unawaited(socket.close().then((_) => _destroy()));
             }
           }
@@ -420,13 +432,21 @@ final class _HttpConnection {
           final action = onAsyncError?.call(e, st);
           if (action == ErrorAction.ignore) {
             if (!_isDestroyed) {
-              onConnectionError?.call('Unhandled async error (ignored)', e, st);
+              onConnectionError?.call(
+                'Unhandled async error (ignored)',
+                e,
+                st,
+                remoteAddress: socket.remoteAddress,
+                remotePort: socket.remotePort,
+              );
             }
           } else if (action == ErrorAction.crash) {
             onConnectionError?.call(
               'Crashing server due to async error',
               e,
               st,
+              remoteAddress: socket.remoteAddress,
+              remotePort: socket.remotePort,
             );
             // ignore: only_throw_errors
             throw e; // Rethrow to parent zone!
@@ -442,7 +462,13 @@ final class _HttpConnection {
                 ),
               );
             }
-            onConnectionError?.call('Error in handler', e, st);
+            onConnectionError?.call(
+              'Error in handler',
+              e,
+              st,
+              remoteAddress: socket.remoteAddress,
+              remotePort: socket.remotePort,
+            );
             socket.close().then((_) => _destroy());
           }
         },

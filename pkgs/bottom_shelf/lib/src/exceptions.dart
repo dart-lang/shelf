@@ -2,11 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-typedef ConnectionErrorCallback = void Function(
-  String message,
-  Object? error,
-  StackTrace? stackTrace,
-);
+import 'dart:io';
+
+typedef ConnectionErrorCallback =
+    void Function(
+      String message,
+      Object error,
+      StackTrace stackTrace, {
+      required InternetAddress remoteAddress,
+      required int remotePort,
+    });
 
 /// Exception thrown when a request is malformed or violates protocol limits.
 final class BadRequestException implements Exception {

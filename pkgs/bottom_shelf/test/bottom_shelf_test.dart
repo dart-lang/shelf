@@ -84,9 +84,16 @@ void main() {
         },
         'localhost',
         0,
-        onConnectionError: (message, error, stackTrace) {
-          logs.add(message);
-        },
+        onConnectionError:
+            (
+              message,
+              error,
+              stackTrace, {
+              required remoteAddress,
+              required remotePort,
+            }) {
+              logs.add(message);
+            },
       );
       addTearDown(server.close);
 
