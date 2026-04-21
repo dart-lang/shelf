@@ -27,8 +27,7 @@ void handleHttpConnection({
   required Socket socket,
   required Handler handler,
   Duration? headerTimeout,
-  void Function(String message, Object? error, StackTrace? stackTrace)?
-  onConnectionError,
+  ConnectionErrorCallback? onConnectionError,
   ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
 }) {
   _HttpConnection(
@@ -44,8 +43,7 @@ final class _HttpConnection {
   final Socket socket;
   final Handler handler;
   final Duration? headerTimeout;
-  final void Function(String message, Object? error, StackTrace? stackTrace)?
-  onConnectionError;
+  final ConnectionErrorCallback? onConnectionError;
   final ErrorAction? Function(Object, StackTrace)? onAsyncError;
 
   final _parser = RawHttpParser();

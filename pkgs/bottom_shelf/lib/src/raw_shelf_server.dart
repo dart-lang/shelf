@@ -10,14 +10,12 @@ import 'package:shelf/shelf.dart';
 import 'exceptions.dart';
 import 'http_connection.dart';
 
-typedef Logger = void Function(String message, Object?, StackTrace?);
-
 /// A high-performance Shelf server that uses raw [ServerSocket]s.
 final class RawShelfServer {
   final Handler _handler;
   final ServerSocket _serverSocket;
   final Duration? _headerTimeout;
-  final Logger? _onConnectionError;
+  final ConnectionErrorCallback? _onConnectionError;
   final ErrorAction? Function(Object error, StackTrace stackTrace)?
   _onAsyncError;
 
@@ -39,7 +37,7 @@ final class RawShelfServer {
     int backlog = 0,
     bool shared = false,
     Duration? headerTimeout,
-    Logger? onConnectionError,
+    ConnectionErrorCallback? onConnectionError,
     ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
   }) async {
     final serverSocket = await ServerSocket.bind(
