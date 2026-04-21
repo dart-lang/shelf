@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bottom_shelf/bottom_shelf.dart';
+import 'package:bottom_shelf/src/constants.dart';
 import 'package:shelf/shelf.dart';
 
 void main(List<String> args) async {
@@ -14,7 +15,7 @@ void main(List<String> args) async {
 
 /// A middleware that simulates real-world usage of typed headers.
 Handler _typedHeaderMiddleware(Handler innerHandler) => (request) {
-  final typed = request.context['shelf.raw.headers'] as TypedHeaders?;
+  final typed = request.context[$Context.rawHeaders] as TypedHeaders?;
   // Access a header multiple times to benefit from caching
   final _ = typed?.ifModifiedSince;
   final _ = typed?.contentType;

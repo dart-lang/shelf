@@ -215,7 +215,7 @@ final class RawShelfServer {
               protocolVersion: parser.version!,
               headers: LazyByteHeaderMap(finalHeaderSlices),
               body: requestBody,
-              context: {'shelf.raw.headers': typedHeaders},
+              context: {$Context.rawHeaders: typedHeaders},
               onHijack: (void Function(StreamChannel<List<int>>) callback) {
                 isHijacked = true;
                 hijackController = StreamController<Uint8List>(sync: true);

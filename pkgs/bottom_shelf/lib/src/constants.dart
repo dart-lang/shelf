@@ -19,3 +19,7 @@ abstract final class $Header {
   static const connection = 'connection';
   static const transferEncoding = 'transfer-encoding';
 }
+
+abstract final class $Context {
+  static const rawHeaders = 'shelf.raw.headers';
+}

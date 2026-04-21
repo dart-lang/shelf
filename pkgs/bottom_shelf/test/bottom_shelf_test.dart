@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bottom_shelf/bottom_shelf.dart';
+import 'package:bottom_shelf/src/constants.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -121,7 +122,7 @@ void main() {
       final server = await RawShelfServer.serve(
         (request) {
           try {
-            final typed = request.context['shelf.raw.headers'] as TypedHeaders;
+            final typed = request.context[$Context.rawHeaders] as TypedHeaders;
             expect(typed.contentLength, 123);
             expect(typed.contentLength, 123); // Cache hit
             if (!completer.isCompleted) completer.complete();
