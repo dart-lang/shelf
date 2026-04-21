@@ -61,17 +61,13 @@ void _defineComplianceTests(String name, String serverPath) {
 
       print('Building Http11Probe...');
       // Build the probe tool once
-      final buildResult = await Process.start('dotnet', [
+      final buildProcess = await TestProcess.start('dotnet', [
         'build',
         '../../vendor/Http11Probe/src/Http11Probe.Cli',
         '--output',
         'tool/probe_bin',
-      ], mode: ProcessStartMode.inheritStdio);
-
-      final buildExit = await buildResult.exitCode;
-      if (buildExit != 0) {
-        fail('Failed to build Http11Probe - exit code $buildExit');
-      }
+      ]);
+      await buildProcess.shouldExit(0);
 
       // Create reports directory
       Directory(
