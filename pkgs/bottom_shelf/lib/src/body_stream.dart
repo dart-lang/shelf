@@ -244,7 +244,7 @@ final class ChunkedBodyController implements BodyController {
             if (hex == -1) {
               throw const BadRequestException('Invalid chunk size');
             }
-            if (_chunkSize > 0x07FFFFFFFFFFFFFF) {
+            if (_chunkSize > $Limit.maxChunkSizeBeforeShift) {
               throw const BadRequestException('Chunk size too large');
             }
             _chunkSize = (_chunkSize << 4) + hex;

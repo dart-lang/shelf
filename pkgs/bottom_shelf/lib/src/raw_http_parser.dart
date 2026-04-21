@@ -40,10 +40,6 @@ final class RawHttpParser {
   int _currentFieldStart = 0;
   HeaderByteSlice? _lastKeySlice;
 
-  static const int _maxHeaderSize = 64 * 1024;
-  static const int _maxFieldSize = 8 * 1024;
-  static const int _maxUrlSize = 8 * 1024;
-
   int _totalHeadersReceived = 0;
   int _consumedInLastChunk = 0;
   int get consumedInLastChunk => _consumedInLastChunk;
@@ -67,7 +63,7 @@ final class RawHttpParser {
       final byte = data[i];
       _totalHeadersReceived++;
 
-      if (_totalHeadersReceived > _maxHeaderSize) {
+      if (_totalHeadersReceived > $Limit.maxHeaderSize) {
         throw const BadRequestException('Header size limit exceeded');
       }
 
@@ -95,7 +91,7 @@ final class RawHttpParser {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
               throw const BadRequestException('Invalid character in method');
             }
-            if (_bufferPos - _currentFieldStart > _maxFieldSize) {
+            if (_bufferPos - _currentFieldStart > $Limit.maxFieldSize) {
               throw const BadRequestException('Method too long');
             }
           }
@@ -112,7 +108,7 @@ final class RawHttpParser {
             if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
               throw const BadRequestException('Invalid character in URL');
             }
-            if (_bufferPos - _currentFieldStart > _maxUrlSize) {
+            if (_bufferPos - _currentFieldStart > $Limit.maxUrlSize) {
               throw const BadRequestException('URL too long');
             }
           }

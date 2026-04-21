@@ -23,3 +23,16 @@ abstract final class $Header {
 abstract final class $Context {
   static const rawHeaders = 'shelf.raw.headers';
 }
+
+abstract final class $Limit {
+  static const maxHeaderSize = 64 * 1024;
+  static const maxFieldSize = 8 * 1024;
+  static const maxUrlSize = 8 * 1024;
+
+  /// The maximum value of `_chunkSize` before shifting by 4 bits
+  /// (multiplying by 16)
+  /// to prevent overflow in a 64-bit signed integer.
+  ///
+  /// This corresponds to `0x7FFFFFFFFFFFFFFF >> 4`.
+  static const maxChunkSizeBeforeShift = 0x07FFFFFFFFFFFFFF;
+}
