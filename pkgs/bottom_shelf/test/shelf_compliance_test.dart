@@ -1095,43 +1095,36 @@ void main() {
     expect(response, contains('501 Not Implemented'));
   });
 
-  test(
-    'SMUG-CHUNK-MISSING-TRAILING-CRLF',
-    skip: 'Fails in checker: SMUG-CHUNK-MISSING-TRAILING-CRLF',
-    () async {
-      final port = await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', port);
-      addTearDown(socket.close);
+  test('SMUG-CHUNK-MISSING-TRAILING-CRLF', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
 
-      socket.write('POST / HTTP/1.1\r\n');
-      socket.write('Host: localhost\r\n');
-      socket.write('Transfer-Encoding: chunked\r\n');
-      socket.write('\r\n');
-      socket.write('5\r\nhello0\r\n\r\n');
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Transfer-Encoding: chunked\r\n');
+    socket.write('Connection: close\r\n');
+    socket.write('\r\n');
+    socket.write('5\r\nhello0\r\n\r\n');
 
-      final response = await utf8.decodeStream(socket);
-      expect(response, contains('400 Bad Request'));
-    },
-  );
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('400 Bad Request'));
+  });
 
-  test(
-    'SMUG-CHUNK-SPILL',
-    skip: 'Fails in checker: SMUG-CHUNK-SPILL',
-    () async {
-      final port = await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', port);
-      addTearDown(socket.close);
+  test('SMUG-CHUNK-SPILL', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
 
-      socket.write('POST / HTTP/1.1\r\n');
-      socket.write('Host: localhost\r\n');
-      socket.write('Transfer-Encoding: chunked\r\n');
-      socket.write('\r\n');
-      socket.write('5\r\nhello!!\r\n0\r\n\r\n');
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Transfer-Encoding: chunked\r\n');
+    socket.write('\r\n');
+    socket.write('5\r\nhello!!\r\n0\r\n\r\n');
 
-      final response = await utf8.decodeStream(socket);
-      expect(response, contains('400 Bad Request'));
-    },
-  );
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('400 Bad Request'));
+  });
 
   test('SMUG-CHUNK-EXT-CTRL', () async {
     final port = await _scheduleServer(syncHandler);

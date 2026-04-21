@@ -143,6 +143,7 @@ final class ChunkedBodyController implements BodyController {
   static const int _stateSize = 0;
   static const int _stateExt = 1;
   static const int _stateData = 2;
+  static const int _stateDataCR = 5;
   static const int _stateDataCRLF = 3;
   static const int _stateTrailers = 4;
 
@@ -286,18 +287,23 @@ final class ChunkedBodyController implements BodyController {
           pos += take;
 
           if (_chunkBytesRead == _chunkSize) {
-            _state = _stateDataCRLF;
+            _state = _stateDataCR;
           }
+        case _stateDataCR:
+          final byte = data[pos];
+          if (byte != $Chars.cr) {
+            throw const BadRequestException('CRLF expected after chunk data');
+          }
+          pos++;
+          _state = _stateDataCRLF;
         case _stateDataCRLF:
           final byte = data[pos];
-          if (byte == $Chars.lf) {
-            // LF, end of CRLF
-            pos++;
-            _chunkSize = 0;
-            _state = _stateSize;
-          } else {
-            pos++;
+          if (byte != $Chars.lf) {
+            throw const BadRequestException('CRLF expected after chunk data');
           }
+          pos++;
+          _chunkSize = 0;
+          _state = _stateSize;
         case _stateTrailers:
           final byte = data[pos];
           pos++;
