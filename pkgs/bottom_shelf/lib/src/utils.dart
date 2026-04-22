@@ -6,6 +6,7 @@ import 'dart:typed_data';
 
 /// Parses a single hex character byte (0-9, a-f, A-F) to its integer value.
 /// Returns `-1` if the byte is not a valid hex character.
+@pragma('vm:prefer-inline')
 int parseHex(int byte) {
   assert(byte >= 0 && byte <= 255);
   // This SEEMS like a lot of code, but it's branchless and in benchmarks it
@@ -17,18 +18,21 @@ int parseHex(int byte) {
 }
 
 /// Returns `true` if the byte is a valid HTTP token character (tchar).
+@pragma('vm:prefer-inline')
 bool isTchar(int byte) {
   assert(byte >= 0 && byte <= 255);
   return (_charFlags[byte] & 0x20) != 0;
 }
 
 /// Returns `true` if the byte is an invalid character in a header value.
+@pragma('vm:prefer-inline')
 bool isInvalidHeaderValueChar(int byte) {
   assert(byte >= 0 && byte <= 255);
   return (_charFlags[byte] & 0x40) != 0;
 }
 
 /// Returns `true` if the byte is an invalid character in a URL.
+@pragma('vm:prefer-inline')
 bool isInvalidUrlChar(int byte) {
   assert(byte >= 0 && byte <= 255);
   return (_charFlags[byte] & 0x80) != 0;

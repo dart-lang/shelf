@@ -114,10 +114,7 @@ final class RawHttpParser {
             _currentFieldStart = _bufferPos;
             _state = _$State.version;
           } else {
-            if (byte == 0 ||
-                byte == $Chars.lf ||
-                byte == $Chars.cr ||
-                byte > 127) {
+            if (isInvalidUrlChar(byte)) {
               throw const BadRequestException('Invalid character in URL');
             }
             if (_bufferPos - _currentFieldStart > $Limit.maxUrlSize) {
@@ -203,7 +200,7 @@ final class RawHttpParser {
             _headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
             _currentFieldStart = _bufferPos;
             _state = _$State.headerKey;
-          } else if (byte < 32 && byte != 9 && byte != 13 || byte == 127) {
+          } else if (isInvalidHeaderValueChar(byte)) {
             throw const BadRequestException(
               'Invalid character in header value',
             );
