@@ -176,11 +176,12 @@ void _testCompliance(
     final currentResults = (currentData['results'] as List<dynamic>)
         .cast<Map<String, dynamic>>();
 
-    // Remove unnecessary fields from results
+    // Remove unnecessary and dynamic fields from results
     for (var result in currentResults) {
       result.remove('durationMs');
       result.remove('connectionState');
       result.remove('scored');
+      result.remove('doubleFlush');
     }
 
     currentResults.sort(
@@ -191,12 +192,6 @@ void _testCompliance(
     // reads clean data
     final encoder = const JsonEncoder.withIndent('  ');
     File(reportFile).writeAsStringSync('${encoder.convert(currentResults)}\n');
-
-    // Remove dynamic fields
-    for (var result in currentResults) {
-      final res = result;
-      res.remove('doubleFlush');
-    }
 
     // Compare with Goldens
     final reportsDir = Directory('reports/$name');
@@ -234,7 +229,7 @@ void _testCompliance(
     }
 
     // Clean up server
-    serverProcess.signal(ProcessSignal.sigterm);
+    await serverProcess.kill();
     await serverProcess.shouldExit();
   });
 }

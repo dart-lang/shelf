@@ -12,7 +12,10 @@ String generateSummary(Directory jsonDir) {
 
   for (var file in files) {
     final content = file.readAsStringSync();
-    final results = json.decode(content) as List<dynamic>;
+    final decoded = json.decode(content);
+    final results = decoded is List
+        ? decoded
+        : (decoded as Map<String, dynamic>)['results'] as List;
 
     for (var result in results) {
       final res = result as Map<String, dynamic>;
