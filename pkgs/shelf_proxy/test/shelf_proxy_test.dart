@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -79,20 +80,25 @@ void main() {
       expect(response.headers, containsPair('accept', '*/*'));
     });
 
-    test('preserves multiple Set-Cookie headers in response', () async {
+    test('preserves multiple Set-Cookie headers in response, including dates', () async {
       await createProxy((request) {
         return shelf.Response.ok(':)', headers: {
-          'set-cookie': ['cookie1=value1', 'cookie2=value2'],
+          'set-cookie': [
+            'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
+            'cookie2=value2'
+          ],
         });
       });
 
-      final client = http.Client();
-      final response = await client.get(proxyUri);
+      final client = HttpClient();
+      final request = await client.getUrl(proxyUri);
+      final response = await request.close();
 
-      // We use headersSplitValues to verify that they are preserved as separate
-      // values.
-      expect(response.headersSplitValues['set-cookie'],
-          containsAll(['cookie1=value1', 'cookie2=value2']));
+      final setCookies = response.headers['set-cookie'];
+      expect(setCookies, [
+        'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
+        'cookie2=value2'
+      ]);
     });
 
     test('forwards response body', () async {
