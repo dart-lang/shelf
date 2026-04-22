@@ -3,8 +3,8 @@
 | Category | Count |
 | --- | --- |
 | Total | 215 |
-| Passed | 159 |
-| Failed | 3 |
+| Passed | 161 |
+| Failed | 1 |
 | Warnings | 40 |
 | Accepted | 13 |
 | Errors | 0 |
@@ -48,8 +48,6 @@
 | SMUG-CL0-BODY-POISON | Smuggling | Warn | Content-Length: 0 with trailing bytes — checks if leftover bytes poison the next request |
 | SMUG-EXPECT-100-CL | Smuggling | Warn | Expect: 100-continue with Content-Length — server should send 100 then read body |
 | SMUG-HEAD-CL-BODY | Smuggling | Warn | HEAD request with Content-Length and body — server must not leave body on connection |
-| SMUG-OPTIONS-CL-BODY | Smuggling | Fail | OPTIONS with Content-Length and body — server should consume or reject body |
-| SMUG-OPTIONS-CL-BODY-DESYNC | Smuggling | Fail | OPTIONS with Content-Length body followed by a second request — detects unread-body desync |
 | SMUG-TRAILER-AUTH | Smuggling | Warn | Authorization header in chunked trailers — prohibited per RFC 9110 §6.5.1 |
 | SMUG-TRAILER-CL | Smuggling | Warn | Content-Length in chunked trailers must be ignored — prohibited trailer field |
 | SMUG-TRAILER-CONTENT-TYPE | Smuggling | Warn | Content-Type in chunked trailer — prohibited per RFC 9110 §6.5.1 |

@@ -22,6 +22,7 @@ void handleHttpConnection({
   required Socket socket,
   required Handler handler,
   Duration? headerTimeout,
+  Duration? bodyTimeout,
   ConnectionErrorCallback? onConnectionError,
   ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
   bool automaticHeadMethodSupport = true,
@@ -30,6 +31,7 @@ void handleHttpConnection({
     socket: socket,
     handler: handler,
     headerTimeout: headerTimeout,
+    bodyTimeout: bodyTimeout,
     onConnectionError: onConnectionError,
     onAsyncError: onAsyncError,
     automaticHeadMethodSupport: automaticHeadMethodSupport,
@@ -40,6 +42,7 @@ final class _HttpConnection {
   final Socket socket;
   final Handler handler;
   final Duration? headerTimeout;
+  final Duration? bodyTimeout;
   final ConnectionErrorCallback? onConnectionError;
   final ErrorAction? Function(Object, StackTrace)? onAsyncError;
   final bool automaticHeadMethodSupport;
@@ -55,6 +58,7 @@ final class _HttpConnection {
   Completer<void>? _currentBodyDone;
   StreamController<Uint8List>? _hijackController;
   Timer? _headerTimer;
+  Timer? _bodyTimer;
   var _isHijacked = false;
   var _isDestroyed = false;
   var _clientClosed = false;
@@ -64,6 +68,7 @@ final class _HttpConnection {
     required this.socket,
     required this.handler,
     this.headerTimeout,
+    this.bodyTimeout,
     this.onConnectionError,
     this.onAsyncError,
     required this.automaticHeadMethodSupport,
@@ -108,6 +113,7 @@ final class _HttpConnection {
     if (_isDestroyed) return;
     _isDestroyed = true;
     _headerTimer?.cancel();
+    _bodyTimer?.cancel();
     _subscription?.cancel();
     socket.destroy();
     _bodyController?.close();
@@ -279,6 +285,15 @@ final class _HttpConnection {
 
           typedHeaders.validateTransferEncoding();
 
+          if (requestHead.method == 'OPTIONS' &&
+              (contentLength > 0 || typedHeaders.isChunked)) {
+            socket.add(ErrorResponse.badRequest.bytes);
+            socket.flush().then((_) {
+              socket.close().then((_) => _destroy());
+            });
+            return;
+          }
+
           Stream<Uint8List> requestBody;
           if (typedHeaders.isChunked) {
             _bodyController = ChunkedBodyController(
@@ -305,6 +320,17 @@ final class _HttpConnection {
             requestBody = const Stream<Uint8List>.empty();
             currentData = remainingInChunk;
             bodyDone.complete();
+          }
+
+          if (bodyTimeout != null &&
+              !bodyDone.isCompleted &&
+              !_isDestroyed &&
+              !_clientClosed) {
+            _bodyTimer = Timer(bodyTimeout!, _destroy);
+            bodyDone.future.then((_) {
+              _bodyTimer?.cancel();
+              _bodyTimer = null;
+            });
           }
 
           final thisRequestBodyController = _bodyController;

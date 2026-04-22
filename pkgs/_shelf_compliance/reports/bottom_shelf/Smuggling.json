@@ -1748,10 +1748,10 @@
     "rfcReference": "RFC 9110 §9.3.7",
     "rfcLevel": "Must",
     "expected": "400/405 or 2xx",
-    "verdict": "Fail",
-    "statusCode": 404,
+    "verdict": "Pass",
+    "statusCode": 400,
     "rawRequest": "OPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
   },
   {
     "id": "SMUG-OPTIONS-CL-BODY-DESYNC",
@@ -1760,11 +1760,11 @@
     "rfcReference": "RFC 9110 §9.3.7",
     "rfcLevel": "NotApplicable",
     "expected": "400/close/pass-through; poisoned follow-up = warn",
-    "verdict": "Fail",
-    "statusCode": 200,
-    "rawRequest": "── OPTIONS with CL body ──\nOPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── OPTIONS with CL body ──\nHTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\nNot Found\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\nOK",
-    "behavioralNote": "Step 1: 404, step 2: 200"
+    "verdict": "Pass",
+    "statusCode": 400,
+    "rawRequest": "── OPTIONS with CL body ──\nOPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello\n\n── Follow-up GET ──\n[Not executed — connection closed]",
+    "rawResponse": "── OPTIONS with CL body ──\nHTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n\n\n── Follow-up GET ──\n[Not executed — connection closed]",
+    "behavioralNote": "Rejected OPTIONS with body"
   },
   {
     "id": "SMUG-OPTIONS-TE-OBS-FOLD",

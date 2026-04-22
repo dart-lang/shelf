@@ -252,5 +252,57 @@ void main() {
       final response = await utf8.decodeStream(socket);
       expect(response, isABadRequestResponse);
     });
+
+    test('Body Timeout', () async {
+      final server = await RawShelfServer.serve(
+        (request) async {
+          await request.readAsString();
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+        bodyTimeout: const Duration(milliseconds: 500),
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      socket.add(utf8.encode('POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\n\r\n'));
+      await socket.flush();
+
+      // Wait longer than the timeout
+      await Future<void>.delayed(const Duration(seconds: 1));
+
+      try {
+        final response = await utf8.decodeStream(socket);
+        expect(response, isEmpty);
+      } catch (e) {
+        if (e is! SocketException && e is! HttpException) {
+          rethrow;
+        }
+      }
+    });
+
+    test('OPTIONS with Body rejected', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('ok'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      socket.add(
+        utf8.encode(
+          'OPTIONS / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\nConnection: close\r\n\r\nhello',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('400 Bad Request'));
+    });
   });
 }

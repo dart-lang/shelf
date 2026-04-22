@@ -15,6 +15,7 @@ final class RawShelfServer {
   final Handler _handler;
   final ServerSocket _serverSocket;
   final Duration? _headerTimeout;
+  final Duration? _bodyTimeout;
   final ConnectionErrorCallback? _onConnectionError;
   final ErrorAction? Function(Object error, StackTrace stackTrace)?
   _onAsyncError;
@@ -24,6 +25,7 @@ final class RawShelfServer {
     this._handler,
     this._serverSocket,
     this._headerTimeout,
+    this._bodyTimeout,
     this._onConnectionError,
     this._onAsyncError,
     this._automaticHeadMethodSupport,
@@ -39,6 +41,7 @@ final class RawShelfServer {
     int backlog = 0,
     bool shared = false,
     Duration? headerTimeout,
+    Duration? bodyTimeout = const Duration(minutes: 1),
     ConnectionErrorCallback? onConnectionError,
     ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
     bool automaticHeadMethodSupport = true,
@@ -53,6 +56,7 @@ final class RawShelfServer {
       handler,
       serverSocket,
       headerTimeout,
+      bodyTimeout,
       onConnectionError,
       onAsyncError,
       automaticHeadMethodSupport,
@@ -66,6 +70,7 @@ final class RawShelfServer {
       socket: socket,
       handler: _handler,
       headerTimeout: _headerTimeout,
+      bodyTimeout: _bodyTimeout,
       onConnectionError: _onConnectionError,
       onAsyncError: _onAsyncError,
       automaticHeadMethodSupport: _automaticHeadMethodSupport,
