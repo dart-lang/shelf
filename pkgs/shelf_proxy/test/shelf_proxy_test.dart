@@ -89,7 +89,8 @@ void main() {
       final client = http.Client();
       final response = await client.get(proxyUri);
 
-      // We use headersSplitValues to verify that they are preserved as separate values.
+      // We use headersSplitValues to verify that they are preserved as separate
+      // values.
       expect(response.headersSplitValues['set-cookie'],
           containsAll(['cookie1=value1', 'cookie2=value2']));
     });
