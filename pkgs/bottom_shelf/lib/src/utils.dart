@@ -114,7 +114,7 @@ const String _charFlags =
 //       flags &= ~_nonHexDigit;
 //       flags |= (i | 0x20) - 0x61 + 10;
 //     }
-//     // isInvalidUrlChar (Bit 5)
+//     // isInvalidUrlChar (Bit 4)
 //     if (i == 0 || i == 10 || i == 13 || i > 127) {
 //       flags |= _nonUrlChar;
 //     }
