@@ -839,6 +839,22 @@ void main() {
     expect(await utf8.decodeStream(socket), contains('405 Method Not Allowed'));
   });
 
+  test('a TRACE request results in a 405 response', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+
+    try {
+      socket.write('TRACE / HTTP/1.1\r\n');
+      socket.write('Host: localhost\r\n');
+      socket.write('Connection: close\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
+
+    expect(await utf8.decodeStream(socket), contains('405 Method Not Allowed'));
+  });
+
   test('a request with empty Host header results in a 400 response', () async {
     final port = await _scheduleServer(syncHandler);
     final socket = await Socket.connect('localhost', port);

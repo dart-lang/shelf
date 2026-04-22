@@ -464,10 +464,10 @@
     "rfcReference": "RFC 9110 §9.3.8",
     "rfcLevel": "Should",
     "expected": "405/501 or 2xx",
-    "verdict": "Fail",
-    "statusCode": 404,
+    "verdict": "Pass",
+    "statusCode": 405,
     "rawRequest": "TRACE / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n\r\n"
   },
   {
     "id": "COMP-NO-1XX-HTTP10",
@@ -634,10 +634,11 @@
     "rfcReference": "RFC 9110 §9.3.8",
     "rfcLevel": "Should",
     "expected": "405/501, or 200 without Auth",
-    "verdict": "Fail",
-    "statusCode": 404,
+    "verdict": "Pass",
+    "statusCode": 405,
     "rawRequest": "TRACE / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nAuthorization: Bearer secret-token-123\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n\r\n",
+    "behavioralNote": "TRACE disabled — sensitive headers not exposed"
   },
   {
     "id": "COMP-TRACE-WITH-BODY",
@@ -646,10 +647,10 @@
     "rfcReference": "RFC 9110 §9.3.8",
     "rfcLevel": "Should",
     "expected": "400/405 or 200",
-    "verdict": "Fail",
-    "statusCode": 404,
+    "verdict": "Pass",
+    "statusCode": 405,
     "rawRequest": "TRACE / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n\r\n"
   },
   {
     "id": "COMP-UNKNOWN-METHOD",

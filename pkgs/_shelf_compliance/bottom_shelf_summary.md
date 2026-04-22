@@ -3,8 +3,8 @@
 | Category | Count |
 | --- | --- |
 | Total | 215 |
-| Passed | 156 |
-| Failed | 19 |
+| Passed | 159 |
+| Failed | 16 |
 | Warnings | 40 |
 | Errors | 0 |
 | Skipped | 0 |
@@ -31,13 +31,10 @@
 | COMP-HTTP10-NO-HOST | Compliance | Warn | HTTP/1.0 without Host header — valid per HTTP/1.0 |
 | COMP-HTTP12-VERSION | Compliance | Warn | HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible |
 | COMP-METHOD-CASE | Compliance | Fail | Lowercase method 'get' — methods are case-sensitive per RFC |
-| COMP-METHOD-TRACE | Compliance | Fail | TRACE request — should be disabled in production |
 | COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
 | COMP-OPTIONS-ALLOW | Compliance | Fail | OPTIONS response should include Allow header listing supported methods |
 | COMP-OPTIONS-STAR | Compliance | Fail | OPTIONS * is the only valid asterisk-form request |
 | COMP-POST-CL-UNDERSEND | Compliance | Fail | POST with Content-Length: 10 but only 5 bytes sent — incomplete body |
-| COMP-TRACE-SENSITIVE | Compliance | Fail | TRACE should exclude sensitive headers from echoed response |
-| COMP-TRACE-WITH-BODY | Compliance | Fail | TRACE with Content-Length body should be rejected |
 | COMP-UNKNOWN-METHOD | Compliance | Fail | Unrecognized method should be rejected with 501 or 405 |
 | MAL-CHUNK-EXT-64K | MalformedInput | Fail | 64KB chunk extension — tests extension length limits (CVE-2023-39326 class) |
 | MAL-CL-TAB-BEFORE-VALUE | MalformedInput | Warn | Content-Length with tab as OWS — valid per RFC but unusual |

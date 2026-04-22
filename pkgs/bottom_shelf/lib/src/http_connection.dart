@@ -225,19 +225,9 @@ final class _HttpConnection {
             });
             return;
           }
-          if (requestHead.method == 'CONNECT') {
+          if (requestHead.method == 'CONNECT' ||
+              requestHead.method == 'TRACE') {
             socket.add(ErrorResponse.methodNotAllowed.bytes);
-            socket.flush().then((_) {
-              socket.close().then((_) => _destroy());
-            });
-            return;
-          }
-          if (requestHead.method == 'CONNECT') {
-            socket.add(
-              utf8.encode(
-                'HTTP/1.1 405 Method Not Allowed\r\nConnection: close\r\n\r\n',
-              ),
-            );
             socket.flush().then((_) {
               socket.close().then((_) => _destroy());
             });
