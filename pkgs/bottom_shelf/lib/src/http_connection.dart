@@ -362,7 +362,14 @@ final class _HttpConnection {
               protocolVersion: requestHead.version,
               headers: LazyByteHeaderMap(finalHeaderSlices),
               body: requestBody,
-              context: {$Context.rawHeaders: typedHeaders},
+              context: {
+                $Context.rawHeaders: typedHeaders,
+                $Context.connectionInfo: _HttpConnectionInfo(
+                  config.serverSocket.port,
+                  socket.remoteAddress,
+                  socket.remotePort,
+                ),
+              },
               onHijack: theHijackCallback,
             );
           }
@@ -426,6 +433,7 @@ final class _HttpConnection {
               socket,
               keepAlive: keepAlive,
               requestMethod: originalMethod,
+              poweredBy: config.poweredBy,
             );
             _responseSent = true;
 
@@ -447,7 +455,13 @@ final class _HttpConnection {
               _destroy();
             }
           } on HijackException {
-            // Handled
+            await Future.microtask(() {});
+            if (!_isHijacked) {
+              if (!_responseSent) {
+                socket.add(ErrorResponse.internalServerError.bytes);
+              }
+              unawaited(socket.close().then((_) => _destroy()));
+            }
           } catch (e, st) {
             if (!_isHijacked && !_isDestroyed) {
               if (!_responseSent) {
@@ -507,4 +521,18 @@ final class _HttpConnection {
       ),
     );
   }
+}
+
+// TODO: consider if we want to leak this type for compat
+// we could ditch this feature?
+// we colud just send our own type with a new header?
+class _HttpConnectionInfo implements HttpConnectionInfo {
+  @override
+  final int localPort;
+  @override
+  final InternetAddress remoteAddress;
+  @override
+  final int remotePort;
+
+  _HttpConnectionInfo(this.localPort, this.remoteAddress, this.remotePort);
 }

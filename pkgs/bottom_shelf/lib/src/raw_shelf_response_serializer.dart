@@ -24,6 +24,7 @@ final class RawShelfResponseSerializer {
     Socket socket, {
     required bool keepAlive,
     required String requestMethod,
+    String? poweredBy,
   }) async {
     final headers = Map<String, List<String>>.from(response.headersAll);
 
@@ -44,43 +45,68 @@ final class RawShelfResponseSerializer {
       headers[$Header.connection] = [keepAlive ? 'keep-alive' : 'close'];
     }
 
+    if (poweredBy != null && !headers.containsKey('x-powered-by')) {
+      headers['x-powered-by'] = [poweredBy];
+    }
+
     if (!headers.containsKey($Header.date)) {
       headers[$Header.date] = [HttpDate.format(DateTime.now())];
     }
 
-    // Write Status Line
-    socket.add(
-      utf8.encode(
-        'HTTP/1.1 ${response.statusCode} ${_getStatusPhrase(response.statusCode)}\r\n',
-      ),
+    final headerBuffer = StringBuffer();
+    headerBuffer.write(
+      'HTTP/1.1 ${response.statusCode} ${_getStatusPhrase(response.statusCode)}\r\n',
     );
 
-    // Write Headers
     headers.forEach((key, values) {
       if (values.isNotEmpty) {
-        socket.add(utf8.encode('$key: ${values.join(', ')}\r\n'));
+        headerBuffer.write('$key: ${values.join(', ')}\r\n');
       }
     });
 
-    // End Headers
-    socket.add(_crlf);
+    headerBuffer.write('\r\n');
 
-    // Write Body
+    final headerBytes = utf8.encode(headerBuffer.toString());
+    var headersSent = false;
+
     if (requestMethod == 'HEAD') {
-      // Drain the stream to avoid leaks
+      socket.add(headerBytes);
       await response.read().listen((_) {}).asFuture<void>();
-    } else if (isChunked) {
-      await for (final chunk in response.read()) {
-        if (chunk.isEmpty) continue;
-        // Hex size
-        socket.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
-        socket.add(chunk);
-        socket.add(_crlf);
-      }
-      socket.add(_chunkedEnd);
+      headersSent = true;
     } else {
       await for (final chunk in response.read()) {
-        socket.add(chunk);
+        if (chunk.isEmpty) continue;
+
+        if (!headersSent) {
+          final builder = BytesBuilder(copy: false);
+          builder.add(headerBytes);
+          if (isChunked) {
+            builder.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
+          }
+          builder.add(chunk);
+          if (isChunked) {
+            builder.add(_crlf);
+          }
+          socket.add(builder.takeBytes());
+          headersSent = true;
+        } else {
+          if (isChunked) {
+            socket.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
+            socket.add(chunk);
+            socket.add(_crlf);
+          } else {
+            socket.add(chunk);
+          }
+        }
+      }
+
+      if (!headersSent) {
+        socket.add(headerBytes);
+        headersSent = true;
+      }
+
+      if (isChunked) {
+        socket.add(_chunkedEnd);
       }
     }
 

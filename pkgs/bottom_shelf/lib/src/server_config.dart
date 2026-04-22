@@ -27,6 +27,7 @@ class ServerConfig {
   final ConnectionErrorCallback? onConnectionError;
   final AsyncErrorCallback? onAsyncError;
   final bool automaticHeadMethodSupport;
+  final String? poweredBy;
 
   ServerConfig(
     this.handler,
@@ -37,5 +38,6 @@ class ServerConfig {
     this.onConnectionError,
     this.onAsyncError,
     this.automaticHeadMethodSupport,
+    this.poweredBy,
   );
 }

@@ -284,7 +284,6 @@ void main() {
       final response = await _get(port);
       expect(response.statusCode, HttpStatus.internalServerError);
     },
-    skip: 'RawShelfServer destroys socket on error currently',
   );
 
   test('passes asynchronous exceptions to the parent error zone', () async {
@@ -336,28 +335,21 @@ void main() {
     expect(response.body, 'Hello from /');
   });
 
-  test(
-    'a bad HTTP host request results in a 500 response',
-    () async {
-      final port = await _scheduleServer(syncHandler);
+  test('a bad HTTP host request results in a 500 response', () async {
+    final port = await _scheduleServer(syncHandler);
 
-      final socket = await Socket.connect('localhost', port);
+    final socket = await Socket.connect('localhost', port);
 
-      try {
-        socket.write('GET / HTTP/1.1\r\n');
-        socket.write('Host: ^^super bad !@#host\r\n');
-        socket.write('\r\n');
-      } finally {
-        await socket.close();
-      }
+    try {
+      socket.write('GET / HTTP/1.1\r\n');
+      socket.write('Host: ^^super bad !@#host\r\n');
+      socket.write('\r\n');
+    } finally {
+      await socket.close();
+    }
 
-      expect(
-        await utf8.decodeStream(socket),
-        contains('500 Internal Server Error'),
-      );
-    },
-    skip: 'RawShelfServer destroys socket on parse error currently',
-  );
+    expect(await utf8.decodeStream(socket), contains('400 Bad Request'));
+  });
 
   test('a bad HTTP URL request results in a 400 response', () async {
     final port = await _scheduleServer(syncHandler);
@@ -989,19 +981,47 @@ void main() {
 
   group('X-Powered-By header', () {
     const poweredBy = 'x-powered-by';
-    test(
-      'defaults to "Dart with package:shelf"',
-      () async {
-        final port = await _scheduleServer(syncHandler);
+    test('defaults to "Dart with package:bottom_shelf"', () async {
+      final server = await RawShelfServer.serve(syncHandler, 'localhost', 0);
+      addTearDown(server.close);
 
-        final response = await _get(port);
-        expect(
-          response.headers,
-          containsPair(poweredBy, 'Dart with package:shelf'),
-        );
-      },
-      skip: 'RawShelfServer does not send X-Powered-By header by default yet',
-    );
+      final response = await http.get(
+        Uri.http('localhost:${server.port}', '/'),
+      );
+      expect(
+        response.headers,
+        containsPair(poweredBy, 'Dart with package:bottom_shelf'),
+      );
+    });
+
+    test('can be disabled by setting null', () async {
+      final server = await RawShelfServer.serve(
+        syncHandler,
+        'localhost',
+        0,
+        poweredBy: null,
+      );
+      addTearDown(server.close);
+
+      final response = await http.get(
+        Uri.http('localhost:${server.port}', '/'),
+      );
+      expect(response.headers, isNot(contains(poweredBy)));
+    });
+
+    test('handler sent headers wins', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('Hello', headers: {poweredBy: 'custom-app'}),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final response = await http.get(
+        Uri.http('localhost:${server.port}', '/'),
+      );
+      expect(response.headers[poweredBy], 'custom-app');
+    });
   });
 
   group('chunked coding', () {
@@ -1023,22 +1043,18 @@ void main() {
     });
   });
 
-  test(
-    'includes the dart:io HttpConnectionInfo in request context',
-    () async {
-      final port = await _scheduleServer((request) {
-        expect(
-          request.context,
-          containsPair('shelf.io.connection_info', isA<HttpConnectionInfo>()),
-        );
-        return syncHandler(request);
-      });
+  test('includes the dart:io HttpConnectionInfo in request context', () async {
+    final port = await _scheduleServer((request) {
+      expect(
+        request.context,
+        containsPair('shelf.io.connection_info', isA<HttpConnectionInfo>()),
+      );
+      return syncHandler(request);
+    });
 
-      final response = await _get(port);
-      expect(response.statusCode, HttpStatus.ok);
-    },
-    skip: 'RawShelfServer does not provide HttpConnectionInfo yet',
-  );
+    final response = await _get(port);
+    expect(response.statusCode, HttpStatus.ok);
+  });
 
   test(
     'COMP-POST-CL-UNDERSEND',
@@ -1171,24 +1187,20 @@ void main() {
     final response = await utf8.decodeStream(socket);
     expect(response, contains('501 Not Implemented'));
   });
-  test(
-    'MAL-POST-CL-HUGE-NO-BODY',
-    skip: 'Fails in checker: MAL-POST-CL-HUGE-NO-BODY',
-    () async {
-      final port = await _scheduleServer(syncHandler);
-      final socket = await Socket.connect('localhost', port);
-      addTearDown(socket.close);
+  test('MAL-POST-CL-HUGE-NO-BODY', () async {
+    final port = await _scheduleServer(syncHandler);
+    final socket = await Socket.connect('localhost', port);
+    addTearDown(socket.close);
 
-      socket.write('POST / HTTP/1.1\r\n');
-      socket.write('Host: localhost\r\n');
-      socket.write('Content-Length: 999999999\r\n');
-      socket.write('\r\n');
-      await socket.flush();
+    socket.write('POST / HTTP/1.1\r\n');
+    socket.write('Host: localhost\r\n');
+    socket.write('Content-Length: 999999999\r\n');
+    socket.write('\r\n');
+    await socket.flush();
 
-      final response = await utf8.decodeStream(socket);
-      expect(response, contains('400 Bad Request'));
-    },
-  );
+    final response = await utf8.decodeStream(socket);
+    expect(response, contains('413 Content Too Large'));
+  });
 
   test('COOK-ECHO', () async {
     final port = await _scheduleServer((request) {
@@ -1273,8 +1285,13 @@ void main() {
   });
 }
 
-Future<int> _scheduleServer(Handler handler) async {
-  final server = await RawShelfServer.serve(handler, 'localhost', 0);
+Future<int> _scheduleServer(Handler handler, {Duration? bodyTimeout}) async {
+  final server = await RawShelfServer.serve(
+    handler,
+    'localhost',
+    0,
+    bodyTimeout: bodyTimeout,
+  );
   addTearDown(server.close);
   return server.port;
 }

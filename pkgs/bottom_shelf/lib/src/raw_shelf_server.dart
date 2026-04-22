@@ -22,6 +22,7 @@ final class RawShelfServer extends ServerConfig {
     super.onConnectionError,
     super.onAsyncError,
     super.automaticHeadMethodSupport,
+    super.poweredBy,
   );
 
   int get port => serverSocket.port;
@@ -39,6 +40,7 @@ final class RawShelfServer extends ServerConfig {
     ConnectionErrorCallback? onConnectionError,
     AsyncErrorCallback? onAsyncError,
     bool automaticHeadMethodSupport = true,
+    String? poweredBy = 'Dart with package:bottom_shelf',
   }) async {
     final serverSocket = await ServerSocket.bind(
       address,
@@ -55,6 +57,7 @@ final class RawShelfServer extends ServerConfig {
       onConnectionError,
       onAsyncError,
       automaticHeadMethodSupport,
+      poweredBy,
     );
     serverSocket.listen(server._handleConnection);
     return server;

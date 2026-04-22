@@ -23,6 +23,7 @@ abstract final class $Header {
 
 abstract final class $Context {
   static const rawHeaders = 'shelf.raw.headers';
+  static const connectionInfo = 'shelf.io.connection_info';
 }
 
 abstract final class $Limit {
