@@ -1858,7 +1858,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.0\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-    "rawResponse": "HTTP/1.0 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.0 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
   },
   {
     "id": "WS-UPGRADE-INVALID-VER",
@@ -1870,7 +1870,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 99\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
   },
   {
     "id": "WS-UPGRADE-MISSING-CONN",
@@ -1882,7 +1882,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
   },
   {
     "id": "WS-UPGRADE-POST",
@@ -1894,7 +1894,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "WS-UPGRADE-UNKNOWN",
@@ -1906,6 +1906,6 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: totally-made-up/1.0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
   }
 ]

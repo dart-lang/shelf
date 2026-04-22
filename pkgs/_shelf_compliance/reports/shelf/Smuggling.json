@@ -1075,7 +1075,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET http://other.example.com/ HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
   },
   {
     "id": "SMUG-BARE-CR-HEADER-VALUE",
@@ -1107,7 +1107,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5;\r\nhello\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-EXT-CR",
@@ -1129,7 +1129,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5;\u0000ext\r\nhello\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-EXT-INVALID-TOKEN",
@@ -1141,7 +1141,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5;bad[=x\r\nhello\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-EXT-LF",
@@ -1153,7 +1153,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5;\nhello\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-HEX-PREFIX",
@@ -1196,7 +1196,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-LF-TRAILER",
@@ -1208,7 +1208,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-MISSING-TRAILING-CRLF",
@@ -1217,8 +1217,10 @@
     "rfcReference": "RFC 9112 §7.1",
     "rfcLevel": "Must",
     "expected": "400 or close",
-    "verdict": "Pass",
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello0\r\n\r\n"
+    "verdict": "Fail",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-NEGATIVE",
@@ -1257,8 +1259,10 @@
     "rfcReference": "RFC 9112 §7.1",
     "rfcLevel": "Must",
     "expected": "400 or close",
-    "verdict": "Pass",
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello!!\r\n0\r\n\r\n"
+    "verdict": "Fail",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello!!\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-UNDERSCORE",
@@ -1280,8 +1284,8 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked;ext=val\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Body: Echo: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
+    "behavioralNote": "Body: 0"
   },
   {
     "id": "SMUG-CL-COMMA-DIFFERENT",
@@ -1323,7 +1327,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 00\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-EXTRA-LEADING-SP",
@@ -1335,7 +1339,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length:  5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-HEX-PREFIX",
@@ -1367,7 +1371,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 005\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-LEADING-ZEROS-OCTAL",
@@ -1379,7 +1383,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 0200\r\n\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nC8\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-NEGATIVE",
@@ -1421,8 +1425,8 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 23\r\nTransfer-Encoding: chunked\r\n\r\nD\r\nhello-bananas\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Body: Echo: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nD\r\nhello-bananas\r\n0\r\n\r\n",
+    "behavioralNote": "Used CL (read raw chunked framing as body)"
   },
   {
     "id": "SMUG-CL-TRAILING-SPACE",
@@ -1434,7 +1438,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5 \r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-UNDERSCORE",
@@ -1454,10 +1458,10 @@
     "rfcLevel": "NotApplicable",
     "expected": "400/close preferred; poisoned follow-up = warn",
     "verdict": "Warn",
-    "statusCode": 200,
+    "statusCode": 404,
     "rawRequest": "── POST with CL:0 plus poison byte ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 0\r\n\r\nX\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── POST with CL:0 plus poison byte ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Step 1: 200, step 2: 200"
+    "rawResponse": "── POST with CL:0 plus poison byte ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nNot Found",
+    "behavioralNote": "Step 1: 200, step 2: 404"
   },
   {
     "id": "SMUG-CLTE-CONN-CLOSE",
@@ -1469,7 +1473,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Ambiguous POST (CL+TE) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Ambiguous POST (CL+TE) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Ambiguous POST (CL+TE) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Accepted with 200 but kept connection open — follow-up GET returned 200"
   },
   {
@@ -1480,10 +1484,10 @@
     "rfcLevel": "Must",
     "expected": "400, or close",
     "verdict": "Fail",
-    "statusCode": 200,
+    "statusCode": 404,
     "rawRequest": "── Poison POST (CL=6, TE=chunked, extra byte) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 6\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\nX\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST (CL=6, TE=chunked, extra byte) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Accepted with 200, kept connection open — follow-up GET returned 200"
+    "rawResponse": "── Poison POST (CL=6, TE=chunked, extra byte) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nNot Found",
+    "behavioralNote": "Accepted with 200, kept connection open — follow-up GET returned 404"
   },
   {
     "id": "SMUG-CLTE-PIPELINE",
@@ -1495,7 +1499,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 4\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CLTE-SMUGGLED-GET",
@@ -1507,7 +1511,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST with embedded GET ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 46\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with embedded GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Poison POST with embedded GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
   },
   {
@@ -1542,7 +1546,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST with embedded GET (TE: Chunked) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 46\r\nTransfer-Encoding: Chunked\r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with embedded GET (TE: Chunked) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Poison POST with embedded GET (TE: Chunked) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
   },
   {
@@ -1555,7 +1559,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST with embedded GET (TE: , chunked) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 46\r\nTransfer-Encoding: , chunked\r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with embedded GET (TE: , chunked) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Poison POST with embedded GET (TE: , chunked) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
   },
   {
@@ -1568,7 +1572,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST with embedded GET (folded TE) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding:\r\n chunked\r\nContent-Length: 46\r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with embedded GET (folded TE) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Poison POST with embedded GET (folded TE) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
   },
   {
@@ -1581,7 +1585,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST with embedded GET (TE: chunked<SP>) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 46\r\nTransfer-Encoding: chunked \r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with embedded GET (TE: chunked<SP>) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Poison POST with embedded GET (TE: chunked<SP>) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
   },
   {
@@ -1594,7 +1598,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST with embedded HEAD ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 47\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\nHEAD / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with embedded HEAD ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n",
+    "rawResponse": "── Poison POST with embedded HEAD ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n",
     "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded HEAD likely executed)"
   },
   {
@@ -1628,7 +1632,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nExpect: 100-continue\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-EXPECT-100-CL-DESYNC",
@@ -1640,7 +1644,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── POST with Expect: 100-continue and body ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nExpect: 100-continue\r\n\r\nhello\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── POST with Expect: 100-continue and body ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── POST with Expect: 100-continue and body ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Step 1: 200, step 2: 200"
   },
   {
@@ -1653,7 +1657,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── GET with CL body ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── GET with CL body ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── GET with CL body ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Step 1: 200, step 2: 200"
   },
   {
@@ -1666,7 +1670,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── GET with CL body (request prefix, no blank line) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 39\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\n\n── Complete prefix then send follow-up GET ──\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── GET with CL body (request prefix, no blank line) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Complete prefix then send follow-up GET ──\n[No response]",
+    "rawResponse": "── GET with CL body (request prefix, no blank line) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Complete prefix then send follow-up GET ──\n[No response]",
     "behavioralNote": "Step 1: 200, step 2: no response"
   },
   {
@@ -1676,10 +1680,10 @@
     "rfcReference": "RFC 9110 §9.3.2",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Warn",
-    "statusCode": 200,
+    "verdict": "Fail",
+    "statusCode": 404,
     "rawRequest": "HEAD / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
+    "rawResponse": "HTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-MULTIPLE-HOST-COMMA",
@@ -1700,10 +1704,10 @@
     "rfcReference": "RFC 9110 §9.3.7",
     "rfcLevel": "Must",
     "expected": "400/405 or 2xx",
-    "verdict": "Warn",
-    "statusCode": 200,
+    "verdict": "Fail",
+    "statusCode": 404,
     "rawRequest": "OPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nNot Found"
   },
   {
     "id": "SMUG-OPTIONS-CL-BODY-DESYNC",
@@ -1712,11 +1716,11 @@
     "rfcReference": "RFC 9110 §9.3.7",
     "rfcLevel": "NotApplicable",
     "expected": "400/close/pass-through; poisoned follow-up = warn",
-    "verdict": "Pass",
+    "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── OPTIONS with CL body ──\nOPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── OPTIONS with CL body ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Step 1: 200, step 2: 200"
+    "rawResponse": "── OPTIONS with CL body ──\nHTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nNot Found\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
+    "behavioralNote": "Step 1: 404, step 2: 200"
   },
   {
     "id": "SMUG-OPTIONS-TE-OBS-FOLD",
@@ -1739,7 +1743,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── First GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n\n\n── Second GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── First GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Second GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── First GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Second GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Both GETs returned 200/200 — pipelining works"
   },
   {
@@ -1782,7 +1786,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST with duplicate TE + embedded GET ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\nTransfer-Encoding: identity\r\nContent-Length: 46\r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with duplicate TE + embedded GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Poison POST with duplicate TE + embedded GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
   },
   {
@@ -1795,8 +1799,8 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: \r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Body: Echo: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
+    "behavioralNote": "Body: 0"
   },
   {
     "id": "SMUG-TE-FORMFEED",
@@ -1828,8 +1832,8 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: identity\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Body: Echo: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
+    "behavioralNote": "Body: 0"
   },
   {
     "id": "SMUG-TE-LEADING-COMMA",
@@ -1851,7 +1855,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked, gzip\r\n\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TE-NULL",
@@ -1933,8 +1937,8 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: xchunked\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Body: Echo: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
+    "behavioralNote": "Body: 0"
   },
   {
     "id": "SMUG-TECL-CONN-CLOSE",
@@ -1946,7 +1950,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Ambiguous POST (TE+CL) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\nContent-Length: 5\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Ambiguous POST (TE+CL) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Ambiguous POST (TE+CL) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Accepted with 200 but kept connection open — follow-up GET returned 200"
   },
   {
@@ -1957,10 +1961,10 @@
     "rfcLevel": "Must",
     "expected": "400, or close",
     "verdict": "Fail",
-    "statusCode": 200,
+    "statusCode": 404,
     "rawRequest": "── Poison POST (TE terminates early, CL=30) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\nContent-Length: 30\r\n\r\n0\r\n\r\nX\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST (TE terminates early, CL=30) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Accepted with 200, kept connection open — follow-up GET returned 200"
+    "rawResponse": "── Poison POST (TE terminates early, CL=30) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nNot Found",
+    "behavioralNote": "Accepted with 200, kept connection open — follow-up GET returned 404"
   },
   {
     "id": "SMUG-TECL-PIPELINE",
@@ -1972,7 +1976,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\nContent-Length: 30\r\n\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TECL-SMUGGLED-GET",
@@ -1984,7 +1988,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "── Poison POST (TE=chunked, CL=prefix, chunk-data begins with GET) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\nContent-Length: 4\r\n\r\n3c\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 7\r\n\r\n\r\n0\r\n\r\n",
-    "rawResponse": "── Poison POST (TE=chunked, CL=prefix, chunk-data begins with GET) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Poison POST (TE=chunked, CL=prefix, chunk-data begins with GET) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n3C\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 7\r\n\r\n\r\n0\r\n\r\n",
     "behavioralNote": "Accepted with 200 but kept connection open — MUST-close violated (no extra response observed)"
   },
   {
@@ -1994,8 +1998,10 @@
     "rfcReference": "RFC 9110 §6.5.1",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Pass",
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nAuthorization: Bearer evil\r\n\r\n"
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nAuthorization: Bearer evil\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-CL",
@@ -2004,8 +2010,10 @@
     "rfcReference": "RFC 9110 §6.5.1",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Pass",
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Length: 50\r\n\r\n"
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Length: 50\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-CONTENT-TYPE",
@@ -2014,8 +2022,10 @@
     "rfcReference": "RFC 9110 §6.5.1",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Pass",
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Type: text/evil\r\n\r\n"
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Type: text/evil\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-HOST",
@@ -2024,8 +2034,10 @@
     "rfcReference": "RFC 9110 §6.5.2",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Pass",
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nHost: evil.example.com\r\n\r\n"
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nHost: evil.example.com\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-TE",
@@ -2034,8 +2046,10 @@
     "rfcReference": "RFC 9110 §6.5.1",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Pass",
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nTransfer-Encoding: chunked\r\n\r\n"
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nTransfer-Encoding: chunked\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n"
   },
   {
     "id": "SMUG-TRANSFER_ENCODING",
@@ -2047,8 +2061,8 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer_Encoding: chunked\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
-    "behavioralNote": "Body: Echo: /"
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
+    "behavioralNote": "Body: 5\r\nhello\r\n0"
   },
   {
     "id": "WS-UPGRADE-HTTP10",

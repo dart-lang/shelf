@@ -3,8 +3,8 @@
 | Category | Count |
 | --- | --- |
 | Total | 215 |
-| Passed | 108 |
-| Failed | 49 |
+| Passed | 101 |
+| Failed | 56 |
 | Warnings | 58 |
 | Errors | 0 |
 | Skipped | 0 |
@@ -23,38 +23,35 @@
 | COMP-405-ALLOW | Compliance | Warn | 405 response must include an Allow header |
 | COMP-ACCEPT-NONSENSE | Compliance | Warn | Unrecognized Accept value — server may return 406 or default representation |
 | COMP-ASTERISK-WITH-GET | Compliance | Fail | Asterisk-form (*) request-target with GET must be rejected |
-| COMP-CHUNKED-BODY | Compliance | Fail | Valid single-chunk POST must be accepted |
-| COMP-CHUNKED-EXTENSION | Compliance | Fail | Chunk extension (valid per RFC) — server should accept or may reject |
-| COMP-CHUNKED-HEX-UPPERCASE | Compliance | Fail | Chunk size with uppercase hex (A = 10) should be accepted |
-| COMP-CHUNKED-MULTI | Compliance | Fail | Valid multi-chunk POST must be accepted |
+| COMP-CHUNKED-NO-FINAL | Compliance | Fail | Chunked body without zero terminator — incomplete transfer |
 | COMP-CHUNKED-TRAILER-VALID | Compliance | Fail | Valid chunked body with trailer field should be accepted |
 | COMP-DUPLICATE-CT | Compliance | Warn | Duplicate Content-Type headers with different values |
 | COMP-DUPLICATE-HOST-SAME | Compliance | Fail | Duplicate Host headers with identical values must be rejected |
 | COMP-EXPECT-UNKNOWN | Compliance | Warn | Unknown Expect value should be rejected with 417 |
 | COMP-GET-WITH-CL-BODY | Compliance | Warn | GET with Content-Length and body — semantically unusual |
+| COMP-HEAD-NO-BODY | Compliance | Fail | HEAD response must not contain a message body |
 | COMP-HOST-EMPTY-VALUE | Compliance | Fail | Empty Host header value must be rejected |
 | COMP-HOST-WITH-PATH | Compliance | Fail | Host header with path component must be rejected |
 | COMP-HOST-WITH-USERINFO | Compliance | Fail | Host header with userinfo (user@host) must be rejected |
 | COMP-HTTP10-NO-HOST | Compliance | Warn | HTTP/1.0 without Host header — valid per HTTP/1.0 |
 | COMP-LEADING-CRLF | Compliance | Warn | Leading CRLF before request-line — server may ignore per RFC |
-| COMP-METHOD-CASE | Compliance | Warn | Lowercase method 'get' — methods are case-sensitive per RFC |
-| COMP-METHOD-TRACE | Compliance | Warn | TRACE request — should be disabled in production |
+| COMP-METHOD-CASE | Compliance | Fail | Lowercase method 'get' — methods are case-sensitive per RFC |
+| COMP-METHOD-TRACE | Compliance | Fail | TRACE request — should be disabled in production |
 | COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
-| COMP-OPTIONS-ALLOW | Compliance | Warn | OPTIONS response should include Allow header listing supported methods |
+| COMP-OPTIONS-ALLOW | Compliance | Fail | OPTIONS response should include Allow header listing supported methods |
 | COMP-OPTIONS-STAR | Compliance | Fail | OPTIONS * is the only valid asterisk-form request |
-| COMP-POST-CL-BODY | Compliance | Fail | POST with Content-Length and matching body must be accepted |
+| COMP-POST-CL-UNDERSEND | Compliance | Fail | POST with Content-Length: 10 but only 5 bytes sent — incomplete body |
 | COMP-REQUEST-LINE-TAB | Compliance | Warn | Tab as request-line delimiter — SHOULD reject but MAY parse on whitespace |
 | COMP-SPACE-IN-TARGET | Compliance | Warn | Whitespace inside request-target is invalid |
-| COMP-TRACE-WITH-BODY | Compliance | Warn | TRACE with Content-Length body should be rejected |
-| COMP-UNKNOWN-METHOD | Compliance | Warn | Unrecognized method should be rejected with 501 or 405 |
+| COMP-TRACE-SENSITIVE | Compliance | Fail | TRACE should exclude sensitive headers from echoed response |
+| COMP-TRACE-WITH-BODY | Compliance | Fail | TRACE with Content-Length body should be rejected |
+| COMP-UNKNOWN-METHOD | Compliance | Fail | Unrecognized method should be rejected with 501 or 405 |
 | COMP-UNKNOWN-TE-501 | Compliance | Fail | Unknown Transfer-Encoding without CL should be rejected with 501 |
 | COMP-VERSION-CASE | Compliance | Warn | HTTP version is case-sensitive — lowercase 'http' must be rejected |
 | COMP-VERSION-LEADING-ZEROS | Compliance | Warn | HTTP/01.01 — leading zeros in version digits are invalid |
 | COMP-VERSION-MISSING-MINOR | Compliance | Warn | HTTP/1 with no minor version digit is invalid |
 | COMP-VERSION-WHITESPACE | Compliance | Warn | HTTP/ 1.1 — whitespace inside version token is invalid |
 | COOK-CONTROL-CHARS | Cookies | Fail | Control characters (0x01-0x03) in cookie value — dangerous if preserved |
-| COOK-PARSED-BASIC | Cookies | Fail | Basic cookie parsed correctly by framework |
-| COOK-PARSED-MULTI | Cookies | Fail | Multiple cookies parsed correctly by framework |
 | MAL-CHUNK-EXT-64K | MalformedInput | Warn | 64KB chunk extension — tests extension length limits (CVE-2023-39326 class) |
 | MAL-CL-TAB-BEFORE-VALUE | MalformedInput | Warn | Content-Length with tab as OWS — valid per RFC but unusual |
 | MAL-CONTROL-CHARS-HEADER | MalformedInput | Fail | Control characters in header value should be rejected |
@@ -70,6 +67,8 @@
 | MAL-URL-OVERLONG-UTF8 | MalformedInput | Fail | Overlong UTF-8 encoding of / (0xC0 0xAF) in URL must be rejected |
 | MAL-URL-PERCENT-CRLF | MalformedInput | Warn | Percent-encoded CRLF (%0d%0a) in URL — header injection if server decodes during parsing |
 | MAL-URL-PERCENT-NULL | MalformedInput | Warn | Percent-encoded NUL byte (%00) in URL — security risk from null byte injection |
+| NORM-UNDERSCORE-CL | Normalization | Warn | Underscore in Content-Length name — checks if server normalizes Content_Length to Content-Length |
+| NORM-UNDERSCORE-TE | Normalization | Warn | Underscore in Transfer-Encoding name — checks if server normalizes Transfer_Encoding to Transfer-Encoding |
 | RFC9110-5.4-DUPLICATE-HOST | Compliance | Fail | Duplicate Host headers with different values must be rejected |
 | RFC9110-5.6.2-SP-BEFORE-COLON | Compliance | Fail | Whitespace between header name and colon must be rejected |
 | RFC9112-2.2-BARE-LF-HEADER | Compliance | Warn | Bare LF in header should be rejected, but MAY be accepted |
@@ -87,6 +86,8 @@
 | SMUG-CHUNK-EXT-LF | Smuggling | Warn | Bare LF in chunk extension — server MAY accept bare LF per RFC 9112 §2.2 |
 | SMUG-CHUNK-LF-TERM | Smuggling | Warn | Bare LF as chunk data terminator — server MAY accept bare LF per RFC 9112 §2.2 |
 | SMUG-CHUNK-LF-TRAILER | Smuggling | Warn | Bare LF in chunked trailer termination — server MAY accept bare LF per RFC 9112 §2.2 |
+| SMUG-CHUNK-MISSING-TRAILING-CRLF | Smuggling | Fail | Chunk data without trailing CRLF must be rejected |
+| SMUG-CHUNK-SPILL | Smuggling | Fail | Chunk declares size 5 but sends 7 bytes — oversized chunk data must be rejected |
 | SMUG-CHUNKED-WITH-PARAMS | Smuggling | Warn | Transfer-Encoding: chunked;ext=val — parameters on chunked encoding |
 | SMUG-CL-DOUBLE-ZERO | Smuggling | Warn | Content-Length: 00 — matches 1*DIGIT but leading zero ambiguity |
 | SMUG-CL-EXTRA-LEADING-SP | Smuggling | Warn | Content-Length with extra leading whitespace (double space OWS) |
@@ -106,9 +107,10 @@
 | SMUG-CLTE-SMUGGLED-HEAD | Smuggling | Fail | CL.TE desync — embedded HEAD in body; multiple responses indicate request boundary confusion |
 | SMUG-EXPECT-100-CL | Smuggling | Warn | Expect: 100-continue with Content-Length — server should send 100 then read body |
 | SMUG-GET-CL-PREFIX-DESYNC | Smuggling | Warn | GET with Content-Length body containing an incomplete request prefix — follow-up completes it if body was left unread |
-| SMUG-HEAD-CL-BODY | Smuggling | Warn | HEAD request with Content-Length and body — server must not leave body on connection |
+| SMUG-HEAD-CL-BODY | Smuggling | Fail | HEAD request with Content-Length and body — server must not leave body on connection |
 | SMUG-MULTIPLE-HOST-COMMA | Smuggling | Fail | Host header with comma-separated values must be rejected |
-| SMUG-OPTIONS-CL-BODY | Smuggling | Warn | OPTIONS with Content-Length and body — server should consume or reject body |
+| SMUG-OPTIONS-CL-BODY | Smuggling | Fail | OPTIONS with Content-Length and body — server should consume or reject body |
+| SMUG-OPTIONS-CL-BODY-DESYNC | Smuggling | Fail | OPTIONS with Content-Length body followed by a second request — detects unread-body desync |
 | SMUG-TE-DUPLICATE-HEADERS-SMUGGLED-GET | Smuggling | Fail | TE.TE + CL ambiguity with embedded GET — multiple responses indicate request boundary confusion |
 | SMUG-TE-EMPTY-VALUE | Smuggling | Fail | Transfer-Encoding with empty value must be rejected |
 | SMUG-TE-IDENTITY | Smuggling | Fail | Transfer-Encoding: identity (deprecated) with CL must be rejected |
@@ -118,5 +120,10 @@
 | SMUG-TECL-DESYNC | Smuggling | Fail | TE.CL desync — chunked terminator before CL boundary, leftover bytes smuggled |
 | SMUG-TECL-PIPELINE | Smuggling | Warn | TE.CL conflict — Transfer-Encoding: chunked + conflicting Content-Length |
 | SMUG-TECL-SMUGGLED-GET | Smuggling | Fail | TE.CL desync via chunk-size prefix trick — multiple responses indicate request boundary confusion |
+| SMUG-TRAILER-AUTH | Smuggling | Warn | Authorization header in chunked trailers — prohibited per RFC 9110 §6.5.1 |
+| SMUG-TRAILER-CL | Smuggling | Warn | Content-Length in chunked trailers must be ignored — prohibited trailer field |
+| SMUG-TRAILER-CONTENT-TYPE | Smuggling | Warn | Content-Type in chunked trailer — prohibited per RFC 9110 §6.5.1 |
+| SMUG-TRAILER-HOST | Smuggling | Warn | Host header in chunked trailers must not be used for routing |
+| SMUG-TRAILER-TE | Smuggling | Warn | Transfer-Encoding in chunked trailers must be ignored — prohibited trailer field |
 | SMUG-TRANSFER_ENCODING | Smuggling | Warn | Transfer_Encoding (underscore) header with CL — not a valid header but some parsers accept |
 | WS-UPGRADE-INVALID-VER | WebSockets | Warn | WebSocket upgrade with unsupported version — should return 426 |

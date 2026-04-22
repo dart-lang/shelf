@@ -9,7 +9,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── Initial GET (capture ETag) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-None-Match) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-None-Match: \"no-etag\"\r\n\r\n",
-    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-None-Match) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-None-Match) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "No ETag header in response"
   },
   {
@@ -22,7 +22,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── Initial GET (capture ETag) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-None-Match) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-None-Match: \"no-etag\"\r\n\r\n",
-    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-None-Match) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-None-Match) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "No ETag support"
   },
   {
@@ -35,7 +35,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── Initial GET (capture ETag) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-None-Match: W/etag) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-None-Match: W/\"no-etag\"\r\n\r\n",
-    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-None-Match: W/etag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-None-Match: W/etag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "No ETag support"
   },
   {
@@ -48,7 +48,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── Initial GET (confirm 2xx) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-Modified-Since: future date) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-Modified-Since: Thu, 01 Jan 2099 00:00:00 GMT\r\n\r\n",
-    "rawResponse": "── Initial GET (confirm 2xx) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-Modified-Since: future date) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (confirm 2xx) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-Modified-Since: future date) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Correctly ignored future If-Modified-Since"
   },
   {
@@ -61,7 +61,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── Initial GET (confirm 2xx) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-Modified-Since: garbage) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-Modified-Since: not-a-date\r\n\r\n",
-    "rawResponse": "── Initial GET (confirm 2xx) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-Modified-Since: garbage) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (confirm 2xx) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-Modified-Since: garbage) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Correctly ignored invalid If-Modified-Since"
   },
   {
@@ -74,7 +74,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── Initial GET (capture ETag) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (INM + stale IMS) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-None-Match: \"no-etag\"\r\nIf-Modified-Since: Thu, 01 Jan 1970 00:00:00 GMT\r\n\r\n",
-    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (INM + stale IMS) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (INM + stale IMS) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "No ETag support"
   },
   {
@@ -87,7 +87,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── Initial GET (capture ETag) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-None-Match: unquoted) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-None-Match: no-etag\r\n\r\n",
-    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-None-Match: unquoted) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (capture ETag) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-None-Match: unquoted) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "No ETag support"
   },
   {
@@ -100,7 +100,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── Initial GET (confirm 2xx) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-None-Match: *) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-None-Match: *\r\n\r\n",
-    "rawResponse": "── Initial GET (confirm 2xx) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-None-Match: *) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (confirm 2xx) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-None-Match: *) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "Server ignores If-None-Match: *"
   },
   {
@@ -113,7 +113,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "── Initial GET (capture Last-Modified) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: keep-alive\r\n\r\n\n\n── Conditional GET (If-Modified-Since) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nIf-Modified-Since: Thu, 01 Jan 2099 00:00:00 GMT\r\n\r\n",
-    "rawResponse": "── Initial GET (capture Last-Modified) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /\n\n── Conditional GET (If-Modified-Since) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 7\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nEcho: /",
+    "rawResponse": "── Initial GET (capture Last-Modified) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK\n\n── Conditional GET (If-Modified-Since) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
     "behavioralNote": "No Last-Modified header in response"
   },
   {
