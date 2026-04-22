@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
+import 'package:yaml/yaml.dart';
 import '../tool/generate_summary.dart';
 
 // Update these to regenerate golden test files
@@ -59,10 +60,18 @@ void main() {
   });
 
   _defineComplianceTests('shelf', 'bin/shelf_echo.dart');
-  _defineComplianceTests('bottom_shelf', 'bin/shelf_serve_echo.dart');
+  _defineComplianceTests(
+    'bottom_shelf',
+    'bin/shelf_serve_echo.dart',
+    '../bottom_shelf/docs/compliance_exceptions.yaml',
+  );
 }
 
-void _defineComplianceTests(String name, String serverPath) {
+void _defineComplianceTests(
+  String name,
+  String serverPath, [
+  String? exceptionsPath,
+]) {
   group(name, () {
     final tempDir = Directory.systemTemp.createTempSync('compliance_${name}_');
 
@@ -93,7 +102,24 @@ void _defineComplianceTests(String name, String serverPath) {
     tearDownAll(() async {
       print('Generating combined summary for $name...');
       final reportsDir = Directory(p.join(tempDir.path, 'reports', name));
-      final summary = generateSummary(reportsDir);
+
+      final acceptedIds = <String>{};
+      if (exceptionsPath != null) {
+        final file = File(exceptionsPath);
+        if (file.existsSync()) {
+          final content = file.readAsStringSync();
+          final yaml = loadYaml(content) as List;
+          for (var item in yaml) {
+            final map = item as Map;
+            final tests = map['tests'] as List;
+            for (var test in tests) {
+              acceptedIds.add(test as String);
+            }
+          }
+        }
+      }
+
+      final summary = generateSummary(reportsDir, acceptedIds: acceptedIds);
 
       final goldenSummary = File('${name}_summary.md');
 

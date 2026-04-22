@@ -4,8 +4,9 @@
 | --- | --- |
 | Total | 215 |
 | Passed | 159 |
-| Failed | 16 |
+| Failed | 9 |
 | Warnings | 40 |
+| Accepted | 7 |
 | Errors | 0 |
 | Skipped | 0 |
 
@@ -22,21 +23,14 @@
 | CAP-LAST-MODIFIED-304 | Capabilities | Warn | Last-Modified conditional GET returns 304 Not Modified |
 | COMP-405-ALLOW | Compliance | Warn | 405 response must include an Allow header |
 | COMP-ACCEPT-NONSENSE | Compliance | Warn | Unrecognized Accept value — server may return 406 or default representation |
-| COMP-CHUNKED-EXTENSION | Compliance | Fail | Chunk extension (valid per RFC) — server should accept or may reject |
-| COMP-CHUNKED-NO-FINAL | Compliance | Fail | Chunked body without zero terminator — incomplete transfer |
 | COMP-CONTENT-TYPE | Compliance | Warn | Response with content should include Content-Type header |
 | COMP-DUPLICATE-CT | Compliance | Warn | Duplicate Content-Type headers with different values |
 | COMP-EXPECT-UNKNOWN | Compliance | Warn | Unknown Expect value should be rejected with 417 |
 | COMP-GET-WITH-CL-BODY | Compliance | Warn | GET with Content-Length and body — semantically unusual |
 | COMP-HTTP10-NO-HOST | Compliance | Warn | HTTP/1.0 without Host header — valid per HTTP/1.0 |
 | COMP-HTTP12-VERSION | Compliance | Warn | HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible |
-| COMP-METHOD-CASE | Compliance | Fail | Lowercase method 'get' — methods are case-sensitive per RFC |
 | COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
-| COMP-OPTIONS-ALLOW | Compliance | Fail | OPTIONS response should include Allow header listing supported methods |
 | COMP-OPTIONS-STAR | Compliance | Fail | OPTIONS * is the only valid asterisk-form request |
-| COMP-POST-CL-UNDERSEND | Compliance | Fail | POST with Content-Length: 10 but only 5 bytes sent — incomplete body |
-| COMP-UNKNOWN-METHOD | Compliance | Fail | Unrecognized method should be rejected with 501 or 405 |
-| MAL-CHUNK-EXT-64K | MalformedInput | Fail | 64KB chunk extension — tests extension length limits (CVE-2023-39326 class) |
 | MAL-CL-TAB-BEFORE-VALUE | MalformedInput | Warn | Content-Length with tab as OWS — valid per RFC but unusual |
 | MAL-POST-CL-HUGE-NO-BODY | MalformedInput | Fail | POST with Content-Length: 999999999 but no body — tests timeout vs memory allocation |
 | MAL-RANGE-OVERLAPPING | MalformedInput | Warn | 1000 overlapping Range values — resource exhaustion vector (CVE-2011-3192 class) |

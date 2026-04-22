@@ -1,0 +1,31 @@
+# Compliance Test Exceptions
+#
+# This file lists HTTP/1.1 compliance tests that fail for bottom_shelf
+# but are accepted as valid behavior due to architectural trade-offs or
+# security choices.
+#
+# The test runner or summary generator can use this file to categorize
+# these failures differently (e.g., as "Accepted Failures") rather than
+# treating them as bugs to be fixed.
+
+- description: >-
+    Streaming trade-offs: server closes connection on error after headers sent,
+    resulting in truncated 200 OK instead of clean 400/close before headers.
+  tests:
+    - COMP-CHUNKED-NO-FINAL
+    - COMP-POST-CL-UNDERSEND
+
+- description: >-
+    Lack of global routing knowledge in shelf: server passes unhandled methods
+    to handler which returns 404 instead of server returning 405/501.
+  tests:
+    - COMP-METHOD-CASE
+    - COMP-UNKNOWN-METHOD
+    - COMP-OPTIONS-ALLOW
+
+- description: >-
+    Defensive security posture: explicitly rejecting chunk extensions with 501
+    to reduce attack surface for smuggling, instead of ignoring or returning 400.
+  tests:
+    - COMP-CHUNKED-EXTENSION
+    - MAL-CHUNK-EXT-64K
