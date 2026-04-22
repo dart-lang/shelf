@@ -25,14 +25,14 @@ void main() {
       }
     });
 
-    test('returns -1 for invalid characters', () {
-      expect(parseHex(47), -1); // '/'
-      expect(parseHex(58), -1); // ':'
-      expect(parseHex(96), -1); // '`'
-      expect(parseHex(103), -1); // 'g'
-      expect(parseHex(64), -1); // '@'
-      expect(parseHex(71), -1); // 'G'
-      expect(parseHex(32), -1); // space
+    test('returns negative for invalid characters', () {
+      expect(parseHex(47), isNegative); // '/'
+      expect(parseHex(58), isNegative); // ':'
+      expect(parseHex(96), isNegative); // '`'
+      expect(parseHex(103), isNegative); // 'g'
+      expect(parseHex(64), isNegative); // '@'
+      expect(parseHex(71), isNegative); // 'G'
+      expect(parseHex(32), isNegative); // space
     });
   });
 
