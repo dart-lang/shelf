@@ -61,48 +61,47 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
         .whenComplete(clientRequest.sink.close)
         .ignore();
     final clientResponse = await nonNullClient.send(clientRequest);
-
-    final responseHeaders =
+    final headers = clientResponse.headers;
+    final headersAll =
         Map<String, List<String>>.from(clientResponse.headersSplitValues);
 
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-    responseHeaders.update('via', (values) => [...values, '1.1 $proxyName'],
+    headersAll.update('via', (values) => [...values, '1.1 $proxyName'],
         ifAbsent: () => ['1.1 $proxyName']);
 
     // Remove the transfer-encoding since the body has already been decoded by
     // [client].
-    responseHeaders.remove('transfer-encoding');
+    headersAll.remove('transfer-encoding');
 
     // If the original response was gzipped, it will be decoded by [client]
     // and we'll have no way of knowing its actual content-length.
-    if (responseHeaders['content-encoding']?.contains('gzip') ?? false) {
-      responseHeaders.remove('content-encoding');
-      responseHeaders.remove('content-length');
+    if (headers['content-encoding'] == 'gzip') {
+      headersAll.remove('content-encoding');
+      headersAll.remove('content-length');
 
       // Add a Warning header. See
       // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
-      responseHeaders.update(
+      headersAll.update(
           'warning', (values) => [...values, '214 $proxyName "GZIP decoded"'],
           ifAbsent: () => ['214 $proxyName "GZIP decoded"']);
     }
 
     // Make sure the Location header is pointing to the proxy server rather
     // than the destination server, if possible.
-    if (clientResponse.isRedirect && responseHeaders.containsKey('location')) {
-      final location =
-          requestUrl.resolve(responseHeaders['location']!.first).toString();
+    if (clientResponse.isRedirect && headers.containsKey('location')) {
+      final location = requestUrl.resolve(headers['location']!).toString();
       if (p.url.isWithin(uri.toString(), location)) {
-        responseHeaders['location'] = [
+        headersAll['location'] = [
           '/${p.url.relative(location, from: uri.toString())}'
         ];
       } else {
-        responseHeaders['location'] = [location];
+        headersAll['location'] = [location];
       }
     }
 
     return Response(clientResponse.statusCode,
-        body: clientResponse.stream, headers: responseHeaders);
+        body: clientResponse.stream, headers: headersAll);
   };
 }
 
