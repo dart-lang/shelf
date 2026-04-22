@@ -3,17 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-
-typedef ConnectionErrorCallback =
-    void Function(
-      String message,
-      Object error,
-      StackTrace stackTrace, {
-      required InternetAddress remoteAddress,
-      required int remotePort,
-    });
 
 enum ErrorResponse {
   badRequest(400, 'Bad Request'),

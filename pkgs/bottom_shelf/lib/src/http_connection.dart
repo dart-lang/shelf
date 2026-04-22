@@ -15,65 +15,44 @@ import 'exceptions.dart';
 import 'lazy_byte_header_map.dart';
 import 'raw_http_parser.dart';
 import 'raw_shelf_response_serializer.dart';
+import 'server_config.dart';
 import 'typed_headers.dart';
 
 /// Starts handling a single HTTP connection for `RawShelfServer`.
 void handleHttpConnection({
   required Socket socket,
-  required Handler handler,
-  Duration? headerTimeout,
-  Duration? bodyTimeout,
-  ConnectionErrorCallback? onConnectionError,
-  ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
-  bool automaticHeadMethodSupport = true,
+  required ServerConfig config,
 }) {
-  _HttpConnection(
-    socket: socket,
-    handler: handler,
-    headerTimeout: headerTimeout,
-    bodyTimeout: bodyTimeout,
-    onConnectionError: onConnectionError,
-    onAsyncError: onAsyncError,
-    automaticHeadMethodSupport: automaticHeadMethodSupport,
-  ).start();
+  _HttpConnection(socket: socket, config: config).start();
 }
 
 final class _HttpConnection {
   final Socket socket;
-  final Handler handler;
-  final Duration? headerTimeout;
-  final Duration? bodyTimeout;
-  final ConnectionErrorCallback? onConnectionError;
-  final ErrorAction? Function(Object, StackTrace)? onAsyncError;
-  final bool automaticHeadMethodSupport;
+  final ServerConfig config;
 
+  /// These values are copied from [socket] at the time of creation so that
+  /// that we have them after the [socket] is destroyed.
   final InternetAddress remoteAddress;
   final int remotePort;
 
   final _parser = RawHttpParser();
+
   BodyController? _bodyController;
   var _readyForNextRequest = Completer<void>()..complete();
   StreamSubscription<Uint8List>? _subscription;
-  var _forceClose = false;
   Completer<void>? _currentBodyDone;
   StreamController<Uint8List>? _hijackController;
   Timer? _headerTimer;
   Timer? _bodyTimer;
+  var _forceClose = false;
   var _isHijacked = false;
   var _isDestroyed = false;
   var _clientClosed = false;
   var _responseSent = false;
 
-  _HttpConnection({
-    required this.socket,
-    required this.handler,
-    this.headerTimeout,
-    this.bodyTimeout,
-    this.onConnectionError,
-    this.onAsyncError,
-    required this.automaticHeadMethodSupport,
-  }) : remoteAddress = socket.remoteAddress,
-       remotePort = socket.remotePort;
+  _HttpConnection({required this.socket, required this.config})
+    : remoteAddress = socket.remoteAddress,
+      remotePort = socket.remotePort;
 
   void start() {
     _startHeaderTimer();
@@ -123,9 +102,9 @@ final class _HttpConnection {
   }
 
   void _startHeaderTimer() {
-    if (headerTimeout != null && !_isDestroyed && !_clientClosed) {
+    if (config.headerTimeout != null && !_isDestroyed && !_clientClosed) {
       _headerTimer?.cancel();
-      _headerTimer = Timer(headerTimeout!, _destroy);
+      _headerTimer = Timer(config.headerTimeout!, _destroy);
     }
   }
 
@@ -322,11 +301,11 @@ final class _HttpConnection {
             bodyDone.complete();
           }
 
-          if (bodyTimeout != null &&
+          if (config.bodyTimeout != null &&
               !bodyDone.isCompleted &&
               !_isDestroyed &&
               !_clientClosed) {
-            _bodyTimer = Timer(bodyTimeout!, _destroy);
+            _bodyTimer = Timer(config.bodyTimeout!, _destroy);
             bodyDone.future.then((_) {
               _bodyTimer?.cancel();
               _bodyTimer = null;
@@ -369,7 +348,7 @@ final class _HttpConnection {
           Request request;
           final originalMethod = requestHead.method;
           final effectiveMethod =
-              (originalMethod == 'HEAD' && automaticHeadMethodSupport)
+              (originalMethod == 'HEAD' && config.automaticHeadMethodSupport)
               ? 'GET'
               : originalMethod;
 
@@ -404,7 +383,7 @@ final class _HttpConnection {
       }
     } catch (e, st) {
       if (!_isHijacked && !_isDestroyed) {
-        onConnectionError?.call(
+        config.onConnectionError?.call(
           'Error in handler',
           e,
           st,
@@ -434,7 +413,7 @@ final class _HttpConnection {
       runZonedGuarded(
         () async {
           try {
-            final response = await handler(request);
+            final response = await config.handler(request);
             if (_isHijacked) return;
 
             final keepAlive =
@@ -473,7 +452,7 @@ final class _HttpConnection {
               if (!_responseSent) {
                 socket.add(ErrorResponse.internalServerError.bytes);
               }
-              onConnectionError?.call(
+              config.onConnectionError?.call(
                 'Error in handler',
                 e,
                 st,
@@ -488,10 +467,10 @@ final class _HttpConnection {
           if (e is HijackException) {
             return;
           }
-          final action = onAsyncError?.call(e, st);
+          final action = config.onAsyncError?.call(e, st);
           if (action == ErrorAction.ignore) {
             if (!_isDestroyed) {
-              onConnectionError?.call(
+              config.onConnectionError?.call(
                 'Unhandled async error (ignored)',
                 e,
                 st,
@@ -500,7 +479,7 @@ final class _HttpConnection {
               );
             }
           } else if (action == ErrorAction.crash) {
-            onConnectionError?.call(
+            config.onConnectionError?.call(
               'Crashing server due to async error',
               e,
               st,
@@ -514,7 +493,7 @@ final class _HttpConnection {
             if (!_isHijacked && !_isDestroyed && !_responseSent) {
               socket.add(ErrorResponse.internalServerError.bytes);
             }
-            onConnectionError?.call(
+            config.onConnectionError?.call(
               'Error in handler',
               e,
               st,

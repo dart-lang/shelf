@@ -7,32 +7,23 @@ import 'dart:io';
 
 import 'package:shelf/shelf.dart';
 
-import 'exceptions.dart';
 import 'http_connection.dart';
+import 'server_config.dart';
 
 /// A high-performance Shelf server that uses raw [ServerSocket]s.
-final class RawShelfServer {
-  final Handler _handler;
-  final ServerSocket _serverSocket;
-  final Duration? _headerTimeout;
-  final Duration? _bodyTimeout;
-  final ConnectionErrorCallback? _onConnectionError;
-  final ErrorAction? Function(Object error, StackTrace stackTrace)?
-  _onAsyncError;
-  final bool _automaticHeadMethodSupport;
-
+final class RawShelfServer extends ServerConfig {
   RawShelfServer._(
-    this._handler,
-    this._serverSocket,
-    this._headerTimeout,
-    this._bodyTimeout,
-    this._onConnectionError,
-    this._onAsyncError,
-    this._automaticHeadMethodSupport,
+    super.handler,
+    super.serverSocket,
+    super.headerTimeout,
+    super.bodyTimeout,
+    super.onConnectionError,
+    super.onAsyncError,
+    super.automaticHeadMethodSupport,
   );
 
-  int get port => _serverSocket.port;
-  InternetAddress get address => _serverSocket.address;
+  int get port => serverSocket.port;
+  InternetAddress get address => serverSocket.address;
 
   static Future<RawShelfServer> serve(
     Handler handler,
@@ -43,7 +34,7 @@ final class RawShelfServer {
     Duration? headerTimeout,
     Duration? bodyTimeout = const Duration(minutes: 1),
     ConnectionErrorCallback? onConnectionError,
-    ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
+    AsyncErrorCallback? onAsyncError,
     bool automaticHeadMethodSupport = true,
   }) async {
     final serverSocket = await ServerSocket.bind(
@@ -68,14 +59,9 @@ final class RawShelfServer {
   void _handleConnection(Socket socket) {
     handleHttpConnection(
       socket: socket,
-      handler: _handler,
-      headerTimeout: _headerTimeout,
-      bodyTimeout: _bodyTimeout,
-      onConnectionError: _onConnectionError,
-      onAsyncError: _onAsyncError,
-      automaticHeadMethodSupport: _automaticHeadMethodSupport,
+      config: this,
     );
   }
 
-  Future<void> close() => _serverSocket.close();
+  Future<void> close() => serverSocket.close();
 }
