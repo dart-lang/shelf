@@ -50,9 +50,30 @@ void main() {
       }
     });
 
-    test('returns false for values outside 0-255', () {
-      expect(isTchar(-1), isFalse);
-      expect(isTchar(256), isFalse);
+    test('throws assertion error for values outside 0-255', () {
+      expect(() => isTchar(-1), throwsA(isA<AssertionError>()));
+      expect(() => isTchar(256), throwsA(isA<AssertionError>()));
+    });
+  });
+  group('isInvalidHeaderValueChar', () {
+    test('covers all 256 byte values correctly', () {
+      for (var i = 0; i < 256; i++) {
+        final expected = (i < 32 && i != 9 && i != 13) || i == 127;
+        expect(
+          isInvalidHeaderValueChar(i),
+          expected,
+          reason: 'Failed for byte $i',
+        );
+      }
+    });
+  });
+
+  group('isInvalidUrlChar', () {
+    test('covers all 256 byte values correctly', () {
+      for (var i = 0; i < 256; i++) {
+        final expected = i == 0 || i == 10 || i == 13 || i > 127;
+        expect(isInvalidUrlChar(i), expected, reason: 'Failed for byte $i');
+      }
     });
   });
 }
