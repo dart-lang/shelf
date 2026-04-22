@@ -18,6 +18,7 @@ final class RawShelfServer {
   final ConnectionErrorCallback? _onConnectionError;
   final ErrorAction? Function(Object error, StackTrace stackTrace)?
   _onAsyncError;
+  final bool _automaticHeadMethodSupport;
 
   RawShelfServer._(
     this._handler,
@@ -25,6 +26,7 @@ final class RawShelfServer {
     this._headerTimeout,
     this._onConnectionError,
     this._onAsyncError,
+    this._automaticHeadMethodSupport,
   );
 
   int get port => _serverSocket.port;
@@ -39,6 +41,7 @@ final class RawShelfServer {
     Duration? headerTimeout,
     ConnectionErrorCallback? onConnectionError,
     ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
+    bool automaticHeadMethodSupport = true,
   }) async {
     final serverSocket = await ServerSocket.bind(
       address,
@@ -52,6 +55,7 @@ final class RawShelfServer {
       headerTimeout,
       onConnectionError,
       onAsyncError,
+      automaticHeadMethodSupport,
     );
     serverSocket.listen(server._handleConnection);
     return server;
@@ -64,6 +68,7 @@ final class RawShelfServer {
       headerTimeout: _headerTimeout,
       onConnectionError: _onConnectionError,
       onAsyncError: _onAsyncError,
+      automaticHeadMethodSupport: _automaticHeadMethodSupport,
     );
   }
 

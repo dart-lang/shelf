@@ -3,9 +3,9 @@
 | Category | Count |
 | --- | --- |
 | Total | 215 |
-| Passed | 155 |
-| Failed | 21 |
-| Warnings | 39 |
+| Passed | 156 |
+| Failed | 19 |
+| Warnings | 40 |
 | Errors | 0 |
 | Skipped | 0 |
 
@@ -28,7 +28,6 @@
 | COMP-DUPLICATE-CT | Compliance | Warn | Duplicate Content-Type headers with different values |
 | COMP-EXPECT-UNKNOWN | Compliance | Warn | Unknown Expect value should be rejected with 417 |
 | COMP-GET-WITH-CL-BODY | Compliance | Warn | GET with Content-Length and body — semantically unusual |
-| COMP-HEAD-NO-BODY | Compliance | Fail | HEAD response must not contain a message body |
 | COMP-HTTP10-NO-HOST | Compliance | Warn | HTTP/1.0 without Host header — valid per HTTP/1.0 |
 | COMP-HTTP12-VERSION | Compliance | Warn | HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible |
 | COMP-METHOD-CASE | Compliance | Fail | Lowercase method 'get' — methods are case-sensitive per RFC |
@@ -63,7 +62,7 @@
 | SMUG-CL-TRAILING-SPACE | Smuggling | Warn | Content-Length with trailing space — OWS trimming is valid per RFC 9110 §5.5 |
 | SMUG-CL0-BODY-POISON | Smuggling | Warn | Content-Length: 0 with trailing bytes — checks if leftover bytes poison the next request |
 | SMUG-EXPECT-100-CL | Smuggling | Warn | Expect: 100-continue with Content-Length — server should send 100 then read body |
-| SMUG-HEAD-CL-BODY | Smuggling | Fail | HEAD request with Content-Length and body — server must not leave body on connection |
+| SMUG-HEAD-CL-BODY | Smuggling | Warn | HEAD request with Content-Length and body — server must not leave body on connection |
 | SMUG-OPTIONS-CL-BODY | Smuggling | Fail | OPTIONS with Content-Length and body — server should consume or reject body |
 | SMUG-OPTIONS-CL-BODY-DESYNC | Smuggling | Fail | OPTIONS with Content-Length body followed by a second request — detects unread-body desync |
 | SMUG-TRAILER-AUTH | Smuggling | Warn | Authorization header in chunked trailers — prohibited per RFC 9110 §6.5.1 |

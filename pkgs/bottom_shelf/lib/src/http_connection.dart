@@ -25,6 +25,7 @@ void handleHttpConnection({
   Duration? headerTimeout,
   ConnectionErrorCallback? onConnectionError,
   ErrorAction? Function(Object error, StackTrace stackTrace)? onAsyncError,
+  bool automaticHeadMethodSupport = true,
 }) {
   _HttpConnection(
     socket: socket,
@@ -32,6 +33,7 @@ void handleHttpConnection({
     headerTimeout: headerTimeout,
     onConnectionError: onConnectionError,
     onAsyncError: onAsyncError,
+    automaticHeadMethodSupport: automaticHeadMethodSupport,
   ).start();
 }
 
@@ -41,6 +43,7 @@ final class _HttpConnection {
   final Duration? headerTimeout;
   final ConnectionErrorCallback? onConnectionError;
   final ErrorAction? Function(Object, StackTrace)? onAsyncError;
+  final bool automaticHeadMethodSupport;
 
   final InternetAddress remoteAddress;
   final int remotePort;
@@ -64,6 +67,7 @@ final class _HttpConnection {
     this.headerTimeout,
     this.onConnectionError,
     this.onAsyncError,
+    required this.automaticHeadMethodSupport,
   }) : remoteAddress = socket.remoteAddress,
        remotePort = socket.remotePort;
 
@@ -348,10 +352,15 @@ final class _HttpConnection {
           }
 
           Request request;
+          final originalMethod = requestHead.method;
+          final effectiveMethod =
+              (originalMethod == 'HEAD' && automaticHeadMethodSupport)
+              ? 'GET'
+              : originalMethod;
 
           try {
             request = Request(
-              requestHead.method,
+              effectiveMethod,
               uri,
               protocolVersion: requestHead.version,
               headers: LazyByteHeaderMap(finalHeaderSlices),
@@ -369,7 +378,7 @@ final class _HttpConnection {
             );
           }
 
-          _dispatchRequest(request, typedHeaders, bodyDone);
+          _dispatchRequest(request, typedHeaders, bodyDone, originalMethod);
 
           if (_bodyController != null || _isHijacked) {
             break;
@@ -403,6 +412,7 @@ final class _HttpConnection {
     Request request,
     TypedHeaders typedHeaders,
     Completer<void> bodyDone,
+    String originalMethod,
   ) {
     _currentBodyDone = bodyDone;
     unawaited(
@@ -420,7 +430,7 @@ final class _HttpConnection {
               response,
               socket,
               keepAlive: keepAlive,
-              requestMethod: request.method,
+              requestMethod: originalMethod,
             );
             _responseSent = true;
 

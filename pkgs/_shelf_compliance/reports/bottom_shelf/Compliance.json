@@ -332,10 +332,10 @@
     "rfcReference": "RFC 9110 §9.3.2",
     "rfcLevel": "Must",
     "expected": "2xx with no body",
-    "verdict": "Fail",
-    "statusCode": 404,
+    "verdict": "Pass",
+    "statusCode": 200,
     "rawRequest": "HEAD / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\n"
   },
   {
     "id": "COMP-HOST-EMPTY-VALUE",

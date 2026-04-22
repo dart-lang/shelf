@@ -1724,10 +1724,10 @@
     "rfcReference": "RFC 9110 §9.3.2",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Fail",
-    "statusCode": 404,
+    "verdict": "Warn",
+    "statusCode": 200,
     "rawRequest": "HEAD / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\n"
   },
   {
     "id": "SMUG-MULTIPLE-HOST-COMMA",
