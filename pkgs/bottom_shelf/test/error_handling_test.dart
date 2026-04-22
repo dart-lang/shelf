@@ -133,43 +133,40 @@ void main() {
     },
   );
 
-  test(
-    'socket is destroyed on error during body streaming',
-    () async {
-      final server = await RawShelfServer.serve(
-        (request) {
-          final controller = StreamController<List<int>>();
-          controller.add('hello'.codeUnits);
-          // Schedule an error on the stream
-          Future(() {
-            controller.addError(StateError('error during streaming'));
-            controller.close();
-          });
-          return Response.ok(controller.stream);
-        },
-        'localhost',
-        0,
-      );
-      addTearDown(server.close);
+  test('socket is destroyed on error during body streaming', () async {
+    final server = await RawShelfServer.serve(
+      (request) {
+        final controller = StreamController<List<int>>();
+        controller.add('hello'.codeUnits);
+        // Schedule an error on the stream
+        Future(() {
+          controller.addError(StateError('error during streaming'));
+          controller.close();
+        });
+        return Response.ok(controller.stream);
+      },
+      'localhost',
+      0,
+    );
+    addTearDown(server.close);
 
-      final socket = await Socket.connect('localhost', server.port);
-      socket.write(
-        'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n',
-      );
+    final socket = await Socket.connect('localhost', server.port);
+    socket.write(
+      'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n',
+    );
 
-      final responseBytes = <int>[];
-      final doneCompleter = Completer<void>();
-      socket.listen(responseBytes.addAll, onDone: doneCompleter.complete);
+    final responseBytes = <int>[];
+    final doneCompleter = Completer<void>();
+    socket.listen(responseBytes.addAll, onDone: doneCompleter.complete);
 
-      // Socket should be destroyed on error, so doneCompleter should complete!
-      await expectLater(doneCompleter.future, completes);
+    // Socket should be destroyed on error, so doneCompleter should complete!
+    await expectLater(doneCompleter.future, completes);
 
-      final str = utf8.decode(responseBytes);
-      expect(str, contains('hello'));
-      // It should NOT contain the chunked end '0\r\n\r\n'!
-      expect(str, isNot(contains('0\r\n\r\n')));
-    },
-  );
+    final str = utf8.decode(responseBytes);
+    expect(str, contains('hello'));
+    // It should NOT contain the chunked end '0\r\n\r\n'!
+    expect(str, isNot(contains('0\r\n\r\n')));
+  });
 
   test('ErrorAction.crash causes process to exit', () async {
     final process = await Process.start(Platform.executable, [

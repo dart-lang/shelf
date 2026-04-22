@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -446,14 +445,7 @@ final class _HttpConnection {
           } catch (e, st) {
             if (!_isHijacked && !_isDestroyed) {
               if (!_responseSent) {
-                socket.add(
-                  utf8.encode(
-                    'HTTP/1.1 500 Internal Server Error\r\n'
-                    'Connection: close\r\n'
-                    'Content-Length: 21\r\n\r\n'
-                    'Internal Server Error',
-                  ),
-                );
+                socket.add(ErrorResponse.internalServerError.bytes);
               }
               onConnectionError?.call(
                 'Error in handler',
@@ -494,14 +486,7 @@ final class _HttpConnection {
           } else {
             // Default or ErrorAction.destroy
             if (!_isHijacked && !_isDestroyed && !_responseSent) {
-              socket.add(
-                utf8.encode(
-                  'HTTP/1.1 500 Internal Server Error\r\n'
-                  'Connection: close\r\n'
-                  'Content-Length: 21\r\n\r\n'
-                  'Internal Server Error',
-                ),
-              );
+              socket.add(ErrorResponse.internalServerError.bytes);
             }
             onConnectionError?.call(
               'Error in handler',

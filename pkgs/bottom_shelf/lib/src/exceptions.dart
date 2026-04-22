@@ -20,6 +20,7 @@ enum ErrorResponse {
   methodNotAllowed(405, 'Method Not Allowed'),
   uriTooLong(414, 'URI Too Long'),
   headerFieldsTooLarge(431, 'Request Header Fields Too Large'),
+  internalServerError(500, 'Internal Server Error'),
   notImplemented(501, 'Not Implemented');
 
   final int code;

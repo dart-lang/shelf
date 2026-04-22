@@ -44,7 +44,7 @@ void main() {
 
     final response = await _get(port);
     expect(response.statusCode, HttpStatus.internalServerError);
-    expect(response.body, 'Internal Server Error');
+    expect(response.body, isEmpty);
   });
 
   test('async error leads to a 500', () async {
@@ -52,7 +52,7 @@ void main() {
 
     final response = await _get(port);
     expect(response.statusCode, HttpStatus.internalServerError);
-    expect(response.body, 'Internal Server Error');
+    expect(response.body, isEmpty);
   });
 
   test('supports HEAD requests', () async {
