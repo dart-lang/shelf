@@ -3,12 +3,11 @@
 | Category | Count |
 | --- | --- |
 | Total | 215 |
-| Passed | 161 |
+| Passed | 162 |
 | Failed | 0 |
 | Warnings | 40 |
-| Accepted | 14 |
+| Accepted | 13 |
 | Errors | 0 |
-| Skipped | 0 |
 
 ## Failed or Warning Results
 
