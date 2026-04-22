@@ -268,7 +268,11 @@ void main() {
       final socket = await Socket.connect('localhost', server.port);
       addTearDown(socket.close);
 
-      socket.add(utf8.encode('POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\n\r\n'));
+      socket.add(
+        utf8.encode(
+          'POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\n\r\n',
+        ),
+      );
       await socket.flush();
 
       // Wait longer than the timeout
@@ -303,6 +307,28 @@ void main() {
 
       final response = await utf8.decodeStream(socket);
       expect(response, contains('400 Bad Request'));
+    });
+
+    test('Content Too Large (maxAllowedContentLength)', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('ok'),
+        'localhost',
+        0,
+        maxAllowedContentLength: 10, // Very small limit
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      socket.add(
+        utf8.encode(
+          'POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 15\r\nConnection: close\r\n\r\nhello world!!!!',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('413 Content Too Large'));
     });
   });
 }

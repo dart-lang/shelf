@@ -4,9 +4,9 @@
 | --- | --- |
 | Total | 215 |
 | Passed | 161 |
-| Failed | 1 |
+| Failed | 0 |
 | Warnings | 40 |
-| Accepted | 13 |
+| Accepted | 14 |
 | Errors | 0 |
 | Skipped | 0 |
 
@@ -31,7 +31,6 @@
 | COMP-HTTP12-VERSION | Compliance | Warn | HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible |
 | COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
 | MAL-CL-TAB-BEFORE-VALUE | MalformedInput | Warn | Content-Length with tab as OWS — valid per RFC but unusual |
-| MAL-POST-CL-HUGE-NO-BODY | MalformedInput | Fail | POST with Content-Length: 999999999 but no body — tests timeout vs memory allocation |
 | MAL-RANGE-OVERLAPPING | MalformedInput | Warn | 1000 overlapping Range values — resource exhaustion vector (CVE-2011-3192 class) |
 | MAL-URL-BACKSLASH | MalformedInput | Warn | Backslash in URL path — not valid URI character, some servers normalize to / |
 | MAL-URL-PERCENT-CRLF | MalformedInput | Warn | Percent-encoded CRLF (%0d%0a) in URL — header injection if server decodes during parsing |

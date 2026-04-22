@@ -875,9 +875,9 @@
     "rfcLevel": "Must",
     "expected": "400/close/timeout",
     "verdict": "Fail",
-    "statusCode": 200,
+    "statusCode": 413,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 999999999\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\ndate: <DATE>\r\n\r\n"
+    "rawResponse": "HTTP/1.1 413 Content Too Large\r\nConnection: close\r\n\r\n"
   },
   {
     "id": "MAL-RANGE-OVERLAPPING",

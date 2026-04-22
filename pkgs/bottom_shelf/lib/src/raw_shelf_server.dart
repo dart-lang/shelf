@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:shelf/shelf.dart';
 
+import 'constants.dart';
 import 'http_connection.dart';
 import 'server_config.dart';
 
@@ -17,6 +18,7 @@ final class RawShelfServer extends ServerConfig {
     super.serverSocket,
     super.headerTimeout,
     super.bodyTimeout,
+    super.maxAllowedContentLength,
     super.onConnectionError,
     super.onAsyncError,
     super.automaticHeadMethodSupport,
@@ -33,6 +35,7 @@ final class RawShelfServer extends ServerConfig {
     bool shared = false,
     Duration? headerTimeout,
     Duration? bodyTimeout = const Duration(minutes: 1),
+    int? maxAllowedContentLength = $Limit.maxContentLength,
     ConnectionErrorCallback? onConnectionError,
     AsyncErrorCallback? onAsyncError,
     bool automaticHeadMethodSupport = true,
@@ -48,6 +51,7 @@ final class RawShelfServer extends ServerConfig {
       serverSocket,
       headerTimeout,
       bodyTimeout,
+      maxAllowedContentLength,
       onConnectionError,
       onAsyncError,
       automaticHeadMethodSupport,
@@ -57,10 +61,7 @@ final class RawShelfServer extends ServerConfig {
   }
 
   void _handleConnection(Socket socket) {
-    handleHttpConnection(
-      socket: socket,
-      config: this,
-    );
+    handleHttpConnection(socket: socket, config: this);
   }
 
   Future<void> close() => serverSocket.close();

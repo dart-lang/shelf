@@ -9,6 +9,7 @@ enum ErrorResponse {
   badRequest(400, 'Bad Request'),
   methodNotAllowed(405, 'Method Not Allowed'),
   uriTooLong(414, 'URI Too Long'),
+  contentTooLarge(413, 'Content Too Large'),
   headerFieldsTooLarge(431, 'Request Header Fields Too Large'),
   internalServerError(500, 'Internal Server Error'),
   notImplemented(501, 'Not Implemented');

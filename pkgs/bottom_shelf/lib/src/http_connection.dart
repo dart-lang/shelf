@@ -101,6 +101,12 @@ final class _HttpConnection {
     }
   }
 
+  void _flushCloseDestroy() {
+    socket.flush().then((_) {
+      socket.close().then((_) => _destroy());
+    });
+  }
+
   void _startHeaderTimer() {
     if (config.headerTimeout != null && !_isDestroyed && !_clientClosed) {
       _headerTimer?.cancel();
@@ -204,35 +210,27 @@ final class _HttpConnection {
 
           if (hasTransferEncoding && !isChunked) {
             socket.add(ErrorResponse.notImplemented.bytes);
-            socket.flush().then((_) {
-              socket.close().then((_) => _destroy());
-            });
+            _flushCloseDestroy();
             return;
           }
           if (requestHead.method == 'CONNECT' ||
               requestHead.method == 'TRACE') {
             socket.add(ErrorResponse.methodNotAllowed.bytes);
-            socket.flush().then((_) {
-              socket.close().then((_) => _destroy());
-            });
+            _flushCloseDestroy();
             return;
           }
 
           final host = typedHeaders.host;
           if (host != null && (host.contains('@') || host.contains('/'))) {
             socket.add(ErrorResponse.badRequest.bytes);
-            socket.flush().then((_) {
-              socket.close().then((_) => _destroy());
-            });
+            _flushCloseDestroy();
             return;
           }
 
           if ((host == null || host.trim().isEmpty) &&
               requestHead.version == '1.1') {
             socket.add(ErrorResponse.badRequest.bytes);
-            socket.flush().then((_) {
-              socket.close().then((_) => _destroy());
-            });
+            _flushCloseDestroy();
             return;
           }
           final effectiveHost = host ?? 'localhost';
@@ -262,14 +260,19 @@ final class _HttpConnection {
 
           final contentLength = typedHeaders.contentLength ?? 0;
 
+          if (config.maxAllowedContentLength != null &&
+              contentLength > config.maxAllowedContentLength!) {
+            socket.add(ErrorResponse.contentTooLarge.bytes);
+            _flushCloseDestroy();
+            return;
+          }
+
           typedHeaders.validateTransferEncoding();
 
           if (requestHead.method == 'OPTIONS' &&
               (contentLength > 0 || typedHeaders.isChunked)) {
             socket.add(ErrorResponse.badRequest.bytes);
-            socket.flush().then((_) {
-              socket.close().then((_) => _destroy());
-            });
+            _flushCloseDestroy();
             return;
           }
 
@@ -392,9 +395,7 @@ final class _HttpConnection {
         );
         if (e is BadRequestException) {
           socket.add(e.errorResponse.bytes);
-          socket.flush().then((_) {
-            socket.close().then((_) => _destroy());
-          });
+          _flushCloseDestroy();
         } else {
           _destroy();
         }

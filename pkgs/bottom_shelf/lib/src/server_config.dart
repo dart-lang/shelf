@@ -23,6 +23,7 @@ class ServerConfig {
   final ServerSocket serverSocket;
   final Duration? headerTimeout;
   final Duration? bodyTimeout;
+  final int? maxAllowedContentLength;
   final ConnectionErrorCallback? onConnectionError;
   final AsyncErrorCallback? onAsyncError;
   final bool automaticHeadMethodSupport;
@@ -32,6 +33,7 @@ class ServerConfig {
     this.serverSocket,
     this.headerTimeout,
     this.bodyTimeout,
+    this.maxAllowedContentLength,
     this.onConnectionError,
     this.onAsyncError,
     this.automaticHeadMethodSupport,

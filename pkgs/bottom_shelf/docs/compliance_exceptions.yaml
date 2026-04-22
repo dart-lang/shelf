@@ -35,3 +35,10 @@
     - SMUG-CHUNK-EXT-CTRL
     - SMUG-CHUNK-EXT-INVALID-TOKEN
     - SMUG-CHUNK-EXT-LF
+
+- description: >-
+    Returns 413 Content Too Large when Content-Length exceeds max limit,
+    which is more semantically correct than 400 expected by the tool.
+    See https://github.com/MDA2AV/Http11Probe/issues/118
+  tests:
+    - MAL-POST-CL-HUGE-NO-BODY

@@ -29,6 +29,7 @@ abstract final class $Limit {
   static const maxHeaderSize = 64 * 1024;
   static const maxFieldSize = 8 * 1024;
   static const maxUrlSize = 8 * 1024;
+  static const maxContentLength = 32 * 1024 * 1024;
 
   /// The maximum value of `_chunkSize` before shifting by 4 bits
   /// (multiplying by 16)
