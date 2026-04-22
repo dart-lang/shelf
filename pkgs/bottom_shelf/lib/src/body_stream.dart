@@ -251,7 +251,7 @@ final class ChunkedBodyController implements BodyController {
           } else {
             // hex digit
             final hex = parseHex(byte);
-            if (hex == -1) {
+            if (hex < 0) {
               throw const BadRequestException('Invalid chunk size');
             }
             if (_chunkSize > $Limit.maxChunkSizeBeforeShift) {
