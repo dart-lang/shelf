@@ -7,7 +7,6 @@
 | Failed | 56 |
 | Warnings | 58 |
 | Errors | 0 |
-| Skipped | 0 |
 
 ## Failed or Warning Results
 

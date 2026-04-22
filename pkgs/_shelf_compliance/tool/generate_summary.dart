@@ -1,3 +1,7 @@
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as p;
@@ -12,17 +16,9 @@ String generateSummary(Directory jsonDir) {
 
   for (var file in files) {
     final content = file.readAsStringSync();
-    final decoded = json.decode(content);
-    final results = decoded is List
-        ? decoded
-        : (decoded as Map<String, dynamic>)['results'] as List;
-
-    for (var result in results) {
-      final res = result as Map<String, dynamic>;
-      if (res['verdict'] != 'Skip') {
-        allResults.add(res);
-      }
-    }
+    final decoded = (json.decode(content) as List<dynamic>)
+        .cast<Map<String, dynamic>>();
+    allResults.addAll(decoded);
   }
 
   // Sort results by ID for stable output
@@ -33,7 +29,6 @@ String generateSummary(Directory jsonDir) {
   var failed = 0;
   var warnings = 0;
   var errors = 0;
-  var skipped = 0;
 
   for (var res in allResults) {
     final verdict = res['verdict'] as String;
@@ -50,9 +45,6 @@ String generateSummary(Directory jsonDir) {
       case 'Error':
         errors++;
         break;
-      case 'Skip':
-        skipped++;
-        break;
     }
   }
 
@@ -68,7 +60,6 @@ String generateSummary(Directory jsonDir) {
 | Failed | $failed |
 | Warnings | $warnings |
 | Errors | $errors |
-| Skipped | $skipped |
 
 ## Failed or Warning Results
 

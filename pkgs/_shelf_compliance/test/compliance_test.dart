@@ -1,3 +1,7 @@
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as p;
@@ -184,14 +188,18 @@ void _testCompliance(
       result.remove('doubleFlush');
     }
 
-    currentResults.sort(
+    final filteredResults = currentResults
+        .where((result) => result['verdict'] != 'Skip')
+        .toList();
+
+    filteredResults.sort(
       (a, b) => (a['id'] as String).compareTo(b['id'] as String),
     );
 
     // Overwrite the report file in temp dir with pruned results so summary tool
     // reads clean data
     final encoder = const JsonEncoder.withIndent('  ');
-    File(reportFile).writeAsStringSync('${encoder.convert(currentResults)}\n');
+    File(reportFile).writeAsStringSync('${encoder.convert(filteredResults)}\n');
 
     // Compare with Goldens
     final reportsDir = Directory('reports/$name');
@@ -204,7 +212,7 @@ void _testCompliance(
       print('Updating golden report for $category...');
       // Save sorted and pretty JSON array
       final encoder = const JsonEncoder.withIndent('  ');
-      goldenReport.writeAsStringSync('${encoder.convert(currentResults)}\n');
+      goldenReport.writeAsStringSync('${encoder.convert(filteredResults)}\n');
     } else {
       if (!goldenReport.existsSync()) {
         fail(
@@ -225,7 +233,7 @@ void _testCompliance(
         res.remove('doubleFlush');
       }
 
-      expect(currentResults, equals(expectedResults));
+      expect(filteredResults, equals(expectedResults));
     }
 
     // Clean up server
