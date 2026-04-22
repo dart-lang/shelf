@@ -366,8 +366,8 @@ final class _HttpConnection {
                 $Context.rawHeaders: typedHeaders,
                 $Context.connectionInfo: _HttpConnectionInfo(
                   config.serverSocket.port,
-                  socket.remoteAddress,
-                  socket.remotePort,
+                  remoteAddress,
+                  remotePort,
                 ),
               },
               onHijack: theHijackCallback,
