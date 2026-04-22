@@ -454,15 +454,17 @@ final class _HttpConnection {
           } on HijackException {
             // Handled
           } catch (e, st) {
-            if (!_isHijacked && !_isDestroyed && !_responseSent) {
-              socket.add(
-                utf8.encode(
-                  'HTTP/1.1 500 Internal Server Error\r\n'
-                  'Connection: close\r\n'
-                  'Content-Length: 21\r\n\r\n'
-                  'Internal Server Error',
-                ),
-              );
+            if (!_isHijacked && !_isDestroyed) {
+              if (!_responseSent) {
+                socket.add(
+                  utf8.encode(
+                    'HTTP/1.1 500 Internal Server Error\r\n'
+                    'Connection: close\r\n'
+                    'Content-Length: 21\r\n\r\n'
+                    'Internal Server Error',
+                  ),
+                );
+              }
               onConnectionError?.call(
                 'Error in handler',
                 e,
