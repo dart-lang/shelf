@@ -4,9 +4,9 @@
 | --- | --- |
 | Total | 215 |
 | Passed | 159 |
-| Failed | 9 |
+| Failed | 3 |
 | Warnings | 40 |
-| Accepted | 7 |
+| Accepted | 13 |
 | Errors | 0 |
 | Skipped | 0 |
 
@@ -30,7 +30,6 @@
 | COMP-HTTP10-NO-HOST | Compliance | Warn | HTTP/1.0 without Host header — valid per HTTP/1.0 |
 | COMP-HTTP12-VERSION | Compliance | Warn | HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible |
 | COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
-| COMP-OPTIONS-STAR | Compliance | Fail | OPTIONS * is the only valid asterisk-form request |
 | MAL-CL-TAB-BEFORE-VALUE | MalformedInput | Warn | Content-Length with tab as OWS — valid per RFC but unusual |
 | MAL-POST-CL-HUGE-NO-BODY | MalformedInput | Fail | POST with Content-Length: 999999999 but no body — tests timeout vs memory allocation |
 | MAL-RANGE-OVERLAPPING | MalformedInput | Warn | 1000 overlapping Range values — resource exhaustion vector (CVE-2011-3192 class) |
@@ -40,11 +39,6 @@
 | NORM-UNDERSCORE-CL | Normalization | Warn | Underscore in Content-Length name — checks if server normalizes Content_Length to Content-Length |
 | NORM-UNDERSCORE-TE | Normalization | Warn | Underscore in Transfer-Encoding name — checks if server normalizes Transfer_Encoding to Transfer-Encoding |
 | SMUG-ABSOLUTE-URI-HOST-MISMATCH | Smuggling | Warn | Absolute-form URI with different Host header — routing confusion vector |
-| SMUG-CHUNK-BARE-SEMICOLON | Smuggling | Fail | Chunk size with bare semicolon and no extension name must be rejected |
-| SMUG-CHUNK-EXT-CR | Smuggling | Fail | Bare CR (not CRLF) in chunk extension — some parsers treat CR alone as line ending |
-| SMUG-CHUNK-EXT-CTRL | Smuggling | Fail | NUL byte in chunk extension must be rejected |
-| SMUG-CHUNK-EXT-INVALID-TOKEN | Smuggling | Fail | Chunk extension with invalid token character must be rejected |
-| SMUG-CHUNK-EXT-LF | Smuggling | Fail | Bare LF in chunk extension — server MAY accept bare LF per RFC 9112 §2.2 |
 | SMUG-CHUNK-LF-TRAILER | Smuggling | Warn | Bare LF in chunked trailer termination — server MAY accept bare LF per RFC 9112 §2.2 |
 | SMUG-CL-DOUBLE-ZERO | Smuggling | Warn | Content-Length: 00 — matches 1*DIGIT but leading zero ambiguity |
 | SMUG-CL-EXTRA-LEADING-SP | Smuggling | Warn | Content-Length with extra leading whitespace (double space OWS) |

@@ -22,6 +22,7 @@
     - COMP-METHOD-CASE
     - COMP-UNKNOWN-METHOD
     - COMP-OPTIONS-ALLOW
+    - COMP-OPTIONS-STAR
 
 - description: >-
     Defensive security posture: explicitly rejecting chunk extensions with 501
@@ -29,3 +30,8 @@
   tests:
     - COMP-CHUNKED-EXTENSION
     - MAL-CHUNK-EXT-64K
+    - SMUG-CHUNK-BARE-SEMICOLON
+    - SMUG-CHUNK-EXT-CR
+    - SMUG-CHUNK-EXT-CTRL
+    - SMUG-CHUNK-EXT-INVALID-TOKEN
+    - SMUG-CHUNK-EXT-LF
