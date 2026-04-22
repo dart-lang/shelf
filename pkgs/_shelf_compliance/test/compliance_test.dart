@@ -59,6 +59,7 @@ void main() {
   });
 
   _defineComplianceTests('shelf', 'bin/shelf_echo.dart');
+  _defineComplianceTests('bottom_shelf', 'bin/shelf_serve_echo.dart');
 }
 
 void _defineComplianceTests(String name, String serverPath) {

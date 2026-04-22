@@ -6,4 +6,5 @@
 library;
 
 export 'src/raw_shelf_server.dart' show RawShelfServer;
+export 'src/raw_shelf_server.dart';
 export 'src/typed_headers.dart' show TypedHeaders;

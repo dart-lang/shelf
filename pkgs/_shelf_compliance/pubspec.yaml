@@ -6,6 +6,7 @@ environment:
   sdk: ^3.10.0
 
 dependencies:
+  bottom_shelf: any
   shelf: any
 
 dev_dependencies:
@@ -15,5 +16,7 @@ dev_dependencies:
   test_process: ^2.0.0
 
 dependency_overrides:
+  bottom_shelf:
+    path: ../bottom_shelf
   shelf:
     path: ../shelf
