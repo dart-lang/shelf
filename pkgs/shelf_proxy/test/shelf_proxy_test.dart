@@ -80,7 +80,8 @@ void main() {
       expect(response.headers, containsPair('accept', '*/*'));
     });
 
-    test('preserves multiple Set-Cookie headers in response, including dates', () async {
+    test('preserves multiple Set-Cookie headers in response, including dates',
+        () async {
       await createProxy((request) {
         return shelf.Response.ok(':)', headers: {
           'set-cookie': [

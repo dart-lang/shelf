@@ -44,6 +44,9 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
       ..followRedirects = false;
 
     serverRequest.headersAll.forEach((name, values) {
+      // The Cookie header is special: multiple cookies are joined with a
+      // semicolon and a space, while other headers use a comma.
+      // See https://datatracker.ietf.org/doc/html/rfc6265#section-5.4
       clientRequest.headers[name] =
           values.join(name.toLowerCase() == 'cookie' ? '; ' : ', ');
     });
@@ -76,7 +79,7 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
 
     // If the original response was gzipped, it will be decoded by [client]
     // and we'll have no way of knowing its actual content-length.
-    if (headers['content-encoding'] == 'gzip') {
+    if (headersAll['content-encoding']?.contains('gzip') ?? false) {
       headersAll.remove('content-encoding');
       headersAll.remove('content-length');
 
