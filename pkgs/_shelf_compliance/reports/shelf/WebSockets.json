@@ -1,0 +1,62 @@
+[
+  {
+    "id": "WS-UPGRADE-HTTP10",
+    "description": "Upgrade header in HTTP/1.0 request must be ignored",
+    "category": "WebSockets",
+    "rfcReference": "RFC 9110 §7.8",
+    "rfcLevel": "Must",
+    "expected": "!101",
+    "verdict": "Pass",
+    "statusCode": 200,
+    "rawRequest": "GET / HTTP/1.0\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+    "rawResponse": "HTTP/1.0 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
+  },
+  {
+    "id": "WS-UPGRADE-INVALID-VER",
+    "description": "WebSocket upgrade with unsupported version — should return 426",
+    "category": "WebSockets",
+    "rfcReference": "RFC 6455 §4.4",
+    "rfcLevel": "Must",
+    "expected": "non-101 (426 preferred)",
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 99\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
+  },
+  {
+    "id": "WS-UPGRADE-MISSING-CONN",
+    "description": "Upgrade header without Connection: Upgrade must not trigger protocol switch",
+    "category": "WebSockets",
+    "rfcReference": "RFC 9110 §7.8",
+    "rfcLevel": "Must",
+    "expected": "!101",
+    "verdict": "Pass",
+    "statusCode": 200,
+    "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
+  },
+  {
+    "id": "WS-UPGRADE-POST",
+    "description": "WebSocket upgrade via POST must not be accepted",
+    "category": "WebSockets",
+    "rfcReference": "RFC 6455 §4.1",
+    "rfcLevel": "Must",
+    "expected": "!101",
+    "verdict": "Pass",
+    "statusCode": 200,
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n"
+  },
+  {
+    "id": "WS-UPGRADE-UNKNOWN",
+    "description": "Upgrade to unknown protocol must not return 101",
+    "category": "WebSockets",
+    "rfcReference": "RFC 9110 §7.8",
+    "rfcLevel": "Must",
+    "expected": "!101",
+    "verdict": "Pass",
+    "statusCode": 200,
+    "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: totally-made-up/1.0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK"
+  }
+]

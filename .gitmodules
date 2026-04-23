@@ -1,0 +1,3 @@
+[submodule "vendor/Http11Probe"]
+	path = vendor/Http11Probe
+	url = https://github.com/MDA2AV/Http11Probe/

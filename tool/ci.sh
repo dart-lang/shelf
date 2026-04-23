@@ -67,6 +67,10 @@ for PKG in ${PKGS}; do
         echo 'dart analyze --fatal-infos .'
         dart analyze --fatal-infos . || EXIT_CODE=$?
         ;;
+      command)
+        echo 'tool/run_tests_with_dotnet.sh'
+        tool/run_tests_with_dotnet.sh || EXIT_CODE=$?
+        ;;
       format)
         echo 'dart format --output=none --set-exit-if-changed .'
         dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?

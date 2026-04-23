@@ -1,0 +1,54 @@
+[
+  {
+    "id": "NORM-CASE-TE",
+    "description": "All-uppercase TRANSFER-ENCODING — checks if server normalizes header name casing",
+    "category": "Normalization",
+    "rfcLevel": "NotApplicable",
+    "expected": "Reject/drop (pass), normalize casing (fail), preserve (warn)",
+    "verdict": "Pass",
+    "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nTRANSFER-ENCODING: chunked\r\n\r\nhello world"
+  },
+  {
+    "id": "NORM-SP-BEFORE-COLON-CL",
+    "description": "Space before colon in Content-Length — checks if server strips whitespace before colon",
+    "category": "Normalization",
+    "rfcReference": "RFC 9112 §5",
+    "rfcLevel": "Must",
+    "expected": "Reject/drop (pass), normalize (fail), preserve (warn)",
+    "verdict": "Pass",
+    "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nContent-Length : 5\r\n\r\nhello world"
+  },
+  {
+    "id": "NORM-TAB-IN-NAME",
+    "description": "Tab character in header name — checks if server normalizes Content\\tLength to Content-Length",
+    "category": "Normalization",
+    "rfcLevel": "Must",
+    "expected": "Reject/drop (pass), normalize (fail), preserve (warn)",
+    "verdict": "Pass",
+    "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nContent\tLength: 99\r\n\r\nhello world"
+  },
+  {
+    "id": "NORM-UNDERSCORE-CL",
+    "description": "Underscore in Content-Length name — checks if server normalizes Content_Length to Content-Length",
+    "category": "Normalization",
+    "rfcLevel": "NotApplicable",
+    "expected": "Reject/drop (pass), normalize (fail), preserve (warn)",
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nContent_Length: 99\r\n\r\nhello world",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 63\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\ncontent_length: 99\r\ncontent-length: 11\r\nhost: 127.0.0.1:<PORT>\r\n",
+    "behavioralNote": "Preserved: content_length"
+  },
+  {
+    "id": "NORM-UNDERSCORE-TE",
+    "description": "Underscore in Transfer-Encoding name — checks if server normalizes Transfer_Encoding to Transfer-Encoding",
+    "category": "Normalization",
+    "rfcLevel": "NotApplicable",
+    "expected": "Reject/drop (pass), normalize (fail), preserve (warn)",
+    "verdict": "Warn",
+    "statusCode": 200,
+    "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nTransfer_Encoding: chunked\r\n\r\nhello world",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 71\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\ncontent-length: 11\r\ntransfer_encoding: chunked\r\nhost: 127.0.0.1:<PORT>\r\n",
+    "behavioralNote": "Preserved: transfer_encoding"
+  }
+]

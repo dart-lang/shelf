@@ -1,0 +1,48 @@
+# Created with package:mono_repo v6.6.3
+name: Shelf Compliance CI
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+  schedule:
+    - cron: "0 0 * * 0"
+defaults:
+  run:
+    shell: bash
+env:
+  PUB_ENVIRONMENT: bot.github
+permissions: read-all
+
+jobs:
+  job_001:
+    name: "compliance_test; `tool/run_tests_with_dotnet.sh`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/_shelf_compliance;commands:command"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/_shelf_compliance
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+        with:
+          sdk: dev
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - id: pkgs__shelf_compliance_pub_upgrade
+        name: pkgs/_shelf_compliance; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/_shelf_compliance
+      - name: pkgs/_shelf_compliance; tool/run_tests_with_dotnet.sh
+        run: tool/run_tests_with_dotnet.sh
+        if: "always() && steps.pkgs__shelf_compliance_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/_shelf_compliance

@@ -1,3 +1,6 @@
 .dart_tool/
 .packages
 pubspec.lock
+
+# Compiled output of .NET tool
+pkgs/_shelf_compliance/tool/probe_bin/
