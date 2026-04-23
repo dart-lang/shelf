@@ -4,10 +4,12 @@
 
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:_shelf_compliance/src/compliance_harness.dart';
+import 'package:_shelf_compliance/src/generate_summary.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
-import '../tool/generate_summary.dart';
 
 // Update these to regenerate golden test files
 const _updateGoldens = false;
@@ -69,15 +71,7 @@ void _defineComplianceTests(String name, String serverPath) {
       print('Temp directory for $name: ${tempDir.path}');
 
       print('Building Http11Probe...');
-      // Build the probe tool once
-      final buildProcess = await TestProcess.start('dotnet', [
-        'build',
-        '../../vendor/Http11Probe/src/Http11Probe.Cli',
-        '--output',
-        'tool/probe_bin',
-      ], forwardStdio: true);
-
-      await buildProcess.shouldExit(0);
+      await buildProbe();
 
       // Create reports directory
       Directory(
@@ -96,7 +90,7 @@ void _defineComplianceTests(String name, String serverPath) {
 
       final goldenSummary = File('${name}_summary.md');
 
-      final sanitizedSummary = _sanitize(
+      final sanitizedSummary = canonicalize(
         summary,
         0,
       ); // No port to sanitize in summary usually
@@ -143,58 +137,13 @@ void _testCompliance(
     // Create directory for report file if it doesn't exist
     Directory(p.dirname(reportFile)).createSync(recursive: true);
 
-    // Start the echo server
-    final serverProcess = await TestProcess.start(Platform.resolvedExecutable, [
-      serverPath,
-    ]);
-
-    // Wait for the server to print the port
-    final portLine = await serverProcess.stdout.next;
-    final port = int.parse(portLine.split(': ').last);
-
-    final probeProcess = await TestProcess.start('dotnet', [
-      'tool/probe_bin/Http11Probe.Cli.dll',
-      '--host',
-      '127.0.0.1',
-      '--port',
-      '$port',
-      '--category',
-      category,
-      '--output',
-      reportFile,
-    ]);
-
-    // Stream output to console
-    probeProcess.stdout.rest.listen(print);
-
-    // Wait for the probe to complete
-    await probeProcess.shouldExit();
-
-    // Read and sanitize file
-    final currentReportStr = _sanitize(
-      File(reportFile).readAsStringSync(),
-      port,
+    final filteredResults = await runComplianceHarness(
+      serverPath: serverPath,
+      category: category,
+      reportFile: reportFile,
     );
-    final currentData = json.decode(currentReportStr) as Map<String, dynamic>;
 
-    final currentResults = (currentData['results'] as List<dynamic>)
-        .cast<Map<String, dynamic>>();
-
-    // Remove unnecessary and dynamic fields from results
-    for (var result in currentResults) {
-      result.remove('durationMs');
-      result.remove('connectionState');
-      result.remove('scored');
-      result.remove('doubleFlush');
-    }
-
-    final filteredResults = currentResults
-        .where((result) => result['verdict'] != 'Skip')
-        .toList();
-
-    filteredResults.sort(
-      (a, b) => (a['id'] as String).compareTo(b['id'] as String),
-    );
+    final filteredMaps = filteredResults.map((r) => r.toJson()).toList();
 
     // Overwrite the report file in temp dir with pruned results so summary tool
     // reads clean data
@@ -202,17 +151,15 @@ void _testCompliance(
     File(reportFile).writeAsStringSync('${encoder.convert(filteredResults)}\n');
 
     // Compare with Goldens
-    final reportsDir = Directory('reports/$name');
-    if (!reportsDir.existsSync()) {
-      reportsDir.createSync(recursive: true);
-    }
     final goldenReport = File('reports/$name/$category.json');
 
     if (_updateGoldens) {
       print('Updating golden report for $category...');
-      // Save sorted and pretty JSON array
-      final encoder = const JsonEncoder.withIndent('  ');
-      goldenReport.writeAsStringSync('${encoder.convert(filteredResults)}\n');
+      updateGoldenResults(
+        category: category,
+        name: name,
+        results: filteredResults,
+      );
     } else {
       if (!goldenReport.existsSync()) {
         fail(
@@ -233,23 +180,7 @@ void _testCompliance(
         res.remove('doubleFlush');
       }
 
-      expect(filteredResults, equals(expectedResults));
+      expect(filteredMaps, equals(expectedResults));
     }
-
-    // Clean up server
-    await serverProcess.kill();
-    await serverProcess.shouldExit();
   });
-}
-
-String _sanitize(String content, int port) {
-  var result = content.replaceAll(':$port', ':<PORT>');
-  // Replace durations
-  result = result.replaceAll(
-    RegExp(r'"durationMs": \d+\.\d+'),
-    '"durationMs": 0.0',
-  );
-  // Replace dates in raw headers (e.g., date: Tue, 21 Apr 2026 19:01:21 GMT)
-  result = result.replaceAll(RegExp(r'date: [^\r\n\\"]+'), 'date: <DATE>');
-  return result;
 }

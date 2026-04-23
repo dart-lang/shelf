@@ -1,6 +1,9 @@
-This package contains HTTP/1.1 compliance and hardening tests for `package:shelf` and future implementations.
+This package contains HTTP/1.1 compliance and hardening tests for
+`package:shelf` and future implementations.
 
-It uses the [Http11Probe](https://github.com/MDA2AV/Http11Probe) tool (vendored as a git submodule) to validate the server's behavior against RFC requirements and common edge cases.
+It uses the [Http11Probe](https://github.com/MDA2AV/Http11Probe) tool (vendored
+as a git submodule) to validate the server's behavior against RFC requirements
+and common edge cases.
 
 ## Current Baseline
 
