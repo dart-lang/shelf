@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -38,6 +39,21 @@ void main() {
       await get(headers: {'foo': 'bar', 'accept': '*/*'});
     });
 
+    test('joins multiple request cookies with a semicolon', () async {
+      final client = MockClient((request) {
+        expect(request.headers,
+            containsPair('cookie', 'cookie1=value1; cookie2=value2'));
+        return Future.value(http.Response(':)', 200));
+      });
+
+      final handler = proxyHandler('http://dartlang.org', client: client);
+      final request =
+          shelf.Request('GET', Uri.parse('http://localhost/'), headers: {
+        'cookie': ['cookie1=value1', 'cookie2=value2']
+      });
+      await handler(request);
+    });
+
     test('forwards request body', () async {
       await createProxy((request) {
         expect(request.readAsString(), completion(equals('hello, server')));
@@ -62,6 +78,28 @@ void main() {
 
       expect(response.headers, containsPair('foo', 'bar'));
       expect(response.headers, containsPair('accept', '*/*'));
+    });
+
+    test('preserves multiple Set-Cookie headers in response, including dates',
+        () async {
+      await createProxy((request) {
+        return shelf.Response.ok(':)', headers: {
+          'set-cookie': [
+            'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
+            'cookie2=value2'
+          ],
+        });
+      });
+
+      final client = HttpClient();
+      final request = await client.getUrl(proxyUri);
+      final response = await request.close();
+
+      final setCookies = response.headers['set-cookie'];
+      expect(setCookies, [
+        'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
+        'cookie2=value2'
+      ]);
     });
 
     test('forwards response body', () async {
