@@ -15,7 +15,6 @@ import 'package:yaml/yaml.dart';
 // Update these to regenerate golden test files
 const _updateGoldens = false;
 
-
 const _categories = [
   'Capabilities',
   'Compliance',
