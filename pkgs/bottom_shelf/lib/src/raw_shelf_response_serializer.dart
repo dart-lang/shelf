@@ -73,24 +73,22 @@ final class RawShelfResponseSerializer {
       await response.read().listen((_) {}).asFuture<void>();
     } else {
       var isFirst = true;
-      final mappedStream = response
-          .read()
-          .map((chunk) {
-            if (chunk.isEmpty) return chunk;
-            final builder = BytesBuilder(copy: false);
-            if (isFirst) {
-              builder.add(headerBytes);
-              isFirst = false;
-            }
-            if (isChunked) {
-              builder.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
-              builder.add(chunk);
-              builder.add(_crlf);
-            } else {
-              builder.add(chunk);
-            }
-            return builder.takeBytes();
-          });
+      final mappedStream = response.read().map((chunk) {
+        if (chunk.isEmpty) return chunk;
+        final builder = BytesBuilder(copy: false);
+        if (isFirst) {
+          builder.add(headerBytes);
+          isFirst = false;
+        }
+        if (isChunked) {
+          builder.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
+          builder.add(chunk);
+          builder.add(_crlf);
+        } else {
+          builder.add(chunk);
+        }
+        return builder.takeBytes();
+      });
 
       await socket.addStream(mappedStream);
 
