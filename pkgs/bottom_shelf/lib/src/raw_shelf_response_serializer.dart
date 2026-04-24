@@ -67,42 +67,35 @@ final class RawShelfResponseSerializer {
     headerBuffer.write('\r\n');
 
     final headerBytes = utf8.encode(headerBuffer.toString());
-    var headersSent = false;
 
     if (requestMethod == 'HEAD') {
       socket.add(headerBytes);
       await response.read().listen((_) {}).asFuture<void>();
-      headersSent = true;
     } else {
-      await for (final chunk in response.read()) {
-        if (chunk.isEmpty) continue;
+      var isFirst = true;
+      final mappedStream = response
+          .read()
+          .map((chunk) {
+            if (chunk.isEmpty) return chunk;
+            final builder = BytesBuilder(copy: false);
+            if (isFirst) {
+              builder.add(headerBytes);
+              isFirst = false;
+            }
+            if (isChunked) {
+              builder.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
+              builder.add(chunk);
+              builder.add(_crlf);
+            } else {
+              builder.add(chunk);
+            }
+            return builder.takeBytes();
+          });
 
-        if (!headersSent) {
-          final builder = BytesBuilder(copy: false);
-          builder.add(headerBytes);
-          if (isChunked) {
-            builder.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
-          }
-          builder.add(chunk);
-          if (isChunked) {
-            builder.add(_crlf);
-          }
-          socket.add(builder.takeBytes());
-          headersSent = true;
-        } else {
-          if (isChunked) {
-            socket.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
-            socket.add(chunk);
-            socket.add(_crlf);
-          } else {
-            socket.add(chunk);
-          }
-        }
-      }
+      await socket.addStream(mappedStream);
 
-      if (!headersSent) {
+      if (isFirst) {
         socket.add(headerBytes);
-        headersSent = true;
       }
 
       if (isChunked) {
