@@ -9,7 +9,10 @@ import 'package:path/path.dart' as p;
 import 'compliance_result.dart';
 
 /// Generates a combined Markdown summary from all JSON reports in [jsonDir].
-String generateSummary(Directory jsonDir) {
+String generateSummary(
+  Directory jsonDir, {
+  Set<String> acceptedIds = const <String>{},
+}) {
   final files = jsonDir.listSync().whereType<File>().where(
     (file) => p.extension(file.path) == '.json',
   );
@@ -31,18 +34,28 @@ String generateSummary(Directory jsonDir) {
   var failed = 0;
   var warnings = 0;
   var errors = 0;
+  var accepted = 0;
 
   for (var res in allResults) {
+    final isAccepted = acceptedIds.contains(res.id);
     final verdict = res.verdict;
     switch (verdict) {
       case ResultVerdict.Pass:
         passed++;
         break;
       case ResultVerdict.Fail:
-        failed++;
+        if (isAccepted) {
+          accepted++;
+        } else {
+          failed++;
+        }
         break;
       case ResultVerdict.Warn:
-        warnings++;
+        if (isAccepted) {
+          accepted++;
+        } else {
+          warnings++;
+        }
         break;
       case ResultVerdict.Error:
         errors++;
@@ -63,6 +76,7 @@ String generateSummary(Directory jsonDir) {
 | Passed | $passed |
 | Failed | $failed |
 | Warnings | $warnings |
+| Accepted | $accepted |
 | Errors | $errors |
 
 ## Failed or Warning Results
@@ -72,8 +86,10 @@ String generateSummary(Directory jsonDir) {
 ''');
 
   for (var res in allResults) {
+    final isAccepted = acceptedIds.contains(res.id);
     if (res.verdict != ResultVerdict.Pass &&
-        res.verdict != ResultVerdict.Skip) {
+        res.verdict != ResultVerdict.Skip &&
+        !isAccepted) {
       buffer.writeln(
         '| ${res.id} | ${res.category} | ${res.verdict.name} | '
         '${res.description} |',
