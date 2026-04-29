@@ -1,13 +1,12 @@
-# Created with package:mono_repo v6.6.3
 name: Shelf Compliance CI
 on:
   push:
     branches:
-      - main
       - master
   pull_request:
   schedule:
     - cron: "0 0 * * 0"
+  workflow_dispatch:
 defaults:
   run:
     shell: bash
