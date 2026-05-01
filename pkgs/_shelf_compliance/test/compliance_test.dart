@@ -29,6 +29,10 @@ const _categories = [
 /// but not down.
 const _verdictRank = {'Pass': 4, 'Warn': 3, 'Fail': 2, 'Error': 1, 'Skip': 0};
 
+void _printGithubWarning(String filePath, String title, String message) {
+  print('::warning file=$filePath,title=$title::$message');
+}
+
 void main() {
   test('Verify categories list is complete', () async {
     final helpProcess = await TestProcess.start('dotnet', [
@@ -126,9 +130,11 @@ void _defineComplianceTests(String name, String serverPath) {
             'regressions.',
           );
         } else {
-          print(
-            '''
-::warning file=pkgs/_shelf_compliance/${name}_summary.md,title=Compliance Summary Improved!::The summary improved or changed benignly but does not match the golden. Run tool/update_goldens.dart to tighten.''',
+          _printGithubWarning(
+            'pkgs/_shelf_compliance/${name}_summary.md',
+            'Compliance Summary Improved!',
+            'The summary improved or changed benignly but does not match the '
+                'golden. Run tool/update_goldens.dart to tighten.',
           );
         }
       }
@@ -217,13 +223,19 @@ void _testCompliance({
               '$actualVerdictStr',
         );
       } else if (actualRank > expectedRank) {
-        print(
-          '::warning file=pkgs/_shelf_compliance/reports/$name/$category.json,title=Compliance Test Improved!::Test ${actual['id']} improved from $expectedVerdictStr to $actualVerdictStr. Run tool/update_goldens.dart to tighten.',
+        _printGithubWarning(
+          'pkgs/_shelf_compliance/reports/$name/$category.json',
+          'Compliance Test Improved!',
+          'Test ${actual['id']} improved from $expectedVerdictStr to '
+              '$actualVerdictStr. Run tool/update_goldens.dart to tighten.',
         );
       } else {
         if (jsonEncode(actual) != jsonEncode(expected)) {
-          print(
-            '::warning file=pkgs/_shelf_compliance/reports/$name/$category.json,title=Compliance Test Changed!::Test ${actual['id']} changed benignly (verdict remains $actualVerdictStr). Run tool/update_goldens.dart to tighten.',
+          _printGithubWarning(
+            'pkgs/_shelf_compliance/reports/$name/$category.json',
+            'Compliance Test Changed!',
+            'Test ${actual['id']} changed benignly (verdict remains '
+                '$actualVerdictStr). Run tool/update_goldens.dart to tighten.',
           );
         }
       }
