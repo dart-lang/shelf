@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:_shelf_compliance/src/compliance_harness.dart';
 import 'package:_shelf_compliance/src/generate_summary.dart';
+import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
@@ -230,7 +231,7 @@ void _testCompliance({
               '$actualVerdictStr. Run tool/update_goldens.dart to tighten.',
         );
       } else {
-        if (jsonEncode(actual) != jsonEncode(expected)) {
+        if (!const DeepCollectionEquality().equals(actual, expected)) {
           _printGithubWarning(
             'pkgs/_shelf_compliance/reports/$name/$category.json',
             'Compliance Test Changed!',
