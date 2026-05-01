@@ -128,7 +128,7 @@ void _defineComplianceTests(String name, String serverPath) {
         } else {
           print(
             '''
-::warning file=pkgs/_shelf_compliance/reports/$name/shelf_summary.md,title=Compliance Summary Improved!::The summary improved or changed benignly but does not match the golden. Run tool/update_goldens.dart to tighten.''',
+::warning file=pkgs/_shelf_compliance/${name}_summary.md,title=Compliance Summary Improved!::The summary improved or changed benignly but does not match the golden. Run tool/update_goldens.dart to tighten.''',
           );
         }
       }
