@@ -11,9 +11,6 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
-// Update these to regenerate golden test files
-const _updateGoldens = false;
-
 const _categories = [
   'Capabilities',
   'Compliance',
@@ -25,6 +22,12 @@ const _categories = [
   'Smuggling',
   'WebSockets',
 ];
+
+/// Maps verdicts to a numeric rank for comparison.
+///
+/// We allow test results to move up the ranks (or stay same),
+/// but not down.
+const _verdictRank = {'Pass': 4, 'Warn': 3, 'Fail': 2, 'Error': 1, 'Skip': 0};
 
 void main() {
   test('Verify categories list is complete', () async {
@@ -66,6 +69,11 @@ void main() {
 void _defineComplianceTests(String name, String serverPath) {
   group(name, () {
     final tempDir = Directory.systemTemp.createTempSync('compliance_${name}_');
+    var hasRegressions = false;
+
+    void reportRegression() {
+      hasRegressions = true;
+    }
 
     setUpAll(() async {
       print('Temp directory for $name: ${tempDir.path}');
@@ -80,7 +88,13 @@ void _defineComplianceTests(String name, String serverPath) {
     });
 
     for (var category in _categories) {
-      _testCompliance(name, serverPath, category, tempDir);
+      _testCompliance(
+        name: name,
+        serverPath: serverPath,
+        category: category,
+        tempDir: tempDir,
+        reportRegression: reportRegression,
+      );
     }
 
     tearDownAll(() async {
@@ -95,26 +109,27 @@ void _defineComplianceTests(String name, String serverPath) {
         0,
       ); // No port to sanitize in summary usually
 
-      if (_updateGoldens) {
-        print('Updating golden summary for $name...');
-        goldenSummary.writeAsStringSync(sanitizedSummary);
+      if (!goldenSummary.existsSync()) {
         fail(
-          'Goldens updated. Please set _updateGoldens to false and commit '
-          'the changes.',
+          'Golden summary missing! Please run tool/update_goldens.dart to '
+          'create it.',
         );
-      } else {
-        if (!goldenSummary.existsSync()) {
-          fail(
-            'Golden summary missing! Please set _updateGoldens to true to '
-            'create it.',
-          );
-        }
-        final expectedSummary = goldenSummary.readAsStringSync();
-        if (sanitizedSummary != expectedSummary) {
+      }
+      final expectedSummary = goldenSummary.readAsStringSync();
+      if (sanitizedSummary != expectedSummary) {
+        if (hasRegressions) {
           print('MISMATCH in summary!');
           print('Generated summary in temp dir.');
           print('Golden summary: ${goldenSummary.path}');
-          fail('Generated summary does not match golden.');
+          fail(
+            'Generated summary does not match golden and there were '
+            'regressions.',
+          );
+        } else {
+          print(
+            '''
+::warning file=pkgs/_shelf_compliance/reports/$name/shelf_summary.md,title=Compliance Summary Improved!::The summary improved or changed benignly but does not match the golden. Run tool/update_goldens.dart to tighten.''',
+          );
         }
       }
 
@@ -125,12 +140,13 @@ void _defineComplianceTests(String name, String serverPath) {
   });
 }
 
-void _testCompliance(
-  String name,
-  String serverPath,
-  String category,
-  Directory tempDir,
-) {
+void _testCompliance({
+  required String name,
+  required String serverPath,
+  required String category,
+  required Directory tempDir,
+  required void Function() reportRegression,
+}) {
   test('Category: $category', () async {
     final reportFile = p.join(tempDir.path, 'reports', name, '$category.json');
 
@@ -153,34 +169,64 @@ void _testCompliance(
     // Compare with Goldens
     final goldenReport = File('reports/$name/$category.json');
 
-    if (_updateGoldens) {
-      print('Updating golden report for $category...');
-      updateGoldenResults(
-        category: category,
-        name: name,
-        results: filteredResults,
+    if (!goldenReport.existsSync()) {
+      fail(
+        'Golden report missing for $category! Please run tool/update_goldens.dart '
+        'to create it.',
       );
-    } else {
-      if (!goldenReport.existsSync()) {
-        fail(
-          'Golden report missing for $category! Please set _updateGoldens '
-          'to true to create it.',
+    }
+
+    final expectedResults =
+        (json.decode(goldenReport.readAsStringSync()) as List<dynamic>)
+            .cast<Map<String, dynamic>>();
+    expectedResults.sort(
+      (a, b) => (a['id'] as String).compareTo(b['id'] as String),
+    );
+
+    for (var result in expectedResults) {
+      final res = result;
+      res.remove('doubleFlush');
+    }
+
+    expect(
+      filteredMaps.length,
+      equals(expectedResults.length),
+      reason: 'Length of results changed',
+    );
+
+    for (var i = 0; i < filteredMaps.length; i++) {
+      final actual = filteredMaps[i];
+      final expected = expectedResults[i];
+
+      expect(actual['id'], equals(expected['id']));
+
+      final actualVerdictStr = actual['verdict'] as String;
+      final expectedVerdictStr = expected['verdict'] as String;
+
+      final actualRank = _verdictRank[actualVerdictStr] ?? 0;
+      final expectedRank = _verdictRank[expectedVerdictStr] ?? 0;
+
+      if (actualRank < expectedRank) {
+        reportRegression();
+
+        expect(
+          actual,
+          equals(expected),
+          reason:
+              'Test ${actual['id']} regressed from $expectedVerdictStr to '
+              '$actualVerdictStr',
         );
+      } else if (actualRank > expectedRank) {
+        print(
+          '::warning file=pkgs/_shelf_compliance/reports/$name/$category.json,title=Compliance Test Improved!::Test ${actual['id']} improved from $expectedVerdictStr to $actualVerdictStr. Run tool/update_goldens.dart to tighten.',
+        );
+      } else {
+        if (jsonEncode(actual) != jsonEncode(expected)) {
+          print(
+            '::warning file=pkgs/_shelf_compliance/reports/$name/$category.json,title=Compliance Test Changed!::Test ${actual['id']} changed benignly (verdict remains $actualVerdictStr). Run tool/update_goldens.dart to tighten.',
+          );
+        }
       }
-
-      final expectedResults =
-          (json.decode(goldenReport.readAsStringSync()) as List<dynamic>)
-              .cast<Map<String, dynamic>>();
-      expectedResults.sort(
-        (a, b) => (a['id'] as String).compareTo(b['id'] as String),
-      );
-
-      for (var result in expectedResults) {
-        final res = result;
-        res.remove('doubleFlush');
-      }
-
-      expect(filteredMaps, equals(expectedResults));
     }
   });
 }
