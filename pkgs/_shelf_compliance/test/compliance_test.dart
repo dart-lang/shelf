@@ -191,8 +191,7 @@ void _testCompliance({
     );
 
     for (var result in expectedResults) {
-      final res = result;
-      res.remove('doubleFlush');
+      result.remove('doubleFlush');
     }
 
     expect(
