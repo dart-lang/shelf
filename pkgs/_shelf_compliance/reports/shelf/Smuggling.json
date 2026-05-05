@@ -215,11 +215,8 @@
     "rfcReference": "RFC 9112 §7",
     "rfcLevel": "Must",
     "expected": "400 or 2xx",
-    "verdict": "Warn",
-    "statusCode": 200,
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked;ext=val\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
-    "behavioralNote": "Body: 0"
+    "verdict": "Pass",
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked;ext=val\r\nContent-Length: 5\r\n\r\nhello"
   },
   {
     "id": "SMUG-CL-COMMA-DIFFERENT",
@@ -490,11 +487,9 @@
     "rfcReference": "RFC 9112 §6.1",
     "rfcLevel": "Must",
     "expected": "400, or close (no extra response)",
-    "verdict": "Fail",
-    "statusCode": 200,
+    "verdict": "Pass",
     "rawRequest": "── Poison POST with embedded GET (TE: , chunked) ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 46\r\nTransfer-Encoding: , chunked\r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with embedded GET (TE: , chunked) ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
-    "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
+    "behavioralNote": "Connection closed — safe"
   },
   {
     "id": "SMUG-CLTE-SMUGGLED-GET-TE-OBS-FOLD",
@@ -717,11 +712,9 @@
     "rfcReference": "RFC 9112 §6.1",
     "rfcLevel": "Must",
     "expected": "400, or close (no extra response)",
-    "verdict": "Fail",
-    "statusCode": 200,
+    "verdict": "Pass",
     "rawRequest": "── Poison POST with duplicate TE + embedded GET ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\nTransfer-Encoding: identity\r\nContent-Length: 46\r\n\r\n0\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── Poison POST with duplicate TE + embedded GET ──\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\nHTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 2\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nOK",
-    "behavioralNote": "MULTIPLE RESPONSES: observed 2 HTTP status lines (embedded GET likely executed)"
+    "behavioralNote": "Connection closed — safe"
   },
   {
     "id": "SMUG-TE-EMPTY-VALUE",
@@ -730,11 +723,8 @@
     "rfcReference": "RFC 9112 §6.1",
     "rfcLevel": "Must",
     "expected": "400 or close",
-    "verdict": "Fail",
-    "statusCode": 200,
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: \r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
-    "behavioralNote": "Body: 0"
+    "verdict": "Pass",
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: \r\nContent-Length: 5\r\n\r\nhello"
   },
   {
     "id": "SMUG-TE-FORMFEED",
@@ -763,11 +753,8 @@
     "rfcReference": "RFC 9112 §7",
     "rfcLevel": "Must",
     "expected": "400/501 or close",
-    "verdict": "Fail",
-    "statusCode": 200,
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: identity\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
-    "behavioralNote": "Body: 0"
+    "verdict": "Pass",
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: identity\r\nContent-Length: 5\r\n\r\nhello"
   },
   {
     "id": "SMUG-TE-LEADING-COMMA",
@@ -786,10 +773,8 @@
     "rfcReference": "RFC 9112 §6.3",
     "rfcLevel": "Must",
     "expected": "400 or close",
-    "verdict": "Fail",
-    "statusCode": 200,
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked, gzip\r\n\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n"
+    "verdict": "Pass",
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked, gzip\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TE-NULL",
@@ -868,11 +853,8 @@
     "rfcReference": "RFC 9112 §6.1",
     "rfcLevel": "Must",
     "expected": "400/501 or close",
-    "verdict": "Fail",
-    "statusCode": 200,
-    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: xchunked\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ntransfer-encoding: chunked\r\ndate: <DATE>\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\n0\r\n\r\n",
-    "behavioralNote": "Body: 0"
+    "verdict": "Pass",
+    "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: xchunked\r\nContent-Length: 5\r\n\r\nhello"
   },
   {
     "id": "SMUG-TECL-CONN-CLOSE",
