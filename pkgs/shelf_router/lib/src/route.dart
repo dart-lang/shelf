@@ -85,6 +85,9 @@ class Route {
   /// Route `TRACE` requests matching [route] to annotated method.
   const Route.trace(this.route) : verb = 'TRACE';
 
+  /// Route `PATCH` requests matching [route] to annotated method.
+  const Route.patch(this.route) : verb = 'PATCH';
+
   /// Route `MOUNT` requests matching [route] to annotated method.
   const Route.mount(String prefix)
       : verb = r'$mount',
