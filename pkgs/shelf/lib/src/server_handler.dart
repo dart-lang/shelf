@@ -16,8 +16,10 @@ import 'server.dart';
 /// Requests to the handler are sent to the server's mounted handler once it's
 /// available. This is used to expose a virtual [Server] that's actually one
 /// part of a larger URL-space.
-@Deprecated('Do not use. If you have a use case for this class add a comment '
-    'at https://github.com/dart-lang/shelf/issues/205')
+@Deprecated(
+  'Do not use. If you have a use case for this class add a comment '
+  'at https://github.com/dart-lang/shelf/issues/205',
+)
 class ServerHandler {
   /// The server.
   ///
@@ -41,7 +43,7 @@ class ServerHandler {
   /// If [onClose] is passed, it's called when [server] is closed. It may return
   /// a [Future] or `null`; its return value is returned by [Server.close].
   ServerHandler(Uri url, {Future<void>? Function()? onClose})
-      : _server = _HandlerServer(url, onClose);
+    : _server = _HandlerServer(url, onClose);
 
   /// Pipes requests to [server]'s handler.
   FutureOr<Response> _onRequest(Request request) {
@@ -88,7 +90,7 @@ class _HandlerServer implements Server {
 
   @override
   Future<void> close() => _closeMemo.runOnce(() {
-        return _onClose == null ? null : _onClose();
-      });
+    return _onClose == null ? null : _onClose();
+  });
   final _closeMemo = AsyncMemoizer<void>();
 }

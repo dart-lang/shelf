@@ -41,16 +41,21 @@ void main() {
   });
 
   test('logs a request with an asynchronous error response', () {
-    var handler =
-        const Pipeline().addMiddleware(logRequests(logger: (msg, isError) {
-      expect(gotLog, isFalse);
-      gotLog = true;
-      expect(isError, isTrue);
-      expect(msg, contains('\tGET\t/'));
-      expect(msg, contains('oh no'));
-    })).addHandler((request) {
-      throw StateError('oh no');
-    });
+    var handler = const Pipeline()
+        .addMiddleware(
+          logRequests(
+            logger: (msg, isError) {
+              expect(gotLog, isFalse);
+              gotLog = true;
+              expect(isError, isTrue);
+              expect(msg, contains('\tGET\t/'));
+              expect(msg, contains('oh no'));
+            },
+          ),
+        )
+        .addHandler((request) {
+          throw StateError('oh no');
+        });
 
     expect(makeSimpleRequest(handler), throwsA(isOhNoStateError));
   });
@@ -61,9 +66,10 @@ void main() {
         .addHandler((request) => throw const HijackException());
 
     expect(
-        makeSimpleRequest(handler).whenComplete(() {
-          expect(gotLog, isFalse);
-        }),
-        throwsHijackException);
+      makeSimpleRequest(handler).whenComplete(() {
+        expect(gotLog, isFalse);
+      }),
+      throwsHijackException,
+    );
   });
 }

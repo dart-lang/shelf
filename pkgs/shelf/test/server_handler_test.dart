@@ -15,27 +15,31 @@ void main() {
     expect(serverHandler.server.url, equals(localhostUri));
   });
 
-  test('pipes a request from ServerHandler.handler to a mounted handler',
-      () async {
-    var serverHandler = ServerHandler(localhostUri);
-    serverHandler.server.mount(asyncHandler);
+  test(
+    'pipes a request from ServerHandler.handler to a mounted handler',
+    () async {
+      var serverHandler = ServerHandler(localhostUri);
+      serverHandler.server.mount(asyncHandler);
 
-    var response = await makeSimpleRequest(serverHandler.handler);
-    expect(response.statusCode, equals(200));
-    expect(response.readAsString(), completion(equals('Hello from /')));
-  });
+      var response = await makeSimpleRequest(serverHandler.handler);
+      expect(response.statusCode, equals(200));
+      expect(response.readAsString(), completion(equals('Hello from /')));
+    },
+  );
 
-  test("waits until the server's handler is mounted to service a request",
-      () async {
-    var serverHandler = ServerHandler(localhostUri);
-    var future = makeSimpleRequest(serverHandler.handler);
-    await Future<void>.delayed(Duration.zero);
+  test(
+    "waits until the server's handler is mounted to service a request",
+    () async {
+      var serverHandler = ServerHandler(localhostUri);
+      var future = makeSimpleRequest(serverHandler.handler);
+      await Future<void>.delayed(Duration.zero);
 
-    serverHandler.server.mount(syncHandler);
-    var response = await future;
-    expect(response.statusCode, equals(200));
-    expect(response.readAsString(), completion(equals('Hello from /')));
-  });
+      serverHandler.server.mount(syncHandler);
+      var response = await future;
+      expect(response.statusCode, equals(200));
+      expect(response.readAsString(), completion(equals('Hello from /')));
+    },
+  );
 
   test('stops servicing requests after Server.close is called', () {
     var serverHandler = ServerHandler(localhostUri);
@@ -50,15 +54,20 @@ void main() {
   test('calls onClose when Server.close is called', () async {
     var onCloseCalled = false;
     var completer = Completer<void>();
-    var serverHandler = ServerHandler(localhostUri, onClose: () {
-      onCloseCalled = true;
-      return completer.future;
-    });
+    var serverHandler = ServerHandler(
+      localhostUri,
+      onClose: () {
+        onCloseCalled = true;
+        return completer.future;
+      },
+    );
 
     var closeDone = false;
-    unawaited(serverHandler.server.close().then((_) {
-      closeDone = true;
-    }));
+    unawaited(
+      serverHandler.server.close().then((_) {
+        closeDone = true;
+      }),
+    );
     expect(onCloseCalled, isTrue);
     await Future<void>.delayed(Duration.zero);
 

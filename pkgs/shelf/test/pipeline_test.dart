@@ -15,22 +15,22 @@ void main() {
   });
 
   Handler middlewareA(Handler innerHandler) => (request) {
-        expect(accessLocation, 0);
-        accessLocation = 1;
-        final response = innerHandler(request);
-        expect(accessLocation, 4);
-        accessLocation = 5;
-        return response;
-      };
+    expect(accessLocation, 0);
+    accessLocation = 1;
+    final response = innerHandler(request);
+    expect(accessLocation, 4);
+    accessLocation = 5;
+    return response;
+  };
 
   Handler middlewareB(Handler innerHandler) => (request) {
-        expect(accessLocation, 1);
-        accessLocation = 2;
-        final response = innerHandler(request);
-        expect(accessLocation, 3);
-        accessLocation = 4;
-        return response;
-      };
+    expect(accessLocation, 1);
+    accessLocation = 2;
+    final response = innerHandler(request);
+    expect(accessLocation, 3);
+    accessLocation = 4;
+    return response;
+  };
 
   Response innerHandler(Request request) {
     expect(accessLocation, 2);
@@ -50,8 +50,9 @@ void main() {
   });
 
   test('extensions for composition', () async {
-    var handler =
-        middlewareA.addMiddleware(middlewareB).addHandler(innerHandler);
+    var handler = middlewareA
+        .addMiddleware(middlewareB)
+        .addHandler(innerHandler);
 
     final response = await makeSimpleRequest(handler);
     expect(response, isNotNull);
@@ -59,8 +60,9 @@ void main() {
   });
 
   test('Pipeline can be used as middleware', () async {
-    var innerPipeline =
-        const Pipeline().addMiddleware(middlewareA).addMiddleware(middlewareB);
+    var innerPipeline = const Pipeline()
+        .addMiddleware(middlewareA)
+        .addMiddleware(middlewareB);
 
     var handler = const Pipeline()
         .addMiddleware(innerPipeline.middleware)
