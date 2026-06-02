@@ -4,8 +4,7 @@ import 'package:test/test.dart';
 
 void main() {
   Future<Response> get(Router router, String path) async {
-    return await router
-        .call(Request('GET', Uri.parse('http://localhost$path')));
+    return router.call(Request('GET', Uri.parse('http://localhost$path')));
   }
 
   test('handles root paths correctly', () async {
