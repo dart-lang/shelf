@@ -1,5 +1,7 @@
 ## 1.4.3-wip
 
+* Require `sdk: ^3.9.0`.
+
 ## 1.4.2
 
 * `Headers`: added the `fromEntries`  constructor.
