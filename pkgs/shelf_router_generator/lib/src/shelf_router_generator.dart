@@ -22,7 +22,6 @@ import 'package:analyzer/dart/element/element.dart'
 import 'package:analyzer/dart/element/type.dart' show ParameterizedType;
 import 'package:build/build.dart' show BuildStep, log;
 import 'package:code_builder/code_builder.dart' as code;
-import 'package:http_methods/http_methods.dart' show isHttpMethod;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
 import 'package:shelf_router/src/router_entry.dart' // ignore: implementation_imports
@@ -185,7 +184,7 @@ void _typeCheckHandler(_Handler h) {
   }
 
   // Check the verb, note that $all is a special value for handling all verbs.
-  if (!isHttpMethod(h.verb) && h.verb != r'$all') {
+  if (!_isHttpMethod(h.verb) && h.verb != r'$all') {
     throw g.InvalidGenerationSourceError(
       'The verb "${h.verb}" used in shelf_router.Route annotation must be '
       'a valid HTTP method',
@@ -336,4 +335,9 @@ void _typeCheckMount(_Handler h) {
       element: h.element,
     );
   }
+}
+
+bool _isHttpMethod(String method) {
+  return {'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'}
+      .contains(method.toUpperCase());
 }
