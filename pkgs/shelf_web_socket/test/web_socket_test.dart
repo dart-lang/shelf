@@ -65,7 +65,7 @@ void main() {
       final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
           protocols: ['one', 'two', 'three']);
       expect(webSocket.protocol, equals('two'));
-      return webSocket.close();
+      return await webSocket.close();
     } finally {
       await server.close();
     }
@@ -80,7 +80,7 @@ void main() {
       final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
           protocols: ['one', 'two', 'three']);
       expect(webSocket.protocol, isNull);
-      return webSocket.close();
+      return await webSocket.close();
     } finally {
       await server.close();
     }
@@ -97,7 +97,7 @@ void main() {
       final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
           protocols: ['one', 'two', 'three']);
       expect(webSocket.protocol, isNull);
-      return webSocket.close();
+      return await webSocket.close();
     } finally {
       await server.close();
     }

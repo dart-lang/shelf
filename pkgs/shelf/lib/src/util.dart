@@ -13,8 +13,10 @@ import 'shelf_unmodifiable_map.dart';
 /// If `this` is called in a non-root error zone, it will just run [callback]
 /// and return the result. Otherwise, it will capture any errors using
 /// [runZoned] and pass them to [onError].
-void catchTopLevelErrors(void Function() callback,
-    void Function(dynamic error, StackTrace) onError) {
+void catchTopLevelErrors(
+  void Function() callback,
+  void Function(dynamic error, StackTrace) onError,
+) {
   if (Zone.current.inSameErrorZone(Zone.root)) {
     return runZonedGuarded(callback, onError);
   } else {
@@ -61,10 +63,7 @@ Map<String, Object> addHeader(
 /// Removed the header with case-insensitive name [name].
 ///
 /// Returns a new map without modifying [headers].
-Map<String, Object> removeHeader(
-  Map<String, Object>? headers,
-  String name,
-) {
+Map<String, Object> removeHeader(Map<String, Object>? headers, String name) {
   headers = headers == null ? {} : Map.from(headers);
   headers.removeWhere((header, value) => equalsIgnoreAsciiCase(header, name));
   return headers;
@@ -104,10 +103,12 @@ Map<String, List<String>?>? _expandToHeadersAll(
   if (headers is Map<String, List<String>>) return headers;
   if (headers == null || headers.isEmpty) return null;
 
-  return Map.fromEntries(headers.entries.map((e) {
-    final val = e.value;
-    return MapEntry(e.key, val == null ? null : expandHeaderValue(val));
-  }));
+  return Map.fromEntries(
+    headers.entries.map((e) {
+      final val = e.value;
+      return MapEntry(e.key, val == null ? null : expandHeaderValue(val));
+    }),
+  );
 }
 
 Map<String, List<String>>? expandToHeadersAll(
@@ -116,9 +117,11 @@ Map<String, List<String>>? expandToHeadersAll(
   if (headers is Map<String, List<String>>) return headers;
   if (headers == null || headers.isEmpty) return null;
 
-  return Map.fromEntries(headers.entries.map((e) {
-    return MapEntry(e.key, expandHeaderValue(e.value));
-  }));
+  return Map.fromEntries(
+    headers.entries.map((e) {
+      return MapEntry(e.key, expandHeaderValue(e.value));
+    }),
+  );
 }
 
 List<String> expandHeaderValue(Object v) {

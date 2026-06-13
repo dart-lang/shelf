@@ -105,21 +105,30 @@ void main() {
   });
 
   test('chunked requests are un-chunked', () async {
-    await _scheduleServer(expectAsync1((request) {
-      expect(request.contentLength, isNull);
-      expect(request.method, 'POST');
-      expect(
-          request.headers, isNot(contains(HttpHeaders.transferEncodingHeader)));
-      expect(
+    await _scheduleServer(
+      expectAsync1((request) {
+        expect(request.contentLength, isNull);
+        expect(request.method, 'POST');
+        expect(
+          request.headers,
+          isNot(contains(HttpHeaders.transferEncodingHeader)),
+        );
+        expect(
           request.read().toList(),
-          completion(equals([
-            [1, 2, 3, 4]
-          ])));
-      return Response.ok(null);
-    }));
+          completion(
+            equals([
+              [1, 2, 3, 4],
+            ]),
+          ),
+        );
+        return Response.ok(null);
+      }),
+    );
 
-    var request =
-        http.StreamedRequest('POST', Uri.http('localhost:$_serverPort', ''));
+    var request = http.StreamedRequest(
+      'POST',
+      Uri.http('localhost:$_serverPort', ''),
+    );
     request.sink.add([1, 2, 3, 4]);
     // ignore: unawaited_futures
     request.sink.close();
@@ -130,8 +139,10 @@ void main() {
 
   test('custom response headers are received by the client', () async {
     await _scheduleServer((request) {
-      return Response.ok('Hello from /',
-          headers: {'test-header': 'test-value', 'test-list': 'a, b, c'});
+      return Response.ok(
+        'Hello from /',
+        headers: {'test-header': 'test-value', 'test-list': 'a, b, c'},
+      );
     });
 
     var response = await _get();
@@ -142,20 +153,27 @@ void main() {
 
   test('multiple headers are received from the client', () async {
     await _scheduleServer((request) {
-      return Response.ok('Hello from /', headers: {
-        'requested-values': request.headersAll['request-values']!,
-        'requested-values-length':
-            request.headersAll['request-values']!.length.toString(),
-        'set-cookie-values': request.headersAll['set-cookie']!,
-        'set-cookie-values-length':
-            request.headersAll['set-cookie']!.length.toString(),
-      });
+      return Response.ok(
+        'Hello from /',
+        headers: {
+          'requested-values': request.headersAll['request-values']!,
+          'requested-values-length': request
+              .headersAll['request-values']!
+              .length
+              .toString(),
+          'set-cookie-values': request.headersAll['set-cookie']!,
+          'set-cookie-values-length': request.headersAll['set-cookie']!.length
+              .toString(),
+        },
+      );
     });
 
-    final response = await _get(headers: {
-      'request-values': ['a', 'b'],
-      'set-cookie': ['c', 'd'],
-    });
+    final response = await _get(
+      headers: {
+        'request-values': ['a', 'b'],
+        'set-cookie': ['c', 'd'],
+      },
+    );
     expect(response.statusCode, HttpStatus.ok);
     expect(response.headers['requested-values'], 'a, b');
     expect(response.headers['requested-values-length'], '1');
@@ -185,7 +203,7 @@ void main() {
 
     var headers = {
       'custom-header': 'client value',
-      'multi-header': 'foo,bar,baz'
+      'multi-header': 'foo,bar,baz',
     };
 
     var response = await _get(headers: headers);
@@ -231,56 +249,77 @@ void main() {
     await _scheduleServer((request) {
       expect(request.method, 'POST');
 
-      request.hijack(expectAsync1((channel) {
-        expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
+      request.hijack(
+        expectAsync1((channel) {
+          expect(channel.stream.first, completion(equals('Hello'.codeUnits)));
 
-        channel.sink.add('HTTP/1.1 404 Not Found\r\n'
-                'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
-                'Content-Length: 13\r\n'
-                '\r\n'
-                'Hello, world!'
-            .codeUnits);
-        channel.sink.close();
-      }));
+          channel.sink.add(
+            'HTTP/1.1 404 Not Found\r\n'
+                    'date: Mon, 23 May 2005 22:38:34 GMT\r\n'
+                    'Content-Length: 13\r\n'
+                    '\r\n'
+                    'Hello, world!'
+                .codeUnits,
+          );
+          channel.sink.close();
+        }),
+      );
     });
 
     var response = await _post(body: 'Hello');
     expect(response.statusCode, HttpStatus.notFound);
     expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
     expect(
-        response.stream.bytesToString(), completion(equals('Hello, world!')));
+      response.stream.bytesToString(),
+      completion(equals('Hello, world!')),
+    );
   });
 
-  test('reports an error if a HijackException is thrown without hijacking',
-      () async {
-    await _scheduleServer((request) => throw const HijackException());
+  test(
+    'reports an error if a HijackException is thrown without hijacking',
+    () async {
+      await _scheduleServer((request) => throw const HijackException());
 
-    var response = await _get();
-    expect(response.statusCode, HttpStatus.internalServerError);
-  });
+      var response = await _get();
+      expect(response.statusCode, HttpStatus.internalServerError);
+    },
+  );
 
   test('passes asynchronous exceptions to the parent error zone', () async {
-    await runZonedGuarded(() async {
-      var server = await shelf_io.serve((request) {
-        Future(() => throw StateError('oh no'));
-        return syncHandler(request);
-      }, 'localhost', 0);
+    await runZonedGuarded(
+      () async {
+        var server = await shelf_io.serve(
+          (request) {
+            Future(() => throw StateError('oh no'));
+            return syncHandler(request);
+          },
+          'localhost',
+          0,
+        );
 
-      var response = await http.get(Uri.http('localhost:${server.port}', '/'));
-      expect(response.statusCode, HttpStatus.ok);
-      expect(response.body, 'Hello from /');
-      await server.close();
-    }, expectAsync2((error, stack) {
-      expect(error, isOhNoStateError);
-    }));
+        var response = await http.get(
+          Uri.http('localhost:${server.port}', '/'),
+        );
+        expect(response.statusCode, HttpStatus.ok);
+        expect(response.body, 'Hello from /');
+        await server.close();
+      },
+      expectAsync2((error, stack) {
+        expect(error, isOhNoStateError);
+      }),
+    );
   });
 
   test("doesn't pass asynchronous exceptions to the root error zone", () async {
     var response = await Zone.root.run(() async {
-      var server = await shelf_io.serve((request) {
-        Future(() => throw StateError('oh no'));
-        return syncHandler(request);
-      }, 'localhost', 0);
+      var server = await shelf_io.serve(
+        (request) {
+          Future(() => throw StateError('oh no'));
+          return syncHandler(request);
+        },
+        'localhost',
+        0,
+      );
 
       try {
         return await http.get(Uri.http('localhost:${server.port}', '/'));
@@ -307,7 +346,9 @@ void main() {
     }
 
     expect(
-        await utf8.decodeStream(socket), contains('500 Internal Server Error'));
+      await utf8.decodeStream(socket),
+      contains('500 Internal Server Error'),
+    );
   });
 
   test('a bad HTTP URL request results in a 400 response', () async {
@@ -345,8 +386,10 @@ void main() {
     test('defers to header in response', () async {
       var date = DateTime.utc(1981, 6, 5);
       await _scheduleServer((request) {
-        return Response.ok('test',
-            headers: {HttpHeaders.dateHeader: parser.formatHttpDate(date)});
+        return Response.ok(
+          'test',
+          headers: {HttpHeaders.dateHeader: parser.formatHttpDate(date)},
+        );
       });
 
       var response = await _get();
@@ -385,10 +428,7 @@ void main() {
         poweredByHeader: 'ourServer',
       );
       var response = await _get();
-      expect(
-        response.headers,
-        containsPair(poweredBy, 'ourServer'),
-      );
+      expect(response.headers, containsPair(poweredBy, 'ourServer'));
     });
 
     test('defers to header in response when set at the server level', () async {
@@ -414,10 +454,7 @@ void main() {
       );
 
       var response = await _get();
-      expect(
-        response.headers,
-        isNot(contains(poweredBy)),
-      );
+      expect(response.headers, isNot(contains(poweredBy)));
     });
   });
 
@@ -425,60 +462,75 @@ void main() {
     group('is added when the transfer-encoding header is', () {
       test('unset', () async {
         await _scheduleServer((request) {
-          return Response.ok(Stream.fromIterable([
-            [1, 2, 3, 4]
-          ]));
+          return Response.ok(
+            Stream.fromIterable([
+              [1, 2, 3, 4],
+            ]),
+          );
         });
 
         var response = await _get();
-        expect(response.headers,
-            containsPair(HttpHeaders.transferEncodingHeader, 'chunked'));
+        expect(
+          response.headers,
+          containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
+        );
         expect(response.bodyBytes, equals([1, 2, 3, 4]));
       });
 
       test('"identity"', () async {
         await _scheduleServer((request) {
           return Response.ok(
-              Stream.fromIterable([
-                [1, 2, 3, 4]
-              ]),
-              headers: {HttpHeaders.transferEncodingHeader: 'identity'});
+            Stream.fromIterable([
+              [1, 2, 3, 4],
+            ]),
+            headers: {HttpHeaders.transferEncodingHeader: 'identity'},
+          );
         });
 
         var response = await _get();
-        expect(response.headers,
-            containsPair(HttpHeaders.transferEncodingHeader, 'chunked'));
+        expect(
+          response.headers,
+          containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
+        );
         expect(response.bodyBytes, equals([1, 2, 3, 4]));
       });
     });
 
-    test('is preserved when the transfer-encoding header is "chunked"',
-        () async {
-      await _scheduleServer((request) {
-        return Response.ok(
+    test(
+      'is preserved when the transfer-encoding header is "chunked"',
+      () async {
+        await _scheduleServer((request) {
+          return Response.ok(
             Stream.fromIterable(['2\r\nhi\r\n0\r\n\r\n'.codeUnits]),
-            headers: {HttpHeaders.transferEncodingHeader: 'chunked'});
-      });
+            headers: {HttpHeaders.transferEncodingHeader: 'chunked'},
+          );
+        });
 
-      var response = await _get();
-      expect(response.headers,
-          containsPair(HttpHeaders.transferEncodingHeader, 'chunked'));
-      expect(response.body, equals('hi'));
-    });
+        var response = await _get();
+        expect(
+          response.headers,
+          containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
+        );
+        expect(response.body, equals('hi'));
+      },
+    );
 
     group('is not added when', () {
       test('content-length is set', () async {
         await _scheduleServer((request) {
           return Response.ok(
-              Stream.fromIterable([
-                [1, 2, 3, 4]
-              ]),
-              headers: {HttpHeaders.contentLengthHeader: '4'});
+            Stream.fromIterable([
+              [1, 2, 3, 4],
+            ]),
+            headers: {HttpHeaders.contentLengthHeader: '4'},
+          );
         });
 
         var response = await _get();
-        expect(response.headers,
-            isNot(contains(HttpHeaders.transferEncodingHeader)));
+        expect(
+          response.headers,
+          isNot(contains(HttpHeaders.transferEncodingHeader)),
+        );
         expect(response.bodyBytes, equals([1, 2, 3, 4]));
       });
 
@@ -488,8 +540,10 @@ void main() {
         });
 
         var response = await _get();
-        expect(response.headers,
-            isNot(contains(HttpHeaders.transferEncodingHeader)));
+        expect(
+          response.headers,
+          isNot(contains(HttpHeaders.transferEncodingHeader)),
+        );
         expect(response.body, isEmpty);
       });
 
@@ -499,8 +553,10 @@ void main() {
         });
 
         var response = await _get();
-        expect(response.headers,
-            isNot(contains(HttpHeaders.transferEncodingHeader)));
+        expect(
+          response.headers,
+          isNot(contains(HttpHeaders.transferEncodingHeader)),
+        );
         expect(response.body, isEmpty);
       });
 
@@ -510,8 +566,10 @@ void main() {
         });
 
         var response = await _get();
-        expect(response.headers,
-            isNot(contains(HttpHeaders.transferEncodingHeader)));
+        expect(
+          response.headers,
+          isNot(contains(HttpHeaders.transferEncodingHeader)),
+        );
         expect(response.body, isEmpty);
       });
     });
@@ -522,8 +580,10 @@ void main() {
     await _scheduleServer((request) {
       controller.add('Hello, ');
 
-      return Response.ok(utf8.encoder.bind(controller.stream),
-          context: {'shelf.io.buffer_output': false});
+      return Response.ok(
+        utf8.encoder.bind(controller.stream),
+        context: {'shelf.io.buffer_output': false},
+      );
     });
 
     var request = http.Request('GET', Uri.http('localhost:$_serverPort', ''));
@@ -543,8 +603,10 @@ void main() {
 
   test('includes the dart:io HttpConnectionInfo in request context', () async {
     await _scheduleServer((request) {
-      expect(request.context,
-          containsPair('shelf.io.connection_info', isA<HttpConnectionInfo>()));
+      expect(
+        request.context,
+        containsPair('shelf.io.connection_info', isA<HttpConnectionInfo>()),
+      );
 
       var connectionInfo =
           request.context['shelf.io.connection_info'] as HttpConnectionInfo;
@@ -577,8 +639,10 @@ void main() {
 
       var response = await req.close();
       expect(response.statusCode, HttpStatus.ok);
-      expect(await response.cast<List<int>>().transform(utf8.decoder).single,
-          'Hello from /');
+      expect(
+        await response.cast<List<int>>().transform(utf8.decoder).single,
+        'Hello from /',
+      );
     });
 
     test('secure async handler returns a value to the client', () async {
@@ -587,8 +651,10 @@ void main() {
       var req = await scheduleSecureGet();
       var response = await req.close();
       expect(response.statusCode, HttpStatus.ok);
-      expect(await response.cast<List<int>>().transform(utf8.decoder).single,
-          'Hello from /');
+      expect(
+        await response.cast<List<int>>().transform(utf8.decoder).single,
+        'Hello from /',
+      );
     });
   });
 }
@@ -610,16 +676,20 @@ Future<void> _scheduleServer(
   );
 }
 
-Future<http.Response> _get(
-        {Map<String, /* String | List<String> */ Object>? headers,
-        String path = ''}) =>
+Future<http.Response> _get({
+  Map<String, /* String | List<String> */ Object>? headers,
+  String path = '',
+}) =>
     _request((client, url) => client.getUrl(url), headers: headers, path: path);
 
-Future<http.Response> _head(
-        {Map<String, /* String | List<String> */ Object>? headers,
-        String path = ''}) =>
-    _request((client, url) => client.headUrl(url),
-        headers: headers, path: path);
+Future<http.Response> _head({
+  Map<String, /* String | List<String> */ Object>? headers,
+  String path = '',
+}) => _request(
+  (client, url) => client.headUrl(url),
+  headers: headers,
+  path: path,
+);
 
 Future<http.Response> _request(
   Future<HttpClientRequest> Function(HttpClient, Uri) request, {
@@ -638,18 +708,18 @@ Future<http.Response> _request(
     rs.headers.forEach((name, values) {
       rsHeaders[name] = joinHeaderValues(values)!;
     });
-    return http.Response.fromStream(http.StreamedResponse(
-      rs,
-      rs.statusCode,
-      headers: rsHeaders,
-    ));
+    return await http.Response.fromStream(
+      http.StreamedResponse(rs, rs.statusCode, headers: rsHeaders),
+    );
   } finally {
     client.close(force: true);
   }
 }
 
-Future<http.StreamedResponse> _post(
-    {Map<String, String>? headers, String? body}) {
+Future<http.StreamedResponse> _post({
+  Map<String, String>? headers,
+  String? body,
+}) {
   var request = http.Request('POST', Uri.http('localhost:$_serverPort', ''));
 
   if (headers != null) request.headers.addAll(headers);

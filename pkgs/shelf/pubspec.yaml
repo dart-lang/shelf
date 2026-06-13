@@ -11,7 +11,7 @@ topics:
   - backend
 
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.9.0
 
 dependencies:
   async: ^2.5.0
