@@ -3,10 +3,8 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:test/test.dart';
 
 void main() {
-  Future<Response> get(Router router, String path) async {
-    return await router
-        .call(Request('GET', Uri.parse('http://localhost$path')));
-  }
+  Future<Response> get(Router router, String path) =>
+      router.call(Request('GET', Uri.parse('http://localhost$path')));
 
   test('handles root paths correctly', () async {
     final router = Router();
