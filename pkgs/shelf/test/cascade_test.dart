@@ -11,25 +11,29 @@ void main() {
   group('a cascade with several handlers', () {
     late Handler handler;
     setUp(() {
-      handler = Cascade().add((request) {
-        if (request.headers['one'] == 'false') {
-          return Response.notFound('handler 1');
-        } else {
-          return Response.ok('handler 1');
-        }
-      }).add((request) {
-        if (request.headers['two'] == 'false') {
-          return Response.notFound('handler 2');
-        } else {
-          return Response.ok('handler 2');
-        }
-      }).add((request) {
-        if (request.headers['three'] == 'false') {
-          return Response.notFound('handler 3');
-        } else {
-          return Response.ok('handler 3');
-        }
-      }).handler;
+      handler = Cascade()
+          .add((request) {
+            if (request.headers['one'] == 'false') {
+              return Response.notFound('handler 1');
+            } else {
+              return Response.ok('handler 1');
+            }
+          })
+          .add((request) {
+            if (request.headers['two'] == 'false') {
+              return Response.notFound('handler 2');
+            } else {
+              return Response.ok('handler 2');
+            }
+          })
+          .add((request) {
+            if (request.headers['three'] == 'false') {
+              return Response.notFound('handler 3');
+            } else {
+              return Response.ok('handler 3');
+            }
+          })
+          .handler;
     });
 
     test('the first response should be returned if it matches', () async {
@@ -38,8 +42,7 @@ void main() {
       expect(response.readAsString(), completion(equals('handler 1')));
     });
 
-    test(
-        'the second response should be returned if it matches and the first '
+    test('the second response should be returned if it matches and the first '
         "doesn't", () async {
       final response = await handler(
         Request('GET', localhostUri, headers: {'one': 'false'}),
@@ -48,8 +51,7 @@ void main() {
       expect(response.readAsString(), completion(equals('handler 2')));
     });
 
-    test(
-        'the third response should be returned if it matches and the first '
+    test('the third response should be returned if it matches and the first '
         "two don't", () async {
       final response = await handler(
         Request('GET', localhostUri, headers: {'one': 'false', 'two': 'false'}),
@@ -59,18 +61,20 @@ void main() {
       expect(response.readAsString(), completion(equals('handler 3')));
     });
 
-    test('the third response should be returned if no response matches',
-        () async {
-      final response = await handler(
-        Request(
-          'GET',
-          localhostUri,
-          headers: {'one': 'false', 'two': 'false', 'three': 'false'},
-        ),
-      );
-      expect(response.statusCode, equals(404));
-      expect(response.readAsString(), completion(equals('handler 3')));
-    });
+    test(
+      'the third response should be returned if no response matches',
+      () async {
+        final response = await handler(
+          Request(
+            'GET',
+            localhostUri,
+            headers: {'one': 'false', 'two': 'false', 'three': 'false'},
+          ),
+        );
+        expect(response.statusCode, equals(404));
+        expect(response.readAsString(), completion(equals('handler 3')));
+      },
+    );
   });
 
   test('a 404 response triggers a cascade by default', () async {
@@ -127,11 +131,14 @@ void main() {
       expect(() => Cascade().handler, throwsStateError);
     });
 
-    test('passing [statusCodes] and [shouldCascade] at the same time fails',
-        () {
-      expect(
+    test(
+      'passing [statusCodes] and [shouldCascade] at the same time fails',
+      () {
+        expect(
           () => Cascade(statusCodes: [404, 405], shouldCascade: (_) => false),
-          throwsArgumentError);
-    });
+          throwsArgumentError,
+        );
+      },
+    );
   });
 }

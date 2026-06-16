@@ -54,8 +54,10 @@ void main() {
     var response = Response.ok(bytes);
 
     expect(response.contentLength, 4);
-    expect(await response.read().single,
-        isA<List<int>>().having((values) => values, 'values', [1, 2, 3, 4]));
+    expect(
+      await response.read().single,
+      isA<List<int>>().having((values) => values, 'values', [1, 2, 3, 4]),
+    );
   });
 
   test('allows content-length header even if body is null', () async {
@@ -77,7 +79,9 @@ void main() {
     test('sets the body to "Internal Server Error"', () {
       var response = Response.internalServerError();
       expect(
-          response.readAsString(), completion(equals('Internal Server Error')));
+        response.readAsString(),
+        completion(equals('Internal Server Error')),
+      );
     });
 
     test('sets the content-type header to text/plain', () {
@@ -86,11 +90,13 @@ void main() {
     });
 
     test('preserves content-type parameters', () {
-      var response = Response.internalServerError(headers: {
-        'content-type': 'application/octet-stream; param=whatever'
-      });
-      expect(response.headers,
-          containsPair('content-type', 'text/plain; param=whatever'));
+      var response = Response.internalServerError(
+        headers: {'content-type': 'application/octet-stream; param=whatever'},
+      );
+      expect(
+        response.headers,
+        containsPair('content-type', 'text/plain; param=whatever'),
+      );
     });
   });
 
@@ -110,7 +116,9 @@ void main() {
     test('sets body', () {
       var response = Response.unauthorized('request unauthorized');
       expect(
-          response.readAsString(), completion(equals('request unauthorized')));
+        response.readAsString(),
+        completion(equals('request unauthorized')),
+      );
       expect(response.statusCode, 401);
     });
   });
@@ -134,9 +142,12 @@ void main() {
 
     test('comes from the Expires header', () {
       expect(
-          Response.ok('okay!',
-              headers: {'expires': 'Sun, 06 Nov 1994 08:49:37 GMT'}).expires,
-          equals(DateTime.parse('1994-11-06 08:49:37z')));
+        Response.ok(
+          'okay!',
+          headers: {'expires': 'Sun, 06 Nov 1994 08:49:37 GMT'},
+        ).expires,
+        equals(DateTime.parse('1994-11-06 08:49:37z')),
+      );
     });
   });
 
@@ -147,10 +158,12 @@ void main() {
 
     test('comes from the Last-Modified header', () {
       expect(
-          Response.ok('okay!',
-                  headers: {'last-modified': 'Sun, 06 Nov 1994 08:49:37 GMT'})
-              .lastModified,
-          equals(DateTime.parse('1994-11-06 08:49:37z')));
+        Response.ok(
+          'okay!',
+          headers: {'last-modified': 'Sun, 06 Nov 1994 08:49:37 GMT'},
+        ).lastModified,
+        equals(DateTime.parse('1994-11-06 08:49:37z')),
+      );
     });
   });
 
@@ -158,11 +171,13 @@ void main() {
     test('with no arguments returns instance with equal values', () {
       var controller = StreamController<Object>();
 
-      var request = Response(345,
-          body: 'hèllo, world',
-          encoding: latin1,
-          headers: {'header1': 'header value 1'},
-          context: {'context1': 'context value 1'});
+      var request = Response(
+        345,
+        body: 'hèllo, world',
+        encoding: latin1,
+        headers: {'header1': 'header value 1'},
+        context: {'context1': 'context value 1'},
+      );
 
       var copy = request.change();
 
@@ -246,9 +261,11 @@ void main() {
       });
 
       test('override value with new single-item List', () {
-        final r = response.change(headers: {
-          'header1': ['new header value']
-        });
+        final r = response.change(
+          headers: {
+            'header1': ['new header value'],
+          },
+        );
         expect(r.headers, {
           'header1': 'new header value',
           'content-length': '0',
@@ -260,9 +277,11 @@ void main() {
       });
 
       test('override value with new multi-item List', () {
-        final r = response.change(headers: {
-          'header1': ['new header value', 'other value']
-        });
+        final r = response.change(
+          headers: {
+            'header1': ['new header value', 'other value'],
+          },
+        );
         expect(r.headers, {
           'header1': 'new header value,other value',
           'content-length': '0',
@@ -274,16 +293,20 @@ void main() {
       });
 
       test('adding a new values', () {
-        final r = response.change(headers: {
-          'a': 'A',
-          'b': ['B1', 'B2'],
-        }).change(headers: {'c': 'C'});
+        final r = response
+            .change(
+              headers: {
+                'a': 'A',
+                'b': ['B1', 'B2'],
+              },
+            )
+            .change(headers: {'c': 'C'});
         expect(r.headers, {
           'header1': 'header value 1',
           'content-length': '0',
           'a': 'A',
           'b': 'B1,B2',
-          'c': 'C'
+          'c': 'C',
         });
         expect(r.headersAll, {
           'header1': ['header value 1'],

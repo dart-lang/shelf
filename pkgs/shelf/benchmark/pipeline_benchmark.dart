@@ -6,11 +6,26 @@ import 'package:shelf/shelf.dart';
 
 void main() async {
   final handler = const Pipeline()
-      .addMiddleware((innerHandler) => (request) => innerHandler(request))
-      .addMiddleware((innerHandler) => (request) => innerHandler(request))
-      .addMiddleware((innerHandler) => (request) => innerHandler(request))
-      .addMiddleware((innerHandler) => (request) => innerHandler(request))
-      .addMiddleware((innerHandler) => (request) => innerHandler(request))
+      .addMiddleware(
+        (innerHandler) =>
+            (request) => innerHandler(request),
+      )
+      .addMiddleware(
+        (innerHandler) =>
+            (request) => innerHandler(request),
+      )
+      .addMiddleware(
+        (innerHandler) =>
+            (request) => innerHandler(request),
+      )
+      .addMiddleware(
+        (innerHandler) =>
+            (request) => innerHandler(request),
+      )
+      .addMiddleware(
+        (innerHandler) =>
+            (request) => innerHandler(request),
+      )
       .addHandler((request) => Response.ok('hello world'));
 
   final url = Uri.http('localhost:8080', '/');
@@ -36,5 +51,6 @@ void main() async {
   sw.stop();
   print('Total time: ${sw.elapsedMilliseconds} ms');
   print(
-      'Req/sec: ${(iterations / sw.elapsedMicroseconds * 1000000).toStringAsFixed(2)}');
+    'Req/sec: ${(iterations / sw.elapsedMicroseconds * 1000000).toStringAsFixed(2)}',
+  );
 }
