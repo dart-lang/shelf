@@ -67,8 +67,10 @@ class Body {
     } else if (body is Stream) {
       stream = body.cast();
     } else {
-      throw ArgumentError('Response body "$body" must be a String or a '
-          'Stream.');
+      throw ArgumentError(
+        'Response body "$body" must be a String or a '
+        'Stream.',
+      );
     }
 
     return Body._(stream, encoding, contentLength);
@@ -92,8 +94,10 @@ class Body {
   /// Can only be called once.
   Stream<List<int>> read() {
     if (_stream == null) {
-      throw StateError("The 'read' method can only be called once on a "
-          'shelf.Request/shelf.Response object.');
+      throw StateError(
+        "The 'read' method can only be called once on a "
+        'shelf.Request/shelf.Response object.',
+      );
     }
     var stream = _stream!;
     _stream = null;

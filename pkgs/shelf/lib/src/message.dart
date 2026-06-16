@@ -88,18 +88,22 @@ abstract class Message {
   }) : this._withBody(Body(body, encoding), headers, context);
 
   Message._withBody(
-      Body body, Map<String, Object>? headers, Map<String, Object>? context)
-      : this._withHeadersAll(
-          body,
-          Headers.from(_adjustHeaders(expandToHeadersAll(headers), body)),
-          context,
-        );
+    Body body,
+    Map<String, Object>? headers,
+    Map<String, Object>? context,
+  ) : this._withHeadersAll(
+        body,
+        Headers.from(_adjustHeaders(expandToHeadersAll(headers), body)),
+        context,
+      );
 
   Message._withHeadersAll(
-      Body body, Headers headers, Map<String, Object>? context)
-      : _body = body,
-        _headers = headers,
-        context = ShelfUnmodifiableMap(context, ignoreKeyCase: false);
+    Body body,
+    Headers headers,
+    Map<String, Object>? context,
+  ) : _body = body,
+      _headers = headers,
+      context = ShelfUnmodifiableMap(context, ignoreKeyCase: false);
 
   /// The contents of the content-length field in [headers].
   ///
@@ -170,8 +174,11 @@ abstract class Message {
 
   /// Creates a new [Message] by copying existing values and applying specified
   /// changes.
-  Message change(
-      {Map<String, String> headers, Map<String, Object> context, Object? body});
+  Message change({
+    Map<String, String> headers,
+    Map<String, Object> context,
+    Object? body,
+  });
 }
 
 /// Adds information about encoding to [headers].
@@ -199,12 +206,12 @@ Map<String, List<String>> _adjustHeaders(
   if (!sameEncoding) {
     if (newHeaders['content-type'] == null) {
       newHeaders['content-type'] = [
-        'application/octet-stream; charset=${body.encoding!.name}'
+        'application/octet-stream; charset=${body.encoding!.name}',
       ];
     } else {
-      final contentType =
-          MediaType.parse(joinHeaderValues(newHeaders['content-type'])!)
-              .change(parameters: {'charset': body.encoding!.name});
+      final contentType = MediaType.parse(
+        joinHeaderValues(newHeaders['content-type'])!,
+      ).change(parameters: {'charset': body.encoding!.name});
       newHeaders['content-type'] = [contentType.toString()];
     }
   }

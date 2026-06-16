@@ -27,24 +27,38 @@ Middleware logRequests({void Function(String message, bool isError)? logger}) =>
         var startTime = DateTime.now();
         var watch = Stopwatch()..start();
 
-        return Future.sync(() => innerHandler(request)).then((response) {
-          var msg = _message(startTime, response.statusCode,
-              request.requestedUri, request.method, watch.elapsed);
+        return Future.sync(() => innerHandler(request)).then(
+          (response) {
+            var msg = _message(
+              startTime,
+              response.statusCode,
+              request.requestedUri,
+              request.method,
+              watch.elapsed,
+            );
 
-          theLogger(msg, false);
+            theLogger(msg, false);
 
-          return response;
-        }, onError: (Object error, StackTrace stackTrace) {
-          if (error is HijackException) throw error;
+            return response;
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            if (error is HijackException) throw error;
 
-          var msg = _errorMessage(startTime, request.requestedUri,
-              request.method, watch.elapsed, error, stackTrace);
+            var msg = _errorMessage(
+              startTime,
+              request.requestedUri,
+              request.method,
+              watch.elapsed,
+              error,
+              stackTrace,
+            );
 
-          theLogger(msg, true);
+            theLogger(msg, true);
 
-          // ignore: only_throw_errors
-          throw error;
-        });
+            // ignore: only_throw_errors
+            throw error;
+          },
+        );
       };
     };
 
@@ -52,24 +66,36 @@ String _formatQuery(String query) {
   return query == '' ? '' : '?$query';
 }
 
-String _message(DateTime requestTime, int statusCode, Uri requestedUri,
-    String method, Duration elapsedTime) {
+String _message(
+  DateTime requestTime,
+  int statusCode,
+  Uri requestedUri,
+  String method,
+  Duration elapsedTime,
+) {
   return '${requestTime.toIso8601String()} '
       '${elapsedTime.toString().padLeft(15)} '
       '${method.padRight(7)} [$statusCode] ' // 7 - longest standard HTTP method
       '${requestedUri.path}${_formatQuery(requestedUri.query)}';
 }
 
-String _errorMessage(DateTime requestTime, Uri requestedUri, String method,
-    Duration elapsedTime, Object error, StackTrace? stack) {
+String _errorMessage(
+  DateTime requestTime,
+  Uri requestedUri,
+  String method,
+  Duration elapsedTime,
+  Object error,
+  StackTrace? stack,
+) {
   var chain = Chain.current();
   if (stack != null) {
-    chain = Chain.forTrace(stack)
-        .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
-        .terse;
+    chain = Chain.forTrace(
+      stack,
+    ).foldFrames((frame) => frame.isCore || frame.package == 'shelf').terse;
   }
 
-  var msg = '$requestTime\t$elapsedTime\t$method\t${requestedUri.path}'
+  var msg =
+      '$requestTime\t$elapsedTime\t$method\t${requestedUri.path}'
       '${_formatQuery(requestedUri.query)}\n$error';
 
   return '$msg\n$chain';
