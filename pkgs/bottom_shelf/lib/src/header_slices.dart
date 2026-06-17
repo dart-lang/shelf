@@ -27,6 +27,19 @@ final class HeaderByteSlice {
     }
     return true;
   }
+
+  /// Efficiently checks if the slice matches an ASCII string case-insensitively.
+  bool matchesKey(String target) {
+    if (length != target.length) return false;
+    for (var i = 0; i < length; i++) {
+      var byte = _buffer[_start + i];
+      if (byte >= 65 && byte <= 90) byte += 32;
+      var targetByte = target.codeUnitAt(i);
+      if (targetByte >= 65 && targetByte <= 90) targetByte += 32;
+      if (byte != targetByte) return false;
+    }
+    return true;
+  }
 }
 
 /// A pair of key/value slices.
