@@ -23,7 +23,8 @@ void handleHttpConnection({
   required Socket socket,
   required ServerConfig config,
 }) {
-  _HttpConnection(socket: socket, config: config).start();
+  final connection = _HttpConnection(socket: socket, config: config);
+  runZonedGuarded(connection.start, connection._handleAsyncError);
 }
 
 final class _HttpConnection {
@@ -417,109 +418,112 @@ final class _HttpConnection {
     String originalMethod,
   ) {
     _currentBodyDone = bodyDone;
-    unawaited(
-      runZonedGuarded(
-        () async {
-          try {
-            final response = await config.handler(request);
-            if (_isHijacked) return;
+    _responseSent = false;
+    unawaited(_executeRequest(request, typedHeaders, bodyDone, originalMethod));
+  }
 
-            final keepAlive =
-                !_forceClose &&
-                typedHeaders.isKeepAlive(request.protocolVersion);
+  Future<void> _executeRequest(
+    Request request,
+    TypedHeaders typedHeaders,
+    Completer<void> bodyDone,
+    String originalMethod,
+  ) async {
+    try {
+      final response = await config.handler(request);
+      if (_isHijacked) return;
 
-            await RawShelfResponseSerializer.writeResponse(
-              response,
-              socket,
-              keepAlive: keepAlive,
-              requestMethod: originalMethod,
-              poweredBy: config.poweredBy,
-            );
-            _responseSent = true;
+      final keepAlive =
+          !_forceClose && typedHeaders.isKeepAlive(request.protocolVersion);
 
-            _parser.reset();
+      await RawShelfResponseSerializer.writeResponse(
+        response,
+        socket,
+        keepAlive: keepAlive,
+        requestMethod: originalMethod,
+        poweredBy: config.poweredBy,
+      );
+      _responseSent = true;
 
-            if (keepAlive) {
-              await bodyDone.future;
-              if (_forceClose) {
-                await socket.close();
-                _destroy();
-                return;
-              }
-              if (!_readyForNextRequest.isCompleted) {
-                _readyForNextRequest.complete();
-                _startHeaderTimer();
-              }
-            } else {
-              await socket.close();
-              _destroy();
-            }
-          } on HijackException {
-            await Future.microtask(() {});
-            if (!_isHijacked) {
-              if (!_responseSent) {
-                socket.add(ErrorResponse.internalServerError.bytes);
-              }
-              unawaited(socket.close().then((_) => _destroy()));
-            }
-          } catch (e, st) {
-            if (!_isHijacked && !_isDestroyed) {
-              if (!_responseSent) {
-                socket.add(ErrorResponse.internalServerError.bytes);
-              }
-              config.onConnectionError?.call(
-                'Error in handler',
-                e,
-                st,
-                remoteAddress: remoteAddress,
-                remotePort: remotePort,
-              );
-              unawaited(socket.close().then((_) => _destroy()));
-            }
-          }
-        },
-        (e, st) {
-          if (e is HijackException) {
-            return;
-          }
-          final action = config.onAsyncError?.call(e, st);
-          if (action == ErrorAction.ignore) {
-            if (!_isDestroyed) {
-              config.onConnectionError?.call(
-                'Unhandled async error (ignored)',
-                e,
-                st,
-                remoteAddress: remoteAddress,
-                remotePort: remotePort,
-              );
-            }
-          } else if (action == ErrorAction.crash) {
-            config.onConnectionError?.call(
-              'Crashing server due to async error',
-              e,
-              st,
-              remoteAddress: remoteAddress,
-              remotePort: remotePort,
-            );
-            // ignore: only_throw_errors
-            throw e; // Rethrow to parent zone!
-          } else {
-            // Default or ErrorAction.destroy
-            if (!_isHijacked && !_isDestroyed && !_responseSent) {
-              socket.add(ErrorResponse.internalServerError.bytes);
-            }
-            config.onConnectionError?.call(
-              'Error in handler',
-              e,
-              st,
-              remoteAddress: remoteAddress,
-              remotePort: remotePort,
-            );
-            socket.close().then((_) => _destroy());
-          }
-        },
-      ),
-    );
+      _parser.reset();
+
+      if (keepAlive) {
+        await bodyDone.future;
+        if (_forceClose) {
+          await socket.close();
+          _destroy();
+          return;
+        }
+        if (!_readyForNextRequest.isCompleted) {
+          _readyForNextRequest.complete();
+          _startHeaderTimer();
+        }
+      } else {
+        await socket.close();
+        _destroy();
+      }
+    } on HijackException {
+      await Future.microtask(() {});
+      if (!_isHijacked) {
+        if (!_responseSent) {
+          socket.add(ErrorResponse.internalServerError.bytes);
+        }
+        unawaited(socket.close().then((_) => _destroy()));
+      }
+    } catch (e, st) {
+      if (!_isHijacked && !_isDestroyed) {
+        if (!_responseSent) {
+          socket.add(ErrorResponse.internalServerError.bytes);
+        }
+        config.onConnectionError?.call(
+          'Error in handler',
+          e,
+          st,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
+        );
+        unawaited(socket.close().then((_) => _destroy()));
+      }
+    }
+  }
+
+  void _handleAsyncError(Object e, StackTrace st) {
+    if (e is HijackException) {
+      return;
+    }
+    final action = config.onAsyncError?.call(e, st);
+    if (action == ErrorAction.ignore) {
+      if (!_isDestroyed) {
+        config.onConnectionError?.call(
+          'Unhandled async error (ignored)',
+          e,
+          st,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
+        );
+      }
+    } else if (action == ErrorAction.crash) {
+      config.onConnectionError?.call(
+        'Crashing server due to async error',
+        e,
+        st,
+        remoteAddress: remoteAddress,
+        remotePort: remotePort,
+      );
+      // ignore: only_throw_errors
+      throw e;
+    } else {
+      if (!_isHijacked && !_isDestroyed && !_responseSent) {
+        socket.add(ErrorResponse.internalServerError.bytes);
+      }
+      config.onConnectionError?.call(
+        'Error in handler',
+        e,
+        st,
+        remoteAddress: remoteAddress,
+        remotePort: remotePort,
+      );
+      socket.close().then((_) => _destroy());
+    }
   }
 }
 
