@@ -3,6 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 DateTime toSecondResolution(DateTime dt) {
-  if (dt.millisecond == 0) return dt;
-  return dt.subtract(Duration(milliseconds: dt.millisecond));
+  if (dt.millisecond == 0 && dt.microsecond == 0) return dt;
+  return dt.subtract(Duration(
+    milliseconds: dt.millisecond,
+    microseconds: dt.microsecond,
+  ));
 }
