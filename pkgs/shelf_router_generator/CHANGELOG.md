@@ -1,3 +1,7 @@
+## 1.1.5
+
+* Support `analyzer` versions up to `14.x`.
+
 ## 1.1.4
 
 * Support `analyzer: '^10.0.0'`
