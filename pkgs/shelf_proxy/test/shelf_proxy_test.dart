@@ -41,16 +41,21 @@ void main() {
 
     test('joins multiple request cookies with a semicolon', () async {
       final client = MockClient((request) {
-        expect(request.headers,
-            containsPair('cookie', 'cookie1=value1; cookie2=value2'));
+        expect(
+          request.headers,
+          containsPair('cookie', 'cookie1=value1; cookie2=value2'),
+        );
         return Future.value(http.Response(':)', 200));
       });
 
       final handler = proxyHandler('http://dartlang.org', client: client);
-      final request =
-          shelf.Request('GET', Uri.parse('http://localhost/'), headers: {
-        'cookie': ['cookie1=value1', 'cookie2=value2']
-      });
+      final request = shelf.Request(
+        'GET',
+        Uri.parse('http://localhost/'),
+        headers: {
+          'cookie': ['cookie1=value1', 'cookie2=value2'],
+        },
+      );
       await handler(request);
     });
 
@@ -71,8 +76,10 @@ void main() {
     });
 
     test('forwards response headers', () async {
-      await createProxy((request) =>
-          shelf.Response.ok(':)', headers: {'foo': 'bar', 'accept': '*/*'}));
+      await createProxy(
+        (request) =>
+            shelf.Response.ok(':)', headers: {'foo': 'bar', 'accept': '*/*'}),
+      );
 
       final response = await get();
 
@@ -80,27 +87,32 @@ void main() {
       expect(response.headers, containsPair('accept', '*/*'));
     });
 
-    test('preserves multiple Set-Cookie headers in response, including dates',
-        () async {
-      await createProxy((request) {
-        return shelf.Response.ok(':)', headers: {
-          'set-cookie': [
-            'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
-            'cookie2=value2'
-          ],
+    test(
+      'preserves multiple Set-Cookie headers in response, including dates',
+      () async {
+        await createProxy((request) {
+          return shelf.Response.ok(
+            ':)',
+            headers: {
+              'set-cookie': [
+                'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
+                'cookie2=value2',
+              ],
+            },
+          );
         });
-      });
 
-      final client = HttpClient();
-      final request = await client.getUrl(proxyUri);
-      final response = await request.close();
+        final client = HttpClient();
+        final request = await client.getUrl(proxyUri);
+        final response = await request.close();
 
-      final setCookies = response.headers['set-cookie'];
-      expect(setCookies, [
-        'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
-        'cookie2=value2'
-      ]);
-    });
+        final setCookies = response.headers['set-cookie'];
+        expect(setCookies, [
+          'cookie1=value1; Expires=Mon, 20 Apr 2026 17:22:59 GMT',
+          'cookie2=value2',
+        ]);
+      },
+    );
 
     test('forwards response body', () async {
       await createProxy((request) => shelf.Response.ok('hello, client'));
@@ -130,8 +142,10 @@ void main() {
 
     test("adds to a request's existing Via header", () async {
       await createProxy((request) {
-        expect(request.headers,
-            containsPair('via', '1.0 something, 1.1 shelf_proxy'));
+        expect(
+          request.headers,
+          containsPair('via', '1.0 something, 1.1 shelf_proxy'),
+        );
         return shelf.Response.ok(':)');
       });
 
@@ -146,65 +160,88 @@ void main() {
     });
 
     test("adds to a response's existing Via header", () async {
-      await createProxy((request) =>
-          shelf.Response.ok(':)', headers: {'via': '1.0 something'}));
+      await createProxy(
+        (request) => shelf.Response.ok(':)', headers: {'via': '1.0 something'}),
+      );
 
       final response = await get();
-      expect(response.headers,
-          containsPair('via', '1.0 something, 1.1 shelf_proxy'));
+      expect(
+        response.headers,
+        containsPair('via', '1.0 something, 1.1 shelf_proxy'),
+      );
     });
   });
 
   group('redirects', () {
     test("doesn't modify a Location for a foreign server", () async {
       await createProxy(
-          (request) => shelf.Response.found('http://dartlang.org'));
+        (request) => shelf.Response.found('http://dartlang.org'),
+      );
 
       final response = await get();
       expect(response.headers, containsPair('location', 'http://dartlang.org'));
     });
 
     test('relativizes a reachable root-relative Location', () async {
-      await createProxy((request) => shelf.Response.found('/foo/bar'),
-          targetPath: '/foo');
+      await createProxy(
+        (request) => shelf.Response.found('/foo/bar'),
+        targetPath: '/foo',
+      );
 
       final response = await get();
       expect(response.headers, containsPair('location', '/bar'));
     });
 
     test('absolutizes an unreachable root-relative Location', () async {
-      await createProxy((request) => shelf.Response.found('/baz'),
-          targetPath: '/foo');
+      await createProxy(
+        (request) => shelf.Response.found('/baz'),
+        targetPath: '/foo',
+      );
 
       final response = await get();
-      expect(response.headers,
-          containsPair('location', targetUri.resolve('/baz').toString()));
+      expect(
+        response.headers,
+        containsPair('location', targetUri.resolve('/baz').toString()),
+      );
     });
   });
 
   test('removes a transfer-encoding header', () async {
-    final handler = mockHandler((request) =>
-        http.Response('', 200, headers: {'transfer-encoding': 'chunked'}));
+    final handler = mockHandler(
+      (request) =>
+          http.Response('', 200, headers: {'transfer-encoding': 'chunked'}),
+    );
 
-    final response =
-        await handler(shelf.Request('GET', Uri.parse('http://localhost/')));
+    final response = await handler(
+      shelf.Request('GET', Uri.parse('http://localhost/')),
+    );
 
     expect(response.headers, isNot(contains('transfer-encoding')));
   });
 
-  test('removes content-length and content-encoding for a gzipped response',
-      () async {
-    final handler = mockHandler((request) => http.Response('', 200,
-        headers: {'content-encoding': 'gzip', 'content-length': '1234'}));
+  test(
+    'removes content-length and content-encoding for a gzipped response',
+    () async {
+      final handler = mockHandler(
+        (request) => http.Response(
+          '',
+          200,
+          headers: {'content-encoding': 'gzip', 'content-length': '1234'},
+        ),
+      );
 
-    final response =
-        await handler(shelf.Request('GET', Uri.parse('http://localhost/')));
+      final response = await handler(
+        shelf.Request('GET', Uri.parse('http://localhost/')),
+      );
 
-    expect(response.headers, isNot(contains('content-encoding')));
-    expect(response.headers, isNot(contains('content-length')));
-    expect(response.headers,
-        containsPair('warning', '214 shelf_proxy "GZIP decoded"'));
-  });
+      expect(response.headers, isNot(contains('content-encoding')));
+      expect(response.headers, isNot(contains('content-length')));
+      expect(
+        response.headers,
+        containsPair('warning', '214 shelf_proxy "GZIP decoded"'),
+      );
+    },
+  );
 }
 
 /// Creates a proxy server proxying to a server running [handler].
@@ -216,8 +253,10 @@ Future<void> createProxy(shelf.Handler handler, {String? targetPath}) async {
   final targetServer = await shelf_io.serve(handler, 'localhost', 0);
   targetUri = Uri.parse('http://localhost:${targetServer.port}');
   if (targetPath != null) targetUri = targetUri.resolve(targetPath);
-  final proxyServerHandler =
-      expectAsync1(proxyHandler(targetUri), reason: 'proxy server handler');
+  final proxyServerHandler = expectAsync1(
+    proxyHandler(targetUri),
+    reason: 'proxy server handler',
+  );
 
   final proxyServer = await shelf_io.serve(proxyServerHandler, 'localhost', 0);
   proxyUri = Uri.parse('http://localhost:${proxyServer.port}');
@@ -231,7 +270,8 @@ Future<void> createProxy(shelf.Handler handler, {String? targetPath}) async {
 /// Creates a [shelf.Handler] that's backed by a [MockClient] running
 /// [callback].
 shelf.Handler mockHandler(
-    FutureOr<http.Response> Function(http.Request) callback) {
+  FutureOr<http.Response> Function(http.Request) callback,
+) {
   final client = MockClient((request) async => await callback(request));
   return proxyHandler('http://dartlang.org', client: client);
 }

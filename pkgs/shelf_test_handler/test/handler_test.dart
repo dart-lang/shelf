@@ -43,11 +43,13 @@ void main() {
     });
 
     test('for expectAnything()', () async {
-      handler.expectAnything(expectAsync1((request) {
-        expect(request.method, equals('GET'));
-        expect(request.url.path, equals('foo/bar'));
-        return Response.ok('');
-      }));
+      handler.expectAnything(
+        expectAsync1((request) {
+          expect(request.method, equals('GET'));
+          expect(request.url.path, equals('foo/bar'));
+          return Response.ok('');
+        }),
+      );
 
       var response = await handler(_get('/foo/bar'));
       expect(response.statusCode, equals(200));
@@ -75,14 +77,12 @@ void main() {
       _expectZoneFailure(() async {
         var handler = ShelfTestHandler();
         handler.expect(
-            'POST',
-            '/',
-            expectAsync1(
-              (_) {
-                fail('should never get here');
-              },
-              count: 0,
-            ));
+          'POST',
+          '/',
+          expectAsync1((_) {
+            fail('should never get here');
+          }, count: 0),
+        );
         await handler(_get('/'));
       });
     });
@@ -91,32 +91,41 @@ void main() {
       _expectZoneFailure(() async {
         var handler = ShelfTestHandler();
         handler.expect(
-            'GET',
-            '/foo',
-            expectAsync1((_) {
-              fail('should never get here');
-            }, count: 0));
+          'GET',
+          '/foo',
+          expectAsync1((_) {
+            fail('should never get here');
+          }, count: 0),
+        );
         await handler(_get('/'));
       });
     });
   });
 
   test("doesn't swallow handler errors", () {
-    runZonedGuarded(() async {
-      var handler = ShelfTestHandler();
-      handler.expect('GET', '/', (_) => throw StateError('oh heck'));
-      await handler(_get('/'));
-    }, expectAsync2((error, stack) {
-      expect(error,
-          isA<StateError>().having((p0) => p0.message, 'message', 'oh heck'));
-    }));
+    runZonedGuarded(
+      () async {
+        var handler = ShelfTestHandler();
+        handler.expect('GET', '/', (_) => throw StateError('oh heck'));
+        await handler(_get('/'));
+      },
+      expectAsync2((error, stack) {
+        expect(
+          error,
+          isA<StateError>().having((p0) => p0.message, 'message', 'oh heck'),
+        );
+      }),
+    );
   });
 }
 
 void _expectZoneFailure(Future<void> Function() callback) {
-  runZonedGuarded(callback, expectAsync2((error, stack) {
-    expect(error, isA<TestFailure>());
-  }));
+  runZonedGuarded(
+    callback,
+    expectAsync2((error, stack) {
+      expect(error, isA<TestFailure>());
+    }),
+  );
 }
 
 Request _get(String path) =>

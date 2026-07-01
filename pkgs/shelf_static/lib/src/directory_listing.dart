@@ -9,7 +9,8 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:shelf/shelf.dart';
 
-String _getHeader(String sanitizedHeading) => '''<!DOCTYPE html>
+String _getHeader(String sanitizedHeading) =>
+    '''<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -163,8 +164,11 @@ String _formatDate(DateTime date) {
   return '$y-$m-$d $h:$min';
 }
 
-Future<Response> listDirectory(String fileSystemPath, String dirPath,
-    {bool serveFilesOutsidePath = false}) async {
+Future<Response> listDirectory(
+  String fileSystemPath,
+  String dirPath, {
+  bool serveFilesOutsidePath = false,
+}) async {
   if (!serveFilesOutsidePath) {
     if (!path.isWithin(fileSystemPath, dirPath) &&
         !path.equals(fileSystemPath, dirPath)) {
@@ -213,29 +217,29 @@ Future<Response> listDirectory(String fileSystemPath, String dirPath,
     return e1.path.compareTo(e2.path);
   });
 
-  final entitiesWithStats = (await Future.wait(entities.map((e) async {
-    if (!serveFilesOutsidePath) {
-      try {
-        final resolvedPath = await e.resolveSymbolicLinks();
-        if (!path.isWithin(fileSystemPath, resolvedPath) &&
-            !path.equals(fileSystemPath, resolvedPath)) {
+  final entitiesWithStats = (await Future.wait(
+    entities.map((e) async {
+      if (!serveFilesOutsidePath) {
+        try {
+          final resolvedPath = await e.resolveSymbolicLinks();
+          if (!path.isWithin(fileSystemPath, resolvedPath) &&
+              !path.equals(fileSystemPath, resolvedPath)) {
+            return null;
+          }
+        } catch (_) {
+          // On error resolving symlink, we can't determine if it's safe.
+          // So we don't list it.
           return null;
         }
-      } catch (_) {
-        // On error resolving symlink, we can't determine if it's safe.
-        // So we don't list it.
-        return null;
       }
-    }
-    try {
-      return (e, await e.stat());
-    } catch (_) {
-      // On error stating file, we can still list it, just without details.
-      return (e, null);
-    }
-  })))
-      .whereType<(FileSystemEntity, FileStat?)>()
-      .toList();
+      try {
+        return (e, await e.stat());
+      } catch (_) {
+        // On error stating file, we can still list it, just without details.
+        return (e, null);
+      }
+    }),
+  )).whereType<(FileSystemEntity, FileStat?)>().toList();
 
   for (final (entity, stat) in entitiesWithStats) {
     final isDir = entity is Directory;

@@ -99,8 +99,11 @@ void main() {
   test('params by arguments', () async {
     var app = Router();
 
-    app.get(r'/user/<user>/groups/<group|\d+>',
-        (Request request, String user, String group) {
+    app.get(r'/user/<user>/groups/<group|\d+>', (
+      Request request,
+      String user,
+      String group,
+    ) {
       return Response.ok('$user / $group');
     });
 
@@ -149,10 +152,7 @@ void main() {
     );
 
     var app = Router();
-    app.mount(
-      '/api/',
-      middleware.addHandler(api.call),
-    );
+    app.mount('/api/', middleware.addHandler(api.call));
 
     server.mount(app.call);
 
@@ -195,9 +195,15 @@ void main() {
     server.mount(api.call);
 
     expect(
-        get('/hi'),
-        throwsA(isA<http.ClientException>()
-            .having((e) => e.message, 'message', contains('404: Not Found.'))));
+      get('/hi'),
+      throwsA(
+        isA<http.ClientException>().having(
+          (e) => e.message,
+          'message',
+          contains('404: Not Found.'),
+        ),
+      ),
+    );
   });
 
   test('can invoke custom handler if no route matches', () {

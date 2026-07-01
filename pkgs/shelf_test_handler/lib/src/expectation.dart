@@ -20,7 +20,5 @@ class Expectation {
   Expectation(this.method, this.path, this.handler);
 
   /// Creates an expectation that allows any method and path.
-  Expectation.anything(this.handler)
-      : method = null,
-        path = null;
+  Expectation.anything(this.handler) : method = null, path = null;
 }
