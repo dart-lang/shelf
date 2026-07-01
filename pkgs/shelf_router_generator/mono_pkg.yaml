@@ -5,7 +5,9 @@ sdk:
 stages:
 - analyze_and_format:
   - analyze: --fatal-infos .
-  - format
+  - format:
+    sdk:
+    - dev
 - unit_test:
   - test: --test-randomize-ordering-seed=random
   - test: --run-skipped -t presubmit-only
