@@ -1,4 +1,5 @@
 sdk:
+- pubspec
 - dev
 
 stages:
