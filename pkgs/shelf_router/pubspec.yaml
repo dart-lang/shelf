@@ -11,7 +11,7 @@ topics:
   - shelf
 
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.9.0
 
 dependencies:
   http_methods: ^1.1.0
