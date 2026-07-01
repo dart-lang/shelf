@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.6.3 (fresh check suite)
+# Created with package:mono_repo v6.6.3
 name: Dart CI
 on:
   push:
