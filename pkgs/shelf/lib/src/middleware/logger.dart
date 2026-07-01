@@ -55,7 +55,7 @@ Middleware logRequests({void Function(String message, bool isError)? logger}) =>
 
             theLogger(msg, true);
 
-            throw error; // ignore: only_throw_errors
+            throw error;
           },
         );
       };

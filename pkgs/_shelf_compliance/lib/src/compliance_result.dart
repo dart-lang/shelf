@@ -20,10 +20,4 @@ class ComplianceResult {
   Map<String, dynamic> toJson() => _json;
 }
 
-enum ResultVerdict {
-  Pass,
-  Fail,
-  Warn,
-  Skip,
-  Error,
-} // ignore: constant_identifier_names
+enum ResultVerdict { Pass, Fail, Warn, Skip, Error }

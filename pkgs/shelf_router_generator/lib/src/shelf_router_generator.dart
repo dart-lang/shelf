@@ -22,8 +22,7 @@ import 'package:code_builder/code_builder.dart' as code;
 import 'package:http_methods/http_methods.dart' show isHttpMethod;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
-import 'package:shelf_router/src/router_entry.dart'
-    show RouterEntry; // ignore: implementation_imports
+import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 import 'package:source_gen/source_gen.dart' as g;
 
 // Type checkers that we need later
@@ -213,7 +212,6 @@ void _typeCheckHandler(_Handler h) {
   try {
     params = RouterEntry(h.verb, h.route, () => null).params;
   } on ArgumentError catch (e) {
-    // ignore: avoid_catching_errors
     throw g.InvalidGenerationSourceError(e.toString(), element: h.element);
   }
 
