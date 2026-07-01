@@ -5,8 +5,6 @@ include: package:dart_flutter_team_lints/analysis_options.yaml
 analyzer:
   language:
     strict-raw-types: true
-  errors:
-    deprecated_member_use_from_same_package: ignore
 
 linter:
   rules:
