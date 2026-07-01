@@ -28,14 +28,18 @@ void main() {
     var server = await ShelfTestServer.create();
     addTearDown(server.close);
 
-    server.handler.expect('GET', '/',
-        webSocketHandler((WebSocketChannel webSocket, _) {
-      webSocket.sink.add('hello!');
-      webSocket.sink.close();
-    }));
+    server.handler.expect(
+      'GET',
+      '/',
+      webSocketHandler((WebSocketChannel webSocket, _) {
+        webSocket.sink.add('hello!');
+        webSocket.sink.close();
+      }),
+    );
 
-    var webSocket =
-        await WebSocket.connect('ws://localhost:${server.url.port}');
+    var webSocket = await WebSocket.connect(
+      'ws://localhost:${server.url.port}',
+    );
     expect(webSocket, emits('hello!'));
   });
 }

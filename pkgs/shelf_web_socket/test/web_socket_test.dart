@@ -13,26 +13,31 @@ import 'package:test/test.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 Map<String, String> get _handshakeHeaders => {
-      'Upgrade': 'websocket',
-      'Connection': 'Upgrade',
-      'Sec-WebSocket-Key': 'x3JJHMbDL1EzLkh9GBhXDw==',
-      'Sec-WebSocket-Version': '13'
-    };
+  'Upgrade': 'websocket',
+  'Connection': 'Upgrade',
+  'Sec-WebSocket-Key': 'x3JJHMbDL1EzLkh9GBhXDw==',
+  'Sec-WebSocket-Version': '13',
+};
 
 void main() {
   test('can communicate with a dart:io WebSocket client', () async {
-    final server = await shelf_io.serve(webSocketHandler((webSocket, _) {
-      webSocket.sink.add('hello!');
-      webSocket.stream.first.then((request) {
-        expect(request, equals('ping'));
-        webSocket.sink.add('pong');
-        webSocket.sink.close();
-      });
-    }), 'localhost', 0);
+    final server = await shelf_io.serve(
+      webSocketHandler((webSocket, _) {
+        webSocket.sink.add('hello!');
+        webSocket.stream.first.then((request) {
+          expect(request, equals('ping'));
+          webSocket.sink.add('pong');
+          webSocket.sink.close();
+        });
+      }),
+      'localhost',
+      0,
+    );
 
     try {
-      final webSocket =
-          await WebSocket.connect('ws://localhost:${server.port}');
+      final webSocket = await WebSocket.connect(
+        'ws://localhost:${server.port}',
+      );
       var n = 0;
       await webSocket.listen((message) {
         if (n == 0) {
@@ -54,16 +59,19 @@ void main() {
 
   test('negotiates the sub-protocol', () async {
     final server = await shelf_io.serve(
-        webSocketHandler((WebSocketChannel webSocket, String? protocol) {
-          expect(protocol, equals('two'));
-          webSocket.sink.close();
-        }, protocols: ['three', 'two', 'x']),
-        'localhost',
-        0);
+      webSocketHandler((WebSocketChannel webSocket, String? protocol) {
+        expect(protocol, equals('two'));
+        webSocket.sink.close();
+      }, protocols: ['three', 'two', 'x']),
+      'localhost',
+      0,
+    );
 
     try {
-      final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
-          protocols: ['one', 'two', 'three']);
+      final webSocket = await WebSocket.connect(
+        'ws://localhost:${server.port}',
+        protocols: ['one', 'two', 'three'],
+      );
       expect(webSocket.protocol, equals('two'));
       return await webSocket.close();
     } finally {
@@ -72,13 +80,19 @@ void main() {
   });
 
   test('handles protocol header without allowed protocols', () async {
-    final server = await shelf_io.serve(webSocketHandler((webSocket, _) {
-      webSocket.sink.close();
-    }), 'localhost', 0);
+    final server = await shelf_io.serve(
+      webSocketHandler((webSocket, _) {
+        webSocket.sink.close();
+      }),
+      'localhost',
+      0,
+    );
 
     try {
-      final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
-          protocols: ['one', 'two', 'three']);
+      final webSocket = await WebSocket.connect(
+        'ws://localhost:${server.port}',
+        protocols: ['one', 'two', 'three'],
+      );
       expect(webSocket.protocol, isNull);
       return await webSocket.close();
     } finally {
@@ -88,14 +102,19 @@ void main() {
 
   test('allows two argument callbacks without protocols', () async {
     final server = await shelf_io.serve(
-        webSocketHandler((WebSocketChannel webSocket, String? protocol) {
-      expect(protocol, isNull);
-      webSocket.sink.close();
-    }), 'localhost', 0);
+      webSocketHandler((WebSocketChannel webSocket, String? protocol) {
+        expect(protocol, isNull);
+        webSocket.sink.close();
+      }),
+      'localhost',
+      0,
+    );
 
     try {
-      final webSocket = await WebSocket.connect('ws://localhost:${server.port}',
-          protocols: ['one', 'two', 'three']);
+      final webSocket = await WebSocket.connect(
+        'ws://localhost:${server.port}',
+        protocols: ['one', 'two', 'three'],
+      );
       expect(webSocket.protocol, isNull);
       return await webSocket.close();
     } finally {
@@ -104,29 +123,40 @@ void main() {
   });
 
   test('cannot hijack non-Socket StreamChannel', () async {
-    final handler =
-        webSocketHandler((WebSocketChannel webSocket, String? protocol) {
+    final handler = webSocketHandler((
+      WebSocketChannel webSocket,
+      String? protocol,
+    ) {
       expect(protocol, isNull);
       webSocket.sink.close();
     });
 
     expect(
-        () => handler(Request('GET', Uri.parse('ws://example.com/'),
-                protocolVersion: '1.1',
-                headers: {
-                  'Host': 'example.com',
-                  'Upgrade': 'websocket',
-                  'Connection': 'Upgrade',
-                  'Sec-WebSocket-Key': 'x3JJHMbDL1EzLkh9GBhXDw==',
-                  'Sec-WebSocket-Version': '13',
-                  'Origin': 'http://example.com',
-                }, onHijack: (fn) {
-              // `.foreign` is not a Socket so hijacking the request should
-              // fail.
-              expect(() => fn(StreamChannelController<List<int>>().foreign),
-                  throwsArgumentError);
-            })),
-        throwsA(isA<HijackException>()));
+      () => handler(
+        Request(
+          'GET',
+          Uri.parse('ws://example.com/'),
+          protocolVersion: '1.1',
+          headers: {
+            'Host': 'example.com',
+            'Upgrade': 'websocket',
+            'Connection': 'Upgrade',
+            'Sec-WebSocket-Key': 'x3JJHMbDL1EzLkh9GBhXDw==',
+            'Sec-WebSocket-Version': '13',
+            'Origin': 'http://example.com',
+          },
+          onHijack: (fn) {
+            // `.foreign` is not a Socket so hijacking the request should
+            // fail.
+            expect(
+              () => fn(StreamChannelController<List<int>>().foreign),
+              throwsArgumentError,
+            );
+          },
+        ),
+      ),
+      throwsA(isA<HijackException>()),
+    );
   });
 
   group('with a set of allowed origins', () {
@@ -134,11 +164,12 @@ void main() {
     late Uri url;
     setUp(() async {
       server = await shelf_io.serve(
-          webSocketHandler((webSocket, _) {
-            webSocket.sink.close();
-          }, allowedOrigins: ['pub.dartlang.org', 'GoOgLe.CoM']),
-          'localhost',
-          0);
+        webSocketHandler((webSocket, _) {
+          webSocket.sink.close();
+        }, allowedOrigins: ['pub.dartlang.org', 'GoOgLe.CoM']),
+        'localhost',
+        0,
+      );
       url = Uri.http('localhost:${server.port}', '');
     });
 
@@ -175,24 +206,34 @@ void main() {
 
   // Regression test for issue 21894.
   test('allows a Connection header with multiple values', () async {
-    final server = await shelf_io.serve(webSocketHandler((webSocket, _) {
-      webSocket.sink.close();
-    }), 'localhost', 0);
+    final server = await shelf_io.serve(
+      webSocketHandler((webSocket, _) {
+        webSocket.sink.close();
+      }),
+      'localhost',
+      0,
+    );
 
     final url = Uri.http('localhost:${server.port}', '');
     final headers = _handshakeHeaders;
     headers['Connection'] = 'Other-Token, Upgrade';
-    expect(http.get(url, headers: headers).whenComplete(server.close),
-        hasStatus(101));
+    expect(
+      http.get(url, headers: headers).whenComplete(server.close),
+      hasStatus(101),
+    );
   });
 
   group('HTTP errors', () {
     late HttpServer server;
     late Uri url;
     setUp(() async {
-      server = await shelf_io.serve(webSocketHandler((_, __) {
-        fail('should not create a WebSocket');
-      }), 'localhost', 0);
+      server = await shelf_io.serve(
+        webSocketHandler((_, _) {
+          fail('should not create a WebSocket');
+        }),
+        'localhost',
+        0,
+      );
       url = Uri.http('localhost:${server.port}', '');
     });
 
@@ -231,8 +272,10 @@ void main() {
   });
 }
 
-Matcher hasStatus(int status) => completion(predicate((http.Response response) {
-      expect(response, isA<http.Response>());
-      expect(response.statusCode, equals(status));
-      return true;
-    }));
+Matcher hasStatus(int status) => completion(
+  predicate((http.Response response) {
+    expect(response, isA<http.Response>());
+    expect(response.statusCode, equals(status));
+    return true;
+  }),
+);

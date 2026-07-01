@@ -60,14 +60,14 @@ extension RouterParams on Request {
 
 /// Middleware to remove body from response for HEAD requests.
 Handler _removeBody(Handler handler) => (request) {
-      Response processResponse(Response r) => r.change(body: const <int>[]);
+  Response processResponse(Response r) => r.change(body: const <int>[]);
 
-      final response = handler(request);
-      if (response is Future<Response>) {
-        return response.then(processResponse);
-      }
-      return processResponse(response);
-    };
+  final response = handler(request);
+  if (response is Future<Response>) {
+    return response.then(processResponse);
+  }
+  return processResponse(response);
+};
 
 /// A shelf [Router] routes requests to handlers based on HTTP verb and route
 /// pattern.
@@ -121,7 +121,7 @@ class Router {
   /// The [notFoundHandler] will be invoked for requests where no matching route
   /// was found. By default, a simple [Response.notFound] will be used instead.
   Router({Handler notFoundHandler = _defaultNotFound})
-      : _notFoundHandler = notFoundHandler;
+    : _notFoundHandler = notFoundHandler;
 
   /// Add [handler] for [verb] requests to [route].
   ///
