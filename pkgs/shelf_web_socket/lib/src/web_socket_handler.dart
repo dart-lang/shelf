@@ -13,8 +13,8 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 ///
 /// This takes a [WebSocketChannel] as its first argument and an optional
 /// [subprotocol] as its second argument.
-typedef ConnectionCallback = void Function(
-    WebSocketChannel webSocket, String? subprotocol);
+typedef ConnectionCallback =
+    void Function(WebSocketChannel webSocket, String? subprotocol);
 
 /// A class that exposes a handler for upgrading WebSocket requests.
 class WebSocketHandler {
@@ -30,8 +30,12 @@ class WebSocketHandler {
   /// The ping interval used for verifying connection, or `null`.
   final Duration? _pingInterval;
 
-  WebSocketHandler(this._onConnection, this._protocols, this._allowedOrigins,
-      this._pingInterval);
+  WebSocketHandler(
+    this._onConnection,
+    this._protocols,
+    this._allowedOrigins,
+    this._pingInterval,
+  );
 
   /// The [Handler].
   Response handle(Request request) {
@@ -39,8 +43,10 @@ class WebSocketHandler {
 
     final connection = request.headers['Connection'];
     if (connection == null) return _notFound();
-    final tokens =
-        connection.toLowerCase().split(',').map((token) => token.trim());
+    final tokens = connection
+        .toLowerCase()
+        .split(',')
+        .map((token) => token.trim());
     if (!tokens.contains('upgrade')) return _notFound();
 
     final upgrade = request.headers['Upgrade'];
@@ -55,16 +61,20 @@ class WebSocketHandler {
     }
 
     if (request.protocolVersion != '1.1') {
-      return _badRequest('unexpected HTTP version '
-          '"${request.protocolVersion}".');
+      return _badRequest(
+        'unexpected HTTP version '
+        '"${request.protocolVersion}".',
+      );
     }
 
     final key = request.headers['Sec-WebSocket-Key'];
     if (key == null) return _badRequest('missing Sec-WebSocket-Key header.');
 
     if (!request.canHijack) {
-      throw ArgumentError('webSocketHandler may only be used with a server '
-          'that supports request hijacking.');
+      throw ArgumentError(
+        'webSocketHandler may only be used with a server '
+        'that supports request hijacking.',
+      );
     }
 
     // The Origin header is always set by browser connections. By filtering out
@@ -80,10 +90,12 @@ class WebSocketHandler {
     final protocol = _chooseProtocol(request);
     request.hijack((channel) {
       final sink = utf8.encoder.startChunkedConversion(channel.sink)
-        ..add('HTTP/1.1 101 Switching Protocols\r\n'
-            'Upgrade: websocket\r\n'
-            'Connection: Upgrade\r\n'
-            'Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n');
+        ..add(
+          'HTTP/1.1 101 Switching Protocols\r\n'
+          'Upgrade: websocket\r\n'
+          'Connection: Upgrade\r\n'
+          'Sec-WebSocket-Accept: ${WebSocketChannel.signKey(key)}\r\n',
+        );
       if (protocol != null) sink.add('Sec-WebSocket-Protocol: $protocol\r\n');
       sink.add('\r\n');
 
@@ -91,9 +103,11 @@ class WebSocketHandler {
         throw ArgumentError('channel.sink must be a dart:io `Socket`.');
       }
 
-      final webSocket = WebSocket.fromUpgradedSocket(channel.sink as Socket,
-          protocol: protocol, serverSide: true)
-        ..pingInterval = _pingInterval;
+      final webSocket = WebSocket.fromUpgradedSocket(
+        channel.sink as Socket,
+        protocol: protocol,
+        serverSide: true,
+      )..pingInterval = _pingInterval;
 
       _onConnection(IOWebSocketChannel(webSocket), protocol);
     });
@@ -115,19 +129,28 @@ class WebSocketHandler {
 
   /// Returns a 404 Not Found response.
   Response _notFound() => _htmlResponse(
-      404, '404 Not Found', 'Only WebSocket connections are supported.');
+    404,
+    '404 Not Found',
+    'Only WebSocket connections are supported.',
+  );
 
   /// Returns a 400 Bad Request response.
   ///
   /// [message] will be HTML-escaped before being included in the response body.
   Response _badRequest(String message) => _htmlResponse(
-      400, '400 Bad Request', 'Invalid WebSocket upgrade request: $message');
+    400,
+    '400 Bad Request',
+    'Invalid WebSocket upgrade request: $message',
+  );
 
   /// Returns a 403 Forbidden response.
   ///
   /// [message] will be HTML-escaped before being included in the response body.
   Response _forbidden(String message) => _htmlResponse(
-      403, '403 Forbidden', 'WebSocket upgrade refused: $message');
+    403,
+    '403 Forbidden',
+    'WebSocket upgrade refused: $message',
+  );
 
   /// Creates an HTTP response with the given [statusCode] and an HTML body with
   /// [title] and [message].
@@ -136,7 +159,10 @@ class WebSocketHandler {
   Response _htmlResponse(int statusCode, String title, String message) {
     title = htmlEscape.convert(title);
     message = htmlEscape.convert(message);
-    return Response(statusCode, body: '''
+    return Response(
+      statusCode,
+      body:
+          '''
       <!doctype html>
       <html>
         <head><title>$title</title></head>
@@ -145,6 +171,8 @@ class WebSocketHandler {
           <p>$message</p>
         </body>
       </html>
-    ''', headers: {'content-type': 'text/html'});
+    ''',
+      headers: {'content-type': 'text/html'},
+    );
   }
 }

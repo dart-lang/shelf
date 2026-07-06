@@ -34,9 +34,9 @@ class ShelfTestHandler {
   /// The [description] is used in debugging output for this handler. It
   /// defaults to "ShelfTestHandler".
   ShelfTestHandler({bool log = true, String? description})
-      : _log = log,
-        description = description ?? 'ShelfTestHandler',
-        _zone = Zone.current;
+    : _log = log,
+      description = description ?? 'ShelfTestHandler',
+      _zone = Zone.current;
 
   /// Expects that a single HTTP request with the given [method] and [path] will
   /// be made to `this`.
@@ -69,7 +69,8 @@ class ShelfTestHandler {
     try {
       if (_expectations.isEmpty) {
         throw TestFailure(
-            '$description received unexpected request $requestInfo.');
+          '$description received unexpected request $requestInfo.',
+        );
       }
 
       var expectation = _expectations.removeFirst();

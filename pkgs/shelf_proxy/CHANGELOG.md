@@ -1,3 +1,7 @@
+## 1.0.6-wip
+
+* Require Dart `^3.9.0`.
+
 ## 1.0.5
 
 * Correctly handle multiple `Cookie` headers in requests and `Set-Cookie`

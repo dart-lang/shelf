@@ -75,12 +75,15 @@ final class Trie {
     // segment. This works correctly for both partial segments (e.g. `image_`
     // from `/files/image_<id>.png`) and for full segments that are just before
     // a parameter (e.g. the empty segment from `/users/<id>`).
-    final segmentsToTraverse =
-        (paramIndex != -1) ? segments.take(segments.length - 1) : segments;
+    final segmentsToTraverse = (paramIndex != -1)
+        ? segments.take(segments.length - 1)
+        : segments;
 
     for (final segment in segmentsToTraverse) {
-      currentNode =
-          currentNode.staticChildren.putIfAbsent(segment, _TrieNode.new);
+      currentNode = currentNode.staticChildren.putIfAbsent(
+        segment,
+        _TrieNode.new,
+      );
     }
 
     // Add the entry to the deepest FULLY static node we reached.

@@ -50,8 +50,15 @@ final class RouterEntry {
   /// List of parameter names in the route pattern.
   List<String> get params => _params.toList(); // exposed for using generator.
 
-  RouterEntry._(this.verb, this.route, this._handler, this._middleware,
-      this._routePattern, this._params, this.trieIndex);
+  RouterEntry._(
+    this.verb,
+    this.route,
+    this._handler,
+    this._middleware,
+    this._routePattern,
+    this._params,
+    this.trieIndex,
+  );
 
   factory RouterEntry(
     String verb,
@@ -64,7 +71,10 @@ final class RouterEntry {
 
     if (!route.startsWith('/')) {
       throw ArgumentError.value(
-          route, 'route', 'expected route to start with a slash');
+        route,
+        'route',
+        'expected route to start with a slash',
+      );
     }
 
     final params = <String>[];
@@ -75,7 +85,10 @@ final class RouterEntry {
         params.add(m[2]!);
         if (m[3] != null && !_isNoCapture(m[3]!)) {
           throw ArgumentError.value(
-              route, 'route', 'expression for "${m[2]}" is capturing');
+            route,
+            'route',
+            'expression for "${m[2]}" is capturing',
+          );
         }
         pattern += '(${m[3] ?? r'[^/]+'})';
       }
@@ -83,7 +96,14 @@ final class RouterEntry {
     final routePattern = RegExp('^$pattern\$');
 
     return RouterEntry._(
-        verb, route, handler, middleware, routePattern, params, trieIndex);
+      verb,
+      route,
+      handler,
+      middleware,
+      routePattern,
+      params,
+      trieIndex,
+    );
   }
 
   /// Returns a map from parameter name to value, if the path matches the
@@ -113,9 +133,10 @@ final class RouterEntry {
         return await _handler(request) as Response;
       }
       return await Function.apply(_handler, [
-        request,
-        ..._params.map((n) => params[n]),
-      ]) as Response;
+            request,
+            ..._params.map((n) => params[n]),
+          ])
+          as Response;
     })(request);
   }
 }

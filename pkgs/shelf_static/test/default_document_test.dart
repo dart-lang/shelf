@@ -16,7 +16,7 @@ void main() {
     await d.file('root.txt', 'root txt').create();
     await d.dir('files', [
       d.file('index.html', '<html><body>files</body></html>'),
-      d.file('with space.txt', 'with space content')
+      d.file('with space.txt', 'with space content'),
     ]).create();
   });
 
@@ -27,12 +27,14 @@ void main() {
         '/bar.txt',
         '//bar.txt',
         '//news/bar.txt',
-        'foo/../bar.txt'
+        'foo/../bar.txt',
       ];
 
       for (var val in invalidValues) {
-        expect(() => createStaticHandler(d.sandbox, defaultDocument: val),
-            throwsArgumentError);
+        expect(
+          () => createStaticHandler(d.sandbox, defaultDocument: val),
+          throwsArgumentError,
+        );
       }
     });
   });
@@ -71,8 +73,10 @@ void main() {
 
   group('default document specified', () {
     test('access "/index.html"', () async {
-      final handler =
-          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
+      final handler = createStaticHandler(
+        d.sandbox,
+        defaultDocument: 'index.html',
+      );
 
       final response = await makeRequest(handler, '/index.html');
       expect(response.statusCode, HttpStatus.ok);
@@ -82,8 +86,10 @@ void main() {
     });
 
     test('access "/"', () async {
-      final handler =
-          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
+      final handler = createStaticHandler(
+        d.sandbox,
+        defaultDocument: 'index.html',
+      );
 
       final response = await makeRequest(handler, '/');
       expect(response.statusCode, HttpStatus.ok);
@@ -93,24 +99,32 @@ void main() {
     });
 
     test('access "/files"', () async {
-      final handler =
-          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
+      final handler = createStaticHandler(
+        d.sandbox,
+        defaultDocument: 'index.html',
+      );
 
       final response = await makeRequest(handler, '/files');
       expect(response.statusCode, HttpStatus.movedPermanently);
-      expect(response.headers,
-          containsPair(HttpHeaders.locationHeader, 'http://localhost/files/'));
+      expect(
+        response.headers,
+        containsPair(HttpHeaders.locationHeader, 'http://localhost/files/'),
+      );
     });
 
     test('access "/files/" dir', () async {
-      final handler =
-          createStaticHandler(d.sandbox, defaultDocument: 'index.html');
+      final handler = createStaticHandler(
+        d.sandbox,
+        defaultDocument: 'index.html',
+      );
 
       final response = await makeRequest(handler, '/files/');
       expect(response.statusCode, HttpStatus.ok);
       expect(response.contentLength, 31);
-      expect(response.readAsString(),
-          completion('<html><body>files</body></html>'));
+      expect(
+        response.readAsString(),
+        completion('<html><body>files</body></html>'),
+      );
       expect(response.mimeType, 'text/html');
     });
   });

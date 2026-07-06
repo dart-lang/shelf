@@ -2,7 +2,7 @@
 
 * Require `shelf: ^1.1.0`
 * Require `test: ^1.25.15`
-* Require `sdk: ^3.5.0`.
+* Require Dart `^3.9.0`.
 
 ## 2.0.2
 
