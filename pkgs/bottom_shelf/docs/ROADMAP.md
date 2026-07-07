@@ -32,16 +32,15 @@ fixed (see Phase 6).
 ## Phase 5: Correctness & Security follow-ups
 *From the 2026-07-06 hot-path review. These outrank all performance work.*
 
-- [ ] **Cross-request header data leak via parser buffer reuse** (CRITICAL)
-  - `HeaderByteSlice`s point into the reused parser buffer
-    (`raw_http_parser.dart:35`); `_parser.reset()` runs right after the
-    response is written (`http_connection.dart:447`) and the next request
-    overwrites the buffer. A handler that retains the `Request` past response
-    completion (post-response logging, `unawaited` analytics) and then lazily
-    reads an un-hydrated header reads **another request's bytes**.
-  - Fix direction: force-hydrate outstanding `LazyByteHeaderMap`s on reset,
-    or poison the slices; add a test that retains a Request across a
-    keep-alive boundary.
+- [x] **Cross-request header data leak via parser buffer reuse** (CRITICAL)
+      — FIXED by poisoning. A `SliceBufferToken` is shared by all slices of
+      one request and invalidated in `_parser.reset()`; `asString`/`matches`/
+      `matchesKey` throw `StateError` if read afterwards, so a retained
+      Request that lazily reads an un-hydrated header fails loudly instead of
+      returning the next request's bytes. Chosen over force-hydration to keep
+      the lazy-header fast path (no string allocation for un-read headers).
+      Tests in `test/slice_invalidation_test.dart`. Throughput impact within
+      noise (~1%).
 - [x] **Response header injection / response splitting** (CRITICAL) — FIXED
       as part of the byte-oriented serializer rewrite: header names must be
       RFC 9110 tokens, values reject NUL/CR/LF and non-Latin-1; violations

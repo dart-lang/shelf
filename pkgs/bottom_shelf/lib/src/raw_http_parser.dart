@@ -43,6 +43,11 @@ final class RawHttpParser {
   int _currentFieldStart = 0;
   HeaderByteSlice? _lastKeySlice;
 
+  /// Shared by all slices from the current request. Invalidated on [reset] so
+  /// that slices retained past the response can no longer read the (about to
+  /// be reused) buffer.
+  SliceBufferToken _token = SliceBufferToken();
+
   int _totalHeadersReceived = 0;
   int _consumedInLastChunk = 0;
 
@@ -56,6 +61,10 @@ final class RawHttpParser {
     _currentFieldStart = 0;
     _lastKeySlice = null;
     _totalHeadersReceived = 0;
+    // Poison the previous request's slices, then start a fresh batch. The
+    // buffer bytes are about to be overwritten by the next request.
+    _token.invalidate();
+    _token = SliceBufferToken();
   }
 
   HttpRequestHead? process(Uint8List data) {
@@ -172,7 +181,7 @@ final class RawHttpParser {
               throw const BadRequestException('Empty header name');
             }
 
-            _lastKeySlice = HeaderByteSlice(_buffer, start, end);
+            _lastKeySlice = HeaderByteSlice(_buffer, start, end, _token);
             _currentFieldStart = _bufferPos;
             _state = _$State.headerValue;
           } else if (byte == $Chars.lf) {
@@ -205,7 +214,7 @@ final class RawHttpParser {
               start++;
             }
 
-            final valueSlice = HeaderByteSlice(_buffer, start, end);
+            final valueSlice = HeaderByteSlice(_buffer, start, end, _token);
             _headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
             _currentFieldStart = _bufferPos;
             _state = _$State.headerKey;
