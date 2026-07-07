@@ -42,14 +42,12 @@ fixed (see Phase 6).
   - Fix direction: force-hydrate outstanding `LazyByteHeaderMap`s on reset,
     or poison the slices; add a test that retains a Request across a
     keep-alive boundary.
-- [ ] **Response header injection / response splitting** (CRITICAL)
-  - The serializer writes header names/values verbatim
-    (`raw_shelf_response_serializer.dart:67`) with no CRLF or character
-    validation. `shelf_io` inherits dart:io's `HttpHeaders` validation;
-    `bottom_shelf` has none. A handler echoing untrusted input into any
-    response header yields full response splitting on a keep-alive connection.
-  - Natural home for the fix: the byte-oriented serializer rewrite (Phase 6),
-    which must reject `\r`/`\n`/non-Latin-1 in names and values.
+- [x] **Response header injection / response splitting** (CRITICAL) — FIXED
+      as part of the byte-oriented serializer rewrite: header names must be
+      RFC 9110 tokens, values reject NUL/CR/LF and non-Latin-1; violations
+      throw before any bytes reach the socket, so the connection error path
+      returns a clean 500. Tests in
+      `test/response_header_validation_test.dart`.
 - [ ] **Response-side Content-Length vs body mismatch desync**
   - Nothing verifies streamed body length against the declared
     `Content-Length` (serializer). A mismatch shifts the framing of every
@@ -82,15 +80,13 @@ syscalls (irreducible); the addressable wins are async/stream machinery and
 string/map churn, NOT the parser (1.9% self time). Prototype patches with
 measured deltas live in `docs/prototypes/`.*
 
-- [ ] **Byte-oriented serializer rewrite — measured +7.3%**
-      (`docs/prototypes/p1_serializer.patch`): const status-line bytes,
-      ASCII scratch buffer instead of StringBuffer→toString→utf8.encode,
-      capture content-length during the existing `headersAll` iteration
-      instead of `response.contentLength` (which hydrates shelf's entire
-      `singleValues` map per response), cache the Date header as bytes.
-      **Productionize together with response-header validation (Phase 5
-      item 2)** — the byte writer is the right place for it; re-measure
-      with validation included.
+- [x] **Byte-oriented serializer rewrite — measured +7.3% as prototype**:
+      const status-line bytes, ASCII scratch buffer instead of
+      StringBuffer→toString→utf8.encode, content-length captured during the
+      existing `headersAll` iteration instead of `response.contentLength`
+      (which hydrates shelf's entire `singleValues` map per response), Date
+      header cached as bytes. Landed WITH header validation (Phase 5
+      item 2). Re-measure with validation included.
 - [ ] **Drop/rework the per-response `await socket.flush()` — measured
       +5.6%** (`docs/prototypes/p3_noflush.patch`): the flush adds an
       event-loop round trip before the next pipelined request is accepted.
