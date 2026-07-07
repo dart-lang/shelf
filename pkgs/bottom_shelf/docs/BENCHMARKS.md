@@ -2,6 +2,22 @@
 
 Measured results and the harness/methodology for reproducing them honestly.
 
+## Landed — 2026-07-07: pure-bottom_shelf perf items (+16%)
+
+Three of the profiled optimizations landed on `bottom_shelf_perf` as
+independent commits (no pkg:shelf changes), alongside two CRITICAL security
+fixes. Cumulative vs the branch start `e7e8621` (5 interleaved trials):
+
+| | median RPS | GC scavenges/300k |
+|---|---:|---:|
+| branch start (`e7e8621`) | 52,881 | 157 |
+| + fused scan + byte serializer + flush guard | 61,454 | 103 |
+
+**+16.2% RPS, −34% GC**, with response header-injection validation and the
+cross-request buffer-reuse leak fixed (both previously CRITICAL). The
+remaining prototype wins (P4/P5) require pkg:shelf changes and stay on the
+Phase 8 upstream track.
+
 ## Results — 2026-07-07: profile-guided prototypes (+30%)
 
 Full investigation in `PROFILE_2026_07.md`; prototype patches in
