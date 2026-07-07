@@ -1,0 +1,17 @@
+diff --git a/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart b/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
+index e5b122f..82b8162 100644
+--- a/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
++++ b/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
+@@ -139,7 +139,11 @@ final class RawShelfResponseSerializer {
+       }
+     }
+ 
+-    await socket.flush();
++    // PROTOTYPE P3: flush removed. The socket preserves write order; the
++    // flush only delayed accepting the next pipelined request until the OS
++    // accepted the bytes. Trade-off: loses write backpressure between
++    // keep-alive requests (unbounded buffering risk under pathological
++    // pipelining) — evaluate before productionizing.
+   }
+ 
+   static String _getStatusPhrase(int statusCode) => switch (statusCode) {

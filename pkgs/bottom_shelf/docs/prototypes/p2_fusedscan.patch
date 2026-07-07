@@ -1,0 +1,236 @@
+diff --git a/pkgs/bottom_shelf/lib/src/http_connection.dart b/pkgs/bottom_shelf/lib/src/http_connection.dart
+index 7fdf7d6..c8a12ea 100644
+--- a/pkgs/bottom_shelf/lib/src/http_connection.dart
++++ b/pkgs/bottom_shelf/lib/src/http_connection.dart
+@@ -184,48 +184,16 @@ final class _HttpConnection {
+             return;
+           }
+ 
+-          var contentLengthHeaderCount = 0;
+-          var clValid = true;
+-          for (var slice in requestHead.headerSlices) {
+-            if (slice.key.matches($Header.contentLength)) {
+-              contentLengthHeaderCount++;
+-              final value = slice.value.asString();
+-              if (value.isEmpty) {
+-                clValid = false;
+-              } else {
+-                for (var i = 0; i < value.length; i++) {
+-                  final c = value.codeUnitAt(i);
+-                  if (c < 48 || c > 57) {
+-                    clValid = false;
+-                    break;
+-                  }
+-                }
+-              }
+-            }
+-          }
+-
+-          if (contentLengthHeaderCount > 1 ||
+-              !clValid ||
+-              (contentLengthHeaderCount == 1 &&
++          if (typedHeaders.contentLengthHeaderCount > 1 ||
++              !typedHeaders.contentLengthDigitsValid ||
++              (typedHeaders.contentLengthHeaderCount == 1 &&
+                   typedHeaders.contentLength == null)) {
+             socket.add(ErrorResponse.badRequest.bytes);
+             _destroy();
+             return;
+           }
+ 
+-          var hasTransferEncoding = false;
+-          var isChunked = false;
+-          for (var slice in requestHead.headerSlices) {
+-            if (slice.key.matches($Header.transferEncoding)) {
+-              hasTransferEncoding = true;
+-              final value = slice.value.asString().toLowerCase();
+-              if (value.contains('chunked')) {
+-                isChunked = true;
+-              }
+-            }
+-          }
+-
+-          if (hasTransferEncoding && !isChunked) {
++          if (typedHeaders.hasTransferEncoding && !typedHeaders.isChunked) {
+             socket.add(ErrorResponse.notImplemented.bytes);
+             _flushCloseDestroy();
+             return;
+diff --git a/pkgs/bottom_shelf/lib/src/typed_headers.dart b/pkgs/bottom_shelf/lib/src/typed_headers.dart
+index 556e522..1608d0d 100644
+--- a/pkgs/bottom_shelf/lib/src/typed_headers.dart
++++ b/pkgs/bottom_shelf/lib/src/typed_headers.dart
+@@ -13,11 +13,65 @@ final class TypedHeaders {
+   final List<HeaderEntrySlices> _slices;
+   final _cache = <String, Object?>{};
+ 
+-  TypedHeaders(this._slices);
++  // Results of the single fused scan over the header slices. Computing
++  // these together replaces eight separate walks of the slice list on the
++  // per-request hot path.
++  int _contentLengthCount = 0;
++  bool _contentLengthDigitsValid = true;
++  int? _contentLengthValue;
++  bool _hasTransferEncoding = false;
++  bool _isChunked = false;
++  int _hostCount = 0;
++  String? _host;
++  // 0 = no recognized Connection token, 1 = keep-alive, 2 = close.
++  int _connectionToken = 0;
++
++  TypedHeaders(this._slices) {
++    for (var slice in _slices) {
++      final key = slice.key;
++      if (key.matches($Header.contentLength)) {
++        _contentLengthCount++;
++        final value = slice.value.asString();
++        var digitsValid = value.isNotEmpty;
++        for (var i = 0; digitsValid && i < value.length; i++) {
++          final c = value.codeUnitAt(i);
++          if (c < 0x30 || c > 0x39) digitsValid = false;
++        }
++        if (digitsValid) {
++          _contentLengthValue ??= int.tryParse(value);
++        } else {
++          _contentLengthDigitsValid = false;
++        }
++      } else if (key.matches($Header.transferEncoding)) {
++        _hasTransferEncoding = true;
++        if (slice.value.asString().toLowerCase().contains('chunked')) {
++          _isChunked = true;
++        }
++      } else if (key.matches($Header.host)) {
++        _hostCount++;
++        _host ??= slice.value.asString();
++      } else if (_connectionToken == 0 && key.matches($Header.connection)) {
++        final value = slice.value.asString().toLowerCase();
++        if (value == 'close') {
++          _connectionToken = 2;
++        } else if (value == 'keep-alive') {
++          _connectionToken = 1;
++        }
++      }
++    }
++  }
+ 
+   /// Returns the Content-Length as an integer, or null if missing/invalid.
+-  int? get contentLength =>
+-      _getTypedHeader($Header.contentLength, int.tryParse);
++  int? get contentLength => _contentLengthValue;
++
++  /// The number of Content-Length headers present.
++  int get contentLengthHeaderCount => _contentLengthCount;
++
++  /// False if any Content-Length header is empty or contains a non-digit.
++  bool get contentLengthDigitsValid => _contentLengthDigitsValid;
++
++  /// True if any Transfer-Encoding header is present.
++  bool get hasTransferEncoding => _hasTransferEncoding;
+ 
+   /// Returns the Content-Type as a [MediaType], or null if missing/invalid.
+   MediaType? get contentType =>
+@@ -28,84 +82,30 @@ final class TypedHeaders {
+       _getTypedHeader($Header.ifModifiedSince, parseHttpDate);
+ 
+   /// Returns the Host header.
+-  String? get host => _getTypedHeader($Header.host, _identity);
+-
+-  static String _identity(String s) => s;
++  String? get host => _host;
+ 
+   /// Returns true if the connection should be kept alive.
+-  bool isKeepAlive(String protocolVersion) {
+-    if (_cache case {_CacheKey.keepAlive: final bool value}) return value;
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.connection)) {
+-        final value = slice.value.asString().toLowerCase();
+-        if (value == 'close') {
+-          _cache[_CacheKey.keepAlive] = false;
+-          return false;
+-        }
+-        if (value == 'keep-alive') {
+-          _cache[_CacheKey.keepAlive] = true;
+-          return true;
+-        }
+-      }
+-    }
+-    final result = protocolVersion == '1.1';
+-    _cache[_CacheKey.keepAlive] = result;
+-    return result;
+-  }
++  bool isKeepAlive(String protocolVersion) => switch (_connectionToken) {
++    2 => false,
++    1 => true,
++    _ => protocolVersion == '1.1',
++  };
+ 
+   /// Returns true if both Content-Length and Transfer-Encoding are present.
+   /// This is a sign of HTTP request smuggling (RFC 9112 section 6.1).
+-  bool get hasConflictingBodyHeaders {
+-    if (_cache case {_CacheKey.conflictingBodyHeaders: final bool value}) {
+-      return value;
+-    }
+-    var hasContentLength = false;
+-    var hasTransferEncoding = false;
+-
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.contentLength)) {
+-        hasContentLength = true;
+-      } else if (slice.key.matches($Header.transferEncoding)) {
+-        hasTransferEncoding = true;
+-      }
+-    }
+-
+-    final result = hasContentLength && hasTransferEncoding;
+-    _cache[_CacheKey.conflictingBodyHeaders] = result;
+-    return result;
+-  }
++  bool get hasConflictingBodyHeaders =>
++      _contentLengthCount > 0 && _hasTransferEncoding;
+ 
+   /// Returns true if the request contains duplicate Host headers.
+-  bool get hasDuplicateHost {
+-    var count = 0;
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.host)) {
+-        count++;
+-        if (count > 1) return true;
+-      }
+-    }
+-    return false;
+-  }
++  bool get hasDuplicateHost => _hostCount > 1;
+ 
+   /// Returns true if the request body is chunked.
+-  bool get isChunked {
+-    if (_cache case {_CacheKey.isChunked: final bool value}) return value;
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.transferEncoding)) {
+-        final value = slice.value.asString().toLowerCase();
+-        if (value.contains('chunked')) {
+-          _cache[_CacheKey.isChunked] = true;
+-          return true;
+-        }
+-      }
+-    }
+-    _cache[_CacheKey.isChunked] = false;
+-    return false;
+-  }
++  bool get isChunked => _isChunked;
+ 
+   /// Validates that Transfer-Encoding is valid.
+   /// Throws [BadRequestException] if invalid.
+   void validateTransferEncoding() {
++    if (!_hasTransferEncoding) return;
+     for (var slice in _slices) {
+       if (slice.key.matches($Header.transferEncoding)) {
+         final value = slice.value.asString().toLowerCase();
+@@ -149,9 +149,3 @@ final class TypedHeaders {
+     return null;
+   }
+ }
+-
+-abstract final class _CacheKey {
+-  static const keepAlive = '[keep-alive]';
+-  static const conflictingBodyHeaders = '[conflicting-body-headers]';
+-  static const isChunked = '[is-chunked]';
+-}

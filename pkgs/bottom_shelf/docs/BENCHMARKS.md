@@ -2,6 +2,26 @@
 
 Measured results and the harness/methodology for reproducing them honestly.
 
+## Results — 2026-07-07: profile-guided prototypes (+30%)
+
+Full investigation in `PROFILE_2026_07.md`; prototype patches in
+`prototypes/`. Same harness as below; baseline commit `e7e8621`; medians of
+5 interleaved rounds; zero failed requests:
+
+| Variant | median RPS | Δ vs HEAD |
+|---|---:|---:|
+| HEAD (`e7e8621`) | 53,154 | — |
+| P2 fused header scan | 54,688 | +2.9% |
+| P4 shelf Request tax removed | 55,491 | +4.4% |
+| P3 no post-write flush | 56,126 | +5.6% |
+| P1 byte-oriented serializer | 57,024 | +7.3% |
+| P5 sync buffered-body path | 58,587 | +10.2% |
+| **Combo (all five)** | **69,044** | **+29.9%** |
+
+Individual deltas sum to +30.4% vs measured +29.9% — effects essentially
+independent. GC: 152 → 67 scavenges per 300k requests (−56%), reproduced
+exactly. Combo = 4.4x shelf_io, 3.8x raw dart:io.
+
 ## Results — 2026-07-06
 
 Setup: AMD Ryzen 9 PRO 8945HS (8c/16t), Linux, `performance` governor,

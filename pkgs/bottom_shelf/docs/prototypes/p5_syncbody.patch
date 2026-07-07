@@ -1,0 +1,159 @@
+diff --git a/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart b/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
+index e5b122f..e4bfdb0 100644
+--- a/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
++++ b/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
+@@ -96,6 +96,18 @@ final class RawShelfResponseSerializer {
+ 
+     final headerBytes = utf8.encode(headerBuffer.toString());
+ 
++    // PROTOTYPE P5: fully synchronous single-write path for bodies whose
++    // bytes are already in memory — skips the Stream + await-for machinery.
++    final buffered = response.bufferedBytes;
++    if (buffered != null && buffered.isNotEmpty && requestMethod != 'HEAD') {
++      final builder = BytesBuilder(copy: false);
++      builder.add(headerBytes);
++      builder.add(buffered);
++      socket.add(builder.takeBytes());
++      await socket.flush();
++      return;
++    }
++
+     if (requestMethod == 'HEAD' || response.contentLength == 0) {
+       socket.add(headerBytes);
+       if (requestMethod == 'HEAD') {
+diff --git a/pkgs/shelf/lib/src/body.dart b/pkgs/shelf/lib/src/body.dart
+index c80cc48..d88a9cf 100644
+--- a/pkgs/shelf/lib/src/body.dart
++++ b/pkgs/shelf/lib/src/body.dart
+@@ -13,11 +13,18 @@ import 'message.dart';
+ /// because the message may be changed with [Message.change], but each instance
+ /// should share a notion of whether the body was read.
+ class Body {
+-  /// The contents of the message body.
++  /// The contents of the message body, when created from a stream.
+   ///
+-  /// This will be `null` after [read] is called.
++  /// This will be `null` after [read] is called, and for buffered bodies.
+   Stream<List<int>>? _stream;
+ 
++  /// PROTOTYPE P5: bytes that are synchronously known (String/List/null
++  /// bodies). The wrapping stream is only built if [read] is actually
++  /// called; adapters can consume [bufferedBytes] synchronously instead.
++  List<int>? _bufferedBytes;
++
++  var _consumed = false;
++
+   /// The encoding used to encode the stream returned by [read], or `null` if no
+   /// encoding was used.
+   final Encoding? encoding;
+@@ -26,7 +33,19 @@ class Body {
+   /// determined efficiently.
+   final int? contentLength;
+ 
+-  Body._(this._stream, this.encoding, this.contentLength);
++  Body._(this._stream, this.encoding, this.contentLength)
++      : _bufferedBytes = null;
++
++  Body._buffered(List<int> bytes, this.encoding)
++      : _bufferedBytes = bytes,
++        _stream = null,
++        contentLength = bytes.length;
++
++  /// The body's bytes, when they are synchronously available and unread.
++  ///
++  /// Returns `null` for stream-backed bodies and for bodies that have
++  /// already been consumed via [read].
++  List<int>? get bufferedBytes => _consumed ? null : _bufferedBytes;
+ 
+   /// Converts [body] to a byte stream and wraps it in a [Body].
+   ///
+@@ -36,32 +55,27 @@ class Body {
+   factory Body(Object? body, [Encoding? encoding]) {
+     if (body is Body) return body;
+ 
+-    Stream<List<int>> stream;
+-    int? contentLength;
+     if (body == null) {
+-      contentLength = 0;
+-      stream = Stream.fromIterable([]);
++      return Body._buffered(const [], encoding);
+     } else if (body is String) {
+       if (encoding == null) {
+         var encoded = utf8.encode(body);
+         // If the text is plain ASCII, don't modify the encoding. This means
+         // that an encoding of "text/plain" will stay put.
+         if (!_isPlainAscii(encoded, body.length)) encoding = utf8;
+-        contentLength = encoded.length;
+-        stream = Stream.fromIterable([encoded]);
++        return Body._buffered(encoded, encoding);
+       } else {
+-        var encoded = encoding.encode(body);
+-        contentLength = encoded.length;
+-        stream = Stream.fromIterable([encoded]);
++        return Body._buffered(encoding.encode(body), encoding);
+       }
+     } else if (body is List<int>) {
+       // Avoid performance overhead from an unnecessary cast.
+-      contentLength = body.length;
+-      stream = Stream.value(body);
++      return Body._buffered(body, encoding);
+     } else if (body is List) {
+-      contentLength = body.length;
+-      stream = Stream.value(body.cast());
+-    } else if (body is Stream<List<int>>) {
++      return Body._buffered(body.cast<int>(), encoding);
++    }
++
++    Stream<List<int>> stream;
++    if (body is Stream<List<int>>) {
+       // Avoid performance overhead from an unnecessary cast.
+       stream = body;
+     } else if (body is Stream) {
+@@ -71,7 +85,7 @@ class Body {
+           'Stream.');
+     }
+ 
+-    return Body._(stream, encoding, contentLength);
++    return Body._(stream, encoding, null);
+   }
+ 
+   /// Returns whether [bytes] is plain ASCII.
+@@ -91,12 +105,23 @@ class Body {
+   ///
+   /// Can only be called once.
+   Stream<List<int>> read() {
++    if (_consumed) {
++      throw StateError("The 'read' method can only be called once on a "
++          'shelf.Request/shelf.Response object.');
++    }
++    if (_bufferedBytes != null) {
++      _consumed = true;
++      final bytes = _bufferedBytes!;
++      _bufferedBytes = null;
++      return Stream.fromIterable([bytes]);
++    }
+     if (_stream == null) {
+       throw StateError("The 'read' method can only be called once on a "
+           'shelf.Request/shelf.Response object.');
+     }
+     var stream = _stream!;
+     _stream = null;
++    _consumed = true;
+     return stream;
+   }
+ }
+diff --git a/pkgs/shelf/lib/src/message.dart b/pkgs/shelf/lib/src/message.dart
+index c270d18..c23793a 100644
+--- a/pkgs/shelf/lib/src/message.dart
++++ b/pkgs/shelf/lib/src/message.dart
+@@ -151,6 +151,10 @@ abstract class Message {
+ 
+   MediaType? _contentTypeCache;
+ 
++  /// PROTOTYPE P5: the body's bytes when synchronously available and
++  /// unread; `null` for stream-backed or consumed bodies.
++  List<int>? get bufferedBytes => _body.bufferedBytes;
++
+   /// Returns a [Stream] representing the body.
+   ///
+   /// Can only be called once.

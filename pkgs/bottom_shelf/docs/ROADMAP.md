@@ -76,46 +76,51 @@ fixed (see Phase 6).
 
 ## Phase 6: Measured performance work
 *Baseline (2026-07-06, see `docs/BENCHMARKS.md`): ~53k RPS vs shelf_io's
-~15.6k (3.4x) and raw dart:io's ~18k (2.9x). Each item below: benchmark
-before/after with the BENCHMARKS.md harness; ranked by expected impact.*
+~15.6k (3.4x) and raw dart:io's ~18k (2.9x). RE-RANKED 2026-07-07 by the
+profiling investigation (`docs/PROFILE_2026_07.md`): ~60% of CPU is socket
+syscalls (irreducible); the addressable wins are async/stream machinery and
+string/map churn, NOT the parser (1.9% self time). Prototype patches with
+measured deltas live in `docs/prototypes/`.*
 
-- [ ] **Kill the double `Uri.parse`** — `http_connection.dart:241,246`: the
-      first parse is always thrown away for origin-form requests. Check
-      `startsWith('/')` first; consider a small bounded `host+path → Uri`
-      cache (immutable, safe to share; must cap size and key length).
-- [ ] **Byte-oriented serializer rewrite** —
-      `raw_shelf_response_serializer.dart:48-97`: const status-line bytes,
+- [ ] **Byte-oriented serializer rewrite — measured +7.3%**
+      (`docs/prototypes/p1_serializer.patch`): const status-line bytes,
       ASCII scratch buffer instead of StringBuffer→toString→utf8.encode,
       capture content-length during the existing `headersAll` iteration
       instead of `response.contentLength` (which hydrates shelf's entire
       `singleValues` map per response), cache the Date header as bytes.
-      **Must add header validation (Phase 5 item 2) as part of this.**
-- [ ] **Fuse the ~8 per-request header scans into one pass** and replace
-      `TypedHeaders._cache` (a per-request `Map`) with plain fields
-      (`int? contentLength; bool isChunked; ...`). Security note: preserve
-      duplicate-counting semantics exactly (all Content-Length occurrences,
-      every TE header) — no first-match short-circuits.
-- [ ] **Set `TCP_NODELAY` on accepted sockets** — one line, never set today;
-      Nagle+delayed-ACK can dominate measured latency.
-- [ ] **Parser: bulk `setRange` copy + line scanning** instead of
-      byte-at-a-time state machine (`raw_http_parser.dart:63-209`). Highest
-      CPU win, highest risk: every smuggling defense (bare-LF, CR-without-LF,
-      obs-fold, whitespace-before-colon) must be re-proven. Do LAST, with the
-      fuzz suite.
-- [ ] **Micro-fixes** (each trivial): method match without sublistView
-      (`raw_http_parser.dart:90`); const `'1.1'` version fast path (:129-138);
-      static identity function (`typed_headers.dart:31`); skip empty
-      `sublistView` (`http_connection.dart:257`); skip `await` when
-      `bodyDone.isCompleted` (:450); cache `ErrorResponse.bytes`
-      (`exceptions.dart:22`); cache `_HttpConnectionInfo` per connection
-      (:368); index loop instead of `codeUnits.every` (:185).
+      **Productionize together with response-header validation (Phase 5
+      item 2)** — the byte writer is the right place for it; re-measure
+      with validation included.
+- [ ] **Drop/rework the per-response `await socket.flush()` — measured
+      +5.6%** (`docs/prototypes/p3_noflush.patch`): the flush adds an
+      event-loop round trip before the next pipelined request is accepted.
+      BLOCKED on a backpressure decision: without it a slow client + fast
+      handler can grow the socket buffer unboundedly (flush every N
+      responses? byte-count guard in the connection?).
+- [ ] **Fuse the ~8 per-request header scans into one pass — measured
+      +2.9%** (`docs/prototypes/p2_fusedscan.patch`): single scan in the
+      TypedHeaders constructor replaces separate walks + the per-request
+      `_cache` map. Duplicate-counting semantics preserved (verified by
+      smuggling/robustness tests). Safe to land as-is.
+- [x] **Set `TCP_NODELAY` on accepted sockets** — landed in `e7e8621`.
+      No effect on loopback benchmarks; matters on real networks.
+- [x] **Micro-fixes** (method byte-match, const '1.1', static identity fn,
+      shared empty Uint8List, sync handler fast path, bodyDone.isCompleted,
+      ErrorResponse.bytes cache, per-connection _HttpConnectionInfo, index
+      loop for CL digits) — landed in `e7e8621`. *Measured: no RPS change,
+      −3% GC scavenges. Kept on code-quality grounds.*
+- [x] **Kill the double `Uri.parse`** — landed in `e7e8621` (origin-form
+      fast path). *No measurable RPS effect on its own.* A bounded
+      `host+path → Uri` cache remains unexplored.
 - [ ] **Fix or replace `benchmark/stress_tester.dart`** — it counts socket
       data events as responses (:69) and divides by integer seconds (:52).
       Either parse responses properly or delete it in favor of the
       BENCHMARKS.md harness.
-- [ ] **Header-slice object churn** — 3 objects per header line
-      (`raw_http_parser.dart:166,199,200`); consider flattening slices into
-      parallel int arrays. Measure first; pairs with the parser rewrite.
+- [ ] **DEMOTED: parser bulk-copy/line-scan rewrite and header-slice
+      flattening** — the profile shows `RawHttpParser.process` at only
+      ~1.9% self time; the theoretical win cannot exceed that. Highest
+      risk (smuggling defenses must be re-proven), lowest measured
+      opportunity. Only revisit after everything above lands.
 
 ## Phase 7: API & compliance hygiene
 *Carried over from the old TODO.md.*
@@ -136,6 +141,17 @@ in a minor release (additive or semantics-only). Sequencing: prototype here
 first (shelf is already a path dependency), measure with the BENCHMARKS.md
 harness, then PR the internal fixes directly and open ONE design issue for
 the additive API — with numbers, not estimates.*
+
+*2026-07-07: THE NUMBERS EXIST — see `docs/PROFILE_2026_07.md`. Measured on
+this branch: request-side changes (lazy url/handlerPath, no constructor
+validation, no context copy; `docs/prototypes/p4_shelf_request.patch`)
+**+4.4%**; `Body.bufferedBytes` sync path
+(`docs/prototypes/p5_syncbody.patch`) **+10.2%**; combined **+14.6%** on
+top of bottom_shelf's own wins. Key design lesson from the P4 prototype's
+one failing test: shelf's constructor validation is load-bearing for
+malformed percent-encoding (the dart-lang/shelf#369 class) — a trusted
+`Request.adapter` requires the adapter to own that rejection, e.g. by
+mapping `FormatException` to 400 at dispatch (free on the happy path).*
 
 - [ ] **Internal fixes, PR-able without an issue**: `contentLength`/`mimeType`
       via `headersAll` instead of hydrating `singleValues`
