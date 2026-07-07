@@ -86,12 +86,15 @@ measured deltas live in `docs/prototypes/`.*
       (which hydrates shelf's entire `singleValues` map per response), Date
       header cached as bytes. Landed WITH header validation (Phase 5
       item 2). Re-measure with validation included.
-- [ ] **Drop/rework the per-response `await socket.flush()` — measured
-      +5.6%** (`docs/prototypes/p3_noflush.patch`): the flush adds an
-      event-loop round trip before the next pipelined request is accepted.
-      BLOCKED on a backpressure decision: without it a slow client + fast
-      handler can grow the socket buffer unboundedly (flush every N
-      responses? byte-count guard in the connection?).
+- [x] **Drop the per-response `await socket.flush()` — measured +6%**:
+      the flush added an event-loop round trip before the next pipelined
+      request was accepted. Backpressure decision resolved with a byte-count
+      guard: `writeResponse` returns bytes written, the connection
+      accumulates them, and flushes only once `$Limit.flushThreshold`
+      (256 KB) has queued — bounding a fast-handler/slow-client buffer to
+      ~threshold + one response. Unflushed bytes are still delivered by the
+      event loop (dart:io drains `socket.add` asynchronously); the guard
+      only bounds memory. Landed.
 - [x] **Fuse the ~8 per-request header scans into one pass — measured
       +2.9%**: single scan in the TypedHeaders constructor replaces
       separate walks + the per-request `_cache` map. Duplicate-counting

@@ -32,6 +32,13 @@ abstract final class $Limit {
   static const maxUrlSize = 8 * 1024;
   static const maxContentLength = 32 * 1024 * 1024;
 
+  /// On keep-alive connections the socket is not flushed after every
+  /// response (that would gate each pipelined request on the OS write
+  /// draining). Instead we flush once this many unflushed bytes have
+  /// accumulated, bounding buffering for a fast handler + slow client to
+  /// roughly this value plus one response.
+  static const flushThreshold = 256 * 1024;
+
   /// The maximum value of `_chunkSize` before shifting by 4 bits
   /// (multiplying by 16)
   /// to prevent overflow in a 64-bit signed integer.

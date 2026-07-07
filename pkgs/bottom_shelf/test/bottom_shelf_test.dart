@@ -76,6 +76,53 @@ void main() {
       expect(fullResponse, contains('request 2'));
     });
 
+    test(
+      'many keep-alive responses all delivered without per-response flush',
+      () async {
+        const n = 50;
+        var count = 0;
+        final server = await RawShelfServer.serve(
+          (request) => Response.ok('r${count++}'),
+          'localhost',
+          0,
+        );
+        addTearDown(server.close);
+
+        final socket = await Socket.connect('localhost', server.port);
+        addTearDown(socket.close);
+
+        final buffer = StringBuffer();
+        final done = Completer<void>();
+        socket.listen((data) {
+          buffer.write(utf8.decode(data));
+          // Each response body is "r<i>"; wait for the last one.
+          if (buffer.toString().contains('r${n - 1}') && !done.isCompleted) {
+            done.complete();
+          }
+        });
+
+        // One request at a time (not pipelined) so each response is produced
+        // and must be delivered even though we no longer flush per response.
+        for (var i = 0; i < n; i++) {
+          final connHeader = i == n - 1 ? 'close' : 'keep-alive';
+          socket.add(
+            utf8.encode(
+              'GET /$i HTTP/1.1\r\nHost: localhost\r\n'
+              'Connection: $connHeader\r\n\r\n',
+            ),
+          );
+          // Small yield so requests aren't all pipelined into one chunk.
+          await Future<void>.delayed(Duration.zero);
+        }
+
+        await done.future.timeout(const Duration(seconds: 5));
+        final full = buffer.toString();
+        for (var i = 0; i < n; i++) {
+          expect(full, contains('r$i'), reason: 'missing response $i');
+        }
+      },
+    );
+
     test('error in handler leads to 500 response', () async {
       final logs = <String>[];
       final server = await RawShelfServer.serve(

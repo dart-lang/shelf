@@ -53,6 +53,10 @@ final class _HttpConnection {
   var _clientClosed = false;
   var _responseSent = false;
 
+  /// Bytes written to [socket] since the last flush on a keep-alive
+  /// connection. See `$Limit.flushThreshold`.
+  var _unflushedBytes = 0;
+
   _HttpConnection({required this.socket, required this.config})
     : remoteAddress = socket.remoteAddress,
       remotePort = socket.remotePort;
@@ -420,7 +424,7 @@ final class _HttpConnection {
       final keepAlive =
           !_forceClose && typedHeaders.isKeepAlive(request.protocolVersion);
 
-      await RawShelfResponseSerializer.writeResponse(
+      final written = await RawShelfResponseSerializer.writeResponse(
         response,
         socket,
         keepAlive: keepAlive,
@@ -428,6 +432,7 @@ final class _HttpConnection {
         poweredBy: config.poweredBy,
       );
       _responseSent = true;
+      _unflushedBytes += written;
 
       _parser.reset();
 
@@ -438,11 +443,20 @@ final class _HttpConnection {
           _destroy();
           return;
         }
+        // Skip the per-response flush (it would gate the next pipelined
+        // request on the OS write draining) until enough bytes have queued
+        // that a slow client's buffer would grow unbounded otherwise.
+        if (_unflushedBytes >= $Limit.flushThreshold) {
+          _unflushedBytes = 0;
+          await socket.flush();
+          if (_isDestroyed || _clientClosed) return;
+        }
         if (!_readyForNextRequest.isCompleted) {
           _readyForNextRequest.complete();
           _startHeaderTimer();
         }
       } else {
+        // close() flushes any queued bytes before shutting down.
         await socket.close();
         _destroy();
       }

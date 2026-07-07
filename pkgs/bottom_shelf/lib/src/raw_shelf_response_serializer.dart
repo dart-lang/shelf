@@ -128,7 +128,10 @@ final class RawShelfResponseSerializer {
     return true;
   }
 
-  static Future<void> writeResponse(
+  /// Serializes [response] to [socket] and returns the number of bytes
+  /// written. Does NOT flush — the caller decides when to flush (see
+  /// `$Limit.flushThreshold`).
+  static Future<int> writeResponse(
     Response response,
     Socket socket, {
     required bool keepAlive,
@@ -201,8 +204,10 @@ final class RawShelfResponseSerializer {
     final headerBytes = Uint8List(_scratchPos)
       ..setRange(0, _scratchPos, _scratch);
 
+    var written = 0;
     if (requestMethod == 'HEAD' || contentLength == 0) {
       socket.add(headerBytes);
+      written += headerBytes.length;
       if (requestMethod == 'HEAD') {
         await response.read().listen((_) {}).asFuture<void>();
       }
@@ -226,11 +231,13 @@ final class RawShelfResponseSerializer {
             coalesced[pos] = $Chars.cr;
             coalesced[pos + 1] = $Chars.lf;
             socket.add(coalesced);
+            written += coalesced.length;
           } else {
             final coalesced = Uint8List(headerBytes.length + chunk.length);
             coalesced.setRange(0, headerBytes.length, headerBytes);
             coalesced.setRange(headerBytes.length, coalesced.length, chunk);
             socket.add(coalesced);
+            written += coalesced.length;
           }
         } else {
           if (isChunked) {
@@ -238,23 +245,28 @@ final class RawShelfResponseSerializer {
             builder.add(ascii.encode('${chunk.length.toRadixString(16)}\r\n'));
             builder.add(chunk);
             builder.add(_crlf);
-            socket.add(builder.takeBytes());
+            final bytes = builder.takeBytes();
+            socket.add(bytes);
+            written += bytes.length;
           } else {
             socket.add(chunk);
+            written += chunk.length;
           }
         }
       }
 
       if (isFirst) {
         socket.add(headerBytes);
+        written += headerBytes.length;
       }
 
       if (isChunked) {
         socket.add(_chunkedEnd);
+        written += _chunkedEnd.length;
       }
     }
 
-    await socket.flush();
+    return written;
   }
 
   static String _getStatusPhrase(int statusCode) => switch (statusCode) {
