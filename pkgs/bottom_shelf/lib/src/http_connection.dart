@@ -184,48 +184,16 @@ final class _HttpConnection {
             return;
           }
 
-          var contentLengthHeaderCount = 0;
-          var clValid = true;
-          for (var slice in requestHead.headerSlices) {
-            if (slice.key.matches($Header.contentLength)) {
-              contentLengthHeaderCount++;
-              final value = slice.value.asString();
-              if (value.isEmpty) {
-                clValid = false;
-              } else {
-                for (var i = 0; i < value.length; i++) {
-                  final c = value.codeUnitAt(i);
-                  if (c < 48 || c > 57) {
-                    clValid = false;
-                    break;
-                  }
-                }
-              }
-            }
-          }
-
-          if (contentLengthHeaderCount > 1 ||
-              !clValid ||
-              (contentLengthHeaderCount == 1 &&
+          if (typedHeaders.contentLengthHeaderCount > 1 ||
+              !typedHeaders.contentLengthDigitsValid ||
+              (typedHeaders.contentLengthHeaderCount == 1 &&
                   typedHeaders.contentLength == null)) {
             socket.add(ErrorResponse.badRequest.bytes);
             _destroy();
             return;
           }
 
-          var hasTransferEncoding = false;
-          var isChunked = false;
-          for (var slice in requestHead.headerSlices) {
-            if (slice.key.matches($Header.transferEncoding)) {
-              hasTransferEncoding = true;
-              final value = slice.value.asString().toLowerCase();
-              if (value.contains('chunked')) {
-                isChunked = true;
-              }
-            }
-          }
-
-          if (hasTransferEncoding && !isChunked) {
+          if (typedHeaders.hasTransferEncoding && !typedHeaders.isChunked) {
             socket.add(ErrorResponse.notImplemented.bytes);
             _flushCloseDestroy();
             return;

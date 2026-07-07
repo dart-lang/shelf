@@ -97,11 +97,10 @@ measured deltas live in `docs/prototypes/`.*
       BLOCKED on a backpressure decision: without it a slow client + fast
       handler can grow the socket buffer unboundedly (flush every N
       responses? byte-count guard in the connection?).
-- [ ] **Fuse the ~8 per-request header scans into one pass — measured
-      +2.9%** (`docs/prototypes/p2_fusedscan.patch`): single scan in the
-      TypedHeaders constructor replaces separate walks + the per-request
-      `_cache` map. Duplicate-counting semantics preserved (verified by
-      smuggling/robustness tests). Safe to land as-is.
+- [x] **Fuse the ~8 per-request header scans into one pass — measured
+      +2.9%**: single scan in the TypedHeaders constructor replaces
+      separate walks + the per-request `_cache` map. Duplicate-counting
+      semantics preserved (verified by smuggling/robustness tests). Landed.
 - [x] **Set `TCP_NODELAY` on accepted sockets** — landed in `e7e8621`.
       No effect on loopback benchmarks; matters on real networks.
 - [x] **Micro-fixes** (method byte-match, const '1.1', static identity fn,
