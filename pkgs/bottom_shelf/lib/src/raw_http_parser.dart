@@ -86,9 +86,7 @@ final class RawHttpParser {
       switch (_state) {
         case _$State.method:
           if (byte == $Chars.sp) {
-            _method = _getMethod(
-              Uint8List.sublistView(_buffer, 0, _bufferPos - 1),
-            );
+            _method = _getMethod(_bufferPos - 1);
             _currentFieldStart = _bufferPos;
             _state = _$State.url;
           } else {
@@ -126,16 +124,27 @@ final class RawHttpParser {
             if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
               throw const BadRequestException('Bare line feed not allowed');
             }
-            final v = String.fromCharCodes(
-              _buffer,
-              _currentFieldStart,
-              _bufferPos - 2,
-            ).trim();
-            final versionStr = v.startsWith('HTTP/') ? v.substring(5) : v;
-            if (!versionStr.startsWith('1.')) {
-              throw const BadRequestException('Unsupported HTTP version');
+            final start = _currentFieldStart;
+            final end = _bufferPos - 2;
+            if (end - start == 8 &&
+                _buffer[start] == 72 && // H
+                _buffer[start + 1] == 84 && // T
+                _buffer[start + 2] == 84 && // T
+                _buffer[start + 3] == 80 && // P
+                _buffer[start + 4] == 47 && // /
+                _buffer[start + 5] == 49 && // 1
+                _buffer[start + 6] == 46 && // .
+                _buffer[start + 7] == 49) {
+              // 1
+              _version = '1.1';
+            } else {
+              final v = String.fromCharCodes(_buffer, start, end).trim();
+              final versionStr = v.startsWith('HTTP/') ? v.substring(5) : v;
+              if (!versionStr.startsWith('1.')) {
+                throw const BadRequestException('Unsupported HTTP version');
+              }
+              _version = versionStr;
             }
-            _version = versionStr;
             _currentFieldStart = _bufferPos;
             _state = _$State.headerKey;
           } else {
@@ -210,11 +219,23 @@ final class RawHttpParser {
     return null;
   }
 
-  String _getMethod(Uint8List bytes) => switch (bytes) {
-    [71, 69, 84] => 'GET',
-    [80, 79, 83, 84] => 'POST',
-    [80, 85, 84] => 'PUT',
-    [68, 69, 76, 69, 84, 69] => 'DELETE',
-    _ => String.fromCharCodes(bytes),
-  };
+  /// The method always starts at index 0 of [_buffer] and ends at [end].
+  /// Byte comparisons avoid allocating a view for the common methods.
+  String _getMethod(int end) {
+    final b = _buffer;
+    return switch (end) {
+      3 when b[0] == 71 && b[1] == 69 && b[2] == 84 => 'GET',
+      3 when b[0] == 80 && b[1] == 85 && b[2] == 84 => 'PUT',
+      4 when b[0] == 80 && b[1] == 79 && b[2] == 83 && b[3] == 84 => 'POST',
+      6
+          when b[0] == 68 &&
+              b[1] == 69 &&
+              b[2] == 76 &&
+              b[3] == 69 &&
+              b[4] == 84 &&
+              b[5] == 69 =>
+        'DELETE',
+      _ => String.fromCharCodes(b, 0, end),
+    };
+  }
 }

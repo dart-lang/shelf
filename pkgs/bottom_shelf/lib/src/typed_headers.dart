@@ -28,7 +28,9 @@ final class TypedHeaders {
       _getTypedHeader($Header.ifModifiedSince, parseHttpDate);
 
   /// Returns the Host header.
-  String? get host => _getTypedHeader($Header.host, (s) => s);
+  String? get host => _getTypedHeader($Header.host, _identity);
+
+  static String _identity(String s) => s;
 
   /// Returns true if the connection should be kept alive.
   bool isKeepAlive(String protocolVersion) {

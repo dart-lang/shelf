@@ -19,8 +19,11 @@ enum ErrorResponse {
 
   const ErrorResponse(this.code, this.phrase);
 
-  Uint8List get bytes =>
-      ascii.encode('HTTP/1.1 $code $phrase\r\nConnection: close\r\n\r\n');
+  static final _bytesCache = <ErrorResponse, Uint8List>{};
+
+  Uint8List get bytes => _bytesCache[this] ??= ascii.encode(
+    'HTTP/1.1 $code $phrase\r\nConnection: close\r\n\r\n',
+  );
 }
 
 /// Exception thrown when a request is malformed or violates protocol limits.

@@ -64,6 +64,7 @@ final class RawShelfServer extends ServerConfig {
   }
 
   void _handleConnection(Socket socket) {
+    socket.setOption(SocketOption.tcpNoDelay, true);
     handleHttpConnection(socket: socket, config: this);
   }
 

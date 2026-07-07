@@ -18,6 +18,8 @@ import 'raw_shelf_response_serializer.dart';
 import 'server_config.dart';
 import 'typed_headers.dart';
 
+final _emptyBytes = Uint8List(0);
+
 /// Starts handling a single HTTP connection for `RawShelfServer`.
 void handleHttpConnection({
   required Socket socket,
@@ -54,6 +56,13 @@ final class _HttpConnection {
   _HttpConnection({required this.socket, required this.config})
     : remoteAddress = socket.remoteAddress,
       remotePort = socket.remotePort;
+
+  /// Constant for the connection's lifetime — shared across all requests.
+  late final _connectionInfo = _HttpConnectionInfo(
+    config.serverSocket.port,
+    remoteAddress,
+    remotePort,
+  );
 
   void start() {
     _startHeaderTimer();
@@ -181,9 +190,16 @@ final class _HttpConnection {
             if (slice.key.matches($Header.contentLength)) {
               contentLengthHeaderCount++;
               final value = slice.value.asString();
-              if (value.isEmpty ||
-                  !value.codeUnits.every((c) => c >= 48 && c <= 57)) {
+              if (value.isEmpty) {
                 clValid = false;
+              } else {
+                for (var i = 0; i < value.length; i++) {
+                  final c = value.codeUnitAt(i);
+                  if (c < 48 || c > 57) {
+                    clValid = false;
+                    break;
+                  }
+                }
               }
             }
           }
@@ -238,12 +254,16 @@ final class _HttpConnection {
 
           Uri uri;
           try {
-            uri = Uri.parse(requestHead.url);
-            if (!uri.hasScheme) {
-              final path = requestHead.url.startsWith('/')
-                  ? requestHead.url
-                  : '/${requestHead.url}';
-              uri = Uri.parse('http://$effectiveHost$path');
+            final rawUrl = requestHead.url;
+            if (rawUrl.startsWith('/')) {
+              // Origin-form (the common case): can never have a scheme, so
+              // skip straight to the single absolute-URL parse.
+              uri = Uri.parse('http://$effectiveHost$rawUrl');
+            } else {
+              uri = Uri.parse(rawUrl);
+              if (!uri.hasScheme) {
+                uri = Uri.parse('http://$effectiveHost/$rawUrl');
+              }
             }
           } on FormatException catch (e, st) {
             throw BadRequestException(
@@ -254,10 +274,9 @@ final class _HttpConnection {
           }
 
           final consumedInHeaders = requestHead.consumedInLastChunk;
-          final remainingInChunk = Uint8List.sublistView(
-            currentData,
-            consumedInHeaders,
-          );
+          final remainingInChunk = consumedInHeaders == currentData.length
+              ? _emptyBytes
+              : Uint8List.sublistView(currentData, consumedInHeaders);
 
           final contentLength = typedHeaders.contentLength ?? 0;
 
@@ -365,11 +384,7 @@ final class _HttpConnection {
               body: requestBody,
               context: {
                 $Context.rawHeaders: typedHeaders,
-                $Context.connectionInfo: _HttpConnectionInfo(
-                  config.serverSocket.port,
-                  remoteAddress,
-                  remotePort,
-                ),
+                $Context.connectionInfo: _connectionInfo,
               },
               onHijack: theHijackCallback,
             );
@@ -429,7 +444,9 @@ final class _HttpConnection {
     String originalMethod,
   ) async {
     try {
-      final response = await config.handler(request);
+      // Avoid a microtask hop when the handler completes synchronously.
+      final result = config.handler(request);
+      final response = result is Response ? result : await result;
       if (_isHijacked) return;
 
       final keepAlive =
@@ -447,7 +464,7 @@ final class _HttpConnection {
       _parser.reset();
 
       if (keepAlive) {
-        await bodyDone.future;
+        if (!bodyDone.isCompleted) await bodyDone.future;
         if (_forceClose) {
           await socket.close();
           _destroy();
