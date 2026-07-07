@@ -1,18 +1,25 @@
 # `bottom_shelf`: Thorough Architectural & Performance Analysis
 
+> **2026-07-06 correction pass**: the benchmark figures in §2 were produced
+> with `stress_tester.dart` (unpinned, JIT, flawed response counting) and
+> understate real throughput by ~4x. Current measured numbers and the honest
+> harness live in `BENCHMARKS.md`; open follow-ups (including two serious
+> correctness bugs found in review) live in `ROADMAP.md` Phases 5–8.
+> Overstated claims below have been annotated in place.
+
 ## Executive Summary
 
 `bottom_shelf` is an experimental, high-performance HTTP server adapter for Dart's `shelf` web server ecosystem. Unlike standard Shelf adapters (such as `shelf_io`) which rely on `dart:io`'s built-in `HttpServer`, `HttpRequest`, and `HttpResponse` classes, `bottom_shelf` operates directly on raw `ServerSocket` and TCP `Socket` streams. 
 
-By eliminating the intermediate abstraction layers and object allocations of `dart:io`, `bottom_shelf` achieves significantly higher throughput and lower memory latency while maintaining 100% plug-and-play compatibility with standard `shelf.Handler`, `shelf.Pipeline`, and `shelf.Middleware` contracts.
+By eliminating the intermediate abstraction layers and object allocations of `dart:io`, `bottom_shelf` achieves significantly higher throughput and lower memory latency while maintaining plug-and-play compatibility with standard `shelf.Handler`, `shelf.Pipeline`, and `shelf.Middleware` contracts. (*Caveat: compatibility currently rests on importing `package:shelf/src/headers.dart` — a private API; see ROADMAP.md Phase 8. Also, `LazyByteHeaderMap[]` returns mutable lists where shelf's `Headers` returns unmodifiable ones.*)
 
-In this research session, we conducted a comprehensive architectural audit, benchmark baseline evaluation, and targeted surgical optimization of the `bottom_shelf` package. Our optimizations increased baseline request throughput by **~14% (~10,800 RPS → ~12,300 RPS)** on benchmark workloads without sacrificing security, correctness, or backwards compatibility.
+In this research session, we conducted a comprehensive architectural audit, benchmark baseline evaluation, and targeted surgical optimization of the `bottom_shelf` package. Our optimizations increased baseline request throughput by **~14%** on benchmark workloads without sacrificing security, correctness, or backwards compatibility. (*The absolute RPS figures originally quoted here — ~10,800 → ~12,300 — were measurement artifacts of `stress_tester.dart`; properly measured throughput is ~53k RPS, 3.4x shelf_io. See `BENCHMARKS.md`. The ~14% relative improvement is directionally plausible but was never re-verified with a sound harness.*)
 
 ---
 
 ## 1. Architectural Overview
 
-The core architecture of `bottom_shelf` is designed around byte-slice zero-copy parsing and lazy data hydration. The request-response lifecycle is divided across several specialized internal modules:
+The core architecture of `bottom_shelf` is designed around byte-slice parsing (avoiding intermediate string allocation; incoming bytes are still copied once into the parser buffer) and lazy data hydration. The request-response lifecycle is divided across several specialized internal modules:
 
 ```mermaid
 graph TD
@@ -33,7 +40,7 @@ graph TD
    Manages the state machine of an individual TCP socket connection. It orchestrates HTTP/1.1 keep-alive request pipelining, socket pause/resume backpressure mechanics, socket hijacking (`onHijack`), and body streaming controllers (`FixedLengthBodyController` and `ChunkedBodyController`).
 
 3. **`RawHttpParser` (`raw_http_parser.dart`)**:
-   A minimal, zero-allocation HTTP/1.1 request head parser. Instead of converting incoming network bytes into intermediate Dart `String` objects, it accumulates bytes in a fixed buffer and constructs `HeaderByteSlice` pointers (`start` and `end` indices into the byte array).
+   A minimal, low-allocation HTTP/1.1 request head parser. Instead of converting incoming network bytes into intermediate Dart `String` objects, it accumulates bytes in a fixed buffer and constructs `HeaderByteSlice` pointers (`start` and `end` indices into the byte array). (*Not zero-allocation: it still allocates 3 objects per header line, the URL string, version strings, a slice-list copy, and a result record per request — see ROADMAP.md Phase 6.*)
 
 4. **`TypedHeaders` & `HeaderByteSlice` (`typed_headers.dart` & `header_slices.dart`)**:
    Provides zero-allocation ASCII case-insensitive matching (`matches` and `matchesKey`). Common header lookups (such as `Host`, `Content-Length`, and `Transfer-Encoding`) evaluate bytes directly without hashing strings.
@@ -53,6 +60,14 @@ During our analysis, we identified several hot-path allocation bottlenecks and C
 ### Baseline vs. Optimized Throughput
 Workload: `stress_tester.dart` (50 concurrent keep-alive TCP connections over 5 seconds against `raw_bench_server.dart` returning `200 OK "hello world"`).
 
+> **Correction (2026-07-06)**: these absolute numbers are unreliable —
+> `stress_tester.dart` counts socket `data` events rather than parsed HTTP
+> responses, divides by integer seconds, and was run unpinned under JIT.
+> Properly measured (AOT, CPU-pinned, external load generator), the same
+> server does **~53k RPS** — 3.4x shelf_io and 2.9x raw dart:io. See
+> `BENCHMARKS.md`. The relative improvement claimed below is plausible but
+> unverified.
+
 | Metric | Baseline (`bottom_shelf` HEAD) | Optimized (`bottom_shelf`) | Improvement |
 | :--- | :---: | :---: | :---: |
 | **Total Requests Completed** | 54,298 | 61,514 | **+13.3%** |
@@ -71,9 +86,9 @@ Workload: `stress_tester.dart` (50 concurrent keep-alive TCP connections over 5 
 #### 3. Date Header Caching & Response Buffer Coalescing (`raw_shelf_response_serializer.dart`)
 * **Bottleneck**: Every HTTP response was invoking `DateTime.now()`, formatting a full RFC 1123 date string (`HttpDate.format`), allocating `Map.from(response.headersAll)`, and executing separate `socket.add` stream calls.
 * **Surgical Fix**: 
-  1. Implemented 1-second epoch date string caching (`_getCachedDate`), reducing date formatting CPU cycles by 99.9%.
+  1. Implemented 1-second epoch date string caching (`_getCachedDate`), so the RFC 1123 formatting runs at most once per second. (*`DateTime.now()` still allocates per response even on cache hit.*)
   2. Iterates over `response.headersAll` entries directly without allocating copy maps.
-  3. Coalesces the HTTP status line, headers, and the first chunk of non-chunked response bodies into a single `BytesBuilder(copy: false)` payload. This reduces outbound TCP `write` syscalls to exactly **1 per HTTP response** for small payloads.
+  3. Coalesces the HTTP status line, headers, and the first chunk of non-chunked response bodies into a single `BytesBuilder(copy: false)` payload, reducing `socket.add` calls to one per small response. (*Whether that maps to exactly one `write` syscall is up to dart:io's socket consumer and has not been verified with strace.*)
 
 ---
 
