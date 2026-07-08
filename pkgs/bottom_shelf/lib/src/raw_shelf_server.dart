@@ -59,13 +59,44 @@ final class RawShelfServer extends ServerConfig {
       automaticHeadMethodSupport,
       poweredBy,
     );
-    serverSocket.listen(server._handleConnection);
+    serverSocket.listen(
+      server._handleConnection,
+      onError: (Object e, StackTrace st) {
+        print('*** ServerSocket listen error: $e');
+        server.onConnectionError?.call(
+          'Error accepting connection',
+          e,
+          st,
+          remoteAddress: InternetAddress.anyIPv4,
+          remotePort: 0,
+        );
+      },
+    );
     return server;
   }
 
   void _handleConnection(Socket socket) {
-    socket.setOption(SocketOption.tcpNoDelay, true);
-    handleHttpConnection(socket: socket, config: this);
+    InternetAddress? remoteAddress;
+    int? remotePort;
+    try {
+      remoteAddress = socket.remoteAddress;
+      remotePort = socket.remotePort;
+      socket.setOption(SocketOption.tcpNoDelay, true);
+      handleHttpConnection(socket: socket, config: this);
+    } catch (e, st) {
+      if (onConnectionError != null) {
+        onConnectionError!.call(
+          'Error handling connection accept',
+          e,
+          st,
+          remoteAddress: remoteAddress ?? InternetAddress.anyIPv4,
+          remotePort: remotePort ?? 0,
+        );
+      }
+      try {
+        socket.destroy();
+      } catch (_) {}
+    }
   }
 
   Future<void> close() => serverSocket.close();

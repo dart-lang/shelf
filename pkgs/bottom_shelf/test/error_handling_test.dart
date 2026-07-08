@@ -211,4 +211,66 @@ void main() {
     final exitCode = await process.exitCode;
     expect(exitCode, isNot(0));
   });
+
+  test(
+    'client reset during response stream write does not crash server',
+    () async {
+      final server = await RawShelfServer.serve(
+        (request) {
+          if (request.url.path == 'second') {
+            return Response.ok('ok');
+          }
+          final controller = StreamController<List<int>>();
+          Timer.periodic(const Duration(milliseconds: 10), (timer) {
+            if (controller.isClosed) {
+              timer.cancel();
+              return;
+            }
+            try {
+              controller.add('chunk'.codeUnits);
+            } catch (_) {
+              timer.cancel();
+            }
+          });
+          return Response.ok(controller.stream);
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      socket.write(
+        'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+      );
+      await socket.flush();
+
+      final completer = Completer<void>();
+      socket.listen(
+        (data) {
+          if (!completer.isCompleted) {
+            completer.complete();
+            socket.destroy();
+          }
+        },
+        onError: (_) {},
+        onDone: () {},
+      );
+
+      await completer.future;
+
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      final secondSocket = await Socket.connect('localhost', server.port);
+      secondSocket.write(
+        'GET /second HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+      );
+      await secondSocket.flush();
+
+      final response = await utf8.decodeStream(secondSocket);
+      expect(response, contains('HTTP/1.1 200 OK'));
+      expect(response, contains('ok'));
+      await secondSocket.close();
+    },
+  );
 }

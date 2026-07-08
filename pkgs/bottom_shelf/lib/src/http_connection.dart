@@ -59,7 +59,9 @@ final class _HttpConnection {
 
   _HttpConnection({required this.socket, required this.config})
     : remoteAddress = socket.remoteAddress,
-      remotePort = socket.remotePort;
+      remotePort = socket.remotePort {
+    socket.done.catchError((Object _) {});
+  }
 
   /// Constant for the connection's lifetime — shared across all requests.
   late final _connectionInfo = _HttpConnectionInfo(
@@ -117,8 +119,8 @@ final class _HttpConnection {
 
   void _flushCloseDestroy() {
     socket.flush().then((_) {
-      socket.close().then((_) => _destroy());
-    });
+      socket.close().then((_) => _destroy(), onError: (Object _) => _destroy());
+    }, onError: (Object _) => _destroy());
   }
 
   void _startHeaderTimer() {
@@ -466,10 +468,19 @@ final class _HttpConnection {
         if (!_responseSent) {
           socket.add(ErrorResponse.internalServerError.bytes);
         }
-        unawaited(socket.close().then((_) => _destroy()));
+        unawaited(
+          socket.close().then(
+            (_) => _destroy(),
+            onError: (Object _) => _destroy(),
+          ),
+        );
       }
     } catch (e, st) {
       if (!_isHijacked && !_isDestroyed) {
+        if (e is SocketException) {
+          _destroy();
+          return;
+        }
         if (!_responseSent) {
           socket.add(ErrorResponse.internalServerError.bytes);
         }
@@ -480,7 +491,12 @@ final class _HttpConnection {
           remoteAddress: remoteAddress,
           remotePort: remotePort,
         );
-        unawaited(socket.close().then((_) => _destroy()));
+        unawaited(
+          socket.close().then(
+            (_) => _destroy(),
+            onError: (Object _) => _destroy(),
+          ),
+        );
       }
     }
   }
@@ -511,17 +527,26 @@ final class _HttpConnection {
       // ignore: only_throw_errors
       throw e;
     } else {
-      if (!_isHijacked && !_isDestroyed && !_responseSent) {
-        socket.add(ErrorResponse.internalServerError.bytes);
+      if (!_isHijacked && !_isDestroyed) {
+        if (e is SocketException) {
+          _destroy();
+          return;
+        }
+        if (!_responseSent) {
+          socket.add(ErrorResponse.internalServerError.bytes);
+        }
+        config.onConnectionError?.call(
+          'Error in handler',
+          e,
+          st,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
+        );
+        socket.close().then(
+          (_) => _destroy(),
+          onError: (Object _) => _destroy(),
+        );
       }
-      config.onConnectionError?.call(
-        'Error in handler',
-        e,
-        st,
-        remoteAddress: remoteAddress,
-        remotePort: remotePort,
-      );
-      socket.close().then((_) => _destroy());
     }
   }
 }

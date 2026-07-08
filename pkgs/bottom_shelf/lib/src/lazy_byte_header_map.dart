@@ -4,7 +4,9 @@
 
 import 'dart:collection';
 import 'package:http_parser/http_parser.dart';
+// ignore: implementation_imports
 import 'package:shelf/src/headers.dart';
+// ignore: implementation_imports
 import 'package:shelf/src/util.dart';
 import 'header_slices.dart';
 
