@@ -71,6 +71,20 @@ fixed (see Phase 6).
   - Parser accepts any bytes except NUL/CR/LF/SP in the method; `G@T /`
     reaches the handler. dart:io rejects. Low priority, spec laxity.
 
+- [ ] **Unhandled peer reset on the response-write path crashes the isolate**
+  - The read path guards resets (`start()`: `socket.listen(onError: _destroy)`),
+    but the write path does not: `_flushCloseDestroy` calls
+    `socket.flush().then(...)` with no `.catchError`. A client RST during the
+    response flush/write surfaces as an unhandled
+    `SocketException: Connection reset by peer (errno 104)` and — single
+    isolate — takes the whole server down. Repro (via gcp-http-bench, real
+    two-VM NIC): a wrk connection-count sweep sends an RST when it recycles the
+    pool between steps, killing the server at `/plaintext` @ 16 conns; `ab -k`
+    on loopback never hit it. Fix: catch ECONNRESET/EPIPE on flush/write/close
+    and `_destroy()` that connection (dart:io `HttpServer` behavior), or route
+    it through the existing `onConnectionError`/`onAsyncError` hooks so a benign
+    disconnect is non-fatal by default.
+
 ## Phase 6: Measured performance work
 *Baseline (2026-07-06, see `docs/BENCHMARKS.md`): ~53k RPS vs shelf_io's
 ~15.6k (3.4x) and raw dart:io's ~18k (2.9x). RE-RANKED 2026-07-07 by the
