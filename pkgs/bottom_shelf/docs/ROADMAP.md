@@ -71,7 +71,7 @@ fixed (see Phase 6).
   - Parser accepts any bytes except NUL/CR/LF/SP in the method; `G@T /`
     reaches the handler. dart:io rejects. Low priority, spec laxity.
 
-- [ ] **Unhandled peer reset on the response-write path crashes the isolate**
+- [x] **Unhandled peer reset on the response-write path crashes the isolate**
   - The read path guards resets (`start()`: `socket.listen(onError: _destroy)`),
     but the write path does not: `_flushCloseDestroy` calls
     `socket.flush().then(...)` with no `.catchError`. A client RST during the
