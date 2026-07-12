@@ -123,24 +123,26 @@ measured deltas live in `docs/prototypes/`.*
 - [x] **Kill the double `Uri.parse`** — landed in `e7e8621` (origin-form
       fast path). *No measurable RPS effect on its own.* A bounded
       `host+path → Uri` cache remains unexplored.
-- [ ] **Routed-dispatch throughput gap vs raw dart:io** — measured via
-      gcp-http-bench 2026-07-11 (two-VM NIC, single isolate, 5 interleaved
-      trials, `c2d-standard-4`, COLLOCATED). On `/plaintext` and `/json`
-      bottom_shelf ties raw dart:io at saturation (both ~22–23k RPS), but on the
-      routed `/user/<id>` endpoint it plateaus ~19k while dart:io reaches ~22k —
-      a repeatable ~15% gap, error bars non-overlapping from 8 connections up.
-      bottom_shelf still beats shelf_io ~1.7x on the same endpoint, so the
-      adapter win holds; the gap is specifically vs dart:io. VERIFY BEFORE
-      TREATING AS AN ADAPTER BUG: (1) the `/user/<id>` target stacks
-      `shelf_router` on the adapter, whereas the dart:io baseline routes with a
-      hand-written switch — so this may be `shelf_router` dispatch cost, not
-      bottom_shelf's path. Isolate it by re-benchmarking bottom_shelf with a
-      manual router (no shelf_router) before concluding anything. (2) The ~24k
-      ceiling is a single core and is not yet proven server-bound vs
-      client/NIC-bound (the harness's `iperf3`/`mpstat` bottleneck check is
-      pending). If it survives both, investigate extra per-request
-      allocation/async work on the routed hot path. Data:
-      gcp-http-bench `results/phase3-three-way.md`.
+- [x] **Routed-dispatch throughput gap vs raw dart:io — RESOLVED: it's
+      `shelf_router`, not the adapter.** gcp-http-bench (two-VM NIC, single
+      isolate, 5 interleaved trials, `c2d-standard-4`, COLLOCATED) measured
+      bottom_shelf tying raw dart:io on `/plaintext`/`/json` at saturation
+      (~22–23k RPS) but trailing on the routed `/user/<id>` (~19k vs ~22k, a
+      repeatable ~15% gap, error bars non-overlapping from 8 connections up).
+      Isolated 2026-07-11 with an in-process router micro-benchmark (no adapter,
+      no sockets): shelf_router's PARAMETERIZED route costs +29% over its own
+      STATIC route (6261 vs 4857 ns/op) and ~2x a hand-written manual dispatch
+      (2982 ns/op) on the same `/user/42`. The adapter does identical work for
+      `/json` and `/user/<id>` on one server, so a static→parameterized penalty
+      can only come from the routing layer — bottom_shelf is not at fault (it
+      still beats shelf_io ~1.7x on that endpoint; both pay the shelf_router
+      tax). The cost is shelf_router's per-hit `RegExp.firstMatch` + params-map
+      alloc + `request.change(context: {...})` (a fresh Request + merged context
+      map on every routed request, static routes included) + dynamic handler
+      invocation — an optimization target in `shelf_router`, outside
+      bottom_shelf's scope. NB the absolute ~24k ceiling is still single-core
+      and not yet proven server- vs client/NIC-bound. Data: gcp-http-bench
+      `results/phase3-three-way.md`.
 - [ ] **Fix or replace `benchmark/stress_tester.dart`** — it counts socket
       data events as responses (:69) and divides by integer seconds (:52).
       Either parse responses properly or delete it in favor of the
