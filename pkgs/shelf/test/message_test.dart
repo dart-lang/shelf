@@ -95,6 +95,22 @@ void main() {
         'content-length': ['0'],
       });
     });
+
+    test('multiple cookie header values are joined with "; "', () {
+      final message = _createMessage(
+        headers: {
+          'Cookie': ['session=123', 'theme=dark'],
+        },
+      );
+      expect(
+        message.headers,
+        containsPair('cookie', 'session=123; theme=dark'),
+      );
+      expect(
+        message.headersAll,
+        containsPair('cookie', ['session=123', 'theme=dark']),
+      );
+    });
   });
 
   group('context', () {
