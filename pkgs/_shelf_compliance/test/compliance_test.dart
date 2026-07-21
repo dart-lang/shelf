@@ -110,17 +110,20 @@ void _defineComplianceTests(String name, String serverPath) {
       );
     }
 
+    // Note: In package:test, tearDownAll callbacks execute in reverse
+    // registration order (LIFO). We register cleanup first so that summary
+    // verification runs before temp directory deletion.
+    tearDownAll(() {
+      print('Cleaning up temp directory: ${tempDir.path}');
+      tempDir.deleteSync(recursive: true);
+    });
+
     tearDownAll(() {
       _verifySummary(
         name: name,
         tempDir: tempDir,
         hasRegressions: hasRegressions,
       );
-    });
-
-    tearDownAll(() {
-      print('Cleaning up temp directory: ${tempDir.path}');
-      tempDir.deleteSync(recursive: true);
     });
   });
 }
@@ -293,8 +296,8 @@ void _testCompliance({
 
     if (!goldenReport.existsSync()) {
       fail(
-        'Golden report missing for $category! Please run tool/update_goldens.dart '
-        'to create it.',
+        'Golden report missing for $category! Please run '
+        'tool/update_goldens.dart to create it.',
       );
     }
 

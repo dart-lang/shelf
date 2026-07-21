@@ -2,10 +2,10 @@
 
 | Category | Count |
 | --- | --- |
-| Total | 215 |
+| Total | 213 |
 | Passed | 109 |
 | Failed | 49 |
-| Warnings | 57 |
+| Warnings | 55 |
 | Errors | 0 |
 
 ## Failed or Warning Results
@@ -19,7 +19,6 @@
 | CAP-INM-UNQUOTED | Capabilities | Warn | If-None-Match with unquoted ETag |
 | CAP-INM-WILDCARD | Capabilities | Warn | If-None-Match: * on existing resource returns 304 |
 | CAP-LAST-MODIFIED-304 | Capabilities | Warn | Last-Modified conditional GET returns 304 Not Modified |
-| COMP-405-ALLOW | Compliance | Warn | 405 response must include an Allow header |
 | COMP-ACCEPT-NONSENSE | Compliance | Warn | Unrecognized Accept value — server may return 406 or default representation |
 | COMP-ASTERISK-WITH-GET | Compliance | Fail | Asterisk-form (*) request-target with GET must be rejected |
 | COMP-CHUNKED-NO-FINAL | Compliance | Fail | Chunked body without zero terminator — incomplete transfer |
@@ -36,7 +35,6 @@
 | COMP-LEADING-CRLF | Compliance | Warn | Leading CRLF before request-line — server may ignore per RFC |
 | COMP-METHOD-CASE | Compliance | Fail | Lowercase method 'get' — methods are case-sensitive per RFC |
 | COMP-METHOD-TRACE | Compliance | Fail | TRACE request — should be disabled in production |
-| COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
 | COMP-OPTIONS-ALLOW | Compliance | Fail | OPTIONS response should include Allow header listing supported methods |
 | COMP-OPTIONS-STAR | Compliance | Fail | OPTIONS * is the only valid asterisk-form request |
 | COMP-POST-CL-UNDERSEND | Compliance | Fail | POST with Content-Length: 10 but only 5 bytes sent — incomplete body |
