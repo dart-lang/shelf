@@ -34,7 +34,15 @@ void _printGithubWarning(String filePath, String title, String message) {
   print('::warning file=$filePath,title=$title::$message');
 }
 
+final _improvements = <Map<String, String>>[];
+final _regressions = <Map<String, String>>[];
+final _benignChanges = <Map<String, String>>[];
+var _totalProbeTests = 0;
+var _matchingBaseline = 0;
+
 void main() {
+  tearDownAll(_writeGithubStepSummary);
+
   test('Verify categories list is complete', () async {
     final helpProcess = await TestProcess.start('dotnet', [
       'run',
@@ -102,49 +110,159 @@ void _defineComplianceTests(String name, String serverPath) {
       );
     }
 
-    tearDownAll(() async {
-      print('Generating combined summary for $name...');
-      final reportsDir = Directory(p.join(tempDir.path, 'reports', name));
-      final summary = generateSummary(reportsDir);
-
-      final goldenSummary = File('${name}_summary.md');
-
-      final sanitizedSummary = canonicalize(
-        summary,
-        0,
-      ); // No port to sanitize in summary usually
-
-      if (!goldenSummary.existsSync()) {
-        fail(
-          'Golden summary missing! Please run tool/update_goldens.dart to '
-          'create it.',
-        );
-      }
-      final expectedSummary = goldenSummary.readAsStringSync();
-      if (sanitizedSummary != expectedSummary) {
-        if (hasRegressions) {
-          print('MISMATCH in summary!');
-          print('Generated summary in temp dir.');
-          print('Golden summary: ${goldenSummary.path}');
-          fail(
-            'Generated summary does not match golden and there were '
-            'regressions.',
-          );
-        } else {
-          _printGithubWarning(
-            'pkgs/_shelf_compliance/${name}_summary.md',
-            'Compliance Summary Improved!',
-            'The summary improved or changed benignly but does not match the '
-                'golden. Run tool/update_goldens.dart to tighten.',
-          );
-        }
-      }
-
-      // Clean up temp directory
+    // Note: In package:test, tearDownAll callbacks execute in reverse
+    // registration order (LIFO). We register cleanup first so that summary
+    // verification runs before temp directory deletion.
+    tearDownAll(() {
       print('Cleaning up temp directory: ${tempDir.path}');
       tempDir.deleteSync(recursive: true);
     });
+
+    tearDownAll(() {
+      _verifySummary(
+        name: name,
+        tempDir: tempDir,
+        hasRegressions: hasRegressions,
+      );
+    });
   });
+}
+
+void _verifySummary({
+  required String name,
+  required Directory tempDir,
+  required bool hasRegressions,
+}) {
+  print('Generating combined summary for $name...');
+  final reportsDir = Directory(p.join(tempDir.path, 'reports', name));
+  final summary = generateSummary(reportsDir);
+
+  final goldenSummary = File('${name}_summary.md');
+
+  final sanitizedSummary = canonicalize(
+    summary,
+    0,
+  ); // No port to sanitize in summary usually
+
+  if (!goldenSummary.existsSync()) {
+    fail(
+      'Golden summary missing! Please run tool/update_goldens.dart to '
+      'create it.',
+    );
+  }
+  final expectedSummary = goldenSummary.readAsStringSync();
+  if (sanitizedSummary != expectedSummary) {
+    if (hasRegressions) {
+      print('MISMATCH in summary!');
+      print('Generated summary in temp dir.');
+      print('Golden summary: ${goldenSummary.path}');
+      fail(
+        'Generated summary does not match golden and there were '
+        'regressions.',
+      );
+    } else {
+      _printGithubWarning(
+        'pkgs/_shelf_compliance/${name}_summary.md',
+        'Compliance Summary Improved!',
+        'The summary improved or changed benignly but does not match the '
+            'golden. Run tool/update_goldens.dart to tighten.',
+      );
+    }
+  }
+}
+
+void _writeGithubStepSummary() {
+  final stepSummaryPath = Platform.environment['GITHUB_STEP_SUMMARY'];
+  if (stepSummaryPath == null) return;
+
+  final file = File(stepSummaryPath);
+  final buffer = StringBuffer();
+  buffer.writeln('## 🛡️ HTTP/1.1 Compliance Test Summary');
+  buffer.writeln();
+
+  if (_regressions.isNotEmpty) {
+    buffer.writeln('### ❌ Regressions Detected');
+    buffer.writeln(
+      'The following tests regressed compared to the baseline. '
+      'The build has been marked as failed.',
+    );
+    buffer.writeln();
+    buffer.writeln(
+      '| Test ID | Category | Baseline Verdict | Actual Verdict |',
+    );
+    buffer.writeln('| --- | --- | --- | --- |');
+    for (var r in _regressions) {
+      buffer.writeln(
+        '| `${r['id']}` | ${r['category']} | '
+        '**${r['expected']}** | **${r['actual']}** |',
+      );
+    }
+    buffer.writeln();
+  }
+
+  if (_improvements.isNotEmpty) {
+    buffer.writeln('### 🚀 Improvements Detected');
+    buffer.writeln(
+      'The following tests improved compared to the baseline! '
+      'Please run `dart run tool/update_goldens.dart` in '
+      '`pkgs/_shelf_compliance` to update the goldens.',
+    );
+    buffer.writeln();
+    buffer.writeln(
+      '| Test ID | Category | Baseline Verdict | Actual Verdict |',
+    );
+    buffer.writeln('| --- | --- | --- | --- |');
+    for (var imp in _improvements) {
+      buffer.writeln(
+        '| `${imp['id']}` | ${imp['category']} | '
+        '**${imp['expected']}** | **${imp['actual']}** |',
+      );
+    }
+    buffer.writeln();
+  }
+
+  if (_benignChanges.isNotEmpty) {
+    buffer.writeln('### ⚠️ Benign Changes Detected');
+    buffer.writeln(
+      'The following tests had benign changes (verdicts remain '
+      'unchanged). Please run `dart run tool/update_goldens.dart` '
+      'to update.',
+    );
+    buffer.writeln();
+    buffer.writeln('| Test ID | Category | Verdict |');
+    buffer.writeln('| --- | --- | --- |');
+    for (var bc in _benignChanges) {
+      buffer.writeln(
+        '| `${bc['id']}` | ${bc['category']} | **${bc['verdict']}** |',
+      );
+    }
+    buffer.writeln();
+  }
+
+  if (_regressions.isEmpty && _improvements.isEmpty && _benignChanges.isEmpty) {
+    buffer.writeln(
+      '> 🎉 **All $_totalProbeTests compliance tests match the '
+      'baseline perfectly!** No changes or regressions detected '
+      'compared to the goldens.',
+    );
+    buffer.writeln();
+  } else {
+    buffer.writeln('### 📊 Stats Overview');
+    buffer.writeln('*   **Total tests compared**: $_totalProbeTests');
+    buffer.writeln('*   ✅ **Matches baseline**: $_matchingBaseline');
+    if (_improvements.isNotEmpty) {
+      buffer.writeln('*   🚀 **Improved**: ${_improvements.length}');
+    }
+    if (_benignChanges.isNotEmpty) {
+      buffer.writeln('*   ⚠️ **Benign changes**: ${_benignChanges.length}');
+    }
+    if (_regressions.isNotEmpty) {
+      buffer.writeln('*   ❌ **Regressions**: ${_regressions.length}');
+    }
+    buffer.writeln();
+  }
+
+  file.writeAsStringSync(buffer.toString(), mode: FileMode.append);
 }
 
 void _testCompliance({
@@ -178,8 +296,8 @@ void _testCompliance({
 
     if (!goldenReport.existsSync()) {
       fail(
-        'Golden report missing for $category! Please run tool/update_goldens.dart '
-        'to create it.',
+        'Golden report missing for $category! Please run '
+        'tool/update_goldens.dart to create it.',
       );
     }
 
@@ -200,9 +318,11 @@ void _testCompliance({
       reason: 'Length of results changed',
     );
 
+    final failures = <String>[];
     for (var i = 0; i < filteredMaps.length; i++) {
       final actual = filteredMaps[i];
       final expected = expectedResults[i];
+      _totalProbeTests++;
 
       expect(actual['id'], equals(expected['id']));
 
@@ -214,15 +334,23 @@ void _testCompliance({
 
       if (actualRank < expectedRank) {
         reportRegression();
-
-        expect(
-          actual,
-          equals(expected),
-          reason:
-              'Test ${actual['id']} regressed from $expectedVerdictStr to '
-              '$actualVerdictStr',
+        _regressions.add({
+          'id': actual['id'] as String,
+          'category': category,
+          'expected': expectedVerdictStr,
+          'actual': actualVerdictStr,
+        });
+        failures.add(
+          'Test ${actual['id']} regressed from $expectedVerdictStr to '
+          '$actualVerdictStr',
         );
       } else if (actualRank > expectedRank) {
+        _improvements.add({
+          'id': actual['id'] as String,
+          'category': category,
+          'expected': expectedVerdictStr,
+          'actual': actualVerdictStr,
+        });
         _printGithubWarning(
           'pkgs/_shelf_compliance/reports/$name/$category.json',
           'Compliance Test Improved!',
@@ -231,14 +359,25 @@ void _testCompliance({
         );
       } else {
         if (!const DeepCollectionEquality().equals(actual, expected)) {
+          _benignChanges.add({
+            'id': actual['id'] as String,
+            'category': category,
+            'verdict': actualVerdictStr,
+          });
           _printGithubWarning(
             'pkgs/_shelf_compliance/reports/$name/$category.json',
             'Compliance Test Changed!',
             'Test ${actual['id']} changed benignly (verdict remains '
                 '$actualVerdictStr). Run tool/update_goldens.dart to tighten.',
           );
+        } else {
+          _matchingBaseline++;
         }
       }
+    }
+
+    if (failures.isNotEmpty) {
+      fail(failures.join('\n'));
     }
   });
 }

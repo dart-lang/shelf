@@ -1,17 +1,5 @@
 [
   {
-    "id": "COMP-405-ALLOW",
-    "description": "405 response must include an Allow header",
-    "category": "Compliance",
-    "rfcReference": "RFC 9110 §15.5.6",
-    "rfcLevel": "Must",
-    "expected": "405 + Allow header",
-    "verdict": "Warn",
-    "statusCode": 404,
-    "rawRequest": "DELETE / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nNot Found"
-  },
-  {
     "id": "COMP-ABSOLUTE-FORM",
     "description": "Absolute-form request-target — server should accept per RFC",
     "category": "Compliance",
@@ -394,18 +382,6 @@
     "expected": "non-1xx response",
     "verdict": "Pass",
     "rawRequest": "POST / HTTP/1.0\r\nHost: 127.0.0.1:<PORT>\r\nExpect: 100-continue\r\nContent-Length: 5\r\n\r\nhello"
-  },
-  {
-    "id": "COMP-NO-CL-IN-204",
-    "description": "Server must not send Content-Length in a 204 response",
-    "category": "Compliance",
-    "rfcReference": "RFC 9110 §8.6",
-    "rfcLevel": "Must",
-    "expected": "204 without CL, or 405",
-    "verdict": "Warn",
-    "statusCode": 404,
-    "rawRequest": "OPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 9\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\nNot Found"
   },
   {
     "id": "COMP-OPTIONS-ALLOW",
