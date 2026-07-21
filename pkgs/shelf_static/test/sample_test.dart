@@ -65,7 +65,9 @@ Future<void> _testFileContents(String filename) async {
 }
 
 Future<void> _expectCompletesWithBytes(
-    Response response, List<int> expectedBytes) async {
+  Response response,
+  List<int> expectedBytes,
+) async {
   final bytes = await response.read().toList();
   final flatBytes = bytes.expand((e) => e);
   expect(flatBytes, orderedEquals(expectedBytes));

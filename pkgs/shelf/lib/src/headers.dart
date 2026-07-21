@@ -14,7 +14,7 @@ final _emptyHeaders = Headers._empty();
 class Headers extends UnmodifiableMapView<String, List<String>> {
   late final Map<String, String> singleValues = UnmodifiableMapView(
     CaseInsensitiveMap.from(
-      map((key, value) => MapEntry(key, joinHeaderValues(value)!)),
+      map((key, value) => MapEntry(key, joinHeaderValues(value, name: key)!)),
     ),
   );
 

@@ -76,12 +76,12 @@ Map<String, Object> removeHeader(Map<String, Object>? headers, String name) {
 String? findHeader(Map<String, List<String>?>? headers, String name) {
   if (headers == null) return null;
   if (headers is ShelfUnmodifiableMap) {
-    return joinHeaderValues(headers[name]);
+    return joinHeaderValues(headers[name], name: name);
   }
 
   for (var key in headers.keys) {
     if (equalsIgnoreAsciiCase(key, name)) {
-      return joinHeaderValues(headers[key]);
+      return joinHeaderValues(headers[key], name: name);
     }
   }
   return null;
@@ -138,9 +138,17 @@ List<String> expandHeaderValue(Object v) {
 
 /// Multiple header values are joined with commas.
 /// See https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-p1-messaging-21#page-22
-String? joinHeaderValues(List<String>? values) {
+///
+/// The `Cookie` header is the one exception: the cookie-string grammar of
+/// RFC 6265 separates cookie-pairs with `; ` and does not allow commas, so
+/// when [name] is `cookie` multiple values are recombined with `; ` as
+/// specified in https://datatracker.ietf.org/doc/html/rfc9113#section-8.2.3
+String? joinHeaderValues(List<String>? values, {String? name}) {
   if (values == null) return null;
   if (values.isEmpty) return '';
   if (values.length == 1) return values.single;
-  return values.join(',');
+  final separator = name != null && equalsIgnoreAsciiCase(name, 'cookie')
+      ? '; '
+      : ',';
+  return values.join(separator);
 }

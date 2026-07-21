@@ -7,6 +7,7 @@
 * Add `generateETag` and `maxAge` parameters to `createStaticHandler` and
   `createFileHandler` to support `ETag` and `Cache-Control` headers. 
   Default ETags are generated based on file size and modified time.
+* Require Dart `^3.9.0`.
 
 ## 1.1.3
 

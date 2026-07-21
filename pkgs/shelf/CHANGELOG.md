@@ -1,6 +1,9 @@
 ## 1.4.3-wip
 
 * Require `sdk: ^3.9.0`.
+* Join multiple `Cookie` request-header values with `'; '` instead of `','`
+  in the single-value `headers` map, following the cookie-string grammar of
+  [RFC 6265 section 5.4](https://datatracker.ietf.org/doc/html/rfc6265#section-5.4).
 
 ## 1.4.2
 

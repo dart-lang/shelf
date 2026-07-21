@@ -36,40 +36,36 @@ void main() {
     });
   }
 
-  testPattern('/hello', match: {
-    '/hello': {},
-  }, notMatch: [
-    '/not-hello',
-    '/',
-  ]);
+  testPattern('/hello', match: {'/hello': {}}, notMatch: ['/not-hello', '/']);
 
-  testPattern(r'/user/<user>/groups/<group|\d+>', match: {
-    '/user/jonasfj/groups/42': {
-      'user': 'jonasfj',
-      'group': '42',
+  testPattern(
+    r'/user/<user>/groups/<group|\d+>',
+    match: {
+      '/user/jonasfj/groups/42': {'user': 'jonasfj', 'group': '42'},
+      '/user/jonasfj/groups/0': {'user': 'jonasfj', 'group': '0'},
+      '/user/123/groups/101': {'user': '123', 'group': '101'},
     },
-    '/user/jonasfj/groups/0': {
-      'user': 'jonasfj',
-      'group': '0',
-    },
-    '/user/123/groups/101': {
-      'user': '123',
-      'group': '101',
-    },
-  }, notMatch: [
-    '/user/',
-    '/user/jonasfj/groups/5-3',
-    '/user/jonasfj/test/groups/5',
-    '/user/jonasfjtest/groups/4/',
-    '/user/jonasfj/groups/',
-    '/not-hello',
-    '/',
-  ]);
+    notMatch: [
+      '/user/',
+      '/user/jonasfj/groups/5-3',
+      '/user/jonasfj/test/groups/5',
+      '/user/jonasfjtest/groups/4/',
+      '/user/jonasfj/groups/',
+      '/not-hello',
+      '/',
+    ],
+  );
 
   test('non-capture regex only', () {
     expect(
-        () => RouterEntry('GET', '/users/<user|([^]*)>/info', () {}),
-        throwsA(isArgumentError.having((e) => e.message, 'message',
-            'expression for "user" is capturing')));
+      () => RouterEntry('GET', '/users/<user|([^]*)>/info', () {}),
+      throwsA(
+        isArgumentError.having(
+          (e) => e.message,
+          'message',
+          'expression for "user" is capturing',
+        ),
+      ),
+    );
   });
 }

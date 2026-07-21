@@ -47,15 +47,19 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
       // The Cookie header is special: multiple cookies are joined with a
       // semicolon and a space, while other headers use a comma.
       // See https://datatracker.ietf.org/doc/html/rfc6265#section-5.4
-      clientRequest.headers[name] =
-          values.join(name.toLowerCase() == 'cookie' ? '; ' : ', ');
+      clientRequest.headers[name] = values.join(
+        name.toLowerCase() == 'cookie' ? '; ' : ', ',
+      );
     });
     clientRequest.headers['Host'] = uri.authority;
 
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-    _addHeader(clientRequest.headers, 'via',
-        '${serverRequest.protocolVersion} $proxyName');
+    _addHeader(
+      clientRequest.headers,
+      'via',
+      '${serverRequest.protocolVersion} $proxyName',
+    );
 
     serverRequest
         .read()
@@ -65,13 +69,17 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
         .ignore();
     final clientResponse = await nonNullClient.send(clientRequest);
     final headers = clientResponse.headers;
-    final headersAll =
-        Map<String, List<String>>.from(clientResponse.headersSplitValues);
+    final headersAll = Map<String, List<String>>.from(
+      clientResponse.headersSplitValues,
+    );
 
     // Add a Via header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-    headersAll.update('via', (values) => [...values, '1.1 $proxyName'],
-        ifAbsent: () => ['1.1 $proxyName']);
+    headersAll.update(
+      'via',
+      (values) => [...values, '1.1 $proxyName'],
+      ifAbsent: () => ['1.1 $proxyName'],
+    );
 
     // Remove the transfer-encoding since the body has already been decoded by
     // [client].
@@ -86,8 +94,10 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
       // Add a Warning header. See
       // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
       headersAll.update(
-          'warning', (values) => [...values, '214 $proxyName "GZIP decoded"'],
-          ifAbsent: () => ['214 $proxyName "GZIP decoded"']);
+        'warning',
+        (values) => [...values, '214 $proxyName "GZIP decoded"'],
+        ifAbsent: () => ['214 $proxyName "GZIP decoded"'],
+      );
     }
 
     // Make sure the Location header is pointing to the proxy server rather
@@ -96,15 +106,18 @@ Handler proxyHandler(Object url, {http.Client? client, String? proxyName}) {
       final location = requestUrl.resolve(headers['location']!).toString();
       if (p.url.isWithin(uri.toString(), location)) {
         headersAll['location'] = [
-          '/${p.url.relative(location, from: uri.toString())}'
+          '/${p.url.relative(location, from: uri.toString())}',
         ];
       } else {
         headersAll['location'] = [location];
       }
     }
 
-    return Response(clientResponse.statusCode,
-        body: clientResponse.stream, headers: headersAll);
+    return Response(
+      clientResponse.statusCode,
+      body: clientResponse.stream,
+      headers: headersAll,
+    );
   };
 }
 

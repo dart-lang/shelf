@@ -9,7 +9,7 @@ topics:
   - shelf
 
 environment:
-  sdk: ^3.3.0
+  sdk: ^3.9.0
 
 dependencies:
   path: ^1.8.0

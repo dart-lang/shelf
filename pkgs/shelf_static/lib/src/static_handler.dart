@@ -50,18 +50,22 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 ///
 /// If [maxAge] is provided, it is used to set the `Cache-Control` header
 /// with a `max-age` value in seconds.
-Handler createStaticHandler(String fileSystemPath,
-    {bool serveFilesOutsidePath = false,
-    String? defaultDocument,
-    bool listDirectories = false,
-    bool useHeaderBytesForContentType = false,
-    MimeTypeResolver? contentTypeResolver,
-    FutureOr<String?> Function(File, FileStat)? generateETag,
-    Duration? maxAge}) {
+Handler createStaticHandler(
+  String fileSystemPath, {
+  bool serveFilesOutsidePath = false,
+  String? defaultDocument,
+  bool listDirectories = false,
+  bool useHeaderBytesForContentType = false,
+  MimeTypeResolver? contentTypeResolver,
+  FutureOr<String?> Function(File, FileStat)? generateETag,
+  Duration? maxAge,
+}) {
   final rootDir = Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
-    throw ArgumentError('A directory corresponding to fileSystemPath '
-        '"$fileSystemPath" could not be found');
+    throw ArgumentError(
+      'A directory corresponding to fileSystemPath '
+      '"$fileSystemPath" could not be found',
+    );
   }
 
   fileSystemPath = rootDir.resolveSymbolicLinksSync();
@@ -100,8 +104,11 @@ Handler createStaticHandler(String fileSystemPath,
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
-        return listDirectory(fileSystemPath, fsPath,
-            serveFilesOutsidePath: serveFilesOutsidePath);
+        return listDirectory(
+          fileSystemPath,
+          fsPath,
+          serveFilesOutsidePath: serveFilesOutsidePath,
+        );
       }
     }
 
@@ -127,31 +134,41 @@ Handler createStaticHandler(String fileSystemPath,
       return _redirectToAddTrailingSlash(uri);
     }
 
-    return _handleFile(request, file, () async {
-      if (useHeaderBytesForContentType) {
-        final length =
-            math.min(mimeResolver.magicNumbersMaxLength, await file.length());
+    return _handleFile(
+      request,
+      file,
+      () async {
+        if (useHeaderBytesForContentType) {
+          final length = math.min(
+            mimeResolver.magicNumbersMaxLength,
+            await file.length(),
+          );
 
-        final byteSink = ByteAccumulatorSink();
+          final byteSink = ByteAccumulatorSink();
 
-        await file.openRead(0, length).listen(byteSink.add).asFuture<void>();
+          await file.openRead(0, length).listen(byteSink.add).asFuture<void>();
 
-        return mimeResolver.lookup(file.path, headerBytes: byteSink.bytes);
-      } else {
-        return mimeResolver.lookup(file.path);
-      }
-    }, generateETag: generateETag, maxAge: maxAge, fileStat: fileStat);
+          return mimeResolver.lookup(file.path, headerBytes: byteSink.bytes);
+        } else {
+          return mimeResolver.lookup(file.path);
+        }
+      },
+      generateETag: generateETag,
+      maxAge: maxAge,
+      fileStat: fileStat,
+    );
   };
 }
 
 Response _redirectToAddTrailingSlash(Uri uri) {
   final location = Uri(
-      scheme: uri.scheme,
-      userInfo: uri.userInfo,
-      host: uri.host,
-      port: uri.port,
-      path: '${uri.path}/',
-      query: uri.query);
+    scheme: uri.scheme,
+    userInfo: uri.userInfo,
+    host: uri.host,
+    port: uri.port,
+    path: '${uri.path}/',
+    query: uri.query,
+  );
 
   return Response.movedPermanently(location.toString());
 }
@@ -175,11 +192,13 @@ Response _redirectToAddTrailingSlash(Uri uri) {
 ///
 /// If [maxAge] is provided, it is used to set the `Cache-Control` header
 /// with a `max-age` value in seconds.
-Handler createFileHandler(String path,
-    {String? url,
-    String? contentType,
-    FutureOr<String?> Function(File, FileStat)? generateETag,
-    Duration? maxAge}) {
+Handler createFileHandler(
+  String path, {
+  String? url,
+  String? contentType,
+  FutureOr<String?> Function(File, FileStat)? generateETag,
+  Duration? maxAge,
+}) {
   final file = File(path);
   if (!file.existsSync()) {
     throw ArgumentError.value(path, 'path', 'does not exist.');
@@ -192,8 +211,13 @@ Handler createFileHandler(String path,
 
   return (request) async {
     if (request.url.path != url) return Response.notFound('Not Found');
-    return _handleFile(request, file, () => mimeType,
-        generateETag: generateETag, maxAge: maxAge);
+    return _handleFile(
+      request,
+      file,
+      () => mimeType,
+      generateETag: generateETag,
+      maxAge: maxAge,
+    );
   };
 }
 
@@ -203,10 +227,13 @@ Handler createFileHandler(String path,
 /// indicates that it has the latest version of a file. Otherwise, it calls
 /// [getContentType] and uses it to populate the Content-Type header.
 Future<Response> _handleFile(
-    Request request, File file, FutureOr<String?> Function() getContentType,
-    {FutureOr<String?> Function(File, FileStat)? generateETag,
-    Duration? maxAge,
-    FileStat? fileStat}) async {
+  Request request,
+  File file,
+  FutureOr<String?> Function() getContentType, {
+  FutureOr<String?> Function(File, FileStat)? generateETag,
+  Duration? maxAge,
+  FileStat? fileStat,
+}) async {
   final stat = fileStat ?? await file.stat();
   final ifModifiedSince = request.ifModifiedSince;
   final ifNoneMatch = request.headers[HttpHeaders.ifNoneMatchHeader];
@@ -216,7 +243,7 @@ Future<Response> _handleFile(
 
   final cacheHeaders = {
     HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified),
-    if (etag != null) HttpHeaders.etagHeader: etag,
+    HttpHeaders.etagHeader: ?etag,
     if (maxAge != null)
       HttpHeaders.cacheControlHeader: 'public, max-age=${maxAge.inSeconds}',
   };
@@ -242,7 +269,7 @@ Future<Response> _handleFile(
   final headers = {
     ...cacheHeaders,
     HttpHeaders.acceptRangesHeader: 'bytes',
-    if (contentType != null) HttpHeaders.contentTypeHeader: contentType,
+    HttpHeaders.contentTypeHeader: ?contentType,
   };
 
   return _fileRangeResponse(request, file, stat.size, headers) ??
@@ -267,7 +294,11 @@ final _bytesMatcher = RegExp(r'^bytes=(\d*)-(\d*)$');
 ///
 /// Ranges that end past the end of the file are truncated.
 Response? _fileRangeResponse(
-    Request request, File file, int actualLength, Map<String, Object> headers) {
+  Request request,
+  File file,
+  int actualLength,
+  Map<String, Object> headers,
+) {
   final range = request.headers[HttpHeaders.rangeHeader];
   if (range == null) return null;
   final matches = _bytesMatcher.firstMatch(range);
@@ -297,10 +328,7 @@ Response? _fileRangeResponse(
     end = actualLength - 1;
   }
   if (start >= actualLength) {
-    return Response(
-      HttpStatus.requestedRangeNotSatisfiable,
-      headers: headers,
-    );
+    return Response(HttpStatus.requestedRangeNotSatisfiable, headers: headers);
   }
   return Response(
     HttpStatus.partialContent,

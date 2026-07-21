@@ -31,8 +31,10 @@ void main(List<String> args) {
   }
 
   if (!FileSystemEntity.isFileSync('example/example.dart')) {
-    throw StateError('Server expects to be started the '
-        'root of the project.');
+    throw StateError(
+      'Server expects to be started the '
+      'root of the project.',
+    );
   }
   var pipeline = const shelf.Pipeline();
 
@@ -45,8 +47,13 @@ void main(List<String> args) {
     defaultDoc = null;
   }
 
-  final handler = pipeline.addHandler(createStaticHandler('example/files',
-      defaultDocument: defaultDoc, listDirectories: listDirectories));
+  final handler = pipeline.addHandler(
+    createStaticHandler(
+      'example/files',
+      defaultDocument: defaultDoc,
+      listDirectories: listDirectories,
+    ),
+  );
 
   io.serve(handler, 'localhost', port).then((server) {
     print('Serving at http://${server.address.host}:${server.port}');
@@ -56,10 +63,13 @@ void main(List<String> args) {
 ArgParser _getParser() => ArgParser()
   ..addFlag('logging', abbr: 'l', defaultsTo: true)
   ..addOption('port', abbr: 'p', defaultsTo: '8080')
-  ..addFlag('list-directories',
-      abbr: 'f',
-      negatable: false,
-      help: 'List the files in the source directory instead of serving the '
-          'default document - "$_defaultDoc".');
+  ..addFlag(
+    'list-directories',
+    abbr: 'f',
+    negatable: false,
+    help:
+        'List the files in the source directory instead of serving the '
+        'default document - "$_defaultDoc".',
+  );
 
 const _defaultDoc = 'index.html';
