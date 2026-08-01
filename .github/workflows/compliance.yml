@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.6.3
+# Created with package:mono_repo v6.7.2
 name: Shelf Compliance CI
 on:
   push:
@@ -13,7 +13,8 @@ defaults:
     shell: bash
 env:
   PUB_ENVIRONMENT: bot.github
-permissions: read-all
+permissions:
+  contents: read
 
 jobs:
   job_001:
@@ -37,6 +38,8 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - id: pkgs__shelf_compliance_pub_upgrade
         name: pkgs/_shelf_compliance; dart pub upgrade
         run: dart pub upgrade
