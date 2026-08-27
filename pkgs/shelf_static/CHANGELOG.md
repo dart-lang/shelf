@@ -1,5 +1,7 @@
 ## 1.2.0-wip
 
+* Fix unhandled `FormatException` / HTTP 500 error when parsing oversized integer
+  values in HTTP `Range` headers.
 * Replace static, blocking `dart:io` operations (such as `statSync()` and
   `File.existsSync()`) with their asynchronous equivalents. This prevents
   `createStaticHandler` from blocking the Dart isolate event loop, dramatically
