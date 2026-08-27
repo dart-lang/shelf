@@ -284,7 +284,7 @@ String _defaultGenerateETag(File file, FileStat stat) =>
 
 final _bytesMatcher = RegExp(r'^bytes=(\d*)-(\d*)$');
 
-/// Serves a range of [file], if [request] is valid 'bytes' range request.
+/// Serves a range of [file], if [request] is a valid 'bytes' range request.
 ///
 /// If the request does not specify a range, specifies a range of the wrong
 /// type, or has a syntactic error the range is ignored and `null` is returned.
@@ -312,24 +312,46 @@ Response? _fileRangeResponse(
   int start; // First byte position - inclusive.
   int end; // Last byte position - inclusive.
   if (startMatch.isEmpty) {
-    start = actualLength - int.parse(endMatch);
-    if (start < 0) start = 0;
+    // `endMatch` is guaranteed non-empty because `"bytes=-"` is rejected above.
+    // If `parsedEnd` is null, the suffix length exceeds the 64-bit int range.
+    // Per RFC 7233 § 2.1, if the suffix length is larger than the file length,
+    // the entire file is used (start = 0).
+    final parsedEnd = int.tryParse(endMatch);
+    if (parsedEnd == null) {
+      start = 0;
+    } else {
+      start = actualLength - parsedEnd;
+      if (start < 0) start = 0;
+    }
     end = actualLength - 1;
   } else {
-    start = int.parse(startMatch);
-    end = endMatch.isEmpty ? actualLength - 1 : int.parse(endMatch);
+    final parsedStart = int.tryParse(startMatch);
+    final parsedEnd = endMatch.isEmpty ? null : int.tryParse(endMatch);
+
+    // If end is specified and start > end, range is syntactically invalid
+    // (RFC 2616 / RFC 7233).
+    if (endMatch.isNotEmpty) {
+      if (parsedStart == null && parsedEnd != null) return null;
+      if (parsedStart != null && parsedEnd != null && parsedStart > parsedEnd) {
+        return null;
+      }
+    }
+
+    // Since `startMatch` is not empty, if `parsedStart` is null then it
+    // must be larger than can fit in the Dart `int` type (overflow).
+    if (parsedStart == null || parsedStart >= actualLength) {
+      return Response(
+        HttpStatus.requestedRangeNotSatisfiable,
+        headers: headers,
+      );
+    }
+
+    start = parsedStart;
+    end = (parsedEnd == null || parsedEnd >= actualLength)
+        ? actualLength - 1
+        : parsedEnd;
   }
 
-  // If the range is syntactically invalid the Range header
-  // MUST be ignored (RFC 2616 section 14.35.1).
-  if (start > end) return null;
-
-  if (end >= actualLength) {
-    end = actualLength - 1;
-  }
-  if (start >= actualLength) {
-    return Response(HttpStatus.requestedRangeNotSatisfiable, headers: headers);
-  }
   return Response(
     HttpStatus.partialContent,
     body: request.method == 'HEAD' ? null : file.openRead(start, end + 1),
