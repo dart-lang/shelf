@@ -178,14 +178,30 @@ void main() {
       expect(response.contentLength, equals(8));
       expect(response.readAsString(), completion(equals('contents')));
     });
-    test('ignores request with start overflow', () async {
+    test('rejects request with start overflow', () async {
       final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
       final response = await makeRequest(
         handler,
         '/file.txt',
         headers: {'range': 'bytes=99999999999999999999-'},
       );
-      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(
+        response.statusCode,
+        equals(HttpStatus.requestedRangeNotSatisfiable),
+      );
+    });
+
+    test('rejects open-ended request with start past EOF', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=8-'},
+      );
+      expect(
+        response.statusCode,
+        equals(HttpStatus.requestedRangeNotSatisfiable),
+      );
     });
 
     test('ignores request with end overflow', () async {

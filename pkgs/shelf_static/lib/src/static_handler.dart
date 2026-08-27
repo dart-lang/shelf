@@ -322,24 +322,30 @@ Response? _fileRangeResponse(
     end = actualLength - 1;
   } else {
     final parsedStart = int.tryParse(startMatch);
-    start = parsedStart ?? actualLength;
-    if (endMatch.isEmpty) {
-      end = actualLength - 1;
-    } else {
-      end = int.tryParse(endMatch) ?? actualLength - 1;
+    final parsedEnd = endMatch.isEmpty ? null : int.tryParse(endMatch);
+
+    // If end is specified and start > end, range is syntactically invalid
+    // (RFC 2616 / RFC 7233).
+    if (endMatch.isNotEmpty) {
+      if (parsedStart == null && parsedEnd != null) return null;
+      if (parsedStart != null && parsedEnd != null && parsedStart > parsedEnd) {
+        return null;
+      }
     }
+
+    if (parsedStart == null || parsedStart >= actualLength) {
+      return Response(
+        HttpStatus.requestedRangeNotSatisfiable,
+        headers: headers,
+      );
+    }
+
+    start = parsedStart;
+    end = (parsedEnd == null || parsedEnd >= actualLength)
+        ? actualLength - 1
+        : parsedEnd;
   }
 
-  // If the range is syntactically invalid the Range header
-  // MUST be ignored (RFC 2616 section 14.35.1).
-  if (start > end) return null;
-
-  if (end >= actualLength) {
-    end = actualLength - 1;
-  }
-  if (start >= actualLength) {
-    return Response(HttpStatus.requestedRangeNotSatisfiable, headers: headers);
-  }
   return Response(
     HttpStatus.partialContent,
     body: request.method == 'HEAD' ? null : file.openRead(start, end + 1),
