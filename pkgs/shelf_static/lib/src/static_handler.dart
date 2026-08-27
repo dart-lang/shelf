@@ -312,12 +312,22 @@ Response? _fileRangeResponse(
   int start; // First byte position - inclusive.
   int end; // Last byte position - inclusive.
   if (startMatch.isEmpty) {
-    start = actualLength - int.parse(endMatch);
-    if (start < 0) start = 0;
+    final parsedEnd = int.tryParse(endMatch);
+    if (parsedEnd == null) {
+      start = 0;
+    } else {
+      start = actualLength - parsedEnd;
+      if (start < 0) start = 0;
+    }
     end = actualLength - 1;
   } else {
-    start = int.parse(startMatch);
-    end = endMatch.isEmpty ? actualLength - 1 : int.parse(endMatch);
+    final parsedStart = int.tryParse(startMatch);
+    start = parsedStart ?? actualLength;
+    if (endMatch.isEmpty) {
+      end = actualLength - 1;
+    } else {
+      end = int.tryParse(endMatch) ?? actualLength - 1;
+    }
   }
 
   // If the range is syntactically invalid the Range header
