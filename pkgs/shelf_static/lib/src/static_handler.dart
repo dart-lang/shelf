@@ -324,6 +324,7 @@ Response? _fileRangeResponse(
       if (start < 0) start = 0;
     }
     end = actualLength - 1;
+    if (start > end) return null;
   } else {
     final parsedStart = int.tryParse(startMatch);
     final parsedEnd = endMatch.isEmpty ? null : int.tryParse(endMatch);
