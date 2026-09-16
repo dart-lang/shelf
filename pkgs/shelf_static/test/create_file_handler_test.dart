@@ -225,6 +225,49 @@ void main() {
       expect(response.statusCode, equals(HttpStatus.partialContent));
       expect(response.contentLength, equals(8));
     });
+
+    test('ignores request with suffix length 0 (bytes=-0)', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=-0'},
+      );
+      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(response.headers[HttpHeaders.contentRangeHeader], isNull);
+      expect(response.contentLength, equals(8));
+      expect(response.readAsString(), completion(equals('contents')));
+    });
+
+    test('ignores request with suffix range on empty file', () async {
+      await d.file('empty.txt', '').create();
+      final handler = createFileHandler(p.join(d.sandbox, 'empty.txt'));
+      final response = await makeRequest(
+        handler,
+        '/empty.txt',
+        headers: {'range': 'bytes=-5'},
+      );
+      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(response.headers[HttpHeaders.contentRangeHeader], isNull);
+      expect(response.contentLength, equals(0));
+      expect(response.readAsString(), completion(isEmpty));
+    });
+
+    test('serves last byte for suffix range bytes=-1', () async {
+      final handler = createFileHandler(p.join(d.sandbox, 'file.txt'));
+      final response = await makeRequest(
+        handler,
+        '/file.txt',
+        headers: {'range': 'bytes=-1'},
+      );
+      expect(response.statusCode, equals(HttpStatus.partialContent));
+      expect(
+        response.headers[HttpHeaders.contentRangeHeader],
+        equals('bytes 7-7/8'),
+      );
+      expect(response.contentLength, equals(1));
+      expect(response.readAsString(), completion(equals('s')));
+    });
   });
 
   group('throws an ArgumentError for', () {
