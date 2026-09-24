@@ -4,7 +4,7 @@ description: A high-performance, direct-to-socket Shelf adapter.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/bottom_shelf
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.9.0
 
 dependencies:
   collection: ^1.19.0

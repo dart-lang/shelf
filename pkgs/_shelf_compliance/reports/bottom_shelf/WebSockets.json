@@ -9,7 +9,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.0\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: close\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "WS-UPGRADE-INVALID-VER",
@@ -21,7 +21,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 99\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "WS-UPGRADE-MISSING-CONN",
@@ -33,7 +33,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "WS-UPGRADE-POST",
@@ -45,7 +45,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: websocket\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "WS-UPGRADE-UNKNOWN",
@@ -57,6 +57,6 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: Upgrade\r\nUpgrade: totally-made-up/1.0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   }
 ]

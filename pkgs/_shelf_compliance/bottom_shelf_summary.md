@@ -2,10 +2,10 @@
 
 | Category | Count |
 | --- | --- |
-| Total | 215 |
+| Total | 213 |
 | Passed | 162 |
 | Failed | 0 |
-| Warnings | 40 |
+| Warnings | 38 |
 | Accepted | 13 |
 | Errors | 0 |
 
@@ -20,7 +20,6 @@
 | CAP-INM-UNQUOTED | Capabilities | Warn | If-None-Match with unquoted ETag |
 | CAP-INM-WILDCARD | Capabilities | Warn | If-None-Match: * on existing resource returns 304 |
 | CAP-LAST-MODIFIED-304 | Capabilities | Warn | Last-Modified conditional GET returns 304 Not Modified |
-| COMP-405-ALLOW | Compliance | Warn | 405 response must include an Allow header |
 | COMP-ACCEPT-NONSENSE | Compliance | Warn | Unrecognized Accept value — server may return 406 or default representation |
 | COMP-CONTENT-TYPE | Compliance | Warn | Response with content should include Content-Type header |
 | COMP-DUPLICATE-CT | Compliance | Warn | Duplicate Content-Type headers with different values |
@@ -28,7 +27,6 @@
 | COMP-GET-WITH-CL-BODY | Compliance | Warn | GET with Content-Length and body — semantically unusual |
 | COMP-HTTP10-NO-HOST | Compliance | Warn | HTTP/1.0 without Host header — valid per HTTP/1.0 |
 | COMP-HTTP12-VERSION | Compliance | Warn | HTTP/1.2 — higher minor version should be accepted as HTTP/1.x compatible |
-| COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
 | MAL-CL-TAB-BEFORE-VALUE | MalformedInput | Warn | Content-Length with tab as OWS — valid per RFC but unusual |
 | MAL-RANGE-OVERLAPPING | MalformedInput | Warn | 1000 overlapping Range values — resource exhaustion vector (CVE-2011-3192 class) |
 | MAL-URL-BACKSLASH | MalformedInput | Warn | Backslash in URL path — not valid URI character, some servers normalize to / |

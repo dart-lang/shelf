@@ -1,17 +1,5 @@
 [
   {
-    "id": "COMP-405-ALLOW",
-    "description": "405 response must include an Allow header",
-    "category": "Compliance",
-    "rfcReference": "RFC 9110 §15.5.6",
-    "rfcLevel": "Must",
-    "expected": "405 + Allow header",
-    "verdict": "Warn",
-    "statusCode": 404,
-    "rawRequest": "DELETE / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found"
-  },
-  {
     "id": "COMP-ABSOLUTE-FORM",
     "description": "Absolute-form request-target — server should accept per RFC",
     "category": "Compliance",
@@ -21,7 +9,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET http://127.0.0.1:<PORT>/ HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-ACCEPT-NONSENSE",
@@ -33,7 +21,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nAccept: application/x-nonsense\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK",
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK",
     "behavioralNote": "Server ignored unrecognized Accept — returned default representation"
   },
   {
@@ -57,7 +45,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-CHUNKED-BODY",
@@ -69,7 +57,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
     "behavioralNote": "Echoed correctly"
   },
   {
@@ -82,7 +70,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "COMP-CHUNKED-EXTENSION",
@@ -106,7 +94,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\nA\r\nhelloworld\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\na\r\nhelloworld\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\na\r\nhelloworld\r\n0\r\n\r\n",
     "behavioralNote": "Echoed correctly"
   },
   {
@@ -119,7 +107,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n6\r\n world\r\n0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n6\r\n world\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n6\r\n world\r\n0\r\n\r\n",
     "behavioralNote": "Echoed correctly"
   },
   {
@@ -132,7 +120,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n"
   },
   {
     "id": "COMP-CHUNKED-TRAILER-VALID",
@@ -144,7 +132,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nX-Checksum: abc\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
     "behavioralNote": "Echoed correctly"
   },
   {
@@ -157,7 +145,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nConnection: close\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: close\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-CONTENT-TYPE",
@@ -169,7 +157,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-DATE-FORMAT",
@@ -181,8 +169,8 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK",
-    "behavioralNote": "IMF-fixdate: <DATE>"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK",
+    "behavioralNote": "IMF-fixDate: <DATE>"
   },
   {
     "id": "COMP-DATE-HEADER",
@@ -194,7 +182,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-DUPLICATE-CT",
@@ -206,7 +194,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nContent-Type: text/plain\r\nContent-Type: text/html\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "COMP-DUPLICATE-HOST-SAME",
@@ -230,7 +218,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nExpect: 200-ok\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-GET-WITH-CL-BODY",
@@ -242,7 +230,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-HEAD-NO-BODY",
@@ -254,7 +242,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "HEAD / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n"
   },
   {
     "id": "COMP-HOST-EMPTY-VALUE",
@@ -302,7 +290,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.0\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: close\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-HTTP10-NO-HOST",
@@ -314,7 +302,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: close\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-HTTP12-VERSION",
@@ -326,7 +314,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.2\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: close\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: close\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-LEADING-CRLF",
@@ -350,7 +338,7 @@
     "verdict": "Pass",
     "statusCode": 404,
     "rawRequest": "GET /aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nNot Found"
   },
   {
     "id": "COMP-METHOD-CASE",
@@ -362,7 +350,7 @@
     "verdict": "Fail",
     "statusCode": 404,
     "rawRequest": "get / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nNot Found"
   },
   {
     "id": "COMP-METHOD-CONNECT",
@@ -398,19 +386,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.0\r\nHost: 127.0.0.1:<PORT>\r\nExpect: 100-continue\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: close\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
-  },
-  {
-    "id": "COMP-NO-CL-IN-204",
-    "description": "Server must not send Content-Length in a 204 response",
-    "category": "Compliance",
-    "rfcReference": "RFC 9110 §8.6",
-    "rfcLevel": "Must",
-    "expected": "204 without CL, or 405",
-    "verdict": "Warn",
-    "statusCode": 404,
-    "rawRequest": "OPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "COMP-OPTIONS-ALLOW",
@@ -422,7 +398,7 @@
     "verdict": "Fail",
     "statusCode": 404,
     "rawRequest": "OPTIONS / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nNot Found"
   },
   {
     "id": "COMP-OPTIONS-STAR",
@@ -434,7 +410,7 @@
     "verdict": "Fail",
     "statusCode": 404,
     "rawRequest": "OPTIONS * HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nNot Found"
   },
   {
     "id": "COMP-POST-CL-BODY",
@@ -446,7 +422,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
     "behavioralNote": "Echoed correctly"
   },
   {
@@ -459,7 +435,7 @@
     "verdict": "Fail",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 10\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n"
   },
   {
     "id": "COMP-POST-CL-ZERO",
@@ -471,7 +447,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 0\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "COMP-POST-NO-CL-NO-TE",
@@ -483,7 +459,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "COMP-POST-UNSUPPORTED-CT",
@@ -495,7 +471,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nContent-Type: application/x-nonsense\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
     "behavioralNote": "Server accepted unknown Content-Type"
   },
   {
@@ -508,7 +484,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nRange: bytes=abc-xyz\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "COMP-RANGE-POST",
@@ -520,7 +496,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nRange: bytes=0-10\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "COMP-REQUEST-LINE-TAB",
@@ -581,7 +557,7 @@
     "verdict": "Fail",
     "statusCode": 404,
     "rawRequest": "FOOBAR / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found"
+    "rawResponse": "HTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nNot Found"
   },
   {
     "id": "COMP-UNKNOWN-TE-501",

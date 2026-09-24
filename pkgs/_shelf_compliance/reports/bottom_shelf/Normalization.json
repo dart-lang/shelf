@@ -42,7 +42,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nContent_Length: 99\r\n\r\nhello world",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 63\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nContent_Length: 99\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 63\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nContent_Length: 99\r\n",
     "behavioralNote": "Preserved: Content_Length"
   },
   {
@@ -54,7 +54,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nTransfer_Encoding: chunked\r\n\r\nhello world",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 71\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nTransfer_Encoding: chunked\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 71\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 11\r\nTransfer_Encoding: chunked\r\n",
     "behavioralNote": "Preserved: Transfer_Encoding"
   }
 ]

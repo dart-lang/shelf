@@ -9,7 +9,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "GET http://other.example.com/ HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK"
   },
   {
     "id": "SMUG-BARE-CR-HEADER-VALUE",
@@ -154,7 +154,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CHUNK-MISSING-TRAILING-CRLF",
@@ -286,7 +286,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 00\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-EXTRA-LEADING-SP",
@@ -298,7 +298,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length:  5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-HEX-PREFIX",
@@ -334,7 +334,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 005\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-LEADING-ZEROS-OCTAL",
@@ -346,7 +346,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 0200\r\n\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nc8\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nc8\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-NEGATIVE",
@@ -406,7 +406,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5 \r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-CL-UNDERSCORE",
@@ -430,7 +430,7 @@
     "verdict": "Warn",
     "statusCode": 404,
     "rawRequest": "── POST with CL:0 plus poison byte ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 0\r\n\r\nX\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── POST with CL:0 plus poison byte ──\nHTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nNot Found",
+    "rawResponse": "── POST with CL:0 plus poison byte ──\nHTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 404 Not Found\r\ncontent-length: 9\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nNot Found",
     "behavioralNote": "Step 1: 200, step 2: 404"
   },
   {
@@ -610,7 +610,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nExpect: 100-continue\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-EXPECT-100-CL-DESYNC",
@@ -622,7 +622,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── POST with Expect: 100-continue and body ──\nPOST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\nExpect: 100-continue\r\n\r\nhello\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── POST with Expect: 100-continue and body ──\nHTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK",
+    "rawResponse": "── POST with Expect: 100-continue and body ──\nHTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK",
     "behavioralNote": "Step 1: 200, step 2: 200"
   },
   {
@@ -635,7 +635,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── GET with CL body ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello\n\n── Follow-up GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── GET with CL body ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK",
+    "rawResponse": "── GET with CL body ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK\n\n── Follow-up GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK",
     "behavioralNote": "Step 1: 200, step 2: 200"
   },
   {
@@ -648,7 +648,7 @@
     "verdict": "Pass",
     "statusCode": 400,
     "rawRequest": "── GET with CL body (request prefix, no blank line) ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 39\r\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\n\n── Complete prefix then send follow-up GET ──\n\r\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── GET with CL body (request prefix, no blank line) ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK\n\n── Complete prefix then send follow-up GET ──\nHTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n",
+    "rawResponse": "── GET with CL body (request prefix, no blank line) ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK\n\n── Complete prefix then send follow-up GET ──\nHTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n",
     "behavioralNote": "Step 1: 200, step 2: 400"
   },
   {
@@ -661,7 +661,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "HEAD / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n"
   },
   {
     "id": "SMUG-MULTIPLE-HOST-COMMA",
@@ -723,7 +723,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "── First GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n\n\n── Second GET ──\nGET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
-    "rawResponse": "── First GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK\n\n── Second GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\nOK",
+    "rawResponse": "── First GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK\n\n── Second GET ──\nHTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK",
     "behavioralNote": "Both GETs returned 200/200 — pipelining works"
   },
   {
@@ -1004,7 +1004,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nAuthorization: Bearer evil\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-CL",
@@ -1016,7 +1016,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Length: 50\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-CONTENT-TYPE",
@@ -1028,7 +1028,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nContent-Type: text/evil\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-HOST",
@@ -1040,7 +1040,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nHost: evil.example.com\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TRAILER-TE",
@@ -1052,7 +1052,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\nTransfer-Encoding: chunked\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
   },
   {
     "id": "SMUG-TRANSFER_ENCODING",
@@ -1064,7 +1064,7 @@
     "verdict": "Warn",
     "statusCode": 200,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nTransfer_Encoding: chunked\r\nContent-Length: 5\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\nconnection: keep-alive\r\nx-powered-by: Dart with package:bottom_shelf\r\ndate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n",
     "behavioralNote": "Body: 5\r\nhello\r\n0"
   }
 ]
