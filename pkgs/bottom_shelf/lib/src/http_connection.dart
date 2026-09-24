@@ -57,6 +57,7 @@ final class _HttpConnection {
   /// Bytes written to [socket] since the last flush on a keep-alive
   /// connection. See `$Limit.flushThreshold`.
   var _unflushedBytes = 0;
+  var _unflushedResponses = 0;
 
   _HttpConnection({required this.socket, required this.config})
     : remoteAddress = socket.remoteAddress,
@@ -271,7 +272,7 @@ final class _HttpConnection {
             return;
           }
 
-          Stream<Uint8List> requestBody;
+          Object? requestBody;
           if (typedHeaders.isChunked) {
             _bodyController = ChunkedBodyController(
               () {
@@ -283,16 +284,28 @@ final class _HttpConnection {
             requestBody = _bodyController!.stream;
             currentData = _bodyController!.add(remainingInChunk);
           } else if (contentLength > 0) {
-            _bodyController = FixedLengthBodyController(
-              contentLength,
-              () {
-                if (!bodyDone.isCompleted) bodyDone.complete();
-              },
-              onPause: () => _subscription?.pause(),
-              onResume: () => _subscription?.resume(),
-            );
-            requestBody = _bodyController!.stream;
-            currentData = _bodyController!.add(remainingInChunk);
+            if (remainingInChunk.length >= contentLength) {
+              requestBody = Uint8List.sublistView(
+                remainingInChunk,
+                0,
+                contentLength,
+              );
+              currentData = remainingInChunk.length == contentLength
+                  ? _emptyBytes
+                  : Uint8List.sublistView(remainingInChunk, contentLength);
+              bodyDone.complete();
+            } else {
+              _bodyController = FixedLengthBodyController(
+                contentLength,
+                () {
+                  if (!bodyDone.isCompleted) bodyDone.complete();
+                },
+                onPause: () => _subscription?.pause(),
+                onResume: () => _subscription?.resume(),
+              );
+              requestBody = _bodyController!.stream;
+              currentData = _bodyController!.add(remainingInChunk);
+            }
           } else {
             requestBody = const Stream<Uint8List>.empty();
             currentData = remainingInChunk;
@@ -324,6 +337,7 @@ final class _HttpConnection {
                 .toList();
           }
 
+          late final Request request;
           void theHijackCallback(
             void Function(StreamChannel<List<int>>) callback,
           ) {
@@ -335,6 +349,14 @@ final class _HttpConnection {
               if (buffered.isNotEmpty) {
                 _hijackController!.add(buffered);
               }
+            } else if (requestBody is Uint8List) {
+              final body = extractBody(request);
+              if (!body.isRead) {
+                final unread = body.takeBufferedBytes();
+                if (unread != null && unread.isNotEmpty) {
+                  _hijackController!.add(unread);
+                }
+              }
             }
 
             if (capturedDataAtHijack.isNotEmpty) {
@@ -343,7 +365,6 @@ final class _HttpConnection {
             callback(StreamChannel(_hijackController!.stream, socket));
           }
 
-          Request request;
           final originalMethod = requestHead.method;
           final effectiveMethod =
               (originalMethod == 'HEAD' && config.automaticHeadMethodSupport)
@@ -433,7 +454,7 @@ final class _HttpConnection {
           !_forceClose && typedHeaders.isKeepAlive(request.protocolVersion);
 
       _responseWriting = true;
-      final written = await RawShelfResponseSerializer.writeResponse(
+      final writeResult = RawShelfResponseSerializer.writeResponse(
         response,
         socket,
         keepAlive: keepAlive,
@@ -443,8 +464,10 @@ final class _HttpConnection {
           _responseSent = true;
         },
       );
+      final written = writeResult is int ? writeResult : await writeResult;
       _responseSent = true;
       _unflushedBytes += written;
+      _unflushedResponses++;
 
       _parser.reset();
 
@@ -456,10 +479,13 @@ final class _HttpConnection {
           return;
         }
         // Skip the per-response flush (it would gate the next pipelined
-        // request on the OS write draining) until enough bytes have queued
-        // that a slow client's buffer would grow unbounded otherwise.
-        if (_unflushedBytes >= $Limit.flushThreshold) {
+        // request on the OS write draining) until enough pipelined responses
+        // and bytes have queued that a slow client's buffer would grow
+        // unbounded otherwise.
+        if (_unflushedResponses >= 16 &&
+            _unflushedBytes >= $Limit.flushThreshold) {
           _unflushedBytes = 0;
+          _unflushedResponses = 0;
           await socket.flush();
           if (_isDestroyed || _clientClosed) return;
         }

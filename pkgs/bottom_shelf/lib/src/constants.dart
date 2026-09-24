@@ -34,12 +34,17 @@ abstract final class $Limit {
   static const maxUrlSize = 8 * 1024;
   static const maxContentLength = 32 * 1024 * 1024;
 
+  /// Maximum body chunk size (16 KB) to coalesce into the header buffer.
+  /// Payloads larger than this (e.g. 256 KB / 1 MB) are passed directly to
+  /// `Socket.add` after `headerBytes` to avoid large buffer allocations and
+  /// memory copies.
+  static const maxCoalesceChunkSize = 16 * 1024;
+
   /// On keep-alive connections the socket is not flushed after every
   /// response (that would gate each pipelined request on the OS write
-  /// draining). Instead we flush once this many unflushed bytes have
-  /// accumulated, bounding buffering for a fast handler + slow client to
-  /// roughly this value plus one response.
-  static const flushThreshold = 256 * 1024;
+  /// draining). Instead we flush once at least 16 pipelined responses and
+  /// this many unflushed bytes have accumulated.
+  static const flushThreshold = 4 * 1024 * 1024;
 
   /// The maximum value of `_chunkSize` before shifting by 4 bits
   /// (multiplying by 16)

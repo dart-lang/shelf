@@ -2,9 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+export 'src/body.dart' show Body;
 export 'src/cascade.dart' show Cascade;
 export 'src/handler.dart' show Handler;
+export 'src/headers.dart' show Headers;
 export 'src/hijack_exception.dart' show HijackException;
+export 'src/message.dart' show extractBody;
 export 'src/middleware.dart' show Middleware, createMiddleware;
 export 'src/middleware/add_chunked_encoding.dart' show addChunkedEncoding;
 export 'src/middleware/logger.dart' show logRequests;
