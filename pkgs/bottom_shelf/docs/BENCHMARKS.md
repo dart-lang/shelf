@@ -81,6 +81,47 @@ and response `Content-Length` mismatch detection).
 | `shelf_router_param_user_42` | `jit` | 6.67 µs | 6.06 µs | -615.4 ns | -9.2% | **1.10x** |
 <!-- mdformat on -->
 
+## Bare-Metal W1–W8 HTTP Matrix (`Bluefin-DX`, `e405cae` → `b1f8998`)
+
+Measured on bare-metal Linux (`AMD Ryzen 9 PRO 8945HS`, 16 cores, `performance`
+CPU frequency governor, `0.00%` hypervisor steal time, `Dart 3.14.0-265.0.dev`
+AOT). Servers pinned to `CPU 0` (`1` isolate) or `CPU 0-3` (`4` isolates,
+`shared: true`), `wrk` (`-t 4 -c 64`) pinned to `CPU 4-7`, `3` interleaved
+trials × `3s` per cell (`shelf_io` → `bottom_shelf` → `dart:io`), reporting
+median RPS:
+
+<!-- mdformat off -->
+| ID | Endpoint | Iso | Pre `bottom_shelf` RPS (`e405cae`) | Post `bottom_shelf` RPS (`b1f8998`) | `bottom_shelf` After vs. Before | Post `shelf_io` RPS | Post `dart:io` RPS | Post `bs` vs `shelf_io` | Post `bs` vs `dart:io` | Post `bottom_shelf` p50 / p99 (ms) |
+| :--- | :--- | ---: | ---: | ---: | :--- | ---: | ---: | ---: | ---: | ---: |
+| **W1** | `GET /plaintext` | 1 | 43,187 | **48,772** | **1.13x (`+12.9%`)** | 23,417 | 38,610 | **2.08x** | **1.26x** | 1.28 / 2.07 |
+| **W2** | `GET /json` | 1 | 41,703 | **47,139** | **1.13x (`+13.0%`)** | 23,016 | 37,175 | **2.05x** | **1.27x** | 1.33 / 1.70 |
+| **W3** | `GET /user/42` | 1 | 37,438 | **43,199** | **1.15x (`+15.4%`)** | 21,226 | 36,706 | **2.04x** | **1.18x** | 1.45 / 1.79 |
+| **W4** | `GET /headers-auth` | 1 | 26,358 | **34,826** | **1.32x (`+32.1%`)** | 16,692 | 26,533 | **2.09x** | **1.31x** | 1.79 / 3.37 |
+| **W5** | `POST /echo-json` | 1 | 26,807 | **31,734** | **1.18x (`+18.4%`)** | 15,908 | 24,763 | **1.99x** | **1.28x** | 1.97 / 2.78 |
+| **W6** | `POST /upload-chunked` | 1 | 17,693 | **18,632** | **1.05x (`+5.3%`)** | 12,671 | 18,093 | **1.47x** | **1.03x** | 3.60 / 5.20 |
+| **W7a** | `GET /large-256k` | 1 | 3,858 | **13,019** | **3.37x (`+237.5%`)** | 10,468 | 11,310 | **1.24x** | **1.15x** | 4.83 / 6.52 |
+| **W7b** | `GET /large-1m` | 1 | 1,275 | **4,976** | **3.90x (`+290.3%`)** | 4,503 | 4,674 | **1.11x** | **1.06x** | 12.71 / **17.95** |
+| **W8-W1** | `GET /plaintext` | 4 | 184,996 | **208,601** | **1.13x (`+12.8%`)** | 99,994 | 159,529 | **2.09x** | **1.31x** | 0.29 / 2.54 |
+| **W8-W2** | `GET /json` | 4 | 181,616 | **202,661** | **1.12x (`+11.6%`)** | 97,234 | 153,294 | **2.08x** | **1.32x** | 0.29 / 1.65 |
+| **W8-W4** | `GET /headers-auth` | 4 | 107,756 | **144,073** | **1.34x (`+33.7%`)** | 68,705 | 104,901 | **2.10x** | **1.37x** | 0.39 / 1.88 |
+| **W8-W5** | `POST /echo-json` | 4 | 112,384 | **132,327** | **1.18x (`+17.7%`)** | 66,544 | 97,140 | **1.99x** | **1.36x** | 0.45 / 2.01 |
+<!-- mdformat on -->
+
+- **`12 / 12` Rows Ahead**: `bottom_shelf` (`b1f8998`) beats **both `shelf_io`
+  (`1.11x–2.10x`, geomean `1.82x`) and raw `dart:io` (`1.03x–1.37x`)** across
+  every workload quadrant.
+- **`W7a` (`256 KB`, `3.37x`) & `W7b` (`1 MB`, `3.90x`)**: Capping first-chunk
+  header+body coalescing at `$Limit.maxCoalesceChunkSize` (`16 KB`) eliminates
+  old-space `Uint8List` allocation and `memcpy` for large bodies (reducing
+  in-process user-space serialization cost in `pkg:bench_press` from `632.5 µs`
+  to `1.15 µs` — identical to a `13 B` response), while gating
+  `await socket.flush()` on pipelined depth (`>= 16` responses) drops `1 MB`
+  `p99` tail latency by **11.3x** (`202.27 ms` → `17.95 ms`).
+- **`W4` (`Request.change` Middleware, `1.32x` End-to-End / `4.76x` In-Process)**:
+  Implementing `Headers` on `LazyByteHeaderMap` and adding `Request._fastChange`
+  eliminates the 3-map allocation cascade (`CoV` in `pkg:bench_press` collapsed
+  from `±18.0%` to `±1.5%`).
+
 ## Real-NIC Two-VM Benchmarks (`gcp-http-bench` Phases 3–7 & Dart SDK CL 524644)
 
 Measured across two collocated GCP `c2d-standard-4` VMs over a real virtual NIC
