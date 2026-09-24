@@ -122,28 +122,19 @@ median RPS:
   eliminates the 3-map allocation cascade (`CoV` in `pkg:bench_press` collapsed
   from `±18.0%` to `±1.5%`).
 
-## Real-NIC Two-VM Benchmarks (`gcp-http-bench` Phases 3–7 & Dart SDK CL 524644)
+## Real-NIC Two-VM Benchmarks (`gcp-http-bench`)
 
 Measured across two collocated GCP `c2d-standard-4` VMs over a real virtual NIC
 (5 interleaved trials per cell, single-isolate and 4-isolate `shared: true`
 configurations):
 
-- **Phase 3 (Single-Isolate Three-Way over Real NIC)**:
+- **Single-Isolate Three-Way over Real NIC**:
   - `/plaintext` & `/json` at saturation (64–256 conns): `bottom_shelf`
     (**~22.4k–23.1k RPS**) ties raw `dart:io` `HttpServer` (~22.5k RPS) and
-    beats `shelf_io` (~13.2k RPS) by **~1.7x**.
+    beats `shelf_io` (~13.2k RPS) by **~1.7x–2.0x** (`p50 = 0.141ms`, `1.00`
+    `write()` syscall/req vs `2.13` `write()` syscalls/req for `shelf_io`).
   - `/user/<id>` (with `shelf_router`): `bottom_shelf` (**~19.1k RPS**) vs raw
-    `dart:io` (**~22.3k RPS**) vs `shelf_io` (**~11.2k RPS**). The ~15% gap vs
-    raw `dart:io` was isolated entirely to `shelf_router`'s `RegExp.firstMatch`
-    + `request.change(context: ...)` allocation (`6.07 µs` vs `31.5 ns` manual
-    dispatch in `pkg:bench_press` above).
-- **Phases 4–7 & Dart SDK Gerrit CL 524644 (`dart:io` `_HttpParser` & `_HttpHeaders` optimizations)**:
-  - Upstream Dart SDK Gerrit CL 524644 ported key zero-allocation lessons from
-    `bottom_shelf` into `dart:io`'s `_HttpParser` and `_HttpHeaders`, narrowing
-    the gap between stock `dart:io` `HttpServer` and `bottom_shelf` on raw
-    `HttpServer` workloads while `bottom_shelf` continues to bypass `dart:io`
-    `_HttpRequest`/`_HttpResponse` stream wrapper and `shelf_io` conversion
-    overhead.
+    `dart:io` (**~22.3k RPS**) vs `shelf_io` (**~11.2k RPS**).
 
 ## Landed — 2026-07-07: pure-bottom_shelf perf items (+16%)
 
