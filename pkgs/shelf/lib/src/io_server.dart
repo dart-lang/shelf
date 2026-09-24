@@ -27,9 +27,10 @@ class IOServer implements Server {
     // URL ambiguity with the ":" in the address.
     if (server.address.type == InternetAddressType.IPv6) {
       return Uri(
-          scheme: 'http',
-          host: '[${server.address.address}]',
-          port: server.port);
+        scheme: 'http',
+        host: '[${server.address.address}]',
+        port: server.port,
+      );
     }
 
     return Uri(scheme: 'http', host: server.address.address, port: server.port);

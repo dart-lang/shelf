@@ -1,5 +1,7 @@
 ## 3.0.1-wip
 
+* Require Dart `^3.9.0`.
+
 ## 3.0.0
 
 * **BREAKING:**: Change the signature of the `webSocketHandler` method's

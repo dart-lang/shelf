@@ -6,8 +6,9 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 void main() async {
-  var handler =
-      const Pipeline().addMiddleware(logRequests()).addHandler(_echoRequest);
+  var handler = const Pipeline()
+      .addMiddleware(logRequests())
+      .addHandler(_echoRequest);
 
   var server = await shelf_io.serve(handler, 'localhost', 8080);
 

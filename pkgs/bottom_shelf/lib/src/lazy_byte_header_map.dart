@@ -90,7 +90,7 @@ final class _LazySingleHeaderMap extends UnmodifiableMapBase<String, String> {
     if (_inner == null) {
       final map = _inner = CaseInsensitiveMap<String>();
       _parent.forEach((key, values) {
-        map[key] = joinHeaderValues(values)!;
+        map[key] = joinHeaderValues(values, name: key)!;
       });
     }
     return _inner!;
@@ -102,7 +102,7 @@ final class _LazySingleHeaderMap extends UnmodifiableMapBase<String, String> {
     if (_inner != null) return _inner![key];
     final values = _parent[key];
     if (values == null) return null;
-    return joinHeaderValues(values);
+    return joinHeaderValues(values, name: key);
   }
 
   @override

@@ -1,6 +1,6 @@
 ## 3.0.3-wip
 
-* Require Dart `^3.3.0`.
+* Require Dart `^3.9.0`.
 
 ## 3.0.2
 

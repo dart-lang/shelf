@@ -2,10 +2,10 @@
 
 | Category | Count |
 | --- | --- |
-| Total | 215 |
-| Passed | 101 |
-| Failed | 56 |
-| Warnings | 58 |
+| Total | 213 |
+| Passed | 109 |
+| Failed | 49 |
+| Warnings | 55 |
 | Accepted | 0 |
 | Errors | 0 |
 
@@ -20,7 +20,6 @@
 | CAP-INM-UNQUOTED | Capabilities | Warn | If-None-Match with unquoted ETag |
 | CAP-INM-WILDCARD | Capabilities | Warn | If-None-Match: * on existing resource returns 304 |
 | CAP-LAST-MODIFIED-304 | Capabilities | Warn | Last-Modified conditional GET returns 304 Not Modified |
-| COMP-405-ALLOW | Compliance | Warn | 405 response must include an Allow header |
 | COMP-ACCEPT-NONSENSE | Compliance | Warn | Unrecognized Accept value — server may return 406 or default representation |
 | COMP-ASTERISK-WITH-GET | Compliance | Fail | Asterisk-form (*) request-target with GET must be rejected |
 | COMP-CHUNKED-NO-FINAL | Compliance | Fail | Chunked body without zero terminator — incomplete transfer |
@@ -37,7 +36,6 @@
 | COMP-LEADING-CRLF | Compliance | Warn | Leading CRLF before request-line — server may ignore per RFC |
 | COMP-METHOD-CASE | Compliance | Fail | Lowercase method 'get' — methods are case-sensitive per RFC |
 | COMP-METHOD-TRACE | Compliance | Fail | TRACE request — should be disabled in production |
-| COMP-NO-CL-IN-204 | Compliance | Warn | Server must not send Content-Length in a 204 response |
 | COMP-OPTIONS-ALLOW | Compliance | Fail | OPTIONS response should include Allow header listing supported methods |
 | COMP-OPTIONS-STAR | Compliance | Fail | OPTIONS * is the only valid asterisk-form request |
 | COMP-POST-CL-UNDERSEND | Compliance | Fail | POST with Content-Length: 10 but only 5 bytes sent — incomplete body |
@@ -46,7 +44,6 @@
 | COMP-TRACE-SENSITIVE | Compliance | Fail | TRACE should exclude sensitive headers from echoed response |
 | COMP-TRACE-WITH-BODY | Compliance | Fail | TRACE with Content-Length body should be rejected |
 | COMP-UNKNOWN-METHOD | Compliance | Fail | Unrecognized method should be rejected with 501 or 405 |
-| COMP-UNKNOWN-TE-501 | Compliance | Fail | Unknown Transfer-Encoding without CL should be rejected with 501 |
 | COMP-VERSION-CASE | Compliance | Warn | HTTP version is case-sensitive — lowercase 'http' must be rejected |
 | COMP-VERSION-LEADING-ZEROS | Compliance | Warn | HTTP/01.01 — leading zeros in version digits are invalid |
 | COMP-VERSION-MISSING-MINOR | Compliance | Warn | HTTP/1 with no minor version digit is invalid |
@@ -88,7 +85,6 @@
 | SMUG-CHUNK-LF-TRAILER | Smuggling | Warn | Bare LF in chunked trailer termination — server MAY accept bare LF per RFC 9112 §2.2 |
 | SMUG-CHUNK-MISSING-TRAILING-CRLF | Smuggling | Fail | Chunk data without trailing CRLF must be rejected |
 | SMUG-CHUNK-SPILL | Smuggling | Fail | Chunk declares size 5 but sends 7 bytes — oversized chunk data must be rejected |
-| SMUG-CHUNKED-WITH-PARAMS | Smuggling | Warn | Transfer-Encoding: chunked;ext=val — parameters on chunked encoding |
 | SMUG-CL-DOUBLE-ZERO | Smuggling | Warn | Content-Length: 00 — matches 1*DIGIT but leading zero ambiguity |
 | SMUG-CL-EXTRA-LEADING-SP | Smuggling | Warn | Content-Length with extra leading whitespace (double space OWS) |
 | SMUG-CL-LEADING-ZEROS | Smuggling | Warn | Content-Length with leading zeros — valid per 1*DIGIT grammar but may cause parser disagreement |
@@ -101,7 +97,6 @@
 | SMUG-CLTE-PIPELINE | Smuggling | Warn | CL.TE conflict — both Content-Length and Transfer-Encoding: chunked present |
 | SMUG-CLTE-SMUGGLED-GET | Smuggling | Fail | CL.TE desync — embedded GET in body; multiple responses indicate request boundary confusion |
 | SMUG-CLTE-SMUGGLED-GET-TE-CASE-MISMATCH | Smuggling | Fail | CL.TE desync with TE case mismatch — multiple responses indicate request boundary confusion |
-| SMUG-CLTE-SMUGGLED-GET-TE-LEADING-COMMA | Smuggling | Fail | CL.TE desync with TE leading comma — multiple responses indicate request boundary confusion |
 | SMUG-CLTE-SMUGGLED-GET-TE-OBS-FOLD | Smuggling | Fail | CL.TE desync with obs-folded Transfer-Encoding — multiple responses indicate request boundary confusion |
 | SMUG-CLTE-SMUGGLED-GET-TE-TRAILING-SPACE | Smuggling | Fail | CL.TE desync with TE trailing space — multiple responses indicate request boundary confusion |
 | SMUG-CLTE-SMUGGLED-HEAD | Smuggling | Fail | CL.TE desync — embedded HEAD in body; multiple responses indicate request boundary confusion |
@@ -111,11 +106,6 @@
 | SMUG-MULTIPLE-HOST-COMMA | Smuggling | Fail | Host header with comma-separated values must be rejected |
 | SMUG-OPTIONS-CL-BODY | Smuggling | Fail | OPTIONS with Content-Length and body — server should consume or reject body |
 | SMUG-OPTIONS-CL-BODY-DESYNC | Smuggling | Fail | OPTIONS with Content-Length body followed by a second request — detects unread-body desync |
-| SMUG-TE-DUPLICATE-HEADERS-SMUGGLED-GET | Smuggling | Fail | TE.TE + CL ambiguity with embedded GET — multiple responses indicate request boundary confusion |
-| SMUG-TE-EMPTY-VALUE | Smuggling | Fail | Transfer-Encoding with empty value must be rejected |
-| SMUG-TE-IDENTITY | Smuggling | Fail | Transfer-Encoding: identity (deprecated) with CL must be rejected |
-| SMUG-TE-NOT-FINAL-CHUNKED | Smuggling | Fail | Transfer-Encoding where chunked is not final — server MUST respond with 400 (RFC 9112 §6.3) |
-| SMUG-TE-XCHUNKED | Smuggling | Fail | Transfer-Encoding: xchunked must not be treated as chunked |
 | SMUG-TECL-CONN-CLOSE | Smuggling | Fail | TE+CL conflict (reversed order) — server MUST close connection after responding |
 | SMUG-TECL-DESYNC | Smuggling | Fail | TE.CL desync — chunked terminator before CL boundary, leftover bytes smuggled |
 | SMUG-TECL-PIPELINE | Smuggling | Warn | TE.CL conflict — Transfer-Encoding: chunked + conflicting Content-Length |

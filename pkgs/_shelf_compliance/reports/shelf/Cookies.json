@@ -68,7 +68,7 @@
     "verdict": "Pass",
     "statusCode": 200,
     "rawRequest": "GET /echo HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nCookie: a=1\r\nCookie: b=2\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 40\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\ncookie: a=1,b=2\r\nhost: 127.0.0.1:<PORT>\r\n",
+    "rawResponse": "HTTP/1.1 200 OK\r\nx-powered-by: Dart with package:shelf\r\ndate: <DATE>\r\ncontent-length: 41\r\nx-frame-options: SAMEORIGIN\r\ncontent-type: text/plain; charset=utf-8\r\nx-xss-protection: 1; mode=block\r\nx-content-type-options: nosniff\r\n\r\ncookie: a=1; b=2\r\nhost: 127.0.0.1:<PORT>\r\n",
     "behavioralNote": "Both cookies echoed"
   },
   {

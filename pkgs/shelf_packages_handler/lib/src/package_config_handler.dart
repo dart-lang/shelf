@@ -21,7 +21,7 @@ class PackageConfigHandler {
   final Map<String, Uri>? _packageMap;
 
   PackageConfigHandler({Map<String, Uri>? packageMap})
-      : _packageMap = packageMap;
+    : _packageMap = packageMap;
 
   /// The callback for handling a single request.
   Future<Response> handleRequest(Request request) async {
@@ -39,14 +39,17 @@ class PackageConfigHandler {
           packageUri = _packageMap[packageName];
         } else {
           final fakeResolvedUri = await Isolate.resolvePackageUri(
-              Uri(scheme: 'package', path: '$packageName/'));
+            Uri(scheme: 'package', path: '$packageName/'),
+          );
           packageUri = fakeResolvedUri;
         }
 
         final handler = packageUri == null
             ? (_) => Response.notFound('Package $packageName not found.')
-            : createStaticHandler(p.fromUri(packageUri),
-                serveFilesOutsidePath: true);
+            : createStaticHandler(
+                p.fromUri(packageUri),
+                serveFilesOutsidePath: true,
+              );
 
         return handler;
       });

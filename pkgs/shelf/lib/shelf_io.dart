@@ -88,12 +88,17 @@ void serveRequests(
   Handler handler, {
   String? poweredByHeader = 'Dart with package:shelf',
 }) {
-  catchTopLevelErrors(() {
-    requests.listen((request) =>
-        handleRequest(request, handler, poweredByHeader: poweredByHeader));
-  }, (error, stackTrace) {
-    _logTopLevelError('Asynchronous error\n$error', stackTrace);
-  });
+  catchTopLevelErrors(
+    () {
+      requests.listen(
+        (request) =>
+            handleRequest(request, handler, poweredByHeader: poweredByHeader),
+      );
+    },
+    (error, stackTrace) {
+      _logTopLevelError('Asynchronous error\n$error', stackTrace);
+    },
+  );
 }
 
 /// Uses [handler] to handle [request].
@@ -162,8 +167,10 @@ Future<void> handleRequest(
   }
 
   var message = StringBuffer()
-    ..writeln('Got a response for hijacked request '
-        '${shelfRequest.method} ${shelfRequest.requestedUri}:')
+    ..writeln(
+      'Got a response for hijacked request '
+      '${shelfRequest.method} ${shelfRequest.requestedUri}:',
+    )
     ..writeln(response.statusCode);
   response.headers.forEach((key, value) => message.writeln('$key: $value'));
   throw Exception(message.toString().trim());
@@ -197,7 +204,10 @@ Request _fromHttpRequest(HttpRequest request) {
 }
 
 Future<void> _writeResponse(
-    Response response, HttpResponse httpResponse, String? poweredByHeader) {
+  Response response,
+  HttpResponse httpResponse,
+  String? poweredByHeader,
+) {
   if (response.context.containsKey('shelf.io.buffer_output')) {
     httpResponse.bufferOutput =
         response.context['shelf.io.buffer_output'] as bool;
@@ -271,9 +281,9 @@ Response _logError(Request request, String message, StackTrace stackTrace) {
 }
 
 void _logTopLevelError(String message, StackTrace stackTrace) {
-  final chain = Chain.forTrace(stackTrace)
-      .foldFrames((frame) => frame.isCore || frame.package == 'shelf')
-      .terse;
+  final chain = Chain.forTrace(
+    stackTrace,
+  ).foldFrames((frame) => frame.isCore || frame.package == 'shelf').terse;
 
   stderr.writeln('ERROR - ${DateTime.now()}');
   stderr.writeln(message);

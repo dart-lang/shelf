@@ -15,15 +15,18 @@ void main() {
     await d.file('root.txt', 'root txt').create();
     await d.dir('files', [
       d.file('test.txt', 'test txt content'),
-      d.file('with space.txt', 'with space content')
+      d.file('with space.txt', 'with space content'),
     ]).create();
   });
 
   test('access root file', () async {
     final handler = createStaticHandler(d.sandbox);
 
-    final response =
-        await makeRequest(handler, '/static/root.txt', handlerPath: 'static');
+    final response = await makeRequest(
+      handler,
+      '/static/root.txt',
+      handlerPath: 'static',
+    );
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 8);
     expect(response.readAsString(), completion('root txt'));
@@ -33,8 +36,10 @@ void main() {
     final handler = createStaticHandler(d.sandbox);
 
     final response = await makeRequest(
-        handler, '/static/files/with%20space.txt',
-        handlerPath: 'static');
+      handler,
+      '/static/files/with%20space.txt',
+      handlerPath: 'static',
+    );
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
     expect(response.readAsString(), completion('with space content'));
@@ -44,8 +49,10 @@ void main() {
     final handler = createStaticHandler(d.sandbox);
 
     final response = await makeRequest(
-        handler, '/static/files/with%20space.txt',
-        handlerPath: 'static');
+      handler,
+      '/static/files/with%20space.txt',
+      handlerPath: 'static',
+    );
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 18);
     expect(response.readAsString(), completion('with space content'));
@@ -54,8 +61,11 @@ void main() {
   test('access file under directory', () async {
     final handler = createStaticHandler(d.sandbox);
 
-    final response = await makeRequest(handler, '/static/files/test.txt',
-        handlerPath: 'static');
+    final response = await makeRequest(
+      handler,
+      '/static/files/test.txt',
+      handlerPath: 'static',
+    );
     expect(response.statusCode, HttpStatus.ok);
     expect(response.contentLength, 16);
     expect(response.readAsString(), completion('test txt content'));
@@ -64,8 +74,11 @@ void main() {
   test('file not found', () async {
     final handler = createStaticHandler(d.sandbox);
 
-    final response = await makeRequest(handler, '/static/not_here.txt',
-        handlerPath: 'static');
+    final response = await makeRequest(
+      handler,
+      '/static/not_here.txt',
+      handlerPath: 'static',
+    );
     expect(response.statusCode, HttpStatus.notFound);
   });
 }

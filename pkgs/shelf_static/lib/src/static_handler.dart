@@ -50,18 +50,22 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 ///
 /// If [maxAge] is provided, it is used to set the `Cache-Control` header
 /// with a `max-age` value in seconds.
-Handler createStaticHandler(String fileSystemPath,
-    {bool serveFilesOutsidePath = false,
-    String? defaultDocument,
-    bool listDirectories = false,
-    bool useHeaderBytesForContentType = false,
-    MimeTypeResolver? contentTypeResolver,
-    FutureOr<String?> Function(File, FileStat)? generateETag,
-    Duration? maxAge}) {
+Handler createStaticHandler(
+  String fileSystemPath, {
+  bool serveFilesOutsidePath = false,
+  String? defaultDocument,
+  bool listDirectories = false,
+  bool useHeaderBytesForContentType = false,
+  MimeTypeResolver? contentTypeResolver,
+  FutureOr<String?> Function(File, FileStat)? generateETag,
+  Duration? maxAge,
+}) {
   final rootDir = Directory(fileSystemPath);
   if (!rootDir.existsSync()) {
-    throw ArgumentError('A directory corresponding to fileSystemPath '
-        '"$fileSystemPath" could not be found');
+    throw ArgumentError(
+      'A directory corresponding to fileSystemPath '
+      '"$fileSystemPath" could not be found',
+    );
   }
 
   fileSystemPath = rootDir.resolveSymbolicLinksSync();
@@ -100,8 +104,11 @@ Handler createStaticHandler(String fileSystemPath,
       if (fileFound == null && listDirectories) {
         final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
-        return listDirectory(fileSystemPath, fsPath,
-            serveFilesOutsidePath: serveFilesOutsidePath);
+        return listDirectory(
+          fileSystemPath,
+          fsPath,
+          serveFilesOutsidePath: serveFilesOutsidePath,
+        );
       }
     }
 
@@ -127,31 +134,41 @@ Handler createStaticHandler(String fileSystemPath,
       return _redirectToAddTrailingSlash(uri);
     }
 
-    return _handleFile(request, file, () async {
-      if (useHeaderBytesForContentType) {
-        final length =
-            math.min(mimeResolver.magicNumbersMaxLength, await file.length());
+    return _handleFile(
+      request,
+      file,
+      () async {
+        if (useHeaderBytesForContentType) {
+          final length = math.min(
+            mimeResolver.magicNumbersMaxLength,
+            await file.length(),
+          );
 
-        final byteSink = ByteAccumulatorSink();
+          final byteSink = ByteAccumulatorSink();
 
-        await file.openRead(0, length).listen(byteSink.add).asFuture<void>();
+          await file.openRead(0, length).listen(byteSink.add).asFuture<void>();
 
-        return mimeResolver.lookup(file.path, headerBytes: byteSink.bytes);
-      } else {
-        return mimeResolver.lookup(file.path);
-      }
-    }, generateETag: generateETag, maxAge: maxAge, fileStat: fileStat);
+          return mimeResolver.lookup(file.path, headerBytes: byteSink.bytes);
+        } else {
+          return mimeResolver.lookup(file.path);
+        }
+      },
+      generateETag: generateETag,
+      maxAge: maxAge,
+      fileStat: fileStat,
+    );
   };
 }
 
 Response _redirectToAddTrailingSlash(Uri uri) {
   final location = Uri(
-      scheme: uri.scheme,
-      userInfo: uri.userInfo,
-      host: uri.host,
-      port: uri.port,
-      path: '${uri.path}/',
-      query: uri.query);
+    scheme: uri.scheme,
+    userInfo: uri.userInfo,
+    host: uri.host,
+    port: uri.port,
+    path: '${uri.path}/',
+    query: uri.query,
+  );
 
   return Response.movedPermanently(location.toString());
 }
@@ -175,11 +192,13 @@ Response _redirectToAddTrailingSlash(Uri uri) {
 ///
 /// If [maxAge] is provided, it is used to set the `Cache-Control` header
 /// with a `max-age` value in seconds.
-Handler createFileHandler(String path,
-    {String? url,
-    String? contentType,
-    FutureOr<String?> Function(File, FileStat)? generateETag,
-    Duration? maxAge}) {
+Handler createFileHandler(
+  String path, {
+  String? url,
+  String? contentType,
+  FutureOr<String?> Function(File, FileStat)? generateETag,
+  Duration? maxAge,
+}) {
   final file = File(path);
   if (!file.existsSync()) {
     throw ArgumentError.value(path, 'path', 'does not exist.');
@@ -192,8 +211,13 @@ Handler createFileHandler(String path,
 
   return (request) async {
     if (request.url.path != url) return Response.notFound('Not Found');
-    return _handleFile(request, file, () => mimeType,
-        generateETag: generateETag, maxAge: maxAge);
+    return _handleFile(
+      request,
+      file,
+      () => mimeType,
+      generateETag: generateETag,
+      maxAge: maxAge,
+    );
   };
 }
 
@@ -203,10 +227,13 @@ Handler createFileHandler(String path,
 /// indicates that it has the latest version of a file. Otherwise, it calls
 /// [getContentType] and uses it to populate the Content-Type header.
 Future<Response> _handleFile(
-    Request request, File file, FutureOr<String?> Function() getContentType,
-    {FutureOr<String?> Function(File, FileStat)? generateETag,
-    Duration? maxAge,
-    FileStat? fileStat}) async {
+  Request request,
+  File file,
+  FutureOr<String?> Function() getContentType, {
+  FutureOr<String?> Function(File, FileStat)? generateETag,
+  Duration? maxAge,
+  FileStat? fileStat,
+}) async {
   final stat = fileStat ?? await file.stat();
   final ifModifiedSince = request.ifModifiedSince;
   final ifNoneMatch = request.headers[HttpHeaders.ifNoneMatchHeader];
@@ -216,7 +243,7 @@ Future<Response> _handleFile(
 
   final cacheHeaders = {
     HttpHeaders.lastModifiedHeader: formatHttpDate(stat.modified),
-    if (etag != null) HttpHeaders.etagHeader: etag,
+    HttpHeaders.etagHeader: ?etag,
     if (maxAge != null)
       HttpHeaders.cacheControlHeader: 'public, max-age=${maxAge.inSeconds}',
   };
@@ -242,7 +269,7 @@ Future<Response> _handleFile(
   final headers = {
     ...cacheHeaders,
     HttpHeaders.acceptRangesHeader: 'bytes',
-    if (contentType != null) HttpHeaders.contentTypeHeader: contentType,
+    HttpHeaders.contentTypeHeader: ?contentType,
   };
 
   return _fileRangeResponse(request, file, stat.size, headers) ??
@@ -257,7 +284,7 @@ String _defaultGenerateETag(File file, FileStat stat) =>
 
 final _bytesMatcher = RegExp(r'^bytes=(\d*)-(\d*)$');
 
-/// Serves a range of [file], if [request] is valid 'bytes' range request.
+/// Serves a range of [file], if [request] is a valid 'bytes' range request.
 ///
 /// If the request does not specify a range, specifies a range of the wrong
 /// type, or has a syntactic error the range is ignored and `null` is returned.
@@ -267,7 +294,11 @@ final _bytesMatcher = RegExp(r'^bytes=(\d*)-(\d*)$');
 ///
 /// Ranges that end past the end of the file are truncated.
 Response? _fileRangeResponse(
-    Request request, File file, int actualLength, Map<String, Object> headers) {
+  Request request,
+  File file,
+  int actualLength,
+  Map<String, Object> headers,
+) {
   final range = request.headers[HttpHeaders.rangeHeader];
   if (range == null) return null;
   final matches = _bytesMatcher.firstMatch(range);
@@ -281,27 +312,47 @@ Response? _fileRangeResponse(
   int start; // First byte position - inclusive.
   int end; // Last byte position - inclusive.
   if (startMatch.isEmpty) {
-    start = actualLength - int.parse(endMatch);
-    if (start < 0) start = 0;
+    // `endMatch` is guaranteed non-empty because `"bytes=-"` is rejected above.
+    // If `parsedEnd` is null, the suffix length exceeds the 64-bit int range.
+    // Per RFC 7233 § 2.1, if the suffix length is larger than the file length,
+    // the entire file is used (start = 0).
+    final parsedEnd = int.tryParse(endMatch);
+    if (parsedEnd == null) {
+      start = 0;
+    } else {
+      start = actualLength - parsedEnd;
+      if (start < 0) start = 0;
+    }
     end = actualLength - 1;
+    if (start > end) return null;
   } else {
-    start = int.parse(startMatch);
-    end = endMatch.isEmpty ? actualLength - 1 : int.parse(endMatch);
+    final parsedStart = int.tryParse(startMatch);
+    final parsedEnd = endMatch.isEmpty ? null : int.tryParse(endMatch);
+
+    // If end is specified and start > end, range is syntactically invalid
+    // (RFC 2616 / RFC 7233).
+    if (endMatch.isNotEmpty) {
+      if (parsedStart == null && parsedEnd != null) return null;
+      if (parsedStart != null && parsedEnd != null && parsedStart > parsedEnd) {
+        return null;
+      }
+    }
+
+    // Since `startMatch` is not empty, if `parsedStart` is null then it
+    // must be larger than can fit in the Dart `int` type (overflow).
+    if (parsedStart == null || parsedStart >= actualLength) {
+      return Response(
+        HttpStatus.requestedRangeNotSatisfiable,
+        headers: headers,
+      );
+    }
+
+    start = parsedStart;
+    end = (parsedEnd == null || parsedEnd >= actualLength)
+        ? actualLength - 1
+        : parsedEnd;
   }
 
-  // If the range is syntactically invalid the Range header
-  // MUST be ignored (RFC 2616 section 14.35.1).
-  if (start > end) return null;
-
-  if (end >= actualLength) {
-    end = actualLength - 1;
-  }
-  if (start >= actualLength) {
-    return Response(
-      HttpStatus.requestedRangeNotSatisfiable,
-      headers: headers,
-    );
-  }
   return Response(
     HttpStatus.partialContent,
     body: request.method == 'HEAD' ? null : file.openRead(start, end + 1),

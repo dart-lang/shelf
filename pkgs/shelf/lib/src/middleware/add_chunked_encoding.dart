@@ -18,21 +18,24 @@ import '../middleware.dart';
 /// This is intended for use by
 /// [Shelf adapters](https://pub.dev/packages/shelf#adapters) rather than
 /// end-users.
-final addChunkedEncoding = createMiddleware(responseHandler: (response) {
-  if (response.contentLength != null) return response;
-  if (response.statusCode < 200) return response;
-  if (response.statusCode == 204) return response;
-  if (response.statusCode == 304) return response;
-  if (response.mimeType == 'multipart/byteranges') return response;
+final addChunkedEncoding = createMiddleware(
+  responseHandler: (response) {
+    if (response.contentLength != null) return response;
+    if (response.statusCode < 200) return response;
+    if (response.statusCode == 204) return response;
+    if (response.statusCode == 304) return response;
+    if (response.mimeType == 'multipart/byteranges') return response;
 
-  // We only check the last coding here because HTTP requires that the chunked
-  // encoding be listed last.
-  var coding = response.headers['transfer-encoding'];
-  if (coding != null && !equalsIgnoreAsciiCase(coding, 'identity')) {
-    return response;
-  }
+    // We only check the last coding here because HTTP requires that the chunked
+    // encoding be listed last.
+    var coding = response.headers['transfer-encoding'];
+    if (coding != null && !equalsIgnoreAsciiCase(coding, 'identity')) {
+      return response;
+    }
 
-  return response.change(
+    return response.change(
       headers: {'transfer-encoding': 'chunked'},
-      body: chunkedCoding.encoder.bind(response.read()));
-});
+      body: chunkedCoding.encoder.bind(response.read()),
+    );
+  },
+);

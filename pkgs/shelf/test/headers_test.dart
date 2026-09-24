@@ -15,10 +15,12 @@ void main() {
   });
 
   test('Headers.fromEntries', () {
-    var header = Headers.fromEntries({
-      'FoO': ['x', 'y'],
-      'bAr': ['z'],
-    }.entries);
+    var header = Headers.fromEntries(
+      {
+        'FoO': ['x', 'y'],
+        'bAr': ['z'],
+      }.entries,
+    );
 
     expect(header['foo'], equals(['x', 'y']));
     expect(header['BAR'], equals(['z']));

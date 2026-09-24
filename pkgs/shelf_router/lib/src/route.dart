@@ -86,7 +86,5 @@ class Route {
   const Route.trace(this.route) : verb = 'TRACE';
 
   /// Route `MOUNT` requests matching [route] to annotated method.
-  const Route.mount(String prefix)
-      : verb = r'$mount',
-        route = prefix;
+  const Route.mount(String prefix) : verb = r'$mount', route = prefix;
 }

@@ -69,8 +69,13 @@ class Response extends Message {
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
-  }) : this(200,
-            body: body, headers: headers, encoding: encoding, context: context);
+  }) : this(
+         200,
+         body: body,
+         headers: headers,
+         encoding: encoding,
+         context: context,
+       );
 
   /// Constructs a 301 Moved Permanently response.
   ///
@@ -100,14 +105,7 @@ class Response extends Message {
     Map<String, /* String | List<String> */ Object>? headers,
     Encoding? encoding,
     Map<String, Object>? context,
-  }) : this._redirect(
-          302,
-          location,
-          body,
-          headers,
-          encoding,
-          context: context,
-        );
+  }) : this._redirect(302, location, body, headers, encoding, context: context);
 
   /// Constructs a 303 See Other response.
   ///
@@ -134,12 +132,12 @@ class Response extends Message {
     Encoding? encoding, {
     Map<String, Object>? context,
   }) : this(
-          statusCode,
-          body: body,
-          encoding: encoding,
-          headers: addHeader(headers, 'location', _locationToString(location)),
-          context: context,
-        );
+         statusCode,
+         body: body,
+         encoding: encoding,
+         headers: addHeader(headers, 'location', _locationToString(location)),
+         context: context,
+       );
 
   /// Constructs a 304 Not Modified response.
   ///
@@ -156,12 +154,13 @@ class Response extends Message {
     Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
   }) : this(
-          304,
-          headers: removeHeader(
-              addHeader(headers, 'date', formatHttpDate(DateTime.now())),
-              'content-length'),
-          context: context,
-        );
+         304,
+         headers: removeHeader(
+           addHeader(headers, 'date', formatHttpDate(DateTime.now())),
+           'content-length',
+         ),
+         context: context,
+       );
 
   /// Constructs a 400 Bad Request response.
   ///
@@ -174,12 +173,12 @@ class Response extends Message {
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
-          400,
-          headers: body == null ? _adjustErrorHeaders(headers) : headers,
-          body: body ?? 'Bad Request',
-          context: context,
-          encoding: encoding,
-        );
+         400,
+         headers: body == null ? _adjustErrorHeaders(headers) : headers,
+         body: body ?? 'Bad Request',
+         context: context,
+         encoding: encoding,
+       );
 
   /// Constructs a 401 Unauthorized response.
   ///
@@ -193,12 +192,12 @@ class Response extends Message {
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
-          401,
-          headers: body == null ? _adjustErrorHeaders(headers) : headers,
-          body: body ?? 'Unauthorized',
-          context: context,
-          encoding: encoding,
-        );
+         401,
+         headers: body == null ? _adjustErrorHeaders(headers) : headers,
+         body: body ?? 'Unauthorized',
+         context: context,
+         encoding: encoding,
+       );
 
   /// Constructs a 403 Forbidden response.
   ///
@@ -211,12 +210,12 @@ class Response extends Message {
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
-          403,
-          headers: body == null ? _adjustErrorHeaders(headers) : headers,
-          body: body ?? 'Forbidden',
-          context: context,
-          encoding: encoding,
-        );
+         403,
+         headers: body == null ? _adjustErrorHeaders(headers) : headers,
+         body: body ?? 'Forbidden',
+         context: context,
+         encoding: encoding,
+       );
 
   /// Constructs a 404 Not Found response.
   ///
@@ -230,12 +229,12 @@ class Response extends Message {
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
-          404,
-          headers: body == null ? _adjustErrorHeaders(headers) : headers,
-          body: body ?? 'Not Found',
-          context: context,
-          encoding: encoding,
-        );
+         404,
+         headers: body == null ? _adjustErrorHeaders(headers) : headers,
+         body: body ?? 'Not Found',
+         context: context,
+         encoding: encoding,
+       );
 
   /// Constructs a 500 Internal Server Error response.
   ///
@@ -249,12 +248,12 @@ class Response extends Message {
     Encoding? encoding,
     Map<String, Object>? context,
   }) : this(
-          500,
-          headers: body == null ? _adjustErrorHeaders(headers) : headers,
-          body: body ?? 'Internal Server Error',
-          context: context,
-          encoding: encoding,
-        );
+         500,
+         headers: body == null ? _adjustErrorHeaders(headers) : headers,
+         body: body ?? 'Internal Server Error',
+         context: context,
+         encoding: encoding,
+       );
 
   /// Constructs an HTTP response with the given [statusCode].
   ///
@@ -317,15 +316,18 @@ class Response extends Message {
 /// Returns a new map without modifying [headers]. This is used to add
 /// content-type information when creating a 500 response with a default body.
 Map<String, Object> _adjustErrorHeaders(
-    Map<String, /* String | List<String> */ Object>? headers) {
+  Map<String, /* String | List<String> */ Object>? headers,
+) {
   if (headers == null || headers['content-type'] == null) {
     return addHeader(headers, 'content-type', 'text/plain');
   }
 
-  final contentTypeValue =
-      expandHeaderValue(headers['content-type']!).join(',');
-  var contentType =
-      MediaType.parse(contentTypeValue).change(mimeType: 'text/plain');
+  final contentTypeValue = expandHeaderValue(
+    headers['content-type']!,
+  ).join(',');
+  var contentType = MediaType.parse(
+    contentTypeValue,
+  ).change(mimeType: 'text/plain');
   return addHeader(headers, 'content-type', contentType.toString());
 }
 

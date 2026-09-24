@@ -25,8 +25,7 @@ Request _fromPath(
   String path,
   Map<String, String>? headers, {
   required String method,
-}) =>
-    Request(method, Uri.parse('http://localhost$path'), headers: headers);
+}) => Request(method, Uri.parse('http://localhost$path'), headers: headers);
 
 Handler _rootHandler(String? path, Handler handler) {
   if (path == null || path.isEmpty) {
@@ -52,7 +51,7 @@ class _SecondResolutionDateTimeMatcher extends Matcher {
   final DateTime _target;
 
   _SecondResolutionDateTimeMatcher(DateTime target)
-      : _target = toSecondResolution(target);
+    : _target = toSecondResolution(target);
 
   @override
   bool matches(dynamic item, Map<dynamic, dynamic> matchState) {
@@ -62,9 +61,10 @@ class _SecondResolutionDateTimeMatcher extends Matcher {
   }
 
   @override
-  Description describe(Description description) =>
-      description.add('Must be at the same moment as $_target with resolution '
-          'to the second.');
+  Description describe(Description description) => description.add(
+    'Must be at the same moment as $_target with resolution '
+    'to the second.',
+  );
 }
 
 bool _datesEqualToSecond(DateTime d1, DateTime d2) =>

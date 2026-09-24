@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// While we support the older pkg:analyzer version
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async' show Future;
 
 import 'package:analyzer/dart/element/element.dart'
@@ -25,8 +22,8 @@ import 'package:code_builder/code_builder.dart' as code;
 import 'package:http_methods/http_methods.dart' show isHttpMethod;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
-import 'package:shelf_router/src/router_entry.dart' // ignore: implementation_imports
-    show RouterEntry;
+// ignore: implementation_imports
+import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 import 'package:source_gen/source_gen.dart' as g;
 
 // Type checkers that we need later

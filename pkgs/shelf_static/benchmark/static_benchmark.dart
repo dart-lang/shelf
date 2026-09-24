@@ -36,7 +36,8 @@ void main() async {
     smallFileStopwatch.stop();
     print('Total time: ${smallFileStopwatch.elapsedMilliseconds} ms');
     print(
-        'Req/sec (small.txt): ${(iterationsSmall / smallFileStopwatch.elapsedMicroseconds * 1000000).toStringAsFixed(2)}');
+      'Req/sec (small.txt): ${(iterationsSmall / smallFileStopwatch.elapsedMicroseconds * 1000000).toStringAsFixed(2)}',
+    );
 
     print('Warming up large.txt...');
     for (var i = 0; i < 10; i++) {
@@ -56,7 +57,8 @@ void main() async {
     largeFileStopwatch.stop();
     print('Total time: ${largeFileStopwatch.elapsedMilliseconds} ms');
     print(
-        'Req/sec (large.txt): ${(iterationsLarge / largeFileStopwatch.elapsedMicroseconds * 1000000).toStringAsFixed(2)}');
+      'Req/sec (large.txt): ${(iterationsLarge / largeFileStopwatch.elapsedMicroseconds * 1000000).toStringAsFixed(2)}',
+    );
   } finally {
     tempDir.deleteSync(recursive: true);
   }

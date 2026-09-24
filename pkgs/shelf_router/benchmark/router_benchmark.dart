@@ -17,9 +17,11 @@ class RouterWorstCaseBenchmark extends AsyncBenchmarkBase {
     // Creating request for the LAST route in the VERY LAST controller to
     // trigger worst-case matching
     request = Request(
-        'GET',
-        Uri.parse(
-            'http://localhost/api/controller_${_controllers - 1}/resource/${_routesPerController - 1}/details'));
+      'GET',
+      Uri.parse(
+        'http://localhost/api/controller_${_controllers - 1}/resource/${_routesPerController - 1}/details',
+      ),
+    );
   }
 
   @override
@@ -41,9 +43,9 @@ class RouterNotFoundBenchmark extends AsyncBenchmarkBase {
 
     // Creating request that does not match ANY of the routes
     request = Request(
-        'GET',
-        Uri.parse(
-            'http://localhost/api/controller_${_controllers - 1}/foo/bar'));
+      'GET',
+      Uri.parse('http://localhost/api/controller_${_controllers - 1}/foo/bar'),
+    );
   }
 
   @override

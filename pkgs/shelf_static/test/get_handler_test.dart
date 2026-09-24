@@ -12,7 +12,7 @@ void main() {
     await d.file('root.txt', 'root txt').create();
     await d.dir('files', [
       d.file('test.txt', 'test txt content'),
-      d.file('with space.txt', 'with space content')
+      d.file('with space.txt', 'with space content'),
     ]).create();
   });
 

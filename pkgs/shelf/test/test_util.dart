@@ -19,10 +19,16 @@ final Matcher throwsHijackException = throwsA(isA<HijackException>());
 ///
 /// By default, replies with a status code 200, empty headers, and
 /// `Hello from ${request.url.path}`.
-Response syncHandler(Request request,
-    {int? statusCode, Map<String, String>? headers}) {
-  return Response(statusCode ?? 200,
-      headers: headers, body: 'Hello from ${request.requestedUri.path}');
+Response syncHandler(
+  Request request, {
+  int? statusCode,
+  Map<String, String>? headers,
+}) {
+  return Response(
+    statusCode ?? 200,
+    headers: headers,
+    body: 'Hello from ${request.requestedUri.path}',
+  );
 }
 
 /// Calls [syncHandler] and wraps the response in a [Future].
@@ -37,5 +43,8 @@ final _request = Request('GET', localhostUri);
 
 final localhostUri = Uri.parse('http://localhost/');
 
-final isOhNoStateError =
-    isA<StateError>().having((p0) => p0.message, 'message', 'oh no');
+final isOhNoStateError = isA<StateError>().having(
+  (p0) => p0.message,
+  'message',
+  'oh no',
+);

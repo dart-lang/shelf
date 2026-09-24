@@ -3,10 +3,8 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:test/test.dart';
 
 void main() {
-  Future<Response> get(Router router, String path) async {
-    return await router
-        .call(Request('GET', Uri.parse('http://localhost$path')));
-  }
+  Future<Response> get(Router router, String path) =>
+      router.call(Request('GET', Uri.parse('http://localhost$path')));
 
   test('handles root paths correctly', () async {
     final router = Router();
@@ -34,8 +32,10 @@ void main() {
 
   test('stops parsing static prefix at first parameter', () async {
     final router = Router();
-    router.get('/<user>/details',
-        (Request request, String user) => Response.ok('immediateParam-$user'));
+    router.get(
+      '/<user>/details',
+      (Request request, String user) => Response.ok('immediateParam-$user'),
+    );
 
     var response = await get(router, '/alice/details');
     expect(await response.readAsString(), 'immediateParam-alice');
@@ -43,24 +43,33 @@ void main() {
 
   test('handles mid-segment parameters properly', () async {
     final router = Router();
-    router.get('/files/image_<id>.png',
-        (Request request, String id) => Response.ok('midSegmentParam-$id'));
+    router.get(
+      '/files/image_<id>.png',
+      (Request request, String id) => Response.ok('midSegmentParam-$id'),
+    );
 
     var response = await get(router, '/files/image_123.png');
     expect(await response.readAsString(), 'midSegmentParam-123');
   });
 
-  test('maintains registration priority regardless of route specificity',
-      () async {
-    final router = Router();
-    router.get('/<any|.*>', (Request request) => Response.ok('catchAll'));
-    router.get('/users/details', (Request request) => Response.ok('specific'));
-    router.get(
-        '/users/<id>', (Request request, String id) => Response.ok('wildcard'));
+  test(
+    'maintains registration priority regardless of route specificity',
+    () async {
+      final router = Router();
+      router.get('/<any|.*>', (Request request) => Response.ok('catchAll'));
+      router.get(
+        '/users/details',
+        (Request request) => Response.ok('specific'),
+      );
+      router.get(
+        '/users/<id>',
+        (Request request, String id) => Response.ok('wildcard'),
+      );
 
-    var response = await get(router, '/users/details');
-    expect(await response.readAsString(), 'catchAll');
-  });
+      var response = await get(router, '/users/details');
+      expect(await response.readAsString(), 'catchAll');
+    },
+  );
 
   test('isolates unrelated branches', () async {
     final router = Router();
