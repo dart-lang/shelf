@@ -3,9 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 abstract final class $Chars {
+  static const htab = 9;
   static const lf = 10;
   static const cr = 13;
   static const sp = 32;
+  static const comma = 44;
   static const zero = 48;
   static const colon = 58;
   static const semicolon = 59;

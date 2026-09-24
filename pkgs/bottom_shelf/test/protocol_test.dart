@@ -288,5 +288,182 @@ void main() {
       final response = await utf8.decodeStream(socket);
       expect(response, contains('200 OK'));
     });
+
+    test('204 No Content and 304 Not Modified over keep-alive omit chunked '
+        'framing and Content-Length on 204', () async {
+      final server = await RawShelfServer.serve(
+        (request) {
+          if (request.url.path == 'no-content') {
+            return Response(
+              204,
+              headers: {'Content-Length': '0', 'Transfer-Encoding': 'chunked'},
+            );
+          }
+          if (request.url.path == 'not-modified') {
+            return Response(304);
+          }
+          return Response.ok('after-bodyless');
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+
+      socket.add(
+        utf8.encode(
+          'GET /no-content HTTP/1.1\r\nHost: localhost\r\n\r\n'
+          'GET /not-modified HTTP/1.1\r\nHost: localhost\r\n\r\n'
+          'GET /next HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('HTTP/1.1 204 No Content'));
+      expect(response, contains('HTTP/1.1 304 Not Modified'));
+      expect(response, contains('after-bodyless'));
+
+      final parts = response.split('HTTP/1.1 ');
+      final resp204 = parts.firstWhere((p) => p.startsWith('204'));
+      final resp304 = parts.firstWhere((p) => p.startsWith('304'));
+      expect(resp204.toLowerCase(), isNot(contains('content-length')));
+      expect(resp204.toLowerCase(), isNot(contains('transfer-encoding')));
+      expect(resp204, isNot(contains('0\r\n\r\n')));
+      expect(resp304.toLowerCase(), isNot(contains('transfer-encoding')));
+      expect(resp304, isNot(contains('0\r\n\r\n')));
+    });
+
+    test('Connection token list (keep-alive, close) and multi-header '
+        'Connection honor close', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('closed-ok'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      // 1. Single header with comma-separated tokens: keep-alive, close
+      final s1 = await Socket.connect('localhost', server.port);
+      addTearDown(s1.close);
+      s1.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\n'
+          'Connection: keep-alive, close\r\n\r\n',
+        ),
+      );
+      final r1 = await utf8.decodeStream(s1);
+      expect(r1.toLowerCase(), contains('connection: close'));
+      expect(r1, contains('closed-ok'));
+
+      // 2. Multiple Connection headers where second is close
+      final s2 = await Socket.connect('localhost', server.port);
+      addTearDown(s2.close);
+      s2.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\n'
+          'Connection: keep-alive\r\n'
+          'Connection: close\r\n\r\n',
+        ),
+      );
+      final r2 = await utf8.decodeStream(s2);
+      expect(r2.toLowerCase(), contains('connection: close'));
+      expect(r2, contains('closed-ok'));
+    });
+
+    test('Leading and trailing SP and HTAB OWS trimming on Content-Length, '
+        'Connection, and custom headers', () async {
+      final server = await RawShelfServer.serve(
+        (request) async {
+          expect(request.contentLength, 5);
+          expect(request.headers['x-custom'], 'trimmed-val');
+          final body = await request.readAsString();
+          expect(body, 'hello');
+          return Response.ok('ows-ok');
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+      socket.add(
+        utf8.encode(
+          'POST / HTTP/1.1\r\n'
+          'Host: \t localhost \t \r\n'
+          'Content-Length:\t  5  \t\r\n'
+          'Connection: \t close \t \r\n'
+          'X-Custom: \t  trimmed-val \t \r\n'
+          '\r\n'
+          'hello',
+        ),
+      );
+      final response = await utf8.decodeStream(socket);
+      expect(response, contains('200 OK'));
+      expect(response, contains('ows-ok'));
+    });
+
+    test(
+      'Leading-zero Content-Length values (00, 05, 0200) are rejected with 400',
+      () async {
+        final server = await RawShelfServer.serve(
+          (request) => Response.ok('should-not-reach'),
+          'localhost',
+          0,
+        );
+        addTearDown(server.close);
+
+        for (final badCl in ['00', '05', '0200']) {
+          final socket = await Socket.connect('localhost', server.port);
+          addTearDown(socket.close);
+          socket.add(
+            utf8.encode(
+              'POST / HTTP/1.1\r\nHost: localhost\r\n'
+              'Content-Length: $badCl\r\nConnection: close\r\n\r\n',
+            ),
+          );
+          final response = await utf8.decodeStream(socket);
+          expect(
+            response,
+            contains('400 Bad Request'),
+            reason: 'Expected 400 for Content-Length: $badCl',
+          );
+        }
+      },
+    );
+
+    test('Strict method tchar and strict HTTP version grammar reject invalid '
+        'inputs with 400', () async {
+      final server = await RawShelfServer.serve(
+        (request) => Response.ok('should-not-reach'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final badRequests = [
+        'G@T / HTTP/1.1\r\nHost: localhost\r\n\r\n',
+        ' / HTTP/1.1\r\nHost: localhost\r\n\r\n',
+        'GET / http/1.1\r\nHost: localhost\r\n\r\n',
+        'GET / HTTP/01.01\r\nHost: localhost\r\n\r\n',
+        'GET / HTTP/ 1.1\r\nHost: localhost\r\n\r\n',
+        'GET / HTTP/1\r\nHost: localhost\r\n\r\n',
+        'GET / HTTP/1.x\r\nHost: localhost\r\n\r\n',
+      ];
+
+      for (final req in badRequests) {
+        final socket = await Socket.connect('localhost', server.port);
+        addTearDown(socket.close);
+        socket.add(utf8.encode(req));
+        final response = await utf8.decodeStream(socket);
+        expect(
+          response,
+          contains('400 Bad Request'),
+          reason: 'Expected 400 for request: ${req.trim()}',
+        );
+      }
+    });
   });
 }

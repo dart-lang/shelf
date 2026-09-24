@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
@@ -137,7 +138,16 @@ final class RawShelfResponseSerializer {
     required bool keepAlive,
     required String requestMethod,
     String? poweredBy,
+    void Function()? onHeadersSent,
   }) async {
+    final isBodylessStatus =
+        (response.statusCode >= 100 && response.statusCode < 200) ||
+        response.statusCode == 204 ||
+        response.statusCode == 304;
+    final forbidContentLength =
+        (response.statusCode >= 100 && response.statusCode < 200) ||
+        response.statusCode == 204;
+
     var hasContentLength = false;
     var hasTransferEncoding = false;
     var hasConnection = false;
@@ -152,12 +162,28 @@ final class RawShelfResponseSerializer {
       if (values.isEmpty) return;
       switch (key.length) {
         case 14 when _equalsIgnoreAsciiCase(key, 'content-length'):
+          if (forbidContentLength) return;
           hasContentLength = true;
           contentLength = int.tryParse(values.first);
         case 17 when _equalsIgnoreAsciiCase(key, 'transfer-encoding'):
+          if (isBodylessStatus) return;
           hasTransferEncoding = true;
         case 10 when _equalsIgnoreAsciiCase(key, 'connection'):
           hasConnection = true;
+        case 10 when _equalsIgnoreAsciiCase(key, 'set-cookie'):
+          for (var i = 0; i < values.length; i++) {
+            if (i == 0) {
+              _addHeaderName(key);
+            } else {
+              _addString(key);
+            }
+            _ensure(2);
+            _scratch[_scratchPos++] = $Chars.colon;
+            _scratch[_scratchPos++] = $Chars.sp;
+            _addHeaderValue(values[i]);
+            _addCrlf();
+          }
+          return;
         case 4 when _equalsIgnoreAsciiCase(key, 'date'):
           hasDate = true;
         case 12 when _equalsIgnoreAsciiCase(key, 'x-powered-by'):
@@ -175,8 +201,9 @@ final class RawShelfResponseSerializer {
     });
 
     // `Message.contentLength` derives from the `content-length` header, so
-    // when the header is absent the body length is unknown: chunk it.
-    final isChunked = !hasContentLength;
+    // when the header is absent (and the status allows a body) the body length
+    // is unknown: chunk it.
+    final isChunked = !hasContentLength && !isBodylessStatus;
 
     if (isChunked && !hasTransferEncoding) {
       _addBytes(_transferEncodingChunked);
@@ -205,16 +232,29 @@ final class RawShelfResponseSerializer {
       ..setRange(0, _scratchPos, _scratch);
 
     var written = 0;
-    if (requestMethod == 'HEAD' || contentLength == 0) {
+    if (requestMethod == 'HEAD' || contentLength == 0 || isBodylessStatus) {
       socket.add(headerBytes);
+      onHeadersSent?.call();
       written += headerBytes.length;
       if (requestMethod == 'HEAD') {
         await response.read().listen((_) {}).asFuture<void>();
+      } else {
+        unawaited(response.read().listen(null).cancel());
       }
     } else {
       var isFirst = true;
+      var bodyBytesWritten = 0;
       await for (final chunk in response.read()) {
         if (chunk.isEmpty) continue;
+        bodyBytesWritten += chunk.length;
+        if (!isChunked &&
+            contentLength != null &&
+            bodyBytesWritten > contentLength!) {
+          throw StateError(
+            'Response body length ($bodyBytesWritten) does not match '
+            'Content-Length ($contentLength)',
+          );
+        }
         if (isFirst) {
           isFirst = false;
           if (isChunked) {
@@ -231,12 +271,14 @@ final class RawShelfResponseSerializer {
             coalesced[pos] = $Chars.cr;
             coalesced[pos + 1] = $Chars.lf;
             socket.add(coalesced);
+            onHeadersSent?.call();
             written += coalesced.length;
           } else {
             final coalesced = Uint8List(headerBytes.length + chunk.length);
             coalesced.setRange(0, headerBytes.length, headerBytes);
             coalesced.setRange(headerBytes.length, coalesced.length, chunk);
             socket.add(coalesced);
+            onHeadersSent?.call();
             written += coalesced.length;
           }
         } else {
@@ -255,8 +297,18 @@ final class RawShelfResponseSerializer {
         }
       }
 
+      if (!isChunked &&
+          contentLength != null &&
+          bodyBytesWritten != contentLength!) {
+        throw StateError(
+          'Response body length ($bodyBytesWritten) does not match '
+          'Content-Length ($contentLength)',
+        );
+      }
+
       if (isFirst) {
         socket.add(headerBytes);
+        onHeadersSent?.call();
         written += headerBytes.length;
       }
 

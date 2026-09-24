@@ -95,11 +95,14 @@ final class RawHttpParser {
       switch (_state) {
         case _$State.method:
           if (byte == $Chars.sp) {
+            if (_bufferPos - 1 == _currentFieldStart) {
+              throw const BadRequestException('Empty method');
+            }
             _method = _getMethod(_bufferPos - 1);
             _currentFieldStart = _bufferPos;
             _state = _$State.url;
           } else {
-            if (byte == 0 || byte == $Chars.lf || byte == $Chars.cr) {
+            if (!isTchar(byte)) {
               throw const BadRequestException('Invalid character in method');
             }
             if (_bufferPos - _currentFieldStart > $Limit.maxFieldSize) {
@@ -142,17 +145,20 @@ final class RawHttpParser {
                 _buffer[start + 3] == 80 && // P
                 _buffer[start + 4] == 47 && // /
                 _buffer[start + 5] == 49 && // 1
-                _buffer[start + 6] == 46 && // .
-                _buffer[start + 7] == 49) {
-              // 1
-              _version = '1.1';
-            } else {
-              final v = String.fromCharCodes(_buffer, start, end).trim();
-              final versionStr = v.startsWith('HTTP/') ? v.substring(5) : v;
-              if (!versionStr.startsWith('1.')) {
+                _buffer[start + 6] == 46) {
+              // .
+              final minor = _buffer[start + 7];
+              if (minor == 49) {
+                _version = '1.1';
+              } else if (minor == 48) {
+                _version = '1.0';
+              } else if (minor >= 0x30 && minor <= 0x39) {
+                _version = '1.${minor - 0x30}';
+              } else {
                 throw const BadRequestException('Unsupported HTTP version');
               }
-              _version = versionStr;
+            } else {
+              throw const BadRequestException('Unsupported HTTP version');
             }
             _currentFieldStart = _bufferPos;
             _state = _$State.headerKey;
@@ -209,9 +215,16 @@ final class RawHttpParser {
               throw const BadRequestException('Bare line feed not allowed');
             }
             var start = _currentFieldStart;
-            final end = _bufferPos - 2; // Exclude CRLF
-            while (start < end && _buffer[start] == $Chars.sp) {
+            var end = _bufferPos - 2; // Exclude CRLF
+            while (start < end &&
+                (_buffer[start] == $Chars.sp ||
+                    _buffer[start] == $Chars.htab)) {
               start++;
+            }
+            while (end > start &&
+                (_buffer[end - 1] == $Chars.sp ||
+                    _buffer[end - 1] == $Chars.htab)) {
+              end--;
             }
 
             final valueSlice = HeaderByteSlice(_buffer, start, end, _token);
@@ -236,6 +249,7 @@ final class RawHttpParser {
       3 when b[0] == 71 && b[1] == 69 && b[2] == 84 => 'GET',
       3 when b[0] == 80 && b[1] == 85 && b[2] == 84 => 'PUT',
       4 when b[0] == 80 && b[1] == 79 && b[2] == 83 && b[3] == 84 => 'POST',
+      4 when b[0] == 72 && b[1] == 69 && b[2] == 65 && b[3] == 68 => 'HEAD',
       6
           when b[0] == 68 &&
               b[1] == 69 &&
@@ -244,6 +258,15 @@ final class RawHttpParser {
               b[4] == 84 &&
               b[5] == 69 =>
         'DELETE',
+      7
+          when b[0] == 79 &&
+              b[1] == 80 &&
+              b[2] == 84 &&
+              b[3] == 73 &&
+              b[4] == 79 &&
+              b[5] == 78 &&
+              b[6] == 83 =>
+        'OPTIONS',
       _ => String.fromCharCodes(b, 0, end),
     };
   }

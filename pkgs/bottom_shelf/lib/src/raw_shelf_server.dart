@@ -62,7 +62,6 @@ final class RawShelfServer extends ServerConfig {
     serverSocket.listen(
       server._handleConnection,
       onError: (Object e, StackTrace st) {
-        print('*** ServerSocket listen error: $e');
         server.onConnectionError?.call(
           'Error accepting connection',
           e,

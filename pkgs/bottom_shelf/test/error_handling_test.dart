@@ -273,4 +273,178 @@ void main() {
       await secondSocket.close();
     },
   );
+
+  test('response Content-Length underflow and overflow mismatches close the '
+      'connection', () async {
+    final errors = <Object>[];
+    final server = await RawShelfServer.serve(
+      (request) {
+        if (request.url.path == 'underflow') {
+          return Response.ok(
+            Stream.fromIterable(['short'.codeUnits]),
+            headers: {'Content-Length': '10'},
+          );
+        }
+        return Response.ok(
+          Stream.fromIterable(['first-'.codeUnits, 'overflow-chunk'.codeUnits]),
+          headers: {'Content-Length': '8'},
+        );
+      },
+      'localhost',
+      0,
+      onConnectionError:
+          (
+            message,
+            error,
+            stackTrace, {
+            required remoteAddress,
+            required remotePort,
+          }) {
+            errors.add(error);
+          },
+    );
+    addTearDown(server.close);
+
+    // 1. Underflow on keep-alive connection closes the socket
+    final s1 = await Socket.connect('localhost', server.port);
+    addTearDown(s1.close);
+    s1.write(
+      'GET /underflow HTTP/1.1\r\n'
+      'Host: localhost\r\n'
+      'Connection: keep-alive\r\n\r\n',
+    );
+    final r1 = await utf8.decodeStream(s1);
+    expect(r1, contains('short'));
+    expect(r1, isNot(contains('HTTP/1.1 500')));
+
+    // 2. Overflow on keep-alive connection aborts and closes the socket
+    final s2 = await Socket.connect('localhost', server.port);
+    addTearDown(s2.close);
+    s2.write(
+      'GET /overflow HTTP/1.1\r\n'
+      'Host: localhost\r\n'
+      'Connection: keep-alive\r\n\r\n',
+    );
+    final r2 = await utf8.decodeStream(s2);
+    expect(r2, contains('first-'));
+    expect(r2, isNot(contains('overflow-chunk')));
+    expect(errors, hasLength(2));
+    expect(errors.every((e) => e is StateError), isTrue);
+  });
+
+  test('unread response stream is cancelled when content-length: 0 or '
+      'status is 204', () async {
+    var cancelledZero = false;
+    var cancelled204 = false;
+
+    final server = await RawShelfServer.serve(
+      (request) {
+        if (request.url.path == 'zero') {
+          final controller = StreamController<List<int>>(
+            onCancel: () {
+              cancelledZero = true;
+            },
+          );
+          return Response.ok(
+            controller.stream,
+            headers: {'Content-Length': '0'},
+          );
+        }
+        final controller = StreamController<List<int>>(
+          onCancel: () {
+            cancelled204 = true;
+          },
+        );
+        return Response(204, body: controller.stream);
+      },
+      'localhost',
+      0,
+    );
+    addTearDown(server.close);
+
+    final s1 = await Socket.connect('localhost', server.port);
+    addTearDown(s1.close);
+    s1.write(
+      'GET /zero HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+    );
+    await utf8.decodeStream(s1);
+    expect(cancelledZero, isTrue);
+
+    final s2 = await Socket.connect('localhost', server.port);
+    addTearDown(s2.close);
+    s2.write(
+      'GET /204 HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+    );
+    await utf8.decodeStream(s2);
+    expect(cancelled204, isTrue);
+  });
+
+  test('early handler response + malformed chunked request body race does not '
+      'splice 400 into 200 response', () async {
+    final responseGate = Completer<void>();
+    final server = await RawShelfServer.serve(
+      (request) {
+        final controller = StreamController<List<int>>();
+        controller.add('part1-'.codeUnits);
+        responseGate.future.then((_) {
+          if (!controller.isClosed) {
+            controller.add('part2'.codeUnits);
+            controller.close();
+          }
+        });
+        return Response.ok(
+          controller.stream,
+          headers: {'Content-Length': '11'},
+        );
+      },
+      'localhost',
+      0,
+      onConnectionError:
+          (
+            message,
+            error,
+            stackTrace, {
+            required remoteAddress,
+            required remotePort,
+          }) {},
+    );
+    addTearDown(server.close);
+
+    final socket = await Socket.connect('localhost', server.port);
+    addTearDown(socket.close);
+
+    // Send headers for chunked POST; handler starts writing 200 immediately
+    socket.add(
+      utf8.encode(
+        'POST / HTTP/1.1\r\n'
+        'Host: localhost\r\n'
+        'Transfer-Encoding: chunked\r\n\r\n',
+      ),
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+
+    // Now send malformed chunk size while response is already writing
+    socket.add(utf8.encode('ZZZ\r\n'));
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    responseGate.complete();
+
+    final response = await utf8.decodeStream(socket);
+    expect(response, startsWith('HTTP/1.1 200 OK'));
+    expect(response, isNot(contains('400 Bad Request')));
+  });
+
+  test('BadRequestException.toString formats message and innerException', () {
+    const simple = BadRequestException('invalid header');
+    expect(simple.toString(), 'BadRequestException: invalid header');
+
+    const withInner = BadRequestException(
+      'bad url',
+      innerException: FormatException('bad scheme'),
+    );
+    expect(
+      withInner.toString(),
+      'BadRequestException: bad url\n'
+      'Inner exception: FormatException: bad scheme',
+    );
+  });
 }

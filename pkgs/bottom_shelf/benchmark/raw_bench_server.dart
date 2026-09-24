@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bottom_shelf/bottom_shelf.dart';
 import 'package:bottom_shelf/src/constants.dart';
@@ -22,5 +23,23 @@ Handler _typedHeaderMiddleware(Handler innerHandler) => (request) {
   return innerHandler(request);
 };
 
-Future<Response> _handleRequest(Request request) async =>
-    Response.ok('hello world');
+FutureOr<Response> _handleRequest(Request request) {
+  final path = request.url.path;
+  if (path.isEmpty || path == 'plaintext') {
+    return Response.ok('hello world');
+  }
+  if (path == 'json') {
+    return Response.ok(
+      jsonEncode({'message': 'Hello, World!'}),
+      headers: {'content-type': 'application/json'},
+    );
+  }
+  if (path.startsWith('user/')) {
+    final id = path.substring(5);
+    return Response.ok(
+      jsonEncode({'id': id, 'name': 'User $id'}),
+      headers: {'content-type': 'application/json'},
+    );
+  }
+  return Response.notFound('Not Found');
+}

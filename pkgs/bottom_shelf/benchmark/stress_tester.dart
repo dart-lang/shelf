@@ -49,7 +49,8 @@ void main(List<String> args) async {
   await Future.wait(futures);
   stopwatch.stop();
 
-  final rps = totalRequests / stopwatch.elapsed.inSeconds;
+  final elapsedSeconds = stopwatch.elapsedMicroseconds / 1e6;
+  final rps = totalRequests / elapsedSeconds;
   print('Total requests: $totalRequests');
   print('Requests per second: ${rps.toStringAsFixed(2)}');
 }
@@ -63,25 +64,59 @@ Future<void> _runClient(
   final endTime = DateTime.now().add(duration);
 
   final completer = Completer<void>();
+  final buffer = <int>[];
 
   socket.listen(
     (data) {
-      onResponse();
-      if (DateTime.now().isBefore(endTime)) {
-        socket.add(request);
-      } else {
-        socket.destroy();
-        if (!completer.isCompleted) completer.complete();
+      buffer.addAll(data);
+      while (true) {
+        final headerEnd = _findHeaderEnd(buffer);
+        if (headerEnd == -1) break;
+        final contentLength = _parseContentLength(buffer, headerEnd);
+        final totalResponseBytes = headerEnd + 4 + contentLength;
+        if (buffer.length < totalResponseBytes) break;
+
+        buffer.removeRange(0, totalResponseBytes);
+        onResponse();
+        if (DateTime.now().isBefore(endTime)) {
+          socket.add(request);
+        } else {
+          socket.destroy();
+          if (!completer.isCompleted) completer.complete();
+          return;
+        }
       }
     },
     onDone: () {
       if (!completer.isCompleted) completer.complete();
     },
-    onError: (e) {
+    onError: (Object e) {
       if (!completer.isCompleted) completer.complete();
     },
   );
 
   socket.add(request);
   return completer.future;
+}
+
+int _findHeaderEnd(List<int> bytes) {
+  for (var i = 0; i <= bytes.length - 4; i++) {
+    if (bytes[i] == 13 &&
+        bytes[i + 1] == 10 &&
+        bytes[i + 2] == 13 &&
+        bytes[i + 3] == 10) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+int _parseContentLength(List<int> bytes, int headerEnd) {
+  final headers = ascii.decode(bytes.sublist(0, headerEnd));
+  for (final line in headers.split('\r\n')) {
+    if (line.toLowerCase().startsWith('content-length:')) {
+      return int.tryParse(line.substring(15).trim()) ?? 0;
+    }
+  }
+  return 0;
 }

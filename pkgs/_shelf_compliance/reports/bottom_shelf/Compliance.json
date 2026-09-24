@@ -170,7 +170,7 @@
     "statusCode": 200,
     "rawRequest": "GET / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\n\r\n",
     "rawResponse": "HTTP/1.1 200 OK\r\ncontent-length: 2\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nOK",
-    "behavioralNote": "IMF-fixDate: <DATE>"
+    "behavioralNote": "IMF-fixdate: <DATE>"
   },
   {
     "id": "COMP-DATE-HEADER",

@@ -3,9 +3,9 @@
 | Category | Count |
 | --- | --- |
 | Total | 213 |
-| Passed | 162 |
+| Passed | 165 |
 | Failed | 0 |
-| Warnings | 38 |
+| Warnings | 35 |
 | Accepted | 13 |
 | Errors | 0 |
 
@@ -36,10 +36,7 @@
 | NORM-UNDERSCORE-TE | Normalization | Warn | Underscore in Transfer-Encoding name — checks if server normalizes Transfer_Encoding to Transfer-Encoding |
 | SMUG-ABSOLUTE-URI-HOST-MISMATCH | Smuggling | Warn | Absolute-form URI with different Host header — routing confusion vector |
 | SMUG-CHUNK-LF-TRAILER | Smuggling | Warn | Bare LF in chunked trailer termination — server MAY accept bare LF per RFC 9112 §2.2 |
-| SMUG-CL-DOUBLE-ZERO | Smuggling | Warn | Content-Length: 00 — matches 1*DIGIT but leading zero ambiguity |
 | SMUG-CL-EXTRA-LEADING-SP | Smuggling | Warn | Content-Length with extra leading whitespace (double space OWS) |
-| SMUG-CL-LEADING-ZEROS | Smuggling | Warn | Content-Length with leading zeros — valid per 1*DIGIT grammar but may cause parser disagreement |
-| SMUG-CL-LEADING-ZEROS-OCTAL | Smuggling | Warn | Content-Length: 0200 — octal 128 vs decimal 200, parser disagreement vector |
 | SMUG-CL-TRAILING-SPACE | Smuggling | Warn | Content-Length with trailing space — OWS trimming is valid per RFC 9110 §5.5 |
 | SMUG-CL0-BODY-POISON | Smuggling | Warn | Content-Length: 0 with trailing bytes — checks if leftover bytes poison the next request |
 | SMUG-EXPECT-100-CL | Smuggling | Warn | Expect: 100-continue with Content-Length — server should send 100 then read body |

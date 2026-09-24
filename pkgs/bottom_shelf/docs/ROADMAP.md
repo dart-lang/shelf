@@ -47,29 +47,36 @@ fixed (see Phase 6).
       throw before any bytes reach the socket, so the connection error path
       returns a clean 500. Tests in
       `test/response_header_validation_test.dart`.
-- [ ] **Response-side Content-Length vs body mismatch desync**
-  - Nothing verifies streamed body length against the declared
-    `Content-Length` (serializer). A mismatch shifts the framing of every
-    subsequent response on the connection. Count bytes; destroy the
-    connection on mismatch (dart:io behavior).
-- [ ] **Interleaved error-bytes race**
-  - If a handler responds before fully reading a malformed chunked body, the
-    catch at `http_connection.dart:395` can splice a `400` into the middle of
-    an in-flight response. Check whether a response write is in progress and
-    destroy instead.
-- [ ] **`Connection` header parsed as exact token, not a list**
-  - `typed_headers.dart:38-47` matches `== 'close'` / `== 'keep-alive'`
-    exactly; `Connection: close, foo` keeps the connection alive against
-    RFC 9112 §9.6.
-- [ ] **204/304 must not get `Transfer-Encoding: chunked`**
-  - Serializer adds TE:chunked to unknown-length bodies regardless of status;
-    204/304 must not carry a body or TE header.
-- [ ] **Unread stream body leaks when handler sets `content-length: 0`**
-  - The zero-length fast path never listens to or cancels a stream body.
-    Resource leak only.
-- [ ] **Method token not validated**
-  - Parser accepts any bytes except NUL/CR/LF/SP in the method; `G@T /`
-    reaches the handler. dart:io rejects. Low priority, spec laxity.
+- [x] **Response-side Content-Length vs body mismatch desync**
+  - Verified streamed body length against the declared `Content-Length` in
+    `RawShelfResponseSerializer.writeResponse`. Throws `StateError` on
+    mid-stream overflow (`bodyBytesWritten > contentLength`) or end-of-stream
+    underflow (`bodyBytesWritten != contentLength`), which `_HttpConnection`
+    catches and closes/destroys the socket (matching `dart:io` behavior).
+- [x] **Interleaved error-bytes race**
+  - Tracked `_responseWriting` (set right before `writeResponse`) and
+    `_responseSent` (set via `onHeadersSent` as soon as response headers hit
+    the socket, and reset when transitioning to the next keep-alive request).
+    `_processData` only writes `400 Bad Request` error bytes if
+    `!_responseWriting && !_responseSent`; otherwise it destroys the socket.
+- [x] **`Connection` header parsed as exact token, not a list**
+  - `HeaderByteSlice.scanConnectionToken` scans comma-separated tokens
+    case-insensitively with OWS trimming (RFC 9110 §7.6.1) directly on the byte
+    slice (zero String allocation), where `close` (`2`) always overrides
+    `keep-alive` (`1`) across single or multiple `Connection` headers.
+- [x] **204/304 must not get `Transfer-Encoding: chunked`**
+  - `RawShelfResponseSerializer.writeResponse` treats `1xx`, `204`, and `304`
+    as bodyless (`isChunked = !hasContentLength && !isBodylessStatus`), omits
+    `Content-Length` on `1xx`/`204` (`COMP-NO-CL-IN-204`), and never emits
+    `Transfer-Encoding: chunked` or `0\r\n\r\n`.
+- [x] **Unread stream body leaks when handler sets `content-length: 0`**
+  - `writeResponse` cancels `response.read().listen(null).cancel()` for `HEAD`,
+    `contentLength == 0`, and bodyless statuses (`1xx`, `204`, `304`).
+- [x] **Method token not validated**
+  - `RawHttpParser` enforces `isTchar(byte)` on method bytes (RFC 9110 §9.1),
+    rejects empty methods, enforces strict `HTTP/1.x` version grammar, trims
+    both leading and trailing `SP`/`HTAB` OWS on header values, and rejects
+    leading-zero multi-digit `Content-Length` values (`00`, `05`, `0200`).
 
 - [x] **Unhandled peer reset on the response-write path crashes the isolate**
   - The read path guards resets (`start()`: `socket.listen(onError: _destroy)`),
@@ -111,15 +118,19 @@ measured deltas live in `docs/prototypes/`.*
       only bounds memory. Landed.
 - [x] **Fuse the ~8 per-request header scans into one pass — measured
       +2.9%**: single scan in the TypedHeaders constructor replaces
-      separate walks + the per-request `_cache` map. Duplicate-counting
+      separate walks + the per-request `_cache` map, using zero-allocation
+      `HeaderByteSlice` byte methods (`parseContentLength`,
+      `scanConnectionToken`, `containsTokenIgnoreCase`) instead of allocating
+      temporary `String`/`.toLowerCase()` instances. Duplicate-counting
       semantics preserved (verified by smuggling/robustness tests). Landed.
 - [x] **Set `TCP_NODELAY` on accepted sockets** — landed in `e7e8621`.
       No effect on loopback benchmarks; matters on real networks.
-- [x] **Micro-fixes** (method byte-match, const '1.1', static identity fn,
-      shared empty Uint8List, sync handler fast path, bodyDone.isCompleted,
-      ErrorResponse.bytes cache, per-connection _HttpConnectionInfo, index
-      loop for CL digits) — landed in `e7e8621`. *Measured: no RPS change,
-      −3% GC scavenges. Kept on code-quality grounds.*
+- [x] **Micro-fixes** (method byte-match including `HEAD` and `OPTIONS`,
+      const '1.1'/'1.0', static identity fn, shared empty Uint8List, sync
+      handler fast path, bodyDone.isCompleted, ErrorResponse.bytes cache,
+      per-connection _HttpConnectionInfo, index loop for CL digits) — landed
+      in `e7e8621` + Stage 2. *Measured: no RPS change, −3% GC scavenges.
+      Kept on code-quality grounds.*
 - [x] **Kill the double `Uri.parse`** — landed in `e7e8621` (origin-form
       fast path). *No measurable RPS effect on its own.* A bounded
       `host+path → Uri` cache remains unexplored.
@@ -143,10 +154,11 @@ measured deltas live in `docs/prototypes/`.*
       bottom_shelf's scope. NB the absolute ~24k ceiling is still single-core
       and not yet proven server- vs client/NIC-bound. Data: gcp-http-bench
       `results/phase3-three-way.md`.
-- [ ] **Fix or replace `benchmark/stress_tester.dart`** — it counts socket
-      data events as responses (:69) and divides by integer seconds (:52).
-      Either parse responses properly or delete it in favor of the
-      BENCHMARKS.md harness.
+- [x] **Fix or replace `benchmark/stress_tester.dart`** — updated to parse
+      complete HTTP responses (`\r\n\r\n` + `Content-Length`) before counting
+      completions and divide by `stopwatch.elapsedMicroseconds / 1e6`, and
+      aligned `benchmark/{raw_bench_server,shelf_io_bench_server,dart_io_bench_server}.dart`
+      to serve `/`, `/plaintext`, `/json`, and `/user/<id>`.
 - [ ] **DEMOTED: parser bulk-copy/line-scan rewrite and header-slice
       flattening** — the profile shows `RawHttpParser.process` at only
       ~1.9% self time; the theoretical win cannot exceed that. Highest

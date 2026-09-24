@@ -31,32 +31,22 @@ final class TypedHeaders {
       final key = slice.key;
       if (key.matches($Header.contentLength)) {
         _contentLengthCount++;
-        final value = slice.value.asString();
-        var digitsValid = value.isNotEmpty;
-        for (var i = 0; digitsValid && i < value.length; i++) {
-          final c = value.codeUnitAt(i);
-          if (c < 0x30 || c > 0x39) digitsValid = false;
-        }
-        if (digitsValid) {
-          _contentLengthValue ??= int.tryParse(value);
+        final parsed = slice.value.parseContentLength();
+        if (parsed != null) {
+          _contentLengthValue ??= parsed;
         } else {
           _contentLengthDigitsValid = false;
         }
       } else if (key.matches($Header.transferEncoding)) {
         _hasTransferEncoding = true;
-        if (slice.value.asString().toLowerCase().contains('chunked')) {
+        if (slice.value.containsTokenIgnoreCase('chunked')) {
           _isChunked = true;
         }
       } else if (key.matches($Header.host)) {
         _hostCount++;
         _host ??= slice.value.asString();
-      } else if (_connectionToken == 0 && key.matches($Header.connection)) {
-        final value = slice.value.asString().toLowerCase();
-        if (value == 'close') {
-          _connectionToken = 2;
-        } else if (value == 'keep-alive') {
-          _connectionToken = 1;
-        }
+      } else if (_connectionToken != 2 && key.matches($Header.connection)) {
+        _connectionToken = slice.value.scanConnectionToken(_connectionToken);
       }
     }
   }

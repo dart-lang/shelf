@@ -51,6 +51,7 @@ final class _HttpConnection {
   var _isHijacked = false;
   var _isDestroyed = false;
   var _clientClosed = false;
+  var _responseWriting = false;
   var _responseSent = false;
 
   /// Bytes written to [socket] since the last flush on a keep-alive
@@ -391,8 +392,12 @@ final class _HttpConnection {
           remotePort: remotePort,
         );
         if (e is BadRequestException) {
-          socket.add(e.errorResponse.bytes);
-          _flushCloseDestroy();
+          if (!_responseWriting) {
+            socket.add(e.errorResponse.bytes);
+            _flushCloseDestroy();
+          } else {
+            _destroy();
+          }
         } else {
           _destroy();
         }
@@ -407,6 +412,7 @@ final class _HttpConnection {
     String originalMethod,
   ) {
     _currentBodyDone = bodyDone;
+    _responseWriting = false;
     _responseSent = false;
     unawaited(_executeRequest(request, typedHeaders, bodyDone, originalMethod));
   }
@@ -426,12 +432,16 @@ final class _HttpConnection {
       final keepAlive =
           !_forceClose && typedHeaders.isKeepAlive(request.protocolVersion);
 
+      _responseWriting = true;
       final written = await RawShelfResponseSerializer.writeResponse(
         response,
         socket,
         keepAlive: keepAlive,
         requestMethod: originalMethod,
         poweredBy: config.poweredBy,
+        onHeadersSent: () {
+          _responseSent = true;
+        },
       );
       _responseSent = true;
       _unflushedBytes += written;
@@ -453,6 +463,7 @@ final class _HttpConnection {
           await socket.flush();
           if (_isDestroyed || _clientClosed) return;
         }
+        _responseWriting = false;
         if (!_readyForNextRequest.isCompleted) {
           _readyForNextRequest.complete();
           _startHeaderTimer();
@@ -532,9 +543,6 @@ final class _HttpConnection {
           _destroy();
           return;
         }
-        if (!_responseSent) {
-          socket.add(ErrorResponse.internalServerError.bytes);
-        }
         config.onConnectionError?.call(
           'Error in handler',
           e,
@@ -542,6 +550,13 @@ final class _HttpConnection {
           remoteAddress: remoteAddress,
           remotePort: remotePort,
         );
+        if (_responseWriting && !_responseSent) {
+          _forceClose = true;
+          return;
+        }
+        if (!_responseSent) {
+          socket.add(ErrorResponse.internalServerError.bytes);
+        }
         socket.close().then(
           (_) => _destroy(),
           onError: (Object _) => _destroy(),

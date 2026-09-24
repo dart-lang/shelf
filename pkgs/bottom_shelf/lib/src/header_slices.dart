@@ -43,20 +43,106 @@ final class HeaderByteSlice {
 
   String asString() {
     _checkValid();
-    return String.fromCharCodes(_buffer, _start, _end).trim();
+    return String.fromCharCodes(_buffer, _start, _end);
+  }
+
+  /// Parses `Content-Length` directly from slice bytes without allocating a
+  /// [String]. Returns `null` if empty, contains non-digits, has leading zeros
+  /// on a multi-digit value (`00`, `05`, `0200`), or overflows a 64-bit
+  /// integer.
+  int? parseContentLength() {
+    _checkValid();
+    final len = _end - _start;
+    if (len == 0) return null;
+    if (len > 1 && _buffer[_start] == 0x30) return null;
+    var value = 0;
+    for (var i = _start; i < _end; i++) {
+      final digit = _buffer[i] - 0x30;
+      if (digit < 0 || digit > 9) return null;
+      if (value > 922337203685477580 ||
+          (value == 922337203685477580 && digit > 7)) {
+        return null;
+      }
+      value = value * 10 + digit;
+    }
+    return value;
+  }
+
+  /// Scans comma-separated tokens in a `Connection` header value
+  /// (RFC 9110 §7.6.1, case-insensitive, OWS-trimmed).
+  ///
+  /// Returns `2` for `close` (which always overrides `keep-alive`), `1` for
+  /// `keep-alive`, or [currentToken] if neither is present.
+  int scanConnectionToken(int currentToken) {
+    _checkValid();
+    if (currentToken == 2) return 2;
+    var result = currentToken;
+    var pos = _start;
+    while (pos <= _end) {
+      var comma = pos;
+      while (comma < _end && _buffer[comma] != 0x2C) {
+        comma++;
+      }
+      var s = pos;
+      var e = comma;
+      while (s < e && (_buffer[s] == 0x20 || _buffer[s] == 0x09)) {
+        s++;
+      }
+      while (e > s && (_buffer[e - 1] == 0x20 || _buffer[e - 1] == 0x09)) {
+        e--;
+      }
+      final tokenLen = e - s;
+      if (tokenLen == 5 && _matchesRange(s, 'close')) {
+        return 2;
+      } else if (tokenLen == 10 && _matchesRange(s, 'keep-alive')) {
+        result = 1;
+      }
+      pos = comma + 1;
+    }
+    return result;
+  }
+
+  /// Checks whether any comma-separated OWS-trimmed token in this slice
+  /// matches [lowerCaseToken] case-insensitively without allocating a [String].
+  bool containsTokenIgnoreCase(String lowerCaseToken) {
+    _checkValid();
+    final targetLen = lowerCaseToken.length;
+    var pos = _start;
+    while (pos <= _end) {
+      var comma = pos;
+      while (comma < _end && _buffer[comma] != 0x2C) {
+        comma++;
+      }
+      var s = pos;
+      var e = comma;
+      while (s < e && (_buffer[s] == 0x20 || _buffer[s] == 0x09)) {
+        s++;
+      }
+      while (e > s && (_buffer[e - 1] == 0x20 || _buffer[e - 1] == 0x09)) {
+        e--;
+      }
+      if (e - s == targetLen && _matchesRange(s, lowerCaseToken)) {
+        return true;
+      }
+      pos = comma + 1;
+    }
+    return false;
+  }
+
+  bool _matchesRange(int start, String lowerCaseTarget) {
+    for (var i = 0; i < lowerCaseTarget.length; i++) {
+      var byte = _buffer[start + i];
+      if (byte >= 65 && byte <= 90) byte += 32;
+      if (byte != lowerCaseTarget.codeUnitAt(i)) return false;
+    }
+    return true;
   }
 
   /// Efficiently checks if the slice matches a lowercase ASCII string.
   bool matches(String lowerCaseTarget) {
     _checkValid();
     if (length != lowerCaseTarget.length) return false;
-    for (var i = 0; i < length; i++) {
-      var byte = _buffer[_start + i];
-      // Convert to lowercase if it's uppercase
-      if (byte >= 65 && byte <= 90) byte += 32;
-      if (byte != lowerCaseTarget.codeUnitAt(i)) return false;
-    }
-    return true;
+    return _matchesRange(_start, lowerCaseTarget);
   }
 
   /// Checks if the slice matches an ASCII string, case-insensitively.

@@ -111,5 +111,25 @@ void main() {
       expect(response, startsWith('HTTP/1.1 200'));
       expect(response, contains('x-multi: a, b'));
     });
+
+    test(
+      'multi-value Set-Cookie headers are emitted as separate header lines',
+      () async {
+        const cookie1 =
+            'id=a3fWa; Expires=Wed, 21 Oct 2026 07:28:00 GMT; '
+            'Secure; HttpOnly';
+        final response = await _rawResponse(
+          (request) => Response.ok(
+            'body',
+            headers: {
+              'Set-Cookie': [cookie1, 'theme=dark; Path=/'],
+            },
+          ),
+        );
+        expect(response, startsWith('HTTP/1.1 200'));
+        expect(response, contains('Set-Cookie: $cookie1\r\n'));
+        expect(response, contains('Set-Cookie: theme=dark; Path=/\r\n'));
+      },
+    );
   });
 }

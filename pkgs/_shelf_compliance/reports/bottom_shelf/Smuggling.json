@@ -283,10 +283,10 @@
     "rfcReference": "RFC 9110 §8.6",
     "rfcLevel": "Should",
     "expected": "400 or 2xx",
-    "verdict": "Warn",
-    "statusCode": 200,
+    "verdict": "Pass",
+    "statusCode": 400,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 00\r\n\r\n",
-    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
   },
   {
     "id": "SMUG-CL-EXTRA-LEADING-SP",
@@ -331,10 +331,10 @@
     "rfcReference": "RFC 9110 §8.6",
     "rfcLevel": "Should",
     "expected": "400 or 2xx",
-    "verdict": "Warn",
-    "statusCode": 200,
+    "verdict": "Pass",
+    "statusCode": 400,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 005\r\n\r\nhello",
-    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\n5\r\nhello\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
   },
   {
     "id": "SMUG-CL-LEADING-ZEROS-OCTAL",
@@ -343,10 +343,10 @@
     "rfcReference": "RFC 9110 §8.6",
     "rfcLevel": "Should",
     "expected": "400 or 2xx",
-    "verdict": "Warn",
-    "statusCode": 200,
+    "verdict": "Pass",
+    "statusCode": 400,
     "rawRequest": "POST / HTTP/1.1\r\nHost: 127.0.0.1:<PORT>\r\nContent-Length: 0200\r\n\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-    "rawResponse": "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: keep-alive\r\nX-Powered-By: Dart with package:bottom_shelf\r\nDate: <DATE>\r\n\r\nc8\r\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\r\n0\r\n\r\n"
+    "rawResponse": "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"
   },
   {
     "id": "SMUG-CL-NEGATIVE",

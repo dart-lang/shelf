@@ -194,5 +194,67 @@ void main() {
       await completer.future;
       await socket.drain<void>();
     });
+
+    test('TypedHeaders contentType and ifModifiedSince cache hits and '
+        'LazyByteHeaderMap map members', () async {
+      final completer = Completer<void>();
+      final server = await RawShelfServer.serve(
+        (request) {
+          try {
+            final typed = request.context[$Context.rawHeaders] as TypedHeaders;
+            expect(typed.contentType?.mimeType, 'application/json');
+            expect(
+              typed.contentType?.mimeType,
+              'application/json',
+            ); // Cache hit
+            expect(typed.ifModifiedSince, isNotNull);
+            expect(typed.ifModifiedSince, isNotNull); // Cache hit
+
+            // Exercise LazyByteHeaderMap & _LazySingleHeaderMap methods
+            final headersAll = request.headersAll;
+            const nonStringKey = 123 as Object;
+            expect(headersAll.isEmpty, isFalse);
+            expect(headersAll.isNotEmpty, isTrue);
+            expect(headersAll.containsKey(nonStringKey), isFalse);
+            expect(headersAll[nonStringKey], isNull);
+            expect(headersAll.keys, contains('Content-Type'));
+            expect(headersAll.length, greaterThanOrEqualTo(3));
+            expect(headersAll.entries, isNotEmpty);
+            expect(headersAll.containsKey('content-type'), isTrue);
+            expect(headersAll['content-type'], ['application/json']);
+
+            final single = request.headers;
+            expect(single[nonStringKey], isNull);
+            expect(single['non-existent'], isNull);
+            expect(single.keys, contains('Content-Type'));
+            expect(single.length, greaterThanOrEqualTo(3));
+            expect(single['content-type'], 'application/json');
+
+            if (!completer.isCompleted) completer.complete();
+          } catch (e, st) {
+            if (!completer.isCompleted) completer.completeError(e, st);
+          }
+          return Response.ok('ok');
+        },
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\n'
+          'Host: localhost\r\n'
+          'Content-Type: application/json\r\n'
+          'If-Modified-Since: Wed, 21 Oct 2015 07:28:00 GMT\r\n'
+          'Connection: close\r\n\r\n',
+        ),
+      );
+
+      await completer.future;
+      await socket.drain<void>();
+    });
   });
 }
