@@ -1,5 +1,13 @@
 ## 1.4.3-wip
 
+* `shelf_io` now resolves the `shelf.io.connection_info` context value
+  lazily. `dart:io` does not cache `HttpRequest.connectionInfo`, so building it
+  for every request spent two `getpeername` calls and one `getsockname` on a
+  value most handlers never read. The fields are now read from the socket on
+  first access and cached, so handlers that use it pay exactly what they did
+  before and handlers that do not pay nothing. If the connection is already
+  gone, the resulting error now surfaces when a field is read rather than while
+  the `Request` is being built.
 * Require `sdk: ^3.9.0`.
 * Join multiple `Cookie` request-header values with `'; '` instead of `','`
   in the single-value `headers` map, following the cookie-string grammar of

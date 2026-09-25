@@ -11,8 +11,10 @@
 /// This adapter supports request hijacking; see [Request.hijack].
 ///
 /// [Request]s passed to a [Handler] will contain the [Request.context] key
-/// `"shelf.io.connection_info"` containing the [HttpConnectionInfo] object from
-/// the underlying [HttpRequest].
+/// `"shelf.io.connection_info"` containing an [HttpConnectionInfo] for the
+/// underlying [HttpRequest]. Its fields are read from the socket on first
+/// access rather than up front, so a handler that never looks at them does not
+/// pay for them.
 ///
 /// When creating [Response] instances for this adapter, you can set the
 /// `"shelf.io.buffer_output"` key in [Response.context]. If `true`,
@@ -199,8 +201,42 @@ Request _fromHttpRequest(HttpRequest request) {
     headers: headers,
     body: request,
     onHijack: onHijack,
-    context: {'shelf.io.connection_info': request.connectionInfo!},
+    context: {'shelf.io.connection_info': _LazyHttpConnectionInfo(request)},
   );
+}
+
+/// An [HttpConnectionInfo] that reads the underlying socket only if a handler
+/// actually asks for one of its fields.
+///
+/// `dart:io` does not cache [HttpRequest.connectionInfo]: each call builds a
+/// fresh object by reading `remoteAddress`, `remotePort` and `port` off the
+/// socket, which costs two `getpeername` calls and one `getsockname`. Resolving
+/// it while building every [Request] spent those on every request, including
+/// the majority that never read the connection info — measurably, about 13% of
+/// the syscalls `shelf_io` issues on a small-response workload.
+///
+/// The fields are resolved together on first access and cached, so a handler
+/// that reads one costs exactly what it used to.
+class _LazyHttpConnectionInfo implements HttpConnectionInfo {
+  _LazyHttpConnectionInfo(this._request);
+
+  final HttpRequest _request;
+
+  HttpConnectionInfo? _resolved;
+
+  /// Throws if the connection is already gone, matching what reading
+  /// [HttpRequest.connectionInfo] eagerly used to do while the [Request] was
+  /// being built.
+  HttpConnectionInfo get _info => _resolved ??= _request.connectionInfo!;
+
+  @override
+  InternetAddress get remoteAddress => _info.remoteAddress;
+
+  @override
+  int get remotePort => _info.remotePort;
+
+  @override
+  int get localPort => _info.localPort;
 }
 
 Future<void> _writeResponse(
