@@ -209,11 +209,11 @@ Request _fromHttpRequest(HttpRequest request) {
 /// actually asks for one of its fields.
 ///
 /// `dart:io` does not cache [HttpRequest.connectionInfo]: each call builds a
-/// fresh object by reading `remoteAddress`, `remotePort` and `port` off the
-/// socket, which costs two `getpeername` calls and one `getsockname`. Resolving
-/// it while building every [Request] spent those on every request, including
-/// the majority that never read the connection info — measurably, about 13% of
-/// the syscalls `shelf_io` issues on a small-response workload.
+/// fresh object by reading `remoteAddress` and `remotePort` off the socket,
+/// which costs two `getpeername` calls. Resolving it while building every
+/// [Request] spent those on every request, including the majority that never
+/// read the connection info — measurably, about 13% of the syscalls
+/// `shelf_io` issues on a small-response workload.
 ///
 /// The fields are resolved together on first access and cached, so a handler
 /// that reads one costs exactly what it used to.
