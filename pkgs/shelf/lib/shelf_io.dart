@@ -224,10 +224,23 @@ class _LazyHttpConnectionInfo implements HttpConnectionInfo {
 
   HttpConnectionInfo? _resolved;
 
-  /// Throws if the connection is already gone, matching what reading
-  /// [HttpRequest.connectionInfo] eagerly used to do while the [Request] was
-  /// being built.
-  HttpConnectionInfo get _info => _resolved ??= _request.connectionInfo!;
+  /// Throws a [StateError] if the connection is already gone.
+  ///
+  /// Reading [HttpRequest.connectionInfo] while the [Request] was being built
+  /// used to throw here too, but from the adapter rather than from handler
+  /// code, so the message is worth being explicit about.
+  HttpConnectionInfo get _info {
+    final resolved = _resolved;
+    if (resolved != null) return resolved;
+
+    final info = _request.connectionInfo;
+    if (info == null) {
+      throw StateError(
+        'HttpConnectionInfo is unavailable because the connection is closed.',
+      );
+    }
+    return _resolved = info;
+  }
 
   @override
   InternetAddress get remoteAddress => _info.remoteAddress;

@@ -6,8 +6,8 @@
   never read. The fields are now read from the socket on
   first access and cached, so handlers that use it pay exactly what they did
   before and handlers that do not pay nothing. If the connection is already
-  gone, the resulting error now surfaces when a field is read rather than while
-  the `Request` is being built.
+  gone, a `StateError` is now thrown when a field is read, rather than a null
+  check failing while the `Request` was being built.
 * Require `sdk: ^3.9.0`.
 * Join multiple `Cookie` request-header values with `'; '` instead of `','`
   in the single-value `headers` map, following the cookie-string grammar of
