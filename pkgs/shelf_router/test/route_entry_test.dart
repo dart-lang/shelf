@@ -38,6 +38,23 @@ void main() {
 
   testPattern('/hello', match: {'/hello': {}}, notMatch: ['/not-hello', '/']);
 
+  // A route with no parameters is matched by string equality rather than by
+  // executing its pattern, so regex metacharacters in the route must still be
+  // treated as literal text: `.` may not act as a wildcard, `+` may not repeat,
+  // and `(...)` may not capture.
+  testPattern(
+    '/files/report.v1+final(draft)',
+    match: {'/files/report.v1+final(draft)': {}},
+    notMatch: [
+      '/files/reportXv1+final(draft)',
+      '/files/report.v11+final(draft)',
+      '/files/report.v1+finaldraft',
+      '/files/report.v1+final(draft)/',
+      '/files/report.v1+final(draft)x',
+      'files/report.v1+final(draft)',
+    ],
+  );
+
   testPattern(
     r'/user/<user>/groups/<group|\d+>',
     match: {
