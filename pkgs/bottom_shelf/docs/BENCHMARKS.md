@@ -5,8 +5,10 @@ Measured results and the harness/methodology for reproducing them honestly.
 ## Stage 2–4 — 2026-09-24: Spec Compliance, Desync Fixes & Zero-Alloc Header Scan (`pkg:bench_press` Before vs. After)
 
 Isolated `pkg:bench_press` microbenchmark comparison across all 21 benchmark
-cells in both `aot` and `jit` targets (`pkgs/_bottom_shelf_benchmarks`),
-comparing the pre-Stage-2 baseline against the post-Stage-2 implementation
+cells in both `aot` and `jit` targets
+(`targets/bench_press/benchmark/bottom_shelf_bench_press.dart` in
+`kevmoo/gcp-http-bench`), comparing the pre-Stage-2 baseline against the
+post-Stage-2 implementation
 (strict RFC 9110 `tchar` method & `HTTP/1.x` version grammar, leading/trailing
 `SP`/`HTAB` OWS trimming, zero-allocation `HeaderByteSlice` byte methods
 `parseContentLength` / `scanConnectionToken` / `containsTokenIgnoreCase`,
@@ -118,11 +120,10 @@ median RPS:
   - **Capped `isFirst` Coalescing (`<= 16 KB`)**: Eliminates old-space
     `Uint8List` allocation and user-space `memcpy` for large bodies, cutting
     in-process `_WireSocket` serialization latency by **`40.5x`** on `256 KB`
-    (`200.0 µs` → `4.94 µs`, `49.4 GB/s`) and **`39.6x`** on `1 MB`
-    (`733.1 µs` → `18.52 µs`, `52.7 GB/s` — ~60% of single-threaded DRAM copy
-    bandwidth) and cutting kernel-tracked peak RSS (`VmHWM`) by **`-68%`
-    (`~130 MB`)** (`190.2 MB` → `60.5 MB` on `W7a`; `189.5 MB` → `61.5 MB` on
-    `W7b`).
+    (`200.0 µs` → `4.94 µs`, `53.1 GB/s`) and **`39.6x`** on `1 MB`
+    (`733.1 µs` → `18.52 µs`, `56.6 GB/s`) and cutting kernel-tracked peak RSS
+    (`VmHWM`) by **`-68%` (`~130 MB`)** (`190.2 MB` → `60.5 MB` on `W7a`;
+    `189.5 MB` → `61.5 MB` on `W7b`).
   - **Synchronous `Body.takeBufferedBytes()`**: Eliminates `Stream`/`Future`
     allocation on buffered responses (`1.10x` / `-0.11 µs` on `13 B` payloads in
     microbenchmarks; noise on `>= 256 KB` payloads dominated by memory copy).
