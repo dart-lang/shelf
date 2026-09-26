@@ -14,7 +14,10 @@
 /// `"shelf.io.connection_info"` containing an [HttpConnectionInfo] for the
 /// underlying [HttpRequest]. Its fields are read from the socket on first
 /// access rather than up front, so a handler that never looks at them does not
-/// pay for them.
+/// pay for them. Middleware or handlers that need these fields after an
+/// asynchronous gap (such as access loggers running after `await innerHandler`)
+/// should read a field before awaiting or handle [StateError] in case the
+/// connection closes while the request is in flight.
 ///
 /// When creating [Response] instances for this adapter, you can set the
 /// `"shelf.io.buffer_output"` key in [Response.context]. If `true`,
@@ -218,9 +221,9 @@ Request _fromHttpRequest(HttpRequest request) {
 /// The fields are resolved together on first access and cached, so a handler
 /// that reads one costs exactly what it used to.
 class _LazyHttpConnectionInfo implements HttpConnectionInfo {
-  _LazyHttpConnectionInfo(this._request);
+  _LazyHttpConnectionInfo(HttpRequest request) : _request = request;
 
-  final HttpRequest _request;
+  HttpRequest? _request;
 
   HttpConnectionInfo? _resolved;
 
@@ -233,12 +236,13 @@ class _LazyHttpConnectionInfo implements HttpConnectionInfo {
     final resolved = _resolved;
     if (resolved != null) return resolved;
 
-    final info = _request.connectionInfo;
+    final info = _request?.connectionInfo;
     if (info == null) {
       throw StateError(
         'HttpConnectionInfo is unavailable because the connection is closed.',
       );
     }
+    _request = null;
     return _resolved = info;
   }
 

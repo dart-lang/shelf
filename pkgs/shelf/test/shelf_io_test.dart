@@ -654,6 +654,26 @@ void main() {
     },
   );
 
+  test('throws StateError when connection info is first read after connection '
+      'closes', () async {
+    late HttpConnectionInfo capturedInfo;
+    await _scheduleServer((request) {
+      capturedInfo =
+          request.context['shelf.io.connection_info'] as HttpConnectionInfo;
+      return Response.ok(
+        'ok',
+        headers: {HttpHeaders.connectionHeader: 'close'},
+      );
+    });
+
+    var response = await _get();
+    expect(response.statusCode, HttpStatus.ok);
+
+    expect(() => capturedInfo.remoteAddress, throwsStateError);
+    expect(() => capturedInfo.remotePort, throwsStateError);
+    expect(() => capturedInfo.localPort, throwsStateError);
+  });
+
   group('ssl tests', () {
     var securityContext = SecurityContext()
       ..setTrustedCertificatesBytes(certChainBytes)
