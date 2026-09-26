@@ -104,8 +104,12 @@ median RPS:
 | **W8-W5** | `POST /echo-json` | 4 | 112,384 | **132,327** | **1.18x (`+17.7%`)** | 66,544 | 97,140 | **1.99x** | **1.36x** | 0.45 / 2.01 |
 
 - **`12 / 12` Rows Ahead**: `bottom_shelf` (`b1f8998`) beats **both `shelf_io`
-  (`1.11x–2.10x`, geomean `1.79x`) and raw `dart:io` (`1.03x–1.37x`)** across
-  every workload quadrant. On `W6` (`POST /upload-chunked`), `shelf_io` spans
+  (`1.11x–2.10x`, geomean `1.82x`) and raw `dart:io` (`1.03x–1.37x`)** across
+  every workload quadrant. That geomean is the
+  `summary.geomean_bs_vs_shelf_io_all` field of
+  `results/bluefin_post_fix_matrix.json` in `kevmoo/gcp-http-bench`; read it
+  from there rather than recomputing it by hand. On `W6`
+  (`POST /upload-chunked`), `shelf_io` spans
   `9,942–12,671` RPS across the three plain non-capture runs (vs `bottom_shelf`
   `17,693–18,936` RPS), yielding a within-run ratio of `1.47x–1.82x` (`1.47x`
   in `bluefin_post_fix_matrix`).
