@@ -4,6 +4,14 @@
 * Join multiple `Cookie` request-header values with `'; '` instead of `','`
   in the single-value `headers` map, following the cookie-string grammar of
   [RFC 6265 section 5.4](https://datatracker.ietf.org/doc/html/rfc6265#section-5.4).
+* Export `Headers`, `Body`, and `extractBody` from `package:shelf/shelf.dart`
+  for HTTP server adapters.
+* Add `Body.takeBufferedBytes()` to allow HTTP adapters and `readAsString()`
+  to extract in-memory request/response bodies synchronously without allocating
+  a `Stream`.
+* Add `Headers.adopt()` and `Headers.update()`, and optimize `Request.change()`,
+  `findHeader()`, and `Headers.singleValues` to preserve lazy header maps and
+  avoid redundant map copies and URI re-validation.
 
 ## 1.4.2
 

@@ -1,0 +1,607 @@
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:shelf/shelf.dart';
+import 'package:stream_channel/stream_channel.dart';
+
+import 'body_stream.dart';
+import 'constants.dart';
+import 'exceptions.dart';
+import 'lazy_byte_header_map.dart';
+import 'raw_http_parser.dart';
+import 'raw_shelf_response_serializer.dart';
+import 'server_config.dart';
+import 'typed_headers.dart';
+
+final _emptyBytes = Uint8List(0);
+
+/// Starts handling a single HTTP connection for `RawShelfServer`.
+void handleHttpConnection({
+  required Socket socket,
+  required ServerConfig config,
+}) {
+  final connection = _HttpConnection(socket: socket, config: config);
+  runZonedGuarded(connection.start, connection._handleAsyncError);
+}
+
+final class _HttpConnection {
+  final Socket socket;
+  final ServerConfig config;
+
+  /// These values are copied from [socket] at the time of creation so that
+  /// that we have them after the [socket] is destroyed.
+  final InternetAddress remoteAddress;
+  final int remotePort;
+
+  final _parser = RawHttpParser();
+
+  BodyController? _bodyController;
+  var _readyForNextRequest = Completer<void>()..complete();
+  StreamSubscription<Uint8List>? _subscription;
+  Completer<void>? _currentBodyDone;
+  StreamController<Uint8List>? _hijackController;
+  Timer? _headerTimer;
+  Timer? _bodyTimer;
+  var _forceClose = false;
+  var _isHijacked = false;
+  var _isDestroyed = false;
+  var _clientClosed = false;
+  var _responseWriting = false;
+  var _responseSent = false;
+
+  /// Bytes written to [socket] since the last flush on a keep-alive
+  /// connection. See `$Limit.flushThreshold`.
+  var _unflushedBytes = 0;
+  var _unflushedResponses = 0;
+
+  _HttpConnection({required this.socket, required this.config})
+    : remoteAddress = socket.remoteAddress,
+      remotePort = socket.remotePort {
+    socket.done.catchError((Object _) {});
+  }
+
+  /// Constant for the connection's lifetime — shared across all requests.
+  late final _connectionInfo = _HttpConnectionInfo(
+    config.serverSocket.port,
+    remoteAddress,
+    remotePort,
+  );
+
+  void start() {
+    _startHeaderTimer();
+    _subscription = socket.listen(
+      _processData,
+      onError: (Object e) {
+        if (_isHijacked) {
+          _hijackController?.addError(e);
+        } else {
+          _destroy();
+        }
+      },
+      onDone: () {
+        if (_isHijacked) {
+          _hijackController?.close();
+        } else {
+          _clientClosed = true;
+          if (_bodyController != null && !_bodyController!.isDone) {
+            _bodyController!.addError(
+              const BadRequestException('Incomplete body'),
+            );
+            _bodyController!.close();
+            _forceClose = true;
+            if (_currentBodyDone != null && !_currentBodyDone!.isCompleted) {
+              _currentBodyDone!.complete();
+            }
+          } else {
+            _bodyController?.close();
+          }
+        }
+      },
+      cancelOnError: true,
+    );
+  }
+
+  void _destroy() {
+    if (_isDestroyed) return;
+    _isDestroyed = true;
+    _headerTimer?.cancel();
+    _bodyTimer?.cancel();
+    _subscription?.cancel();
+    socket.destroy();
+    _bodyController?.close();
+    if (!_readyForNextRequest.isCompleted) {
+      _readyForNextRequest.complete();
+    }
+  }
+
+  void _flushCloseDestroy() {
+    socket.flush().then((_) {
+      socket.close().then((_) => _destroy(), onError: (Object _) => _destroy());
+    }, onError: (Object _) => _destroy());
+  }
+
+  void _startHeaderTimer() {
+    if (config.headerTimeout != null && !_isDestroyed && !_clientClosed) {
+      _headerTimer?.cancel();
+      _headerTimer = Timer(config.headerTimeout!, _destroy);
+    }
+  }
+
+  void _cancelHeaderTimer() {
+    _headerTimer?.cancel();
+    _headerTimer = null;
+  }
+
+  void _processData(Uint8List data) {
+    if (_isHijacked) {
+      _hijackController?.add(data);
+      return;
+    }
+    if (_isDestroyed || _clientClosed) return;
+
+    try {
+      var currentData = data;
+      while (currentData.isNotEmpty) {
+        if (_isHijacked) {
+          _hijackController?.add(currentData);
+          return;
+        }
+        if (_isDestroyed) return;
+
+        if (_bodyController != null) {
+          currentData = _bodyController!.add(currentData);
+          if (currentData.isNotEmpty || _bodyController!.isDone) {
+            _bodyController = null;
+            continue;
+          }
+          break;
+        }
+
+        if (!_readyForNextRequest.isCompleted) {
+          _subscription?.pause(
+            _readyForNextRequest.future.then((_) {
+              if (!_isDestroyed && !_clientClosed) {
+                _processData(currentData);
+              }
+            }),
+          );
+          return;
+        }
+
+        if (_parser.process(currentData) case final requestHead?) {
+          _cancelHeaderTimer();
+          _readyForNextRequest = Completer<void>();
+          final bodyDone = Completer<void>();
+
+          final typedHeaders = TypedHeaders(requestHead.headerSlices);
+
+          if (typedHeaders.hasConflictingBodyHeaders) {
+            socket.add(ErrorResponse.badRequest.bytes);
+            _destroy();
+            return;
+          }
+
+          if (typedHeaders.hasDuplicateHost) {
+            socket.add(ErrorResponse.badRequest.bytes);
+            _destroy();
+            return;
+          }
+
+          if (typedHeaders.contentLengthHeaderCount > 1 ||
+              !typedHeaders.contentLengthDigitsValid ||
+              (typedHeaders.contentLengthHeaderCount == 1 &&
+                  typedHeaders.contentLength == null)) {
+            socket.add(ErrorResponse.badRequest.bytes);
+            _destroy();
+            return;
+          }
+
+          if (typedHeaders.hasTransferEncoding && !typedHeaders.isChunked) {
+            socket.add(ErrorResponse.notImplemented.bytes);
+            _flushCloseDestroy();
+            return;
+          }
+          if (requestHead.method == 'CONNECT' ||
+              requestHead.method == 'TRACE') {
+            socket.add(ErrorResponse.methodNotAllowed.bytes);
+            _flushCloseDestroy();
+            return;
+          }
+
+          final host = typedHeaders.host;
+          if (host != null && (host.contains('@') || host.contains('/'))) {
+            socket.add(ErrorResponse.badRequest.bytes);
+            _flushCloseDestroy();
+            return;
+          }
+
+          if ((host == null || host.trim().isEmpty) &&
+              requestHead.version == '1.1') {
+            socket.add(ErrorResponse.badRequest.bytes);
+            _flushCloseDestroy();
+            return;
+          }
+          final effectiveHost = host ?? 'localhost';
+
+          Uri uri;
+          try {
+            final rawUrl = requestHead.url;
+            if (rawUrl.startsWith('/')) {
+              // Origin-form (the common case): can never have a scheme, so
+              // skip straight to the single absolute-URL parse.
+              uri = Uri.parse('http://$effectiveHost$rawUrl');
+            } else {
+              uri = Uri.parse(rawUrl);
+              if (!uri.hasScheme) {
+                uri = Uri.parse('http://$effectiveHost/$rawUrl');
+              }
+            }
+          } on FormatException catch (e, st) {
+            throw BadRequestException(
+              'Invalid requested URL: ${e.message}',
+              innerException: e,
+              innerStack: st,
+            );
+          }
+
+          final consumedInHeaders = requestHead.consumedInLastChunk;
+          final remainingInChunk = consumedInHeaders == currentData.length
+              ? _emptyBytes
+              : Uint8List.sublistView(currentData, consumedInHeaders);
+
+          final contentLength = typedHeaders.contentLength ?? 0;
+
+          if (config.maxAllowedContentLength != null &&
+              contentLength > config.maxAllowedContentLength!) {
+            socket.add(ErrorResponse.contentTooLarge.bytes);
+            _flushCloseDestroy();
+            return;
+          }
+
+          typedHeaders.validateTransferEncoding();
+
+          if (requestHead.method == 'OPTIONS' &&
+              (contentLength > 0 || typedHeaders.isChunked)) {
+            socket.add(ErrorResponse.badRequest.bytes);
+            _flushCloseDestroy();
+            return;
+          }
+
+          Object? requestBody;
+          if (typedHeaders.isChunked) {
+            _bodyController = ChunkedBodyController(
+              () {
+                if (!bodyDone.isCompleted) bodyDone.complete();
+              },
+              onPause: () => _subscription?.pause(),
+              onResume: () => _subscription?.resume(),
+            );
+            requestBody = _bodyController!.stream;
+            currentData = _bodyController!.add(remainingInChunk);
+          } else if (contentLength > 0) {
+            if (remainingInChunk.length >= contentLength) {
+              requestBody = Uint8List.sublistView(
+                remainingInChunk,
+                0,
+                contentLength,
+              );
+              currentData = remainingInChunk.length == contentLength
+                  ? _emptyBytes
+                  : Uint8List.sublistView(remainingInChunk, contentLength);
+              bodyDone.complete();
+            } else {
+              _bodyController = FixedLengthBodyController(
+                contentLength,
+                () {
+                  if (!bodyDone.isCompleted) bodyDone.complete();
+                },
+                onPause: () => _subscription?.pause(),
+                onResume: () => _subscription?.resume(),
+              );
+              requestBody = _bodyController!.stream;
+              currentData = _bodyController!.add(remainingInChunk);
+            }
+          } else {
+            requestBody = const Stream<Uint8List>.empty();
+            currentData = remainingInChunk;
+            bodyDone.complete();
+          }
+
+          if (config.bodyTimeout != null &&
+              !bodyDone.isCompleted &&
+              !_isDestroyed &&
+              !_clientClosed) {
+            _bodyTimer = Timer(config.bodyTimeout!, _destroy);
+            bodyDone.future.then((_) {
+              _bodyTimer?.cancel();
+              _bodyTimer = null;
+            });
+          }
+
+          final thisRequestBodyController = _bodyController;
+          final capturedDataAtHijack = currentData;
+
+          if (_bodyController?.isDone ?? false) {
+            _bodyController = null;
+          }
+
+          var finalHeaderSlices = requestHead.headerSlices;
+          if (typedHeaders.isChunked) {
+            finalHeaderSlices = finalHeaderSlices
+                .where((s) => !s.key.matches($Header.transferEncoding))
+                .toList();
+          }
+
+          late final Request request;
+          void theHijackCallback(
+            void Function(StreamChannel<List<int>>) callback,
+          ) {
+            _isHijacked = true;
+            _hijackController = StreamController<Uint8List>(sync: true);
+
+            if (thisRequestBodyController != null) {
+              final buffered = thisRequestBodyController.takeBufferedData();
+              if (buffered.isNotEmpty) {
+                _hijackController!.add(buffered);
+              }
+            } else if (requestBody is Uint8List) {
+              final body = extractBody(request);
+              if (!body.isRead) {
+                final unread = body.takeBufferedBytes();
+                if (unread != null && unread.isNotEmpty) {
+                  _hijackController!.add(unread);
+                }
+              }
+            }
+
+            if (capturedDataAtHijack.isNotEmpty) {
+              _hijackController!.add(capturedDataAtHijack);
+            }
+            callback(StreamChannel(_hijackController!.stream, socket));
+          }
+
+          final originalMethod = requestHead.method;
+          final effectiveMethod =
+              (originalMethod == 'HEAD' && config.automaticHeadMethodSupport)
+              ? 'GET'
+              : originalMethod;
+
+          try {
+            request = Request(
+              effectiveMethod,
+              uri,
+              protocolVersion: requestHead.version,
+              headers: LazyByteHeaderMap(finalHeaderSlices),
+              body: requestBody,
+              context: {
+                $Context.rawHeaders: typedHeaders,
+                $Context.connectionInfo: _connectionInfo,
+              },
+              onHijack: theHijackCallback,
+            );
+          }
+          // ignore: avoid_catching_errors
+          on ArgumentError catch (e, st) {
+            throw BadRequestException(
+              'Invalid request parameters',
+              innerException: e,
+              innerStack: st,
+            );
+          }
+
+          _dispatchRequest(request, typedHeaders, bodyDone, originalMethod);
+
+          if (_bodyController != null || _isHijacked) {
+            break;
+          }
+        } else {
+          break;
+        }
+      }
+    } catch (e, st) {
+      if (!_isHijacked && !_isDestroyed) {
+        config.onConnectionError?.call(
+          'Error in handler',
+          e,
+          st,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
+        );
+        if (e is BadRequestException) {
+          if (!_responseWriting) {
+            socket.add(e.errorResponse.bytes);
+            _flushCloseDestroy();
+          } else {
+            _destroy();
+          }
+        } else {
+          _destroy();
+        }
+      }
+    }
+  }
+
+  void _dispatchRequest(
+    Request request,
+    TypedHeaders typedHeaders,
+    Completer<void> bodyDone,
+    String originalMethod,
+  ) {
+    _currentBodyDone = bodyDone;
+    _responseWriting = false;
+    _responseSent = false;
+    unawaited(_executeRequest(request, typedHeaders, bodyDone, originalMethod));
+  }
+
+  Future<void> _executeRequest(
+    Request request,
+    TypedHeaders typedHeaders,
+    Completer<void> bodyDone,
+    String originalMethod,
+  ) async {
+    try {
+      // Avoid a microtask hop when the handler completes synchronously.
+      final result = config.handler(request);
+      final response = result is Response ? result : await result;
+      if (_isHijacked) return;
+
+      final keepAlive =
+          !_forceClose && typedHeaders.isKeepAlive(request.protocolVersion);
+
+      _responseWriting = true;
+      final writeResult = RawShelfResponseSerializer.writeResponse(
+        response,
+        socket,
+        keepAlive: keepAlive,
+        requestMethod: originalMethod,
+        poweredBy: config.poweredBy,
+        onHeadersSent: () {
+          _responseSent = true;
+        },
+      );
+      final written = writeResult is int ? writeResult : await writeResult;
+      _responseSent = true;
+      _unflushedBytes += written;
+      _unflushedResponses++;
+
+      _parser.reset();
+
+      if (keepAlive) {
+        if (!bodyDone.isCompleted) await bodyDone.future;
+        if (_forceClose) {
+          await socket.close();
+          _destroy();
+          return;
+        }
+        // Skip the per-response flush (it would gate the next pipelined
+        // request on the OS write draining) until enough pipelined responses
+        // and bytes have queued that a slow client's buffer would grow
+        // unbounded otherwise.
+        if (_unflushedResponses >= 16 &&
+            _unflushedBytes >= $Limit.flushThreshold) {
+          _unflushedBytes = 0;
+          _unflushedResponses = 0;
+          await socket.flush();
+          if (_isDestroyed || _clientClosed) return;
+        }
+        _responseWriting = false;
+        if (!_readyForNextRequest.isCompleted) {
+          _readyForNextRequest.complete();
+          _startHeaderTimer();
+        }
+      } else {
+        // close() flushes any queued bytes before shutting down.
+        await socket.close();
+        _destroy();
+      }
+    } on HijackException {
+      await Future.microtask(() {});
+      if (!_isHijacked) {
+        if (!_responseSent) {
+          socket.add(ErrorResponse.internalServerError.bytes);
+        }
+        unawaited(
+          socket.close().then(
+            (_) => _destroy(),
+            onError: (Object _) => _destroy(),
+          ),
+        );
+      }
+    } catch (e, st) {
+      if (!_isHijacked && !_isDestroyed) {
+        if (e is SocketException) {
+          _destroy();
+          return;
+        }
+        if (!_responseSent) {
+          socket.add(ErrorResponse.internalServerError.bytes);
+        }
+        config.onConnectionError?.call(
+          'Error in handler',
+          e,
+          st,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
+        );
+        unawaited(
+          socket.close().then(
+            (_) => _destroy(),
+            onError: (Object _) => _destroy(),
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleAsyncError(Object e, StackTrace st) {
+    if (e is HijackException) {
+      return;
+    }
+    final action = config.onAsyncError?.call(e, st);
+    if (action == ErrorAction.ignore) {
+      if (!_isDestroyed) {
+        config.onConnectionError?.call(
+          'Unhandled async error (ignored)',
+          e,
+          st,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
+        );
+      }
+    } else if (action == ErrorAction.crash) {
+      config.onConnectionError?.call(
+        'Crashing server due to async error',
+        e,
+        st,
+        remoteAddress: remoteAddress,
+        remotePort: remotePort,
+      );
+      // ignore: only_throw_errors
+      throw e;
+    } else {
+      if (!_isHijacked && !_isDestroyed) {
+        if (e is SocketException) {
+          _destroy();
+          return;
+        }
+        config.onConnectionError?.call(
+          'Error in handler',
+          e,
+          st,
+          remoteAddress: remoteAddress,
+          remotePort: remotePort,
+        );
+        if (_responseWriting && !_responseSent) {
+          _forceClose = true;
+          return;
+        }
+        if (!_responseSent) {
+          socket.add(ErrorResponse.internalServerError.bytes);
+        }
+        socket.close().then(
+          (_) => _destroy(),
+          onError: (Object _) => _destroy(),
+        );
+      }
+    }
+  }
+}
+
+// TODO: consider if we want to leak this type for compat
+// we could ditch this feature?
+// we colud just send our own type with a new header?
+class _HttpConnectionInfo implements HttpConnectionInfo {
+  @override
+  final int localPort;
+  @override
+  final InternetAddress remoteAddress;
+  @override
+  final int remotePort;
+
+  _HttpConnectionInfo(this.localPort, this.remoteAddress, this.remotePort);
+}

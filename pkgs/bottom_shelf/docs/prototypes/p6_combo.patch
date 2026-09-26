@@ -1,0 +1,727 @@
+diff --git a/pkgs/bottom_shelf/lib/src/http_connection.dart b/pkgs/bottom_shelf/lib/src/http_connection.dart
+index 7fdf7d6..c8a12ea 100644
+--- a/pkgs/bottom_shelf/lib/src/http_connection.dart
++++ b/pkgs/bottom_shelf/lib/src/http_connection.dart
+@@ -184,48 +184,16 @@ final class _HttpConnection {
+             return;
+           }
+ 
+-          var contentLengthHeaderCount = 0;
+-          var clValid = true;
+-          for (var slice in requestHead.headerSlices) {
+-            if (slice.key.matches($Header.contentLength)) {
+-              contentLengthHeaderCount++;
+-              final value = slice.value.asString();
+-              if (value.isEmpty) {
+-                clValid = false;
+-              } else {
+-                for (var i = 0; i < value.length; i++) {
+-                  final c = value.codeUnitAt(i);
+-                  if (c < 48 || c > 57) {
+-                    clValid = false;
+-                    break;
+-                  }
+-                }
+-              }
+-            }
+-          }
+-
+-          if (contentLengthHeaderCount > 1 ||
+-              !clValid ||
+-              (contentLengthHeaderCount == 1 &&
++          if (typedHeaders.contentLengthHeaderCount > 1 ||
++              !typedHeaders.contentLengthDigitsValid ||
++              (typedHeaders.contentLengthHeaderCount == 1 &&
+                   typedHeaders.contentLength == null)) {
+             socket.add(ErrorResponse.badRequest.bytes);
+             _destroy();
+             return;
+           }
+ 
+-          var hasTransferEncoding = false;
+-          var isChunked = false;
+-          for (var slice in requestHead.headerSlices) {
+-            if (slice.key.matches($Header.transferEncoding)) {
+-              hasTransferEncoding = true;
+-              final value = slice.value.asString().toLowerCase();
+-              if (value.contains('chunked')) {
+-                isChunked = true;
+-              }
+-            }
+-          }
+-
+-          if (hasTransferEncoding && !isChunked) {
++          if (typedHeaders.hasTransferEncoding && !typedHeaders.isChunked) {
+             socket.add(ErrorResponse.notImplemented.bytes);
+             _flushCloseDestroy();
+             return;
+diff --git a/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart b/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
+index e5b122f..79674f6 100644
+--- a/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
++++ b/pkgs/bottom_shelf/lib/src/raw_shelf_response_serializer.dart
+@@ -4,11 +4,15 @@
+ 
+ import 'dart:convert';
+ import 'dart:io';
++import 'dart:math' as math;
+ import 'dart:typed_data';
+ import 'package:shelf/shelf.dart';
+ import 'constants.dart';
+ 
+ /// Serializes a [Response] directly to a [Socket].
++///
++/// COMBO PROTOTYPE: P1 byte-oriented headers + P5 synchronous buffered-body
++/// fast path + P3 no post-write flush.
+ final class RawShelfResponseSerializer {
+   static final Uint8List _crlf = Uint8List.fromList([$Chars.cr, $Chars.lf]);
+   static final Uint8List _chunkedEnd = Uint8List.fromList([
+@@ -19,17 +23,77 @@ final class RawShelfResponseSerializer {
+     $Chars.lf,
+   ]);
+ 
++  static final Uint8List _connectionKeepAlive = ascii.encode(
++    'Connection: keep-alive\r\n',
++  );
++  static final Uint8List _connectionClose = ascii.encode(
++    'Connection: close\r\n',
++  );
++  static final Uint8List _transferEncodingChunked = ascii.encode(
++    'Transfer-Encoding: chunked\r\n',
++  );
++
++  static final _statusLineCache = <int, Uint8List>{};
++  static Uint8List _statusLine(int code) => _statusLineCache[code] ??= ascii
++      .encode('HTTP/1.1 $code ${_getStatusPhrase(code)}\r\n');
++
+   static int _cachedSecond = 0;
+-  static String _cachedDateStr = '';
++  static Uint8List _cachedDateBytes = Uint8List(0);
+ 
+-  static String _getCachedDate() {
++  static Uint8List _dateHeaderBytes() {
+     final now = DateTime.now();
+     final second = now.millisecondsSinceEpoch ~/ 1000;
+     if (second != _cachedSecond) {
+       _cachedSecond = second;
+-      _cachedDateStr = HttpDate.format(now);
++      _cachedDateBytes = ascii.encode('Date: ${HttpDate.format(now)}\r\n');
++    }
++    return _cachedDateBytes;
++  }
++
++  /// Scratch buffer for building header bytes. Safe to reuse: it is only
++  /// live between the start of [writeResponse] and the first await, and the
++  /// isolate is single-threaded.
++  static Uint8List _scratch = Uint8List(4096);
++  static int _scratchPos = 0;
++
++  static void _ensure(int n) {
++    if (_scratchPos + n > _scratch.length) {
++      final grown = Uint8List(math.max(_scratch.length * 2, _scratchPos + n));
++      grown.setRange(0, _scratchPos, _scratch);
++      _scratch = grown;
++    }
++  }
++
++  static void _addBytes(Uint8List bytes) {
++    _ensure(bytes.length);
++    _scratch.setRange(_scratchPos, _scratchPos + bytes.length, bytes);
++    _scratchPos += bytes.length;
++  }
++
++  /// Writes [s] as Latin-1. Code units above 0xFF are replaced with `?`;
++  /// full header validation is tracked separately (ROADMAP Phase 5).
++  static void _addString(String s) {
++    _ensure(s.length);
++    for (var i = 0; i < s.length; i++) {
++      final c = s.codeUnitAt(i);
++      _scratch[_scratchPos++] = c <= 0xFF ? c : 0x3F;
++    }
++  }
++
++  static void _addCrlf() {
++    _ensure(2);
++    _scratch[_scratchPos++] = $Chars.cr;
++    _scratch[_scratchPos++] = $Chars.lf;
++  }
++
++  static bool _equalsIgnoreAsciiCase(String key, String lower) {
++    if (key.length != lower.length) return false;
++    for (var i = 0; i < key.length; i++) {
++      var c = key.codeUnitAt(i);
++      if (c >= 0x41 && c <= 0x5A) c += 0x20;
++      if (c != lower.codeUnitAt(i)) return false;
+     }
+-    return _cachedDateStr;
++    return true;
+   }
+ 
+   static Future<void> writeResponse(
+@@ -44,59 +108,76 @@ final class RawShelfResponseSerializer {
+     var hasConnection = false;
+     var hasDate = false;
+     var hasPoweredBy = false;
++    int? contentLength;
+ 
+-    final headerBuffer = StringBuffer();
+-    headerBuffer.write(
+-      'HTTP/1.1 ${response.statusCode} ${_getStatusPhrase(response.statusCode)}\r\n',
+-    );
++    _scratchPos = 0;
++    _addBytes(_statusLine(response.statusCode));
+ 
+     response.headersAll.forEach((key, values) {
+-      if (values.isNotEmpty) {
+-        final lower = key.toLowerCase();
+-        if (lower == 'content-length') {
++      if (values.isEmpty) return;
++      switch (key.length) {
++        case 14 when _equalsIgnoreAsciiCase(key, 'content-length'):
+           hasContentLength = true;
+-        } else if (lower == 'transfer-encoding') {
++          contentLength = int.tryParse(values.first);
++        case 17 when _equalsIgnoreAsciiCase(key, 'transfer-encoding'):
+           hasTransferEncoding = true;
+-        } else if (lower == 'connection') {
++        case 10 when _equalsIgnoreAsciiCase(key, 'connection'):
+           hasConnection = true;
+-        } else if (lower == 'date') {
++        case 4 when _equalsIgnoreAsciiCase(key, 'date'):
+           hasDate = true;
+-        } else if (lower == 'x-powered-by') {
++        case 12 when _equalsIgnoreAsciiCase(key, 'x-powered-by'):
+           hasPoweredBy = true;
+-        }
+-        headerBuffer.write('$key: ${values.join(', ')}\r\n');
+       }
++      _addString(key);
++      _ensure(2);
++      _scratch[_scratchPos++] = $Chars.colon;
++      _scratch[_scratchPos++] = $Chars.sp;
++      for (var i = 0; i < values.length; i++) {
++        if (i > 0) _addString(', ');
++        _addString(values[i]);
++      }
++      _addCrlf();
+     });
+ 
+-    final isChunked = !hasContentLength && response.contentLength == null;
++    final isChunked = !hasContentLength;
+ 
+-    if (isChunked) {
+-      if (!hasTransferEncoding) {
+-        headerBuffer.write('Transfer-Encoding: chunked\r\n');
+-      }
+-    } else if (!hasContentLength && response.contentLength != null) {
+-      headerBuffer.write('Content-Length: ${response.contentLength}\r\n');
++    if (isChunked && !hasTransferEncoding) {
++      _addBytes(_transferEncodingChunked);
+     }
+ 
+     if (!hasConnection) {
+-      headerBuffer.write(
+-        'Connection: ${keepAlive ? 'keep-alive' : 'close'}\r\n',
+-      );
++      _addBytes(keepAlive ? _connectionKeepAlive : _connectionClose);
+     }
+ 
+     if (poweredBy != null && !hasPoweredBy) {
+-      headerBuffer.write('X-Powered-By: $poweredBy\r\n');
++      _addString('X-Powered-By: ');
++      _addString(poweredBy);
++      _addCrlf();
+     }
+ 
+     if (!hasDate) {
+-      headerBuffer.write('Date: ${_getCachedDate()}\r\n');
++      _addBytes(_dateHeaderBytes());
+     }
+ 
+-    headerBuffer.write('\r\n');
++    _addCrlf();
++
++    // Fully synchronous single-allocation path: body bytes already in
++    // memory, headers still in scratch (no await has occurred).
++    final buffered = response.bufferedBytes;
++    if (buffered != null && buffered.isNotEmpty && requestMethod != 'HEAD') {
++      final coalesced = Uint8List(_scratchPos + buffered.length);
++      coalesced.setRange(0, _scratchPos, _scratch);
++      coalesced.setRange(_scratchPos, coalesced.length, buffered);
++      socket.add(coalesced);
++      return;
++    }
+ 
+-    final headerBytes = utf8.encode(headerBuffer.toString());
++    // Materialize before any await: the scratch buffer is shared across all
++    // connections in this isolate.
++    final headerBytes = Uint8List(_scratchPos)
++      ..setRange(0, _scratchPos, _scratch);
+ 
+-    if (requestMethod == 'HEAD' || response.contentLength == 0) {
++    if (requestMethod == 'HEAD' || contentLength == 0) {
+       socket.add(headerBytes);
+       if (requestMethod == 'HEAD') {
+         await response.read().listen((_) {}).asFuture<void>();
+@@ -107,20 +188,30 @@ final class RawShelfResponseSerializer {
+         if (chunk.isEmpty) continue;
+         if (isFirst) {
+           isFirst = false;
+-          final builder = BytesBuilder(copy: false);
+-          builder.add(headerBytes);
+           if (isChunked) {
+-            builder.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
+-            builder.add(chunk);
+-            builder.add(_crlf);
++            final sizeLine = ascii.encode(
++              '${chunk.length.toRadixString(16)}\r\n',
++            );
++            final coalesced = Uint8List(
++              headerBytes.length + sizeLine.length + chunk.length + 2,
++            );
++            var pos = 0;
++            coalesced.setRange(pos, pos += headerBytes.length, headerBytes);
++            coalesced.setRange(pos, pos += sizeLine.length, sizeLine);
++            coalesced.setRange(pos, pos += chunk.length, chunk);
++            coalesced[pos] = $Chars.cr;
++            coalesced[pos + 1] = $Chars.lf;
++            socket.add(coalesced);
+           } else {
+-            builder.add(chunk);
++            final coalesced = Uint8List(headerBytes.length + chunk.length);
++            coalesced.setRange(0, headerBytes.length, headerBytes);
++            coalesced.setRange(headerBytes.length, coalesced.length, chunk);
++            socket.add(coalesced);
+           }
+-          socket.add(builder.takeBytes());
+         } else {
+           if (isChunked) {
+             final builder = BytesBuilder(copy: false);
+-            builder.add(utf8.encode('${chunk.length.toRadixString(16)}\r\n'));
++            builder.add(ascii.encode('${chunk.length.toRadixString(16)}\r\n'));
+             builder.add(chunk);
+             builder.add(_crlf);
+             socket.add(builder.takeBytes());
+@@ -139,7 +230,8 @@ final class RawShelfResponseSerializer {
+       }
+     }
+ 
+-    await socket.flush();
++    // P3: no flush — the socket preserves write order; backpressure
++    // trade-off documented in the prototype notes.
+   }
+ 
+   static String _getStatusPhrase(int statusCode) => switch (statusCode) {
+diff --git a/pkgs/bottom_shelf/lib/src/typed_headers.dart b/pkgs/bottom_shelf/lib/src/typed_headers.dart
+index 556e522..1608d0d 100644
+--- a/pkgs/bottom_shelf/lib/src/typed_headers.dart
++++ b/pkgs/bottom_shelf/lib/src/typed_headers.dart
+@@ -13,11 +13,65 @@ final class TypedHeaders {
+   final List<HeaderEntrySlices> _slices;
+   final _cache = <String, Object?>{};
+ 
+-  TypedHeaders(this._slices);
++  // Results of the single fused scan over the header slices. Computing
++  // these together replaces eight separate walks of the slice list on the
++  // per-request hot path.
++  int _contentLengthCount = 0;
++  bool _contentLengthDigitsValid = true;
++  int? _contentLengthValue;
++  bool _hasTransferEncoding = false;
++  bool _isChunked = false;
++  int _hostCount = 0;
++  String? _host;
++  // 0 = no recognized Connection token, 1 = keep-alive, 2 = close.
++  int _connectionToken = 0;
++
++  TypedHeaders(this._slices) {
++    for (var slice in _slices) {
++      final key = slice.key;
++      if (key.matches($Header.contentLength)) {
++        _contentLengthCount++;
++        final value = slice.value.asString();
++        var digitsValid = value.isNotEmpty;
++        for (var i = 0; digitsValid && i < value.length; i++) {
++          final c = value.codeUnitAt(i);
++          if (c < 0x30 || c > 0x39) digitsValid = false;
++        }
++        if (digitsValid) {
++          _contentLengthValue ??= int.tryParse(value);
++        } else {
++          _contentLengthDigitsValid = false;
++        }
++      } else if (key.matches($Header.transferEncoding)) {
++        _hasTransferEncoding = true;
++        if (slice.value.asString().toLowerCase().contains('chunked')) {
++          _isChunked = true;
++        }
++      } else if (key.matches($Header.host)) {
++        _hostCount++;
++        _host ??= slice.value.asString();
++      } else if (_connectionToken == 0 && key.matches($Header.connection)) {
++        final value = slice.value.asString().toLowerCase();
++        if (value == 'close') {
++          _connectionToken = 2;
++        } else if (value == 'keep-alive') {
++          _connectionToken = 1;
++        }
++      }
++    }
++  }
+ 
+   /// Returns the Content-Length as an integer, or null if missing/invalid.
+-  int? get contentLength =>
+-      _getTypedHeader($Header.contentLength, int.tryParse);
++  int? get contentLength => _contentLengthValue;
++
++  /// The number of Content-Length headers present.
++  int get contentLengthHeaderCount => _contentLengthCount;
++
++  /// False if any Content-Length header is empty or contains a non-digit.
++  bool get contentLengthDigitsValid => _contentLengthDigitsValid;
++
++  /// True if any Transfer-Encoding header is present.
++  bool get hasTransferEncoding => _hasTransferEncoding;
+ 
+   /// Returns the Content-Type as a [MediaType], or null if missing/invalid.
+   MediaType? get contentType =>
+@@ -28,84 +82,30 @@ final class TypedHeaders {
+       _getTypedHeader($Header.ifModifiedSince, parseHttpDate);
+ 
+   /// Returns the Host header.
+-  String? get host => _getTypedHeader($Header.host, _identity);
+-
+-  static String _identity(String s) => s;
++  String? get host => _host;
+ 
+   /// Returns true if the connection should be kept alive.
+-  bool isKeepAlive(String protocolVersion) {
+-    if (_cache case {_CacheKey.keepAlive: final bool value}) return value;
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.connection)) {
+-        final value = slice.value.asString().toLowerCase();
+-        if (value == 'close') {
+-          _cache[_CacheKey.keepAlive] = false;
+-          return false;
+-        }
+-        if (value == 'keep-alive') {
+-          _cache[_CacheKey.keepAlive] = true;
+-          return true;
+-        }
+-      }
+-    }
+-    final result = protocolVersion == '1.1';
+-    _cache[_CacheKey.keepAlive] = result;
+-    return result;
+-  }
++  bool isKeepAlive(String protocolVersion) => switch (_connectionToken) {
++    2 => false,
++    1 => true,
++    _ => protocolVersion == '1.1',
++  };
+ 
+   /// Returns true if both Content-Length and Transfer-Encoding are present.
+   /// This is a sign of HTTP request smuggling (RFC 9112 section 6.1).
+-  bool get hasConflictingBodyHeaders {
+-    if (_cache case {_CacheKey.conflictingBodyHeaders: final bool value}) {
+-      return value;
+-    }
+-    var hasContentLength = false;
+-    var hasTransferEncoding = false;
+-
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.contentLength)) {
+-        hasContentLength = true;
+-      } else if (slice.key.matches($Header.transferEncoding)) {
+-        hasTransferEncoding = true;
+-      }
+-    }
+-
+-    final result = hasContentLength && hasTransferEncoding;
+-    _cache[_CacheKey.conflictingBodyHeaders] = result;
+-    return result;
+-  }
++  bool get hasConflictingBodyHeaders =>
++      _contentLengthCount > 0 && _hasTransferEncoding;
+ 
+   /// Returns true if the request contains duplicate Host headers.
+-  bool get hasDuplicateHost {
+-    var count = 0;
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.host)) {
+-        count++;
+-        if (count > 1) return true;
+-      }
+-    }
+-    return false;
+-  }
++  bool get hasDuplicateHost => _hostCount > 1;
+ 
+   /// Returns true if the request body is chunked.
+-  bool get isChunked {
+-    if (_cache case {_CacheKey.isChunked: final bool value}) return value;
+-    for (var slice in _slices) {
+-      if (slice.key.matches($Header.transferEncoding)) {
+-        final value = slice.value.asString().toLowerCase();
+-        if (value.contains('chunked')) {
+-          _cache[_CacheKey.isChunked] = true;
+-          return true;
+-        }
+-      }
+-    }
+-    _cache[_CacheKey.isChunked] = false;
+-    return false;
+-  }
++  bool get isChunked => _isChunked;
+ 
+   /// Validates that Transfer-Encoding is valid.
+   /// Throws [BadRequestException] if invalid.
+   void validateTransferEncoding() {
++    if (!_hasTransferEncoding) return;
+     for (var slice in _slices) {
+       if (slice.key.matches($Header.transferEncoding)) {
+         final value = slice.value.asString().toLowerCase();
+@@ -149,9 +149,3 @@ final class TypedHeaders {
+     return null;
+   }
+ }
+-
+-abstract final class _CacheKey {
+-  static const keepAlive = '[keep-alive]';
+-  static const conflictingBodyHeaders = '[conflicting-body-headers]';
+-  static const isChunked = '[is-chunked]';
+-}
+diff --git a/pkgs/shelf/lib/src/body.dart b/pkgs/shelf/lib/src/body.dart
+index c80cc48..d88a9cf 100644
+--- a/pkgs/shelf/lib/src/body.dart
++++ b/pkgs/shelf/lib/src/body.dart
+@@ -13,11 +13,18 @@ import 'message.dart';
+ /// because the message may be changed with [Message.change], but each instance
+ /// should share a notion of whether the body was read.
+ class Body {
+-  /// The contents of the message body.
++  /// The contents of the message body, when created from a stream.
+   ///
+-  /// This will be `null` after [read] is called.
++  /// This will be `null` after [read] is called, and for buffered bodies.
+   Stream<List<int>>? _stream;
+ 
++  /// PROTOTYPE P5: bytes that are synchronously known (String/List/null
++  /// bodies). The wrapping stream is only built if [read] is actually
++  /// called; adapters can consume [bufferedBytes] synchronously instead.
++  List<int>? _bufferedBytes;
++
++  var _consumed = false;
++
+   /// The encoding used to encode the stream returned by [read], or `null` if no
+   /// encoding was used.
+   final Encoding? encoding;
+@@ -26,7 +33,19 @@ class Body {
+   /// determined efficiently.
+   final int? contentLength;
+ 
+-  Body._(this._stream, this.encoding, this.contentLength);
++  Body._(this._stream, this.encoding, this.contentLength)
++      : _bufferedBytes = null;
++
++  Body._buffered(List<int> bytes, this.encoding)
++      : _bufferedBytes = bytes,
++        _stream = null,
++        contentLength = bytes.length;
++
++  /// The body's bytes, when they are synchronously available and unread.
++  ///
++  /// Returns `null` for stream-backed bodies and for bodies that have
++  /// already been consumed via [read].
++  List<int>? get bufferedBytes => _consumed ? null : _bufferedBytes;
+ 
+   /// Converts [body] to a byte stream and wraps it in a [Body].
+   ///
+@@ -36,32 +55,27 @@ class Body {
+   factory Body(Object? body, [Encoding? encoding]) {
+     if (body is Body) return body;
+ 
+-    Stream<List<int>> stream;
+-    int? contentLength;
+     if (body == null) {
+-      contentLength = 0;
+-      stream = Stream.fromIterable([]);
++      return Body._buffered(const [], encoding);
+     } else if (body is String) {
+       if (encoding == null) {
+         var encoded = utf8.encode(body);
+         // If the text is plain ASCII, don't modify the encoding. This means
+         // that an encoding of "text/plain" will stay put.
+         if (!_isPlainAscii(encoded, body.length)) encoding = utf8;
+-        contentLength = encoded.length;
+-        stream = Stream.fromIterable([encoded]);
++        return Body._buffered(encoded, encoding);
+       } else {
+-        var encoded = encoding.encode(body);
+-        contentLength = encoded.length;
+-        stream = Stream.fromIterable([encoded]);
++        return Body._buffered(encoding.encode(body), encoding);
+       }
+     } else if (body is List<int>) {
+       // Avoid performance overhead from an unnecessary cast.
+-      contentLength = body.length;
+-      stream = Stream.value(body);
++      return Body._buffered(body, encoding);
+     } else if (body is List) {
+-      contentLength = body.length;
+-      stream = Stream.value(body.cast());
+-    } else if (body is Stream<List<int>>) {
++      return Body._buffered(body.cast<int>(), encoding);
++    }
++
++    Stream<List<int>> stream;
++    if (body is Stream<List<int>>) {
+       // Avoid performance overhead from an unnecessary cast.
+       stream = body;
+     } else if (body is Stream) {
+@@ -71,7 +85,7 @@ class Body {
+           'Stream.');
+     }
+ 
+-    return Body._(stream, encoding, contentLength);
++    return Body._(stream, encoding, null);
+   }
+ 
+   /// Returns whether [bytes] is plain ASCII.
+@@ -91,12 +105,23 @@ class Body {
+   ///
+   /// Can only be called once.
+   Stream<List<int>> read() {
++    if (_consumed) {
++      throw StateError("The 'read' method can only be called once on a "
++          'shelf.Request/shelf.Response object.');
++    }
++    if (_bufferedBytes != null) {
++      _consumed = true;
++      final bytes = _bufferedBytes!;
++      _bufferedBytes = null;
++      return Stream.fromIterable([bytes]);
++    }
+     if (_stream == null) {
+       throw StateError("The 'read' method can only be called once on a "
+           'shelf.Request/shelf.Response object.');
+     }
+     var stream = _stream!;
+     _stream = null;
++    _consumed = true;
+     return stream;
+   }
+ }
+diff --git a/pkgs/shelf/lib/src/message.dart b/pkgs/shelf/lib/src/message.dart
+index c270d18..c23793a 100644
+--- a/pkgs/shelf/lib/src/message.dart
++++ b/pkgs/shelf/lib/src/message.dart
+@@ -151,6 +151,10 @@ abstract class Message {
+ 
+   MediaType? _contentTypeCache;
+ 
++  /// PROTOTYPE P5: the body's bytes when synchronously available and
++  /// unread; `null` for stream-backed or consumed bodies.
++  List<int>? get bufferedBytes => _body.bufferedBytes;
++
+   /// Returns a [Stream] representing the body.
+   ///
+   /// Can only be called once.
+diff --git a/pkgs/shelf/lib/src/request.dart b/pkgs/shelf/lib/src/request.dart
+index aa2012e..a9f32a9 100644
+--- a/pkgs/shelf/lib/src/request.dart
++++ b/pkgs/shelf/lib/src/request.dart
+@@ -27,7 +27,10 @@ class Request extends Message {
+   /// [requestedUri].
+   ///
+   /// [handlerPath] and [url]'s path combine to create [requestedUri]'s path.
+-  final Uri url;
++  // PROTOTYPE P4: computed lazily on first access instead of per-Request.
++  late final Uri url = _computeUrl(requestedUri, _handlerPathParam, _urlParam);
++  final String? _handlerPathParam;
++  final Uri? _urlParam;
+ 
+   /// The HTTP request method, such as "GET" or "POST".
+   final String method;
+@@ -43,7 +46,9 @@ class Request extends Message {
+   /// non-empty, or if [requestedUri]'s path ends with `/`.
+   ///
+   /// [handlerPath] and [url]'s path combine to create [requestedUri]'s path.
+-  final String handlerPath;
++  // PROTOTYPE P4: computed lazily on first access instead of per-Request.
++  late final String handlerPath = _computeHandlerPath(
++      requestedUri, _handlerPathParam, _urlParam);
+ 
+   /// The HTTP protocol version used in the request, either "1.0" or "1.1".
+   final String protocolVersion;
+@@ -165,49 +170,16 @@ class Request extends Message {
+     Map<String, Object>? context,
+     _OnHijack? onHijack,
+   })  : protocolVersion = protocolVersion ?? '1.1',
+-        url = _computeUrl(requestedUri, handlerPath, url),
+-        handlerPath = _computeHandlerPath(requestedUri, handlerPath, url),
++        _handlerPathParam = handlerPath,
++        _urlParam = url,
+         _onHijack = onHijack,
+         super(body, encoding: encoding, headers: headers, context: context) {
++    // PROTOTYPE P4: constructor validation removed to measure its cost.
++    // (method emptiness, requestedUri absolute/fragment/parse triggers, and
++    // the handlerPath+url==requestedUri.path consistency proof.)
+     if (method.isEmpty) {
+       throw ArgumentError.value(method, 'method', 'cannot be empty.');
+     }
+-
+-    try {
+-      // Trigger URI parsing methods that may throw format exception (in Request
+-      // constructor or in handlers / routing).
+-      requestedUri.pathSegments;
+-      requestedUri.queryParametersAll;
+-    } on FormatException catch (e) {
+-      throw ArgumentError.value(
+-          requestedUri, 'requestedUri', 'URI parsing failed: $e');
+-    }
+-
+-    if (!requestedUri.isAbsolute) {
+-      throw ArgumentError.value(
+-          requestedUri, 'requestedUri', 'must be an absolute URL.');
+-    }
+-
+-    if (requestedUri.fragment.isNotEmpty) {
+-      throw ArgumentError.value(
+-          requestedUri, 'requestedUri', 'may not have a fragment.');
+-    }
+-
+-    // Notice that because relative paths must encode colon (':') as %3A we
+-    // cannot actually combine this.handlerPath and this.url.path, but we can
+-    // compare the pathSegments. In practice exposing this.url.path as a Uri
+-    // and not a String is probably the underlying flaw here.
+-    final handlerPart = Uri(path: this.handlerPath).pathSegments.join('/');
+-    final rest = this.url.pathSegments.join('/');
+-    final join = this.url.path.startsWith('/') ? '/' : '';
+-    final pathSegments = '$handlerPart$join$rest';
+-    if (pathSegments != requestedUri.pathSegments.join('/')) {
+-      throw ArgumentError.value(
+-          requestedUri,
+-          'requestedUri',
+-          'handlerPath "${this.handlerPath}" and url "${this.url}" must '
+-              'combine to equal requestedUri path "${requestedUri.path}".');
+-    }
+   }
+ 
+   /// Creates a new [Request] by copying existing values and applying specified
+diff --git a/pkgs/shelf/lib/src/shelf_unmodifiable_map.dart b/pkgs/shelf/lib/src/shelf_unmodifiable_map.dart
+index c7dd0dd..b503bf4 100644
+--- a/pkgs/shelf/lib/src/shelf_unmodifiable_map.dart
++++ b/pkgs/shelf/lib/src/shelf_unmodifiable_map.dart
+@@ -37,9 +37,10 @@ class ShelfUnmodifiableMap extends UnmodifiableMapView<String, Object> {
+ 
+     if (ignoreKeyCase) {
+       source = CaseInsensitiveMap<Object>.from(source);
+-    } else {
+-      source = Map<String, Object>.from(source);
+     }
++    // PROTOTYPE P4: retain [source] by reference instead of defensively
++    // copying. Mutations made by the caller after construction now leak
++    // through the view.
+ 
+     return ShelfUnmodifiableMap._(source, ignoreKeyCase);
+   }

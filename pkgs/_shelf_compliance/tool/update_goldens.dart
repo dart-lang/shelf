@@ -9,6 +9,8 @@ import 'package:_shelf_compliance/src/compliance_harness.dart';
 import 'package:_shelf_compliance/src/generate_summary.dart';
 import 'package:path/path.dart' as p;
 
+import 'package:yaml/yaml.dart';
+
 const _categories = [
   'Capabilities',
   'Compliance',
@@ -21,16 +23,38 @@ const _categories = [
   'WebSockets',
 ];
 
-void main() async {
-  const name = 'shelf';
-  const serverPath = 'bin/shelf_echo.dart';
+const _targets = [
+  (name: 'shelf', serverPath: 'bin/shelf_echo.dart', exceptionsPath: null),
+  (
+    name: 'bottom_shelf',
+    serverPath: 'bin/shelf_serve_echo.dart',
+    exceptionsPath: '../bottom_shelf/docs/compliance_exceptions.yaml',
+  ),
+];
 
+void main(List<String> args) async {
+  print('Building Http11Probe...');
+  await buildProbe();
+
+  for (final target in _targets) {
+    if (args.isNotEmpty && !args.contains(target.name)) continue;
+    await _updateTarget(
+      name: target.name,
+      serverPath: target.serverPath,
+      exceptionsPath: target.exceptionsPath,
+    );
+  }
+}
+
+Future<void> _updateTarget({
+  required String name,
+  required String serverPath,
+  String? exceptionsPath,
+}) async {
   final tempDir = Directory.systemTemp.createTempSync('compliance_${name}_');
 
   try {
     print('Temp directory for $name: ${tempDir.path}');
-    print('Building Http11Probe...');
-    await buildProbe();
 
     // Create reports directory
     Directory(
@@ -38,7 +62,7 @@ void main() async {
     ).createSync(recursive: true);
 
     for (var category in _categories) {
-      print('Running compliance harness for $category...');
+      print('Running compliance harness for $name / $category...');
       final reportFile = p.join(
         tempDir.path,
         'reports',
@@ -61,7 +85,7 @@ void main() async {
         reportFile,
       ).writeAsStringSync('${encoder.convert(filteredResults)}\n');
 
-      print('Updating golden report for $category...');
+      print('Updating golden report for $name / $category...');
       updateGoldenResults(
         category: category,
         name: name,
@@ -71,7 +95,24 @@ void main() async {
 
     print('Generating combined summary for $name...');
     final reportsDir = Directory(p.join(tempDir.path, 'reports', name));
-    final summary = generateSummary(reportsDir);
+
+    final acceptedIds = <String>{};
+    if (exceptionsPath != null) {
+      final file = File(exceptionsPath);
+      if (file.existsSync()) {
+        final content = file.readAsStringSync();
+        final yaml = loadYaml(content) as List;
+        for (var item in yaml) {
+          final map = item as Map;
+          final tests = map['tests'] as List;
+          for (var test in tests) {
+            acceptedIds.add(test as String);
+          }
+        }
+      }
+    }
+
+    final summary = generateSummary(reportsDir, acceptedIds: acceptedIds);
 
     final goldenSummary = File('${name}_summary.md');
 
@@ -80,7 +121,7 @@ void main() async {
     print('Updating golden summary for $name...');
     goldenSummary.writeAsStringSync(sanitizedSummary);
 
-    print('Goldens updated successfully!');
+    print('Goldens updated successfully for $name!');
   } finally {
     print('Cleaning up temp directory: ${tempDir.path}');
     tempDir.deleteSync(recursive: true);
