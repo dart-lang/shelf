@@ -11,8 +11,13 @@
 /// This adapter supports request hijacking; see [Request.hijack].
 ///
 /// [Request]s passed to a [Handler] will contain the [Request.context] key
-/// `"shelf.io.connection_info"` containing the [HttpConnectionInfo] object from
-/// the underlying [HttpRequest].
+/// `"shelf.io.connection_info"` containing an [HttpConnectionInfo] for the
+/// underlying [HttpRequest]. Its fields are read from the socket on first
+/// access rather than up front, so a handler that never looks at them does not
+/// pay for them. Middleware or handlers that need these fields after an
+/// asynchronous gap (such as access loggers running after `await innerHandler`)
+/// should read a field before awaiting or handle [StateError] in case the
+/// connection closes while the request is in flight.
 ///
 /// When creating [Response] instances for this adapter, you can set the
 /// `"shelf.io.buffer_output"` key in [Response.context]. If `true`,
@@ -199,8 +204,56 @@ Request _fromHttpRequest(HttpRequest request) {
     headers: headers,
     body: request,
     onHijack: onHijack,
-    context: {'shelf.io.connection_info': request.connectionInfo!},
+    context: {'shelf.io.connection_info': _LazyHttpConnectionInfo(request)},
   );
+}
+
+/// An [HttpConnectionInfo] that reads the underlying socket only if a handler
+/// actually asks for one of its fields.
+///
+/// `dart:io` does not cache [HttpRequest.connectionInfo]: each call builds a
+/// fresh object by reading `remoteAddress` and `remotePort` off the socket,
+/// which costs two `getpeername` calls. Resolving it while building every
+/// [Request] spent those on every request, including the majority that never
+/// read the connection info — measurably, about 13% of the syscalls
+/// `shelf_io` issues on a small-response workload.
+///
+/// The fields are resolved together on first access and cached, so a handler
+/// that reads one costs exactly what it used to.
+class _LazyHttpConnectionInfo implements HttpConnectionInfo {
+  _LazyHttpConnectionInfo(HttpRequest request) : _request = request;
+
+  HttpRequest? _request;
+
+  HttpConnectionInfo? _resolved;
+
+  /// Throws a [StateError] if the connection is already gone.
+  ///
+  /// Reading [HttpRequest.connectionInfo] while the [Request] was being built
+  /// used to throw here too, but from the adapter rather than from handler
+  /// code, so the message is worth being explicit about.
+  HttpConnectionInfo get _info {
+    final resolved = _resolved;
+    if (resolved != null) return resolved;
+
+    final info = _request?.connectionInfo;
+    if (info == null) {
+      throw StateError(
+        'HttpConnectionInfo is unavailable because the connection is closed.',
+      );
+    }
+    _request = null;
+    return _resolved = info;
+  }
+
+  @override
+  InternetAddress get remoteAddress => _info.remoteAddress;
+
+  @override
+  int get remotePort => _info.remotePort;
+
+  @override
+  int get localPort => _info.localPort;
 }
 
 Future<void> _writeResponse(
