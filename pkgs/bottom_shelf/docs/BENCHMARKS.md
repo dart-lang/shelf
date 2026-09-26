@@ -95,7 +95,7 @@ median RPS:
 | **W3** | `GET /user/42` | 1 | 37,438 | **43,199** | **1.15x (`+15.4%`)** | 21,226 | 36,706 | **2.04x** | **1.18x** | 1.45 / 1.79 |
 | **W4** | `GET /headers-auth` | 1 | 26,358 | **34,826** | **1.32x (`+32.1%`)** | 16,692 | 26,533 | **2.09x** | **1.31x** | 1.79 / 3.37 |
 | **W5** | `POST /echo-json` | 1 | 26,807 | **31,734** | **1.18x (`+18.4%`)** | 15,908 | 24,763 | **1.99x** | **1.28x** | 1.97 / 2.78 |
-| **W6** | `POST /upload-chunked` | 1 | 17,693 | **18,632** | **1.05x (`+5.3%`)** | 10,381 | 18,093 | **1.80x** | **1.03x** | 3.60 / 5.20 |
+| **W6** | `POST /upload-chunked` | 1 | 17,693 | **18,632** | **1.05x (`+5.3%`)** | 12,671 | 18,093 | **1.47x** | **1.03x** | 3.60 / 5.20 |
 | **W7a** | `GET /large-256k` | 1 | 3,858 | **13,019** | **3.37x (`+237.5%`)** | 10,468 | 11,310 | **1.24x** | **1.15x** | 4.83 / 6.52 |
 | **W7b** | `GET /large-1m` | 1 | 1,275 | **4,976** | **3.90x (`+290.3%`)** | 4,503 | 4,674 | **1.11x** | **1.06x** | 12.71 / **17.95** |
 | **W8-W1** | `GET /plaintext` | 4 | 184,996 | **208,601** | **1.13x (`+12.8%`)** | 99,994 | 159,529 | **2.09x** | **1.31x** | 0.29 / 2.54 |
@@ -104,8 +104,11 @@ median RPS:
 | **W8-W5** | `POST /echo-json` | 4 | 112,384 | **132,327** | **1.18x (`+17.7%`)** | 66,544 | 97,140 | **1.99x** | **1.36x** | 0.45 / 2.01 |
 
 - **`12 / 12` Rows Ahead**: `bottom_shelf` (`b1f8998`) beats **both `shelf_io`
-  (`1.11x–2.10x`, geomean `1.82x`) and raw `dart:io` (`1.03x–1.37x`)** across
-  every workload quadrant.
+  (`1.11x–2.10x`, geomean `1.79x`) and raw `dart:io` (`1.03x–1.37x`)** across
+  every workload quadrant. On `W6` (`POST /upload-chunked`), `shelf_io` is
+  bimodal across five committed runs (`9,942–12,826` RPS vs `bottom_shelf`
+  `17,693–18,936` RPS), yielding a within-run ratio of `1.43x–1.82x` (`1.47x`
+  in `bluefin_post_fix_matrix`).
 - **`W7a` (`256 KB`, `3.37x`) & `W7b` (`1 MB`, `3.90x`) — Large-Payload Memory,
   Bandwidth & Syscall Attribution**:
   - **Capped `isFirst` Coalescing (`<= 16 KB`)**: Eliminates old-space
@@ -123,13 +126,16 @@ median RPS:
     pipelined depth (`>= 16` responses) drops `1 MB` `p99` tail latency by
     **11.3x** (`202.27 ms` → `17.95 ms`).
   - **Flat ~60 MB RSS Arena & Syscall Profile**: Under load, `bottom_shelf`
-    holds a flat `57–62 MB` `VmHWM` across all 1-isolate workloads (`13 B`
-    through `1 MB`). On `W7b` (`1 MB`), total syscalls/req drop from `22.47` →
-    `12.74` as `mmap`/`munmap`/`futex` GC churn disappears, even though socket
-    syscalls increase slightly (`3.47` → `4.40` from writing header and body
-    buffers separately). On `/plaintext`, `bottom_shelf` issues **`3.00`
-    syscalls/req** (`1.00 write`, `0.00 getpeername`) vs `shelf_io`'s **`9.38`
-    syscalls/req** (`2.13 write`, `2.00 getpeername`).
+    holds a flat `58.0–61.5 MB` `VmHWM` across all 1-isolate `GET` and
+    single-packet `POST` workloads (`13 B` through `1 MB`), rising to `76.1 MB`
+    on `W6` (`64 KB` chunked upload stream, where all three servers rise
+    together; `58.0–76.1 MB` overall). On `W7b` (`1 MB`), total syscalls/req
+    drop from `22.47` → `12.74` as `mmap`/`munmap`/`futex` GC churn disappears,
+    even though socket syscalls increase slightly (`3.47` → `4.40` from writing
+    header and body buffers separately). On `/plaintext` (`W1`), `bottom_shelf`
+    issues **`9.68` total syscalls/req** (**`3.39` socket-only**: `1.13 write`,
+    `0.01 getpeername`) vs `shelf_io`'s **`14.79` total syscalls/req**
+    (**`4.39` socket-only**: `2.13 write`, `2.00 getpeername`).
 - **`W4` (`Request.change` Middleware, `1.32x` End-to-End / `3.34x` Context-Only
   In-Process)**: Implementing `Headers` on `LazyByteHeaderMap` and adding
   `Request._fastChange` eliminates the 3-map allocation cascade (`CoV` in
