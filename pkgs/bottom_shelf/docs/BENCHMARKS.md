@@ -5,8 +5,10 @@ Measured results and the harness/methodology for reproducing them honestly.
 ## Stage 2–4 — 2026-09-24: Spec Compliance, Desync Fixes & Zero-Alloc Header Scan (`pkg:bench_press` Before vs. After)
 
 Isolated `pkg:bench_press` microbenchmark comparison across all 21 benchmark
-cells in both `aot` and `jit` targets
-(`targets/bench_press/benchmark/bottom_shelf_bench_press.dart` in
+cells in both `aot` and `jit` targets (captured with the initial 4-group,
+21-benchmark revision of the suite — `parser`, `headers`, `serializer`, and
+`router_dispatch` — before the `W4`–`W7` groups expanded the suite to 30–33
+benchmarks in `targets/bench_press/benchmark/bottom_shelf_bench_press.dart` in
 `kevmoo/gcp-http-bench`), comparing the pre-Stage-2 baseline against the
 post-Stage-2 implementation
 (strict RFC 9110 `tchar` method & `HTTP/1.x` version grammar, leading/trailing
