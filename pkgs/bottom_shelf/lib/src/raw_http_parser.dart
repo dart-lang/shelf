@@ -92,145 +92,44 @@ final class RawHttpParser {
         throw const BadRequestException('CR must be followed by LF');
       }
 
+      // Per-byte validation stays inline; the delimiter cases hand off to
+      // `_finish*`, which run once per field.
       switch (_state) {
         case _$State.method:
           if (byte == $Chars.sp) {
-            if (_bufferPos - 1 == _currentFieldStart) {
-              throw const BadRequestException('Empty method');
-            }
-            _method = _getMethod(_bufferPos - 1);
-            _currentFieldStart = _bufferPos;
-            _state = _$State.url;
-          } else {
-            if (!isTchar(byte)) {
-              throw const BadRequestException('Invalid character in method');
-            }
-            if (_bufferPos - _currentFieldStart > $Limit.maxFieldSize) {
-              throw const BadRequestException('Method too long');
-            }
+            _finishMethod();
+          } else if (!isTchar(byte)) {
+            throw const BadRequestException('Invalid character in method');
+          } else if (_bufferPos - _currentFieldStart > $Limit.maxFieldSize) {
+            throw const BadRequestException('Method too long');
           }
         case _$State.url:
           if (byte == $Chars.sp) {
-            _url = String.fromCharCodes(
-              _buffer,
-              _currentFieldStart,
-              _bufferPos - 1,
-            );
-            if (_url == '*' && _method != 'OPTIONS') {
-              throw const BadRequestException(
-                'Asterisk-form only allowed for OPTIONS',
-              );
-            }
-            _currentFieldStart = _bufferPos;
-            _state = _$State.version;
-          } else {
-            if (isInvalidUrlChar(byte)) {
-              throw const BadRequestException('Invalid character in URL');
-            }
-            if (_bufferPos - _currentFieldStart > $Limit.maxUrlSize) {
-              throw BadRequestException.fromResponse(ErrorResponse.uriTooLong);
-            }
+            _finishUrl();
+          } else if (isInvalidUrlChar(byte)) {
+            throw const BadRequestException('Invalid character in URL');
+          } else if (_bufferPos - _currentFieldStart > $Limit.maxUrlSize) {
+            throw BadRequestException.fromResponse(ErrorResponse.uriTooLong);
           }
         case _$State.version:
           if (byte == $Chars.lf) {
-            if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
-              throw const BadRequestException('Bare line feed not allowed');
-            }
-            final start = _currentFieldStart;
-            final end = _bufferPos - 2;
-            if (end - start == 8 &&
-                _buffer[start] == 72 && // H
-                _buffer[start + 1] == 84 && // T
-                _buffer[start + 2] == 84 && // T
-                _buffer[start + 3] == 80 && // P
-                _buffer[start + 4] == 47 && // /
-                _buffer[start + 5] == 49 && // 1
-                _buffer[start + 6] == 46) {
-              // .
-              final minor = _buffer[start + 7];
-              if (minor == 49) {
-                _version = '1.1';
-              } else if (minor == 48) {
-                _version = '1.0';
-              } else if (minor >= 0x30 && minor <= 0x39) {
-                _version = '1.${minor - 0x30}';
-              } else {
-                throw const BadRequestException('Unsupported HTTP version');
-              }
-            } else {
-              throw const BadRequestException('Unsupported HTTP version');
-            }
-            _currentFieldStart = _bufferPos;
-            _state = _$State.headerKey;
-          } else {
-            if (byte == 0) {
-              throw const BadRequestException('Invalid character in version');
-            }
-            if (_bufferPos - _currentFieldStart > 64) {
-              throw const BadRequestException('Version too long');
-            }
+            _finishVersion();
+          } else if (byte == 0) {
+            throw const BadRequestException('Invalid character in version');
+          } else if (_bufferPos - _currentFieldStart > 64) {
+            throw const BadRequestException('Version too long');
           }
         case _$State.headerKey:
           if (byte == $Chars.colon) {
-            final start = _currentFieldStart;
-            final end = _bufferPos - 1;
-
-            if (end > start &&
-                (_buffer[start] == $Chars.sp ||
-                    _buffer[end - 1] == $Chars.sp)) {
-              throw const BadRequestException(
-                'Invalid whitespace in header key',
-              );
-            }
-
-            if (start == end) {
-              throw const BadRequestException('Empty header name');
-            }
-
-            _lastKeySlice = HeaderByteSlice(_buffer, start, end, _token);
-            _currentFieldStart = _bufferPos;
-            _state = _$State.headerValue;
+            _finishHeaderKey();
           } else if (byte == $Chars.lf) {
-            if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
-              throw const BadRequestException('Bare line feed not allowed');
-            }
-            final len = _bufferPos - _currentFieldStart;
-            if (len == 2) {
-              _state = _$State.endOfHeaders;
-              return (
-                method: _method!,
-                url: _url!,
-                version: _version!,
-                headerSlices: List.of(_headerSlices, growable: false),
-                consumedInLastChunk: _consumedInLastChunk,
-              );
-            }
-            throw const BadRequestException('Header line without colon');
+            return _finishHeaders();
           } else if (byte != $Chars.cr && !isTchar(byte)) {
             throw const BadRequestException('Invalid character in header key');
           }
         case _$State.headerValue:
           if (byte == $Chars.lf) {
-            if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
-              throw const BadRequestException('Bare line feed not allowed');
-            }
-            var start = _currentFieldStart;
-            var end = _bufferPos - 2; // Exclude CRLF
-            while (start < end &&
-                (_buffer[start] == $Chars.sp ||
-                    _buffer[start] == $Chars.htab)) {
-              start++;
-            }
-            while (end > start &&
-                (_buffer[end - 1] == $Chars.sp ||
-                    _buffer[end - 1] == $Chars.htab)) {
-              end--;
-            }
-
-            final valueSlice = HeaderByteSlice(_buffer, start, end, _token);
-            _headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
-            _currentFieldStart = _bufferPos;
-            _state = _$State.headerKey;
+            _finishHeaderValue();
           } else if (isInvalidHeaderValueChar(byte)) {
             throw const BadRequestException(
               'Invalid character in header value',
@@ -240,6 +139,120 @@ final class RawHttpParser {
     }
     return null;
   }
+
+  /// The byte just appended is LF; the one before it must be CR.
+  void _requireCrlf() {
+    if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
+      throw const BadRequestException('Bare line feed not allowed');
+    }
+  }
+
+  /// Marks the byte just appended as the end of the current field and
+  /// advances to [next].
+  void _startField(_$State next) {
+    _currentFieldStart = _bufferPos;
+    _state = next;
+  }
+
+  void _finishMethod() {
+    if (_bufferPos - 1 == _currentFieldStart) {
+      throw const BadRequestException('Empty method');
+    }
+    _method = _getMethod(_bufferPos - 1);
+    _startField(_$State.url);
+  }
+
+  void _finishUrl() {
+    final url = _url = String.fromCharCodes(
+      _buffer,
+      _currentFieldStart,
+      _bufferPos - 1,
+    );
+    if (url == '*' && _method != 'OPTIONS') {
+      throw const BadRequestException('Asterisk-form only allowed for OPTIONS');
+    }
+    _startField(_$State.version);
+  }
+
+  void _finishVersion() {
+    _requireCrlf();
+    _version = _parseVersion(_currentFieldStart, _bufferPos - 2);
+    _startField(_$State.headerKey);
+  }
+
+  /// Parses `HTTP/1.x` from `_buffer[start, end)`.
+  String _parseVersion(int start, int end) {
+    final b = _buffer;
+    if (end - start != 8 ||
+        b[start] != 72 || // H
+        b[start + 1] != 84 || // T
+        b[start + 2] != 84 || // T
+        b[start + 3] != 80 || // P
+        b[start + 4] != 47 || // /
+        b[start + 5] != 49 || // 1
+        b[start + 6] != 46) {
+      // .
+      throw const BadRequestException('Unsupported HTTP version');
+    }
+    final minor = b[start + 7];
+    return switch (minor) {
+      49 => '1.1',
+      48 => '1.0',
+      >= 0x30 && <= 0x39 => '1.${minor - 0x30}',
+      _ => throw const BadRequestException('Unsupported HTTP version'),
+    };
+  }
+
+  void _finishHeaderKey() {
+    final start = _currentFieldStart;
+    final end = _bufferPos - 1;
+
+    if (end > start &&
+        (_buffer[start] == $Chars.sp || _buffer[end - 1] == $Chars.sp)) {
+      throw const BadRequestException('Invalid whitespace in header key');
+    }
+    if (start == end) {
+      throw const BadRequestException('Empty header name');
+    }
+
+    _lastKeySlice = HeaderByteSlice(_buffer, start, end, _token);
+    _startField(_$State.headerValue);
+  }
+
+  /// Handles an LF where a header key was expected: either the blank line
+  /// that ends the head, or a malformed header line.
+  HttpRequestHead _finishHeaders() {
+    _requireCrlf();
+    if (_bufferPos - _currentFieldStart != 2) {
+      throw const BadRequestException('Header line without colon');
+    }
+    _state = _$State.endOfHeaders;
+    return (
+      method: _method!,
+      url: _url!,
+      version: _version!,
+      headerSlices: List.of(_headerSlices, growable: false),
+      consumedInLastChunk: _consumedInLastChunk,
+    );
+  }
+
+  void _finishHeaderValue() {
+    _requireCrlf();
+    var start = _currentFieldStart;
+    var end = _bufferPos - 2; // Exclude CRLF
+    while (start < end && _isBlank(_buffer[start])) {
+      start++;
+    }
+    while (end > start && _isBlank(_buffer[end - 1])) {
+      end--;
+    }
+
+    final valueSlice = HeaderByteSlice(_buffer, start, end, _token);
+    _headerSlices.add(HeaderEntrySlices(_lastKeySlice!, valueSlice));
+    _startField(_$State.headerKey);
+  }
+
+  static bool _isBlank(int byte) => byte == $Chars.sp || byte == $Chars.htab;
 
   /// The method always starts at index 0 of [_buffer] and ends at [end].
   /// Byte comparisons avoid allocating a view for the common methods.
