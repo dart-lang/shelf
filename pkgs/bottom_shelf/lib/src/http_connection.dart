@@ -76,34 +76,70 @@ final class _HttpConnection {
     _startHeaderTimer();
     _subscription = socket.listen(
       _processData,
-      onError: (Object e) {
-        if (_isHijacked) {
-          _hijackController?.addError(e);
-        } else {
-          _destroy();
-        }
-      },
-      onDone: () {
-        if (_isHijacked) {
-          _hijackController?.close();
-        } else {
-          _clientClosed = true;
-          if (_bodyController != null && !_bodyController!.isDone) {
-            _bodyController!.addError(
-              const BadRequestException('Incomplete body'),
-            );
-            _bodyController!.close();
-            _forceClose = true;
-            if (_currentBodyDone != null && !_currentBodyDone!.isCompleted) {
-              _currentBodyDone!.complete();
-            }
-          } else {
-            _bodyController?.close();
-          }
-        }
-      },
+      onError: _onSocketError,
+      onDone: _onSocketDone,
       cancelOnError: true,
     );
+  }
+
+  void _onSocketError(Object e) {
+    if (_isHijacked) {
+      _hijackController?.addError(e);
+    } else {
+      _destroy();
+    }
+  }
+
+  void _onSocketDone() {
+    if (_isHijacked) {
+      _hijackController?.close();
+      return;
+    }
+    _clientClosed = true;
+    final bodyController = _bodyController;
+    if (bodyController == null || bodyController.isDone) {
+      bodyController?.close();
+      return;
+    }
+    // The client hung up mid-body.
+    bodyController.addError(const BadRequestException('Incomplete body'));
+    bodyController.close();
+    _forceClose = true;
+    if (_currentBodyDone != null && !_currentBodyDone!.isCompleted) {
+      _currentBodyDone!.complete();
+    }
+  }
+
+  void _reportError(String message, Object e, StackTrace st) {
+    config.onConnectionError?.call(
+      message,
+      e,
+      st,
+      remoteAddress: remoteAddress,
+      remotePort: remotePort,
+    );
+  }
+
+  void _markResponseSent() {
+    _responseSent = true;
+  }
+
+  /// Queues a 500 unless the response headers have already gone out.
+  void _sendServerErrorIfUnsent() {
+    if (!_responseSent) {
+      socket.add(ErrorResponse.internalServerError.bytes);
+    }
+  }
+
+  /// Fire-and-forget close; `close()` flushes queued bytes first.
+  void _closeThenDestroy() {
+    socket.close().then((_) => _destroy(), onError: (Object _) => _destroy());
+  }
+
+  Future<void> _closeAndDestroy() async {
+    // close() flushes any queued bytes before shutting down.
+    await socket.close();
+    _destroy();
   }
 
   void _destroy() {
@@ -476,13 +512,7 @@ final class _HttpConnection {
 
   void _handleProcessingError(Object e, StackTrace st) {
     if (_isHijacked || _isDestroyed) return;
-    config.onConnectionError?.call(
-      'Error in handler',
-      e,
-      st,
-      remoteAddress: remoteAddress,
-      remotePort: remotePort,
-    );
+    _reportError('Error in handler', e, st);
     if (e is BadRequestException && !_responseWriting) {
       socket.add(e.errorResponse.bytes);
       _flushCloseDestroy();
@@ -525,9 +555,7 @@ final class _HttpConnection {
         keepAlive: keepAlive,
         requestMethod: originalMethod,
         poweredBy: config.poweredBy,
-        onHeadersSent: () {
-          _responseSent = true;
-        },
+        onHeadersSent: _markResponseSent,
       );
       final written = writeResult is int ? writeResult : await writeResult;
       _responseSent = true;
@@ -536,71 +564,51 @@ final class _HttpConnection {
 
       _parser.reset();
 
-      if (keepAlive) {
-        if (!bodyDone.isCompleted) await bodyDone.future;
-        if (_forceClose) {
-          await socket.close();
-          _destroy();
-          return;
-        }
-        // Skip the per-response flush (it would gate the next pipelined
-        // request on the OS write draining) until enough pipelined responses
-        // and bytes have queued that a slow client's buffer would grow
-        // unbounded otherwise.
-        if (_unflushedResponses >= 16 &&
-            _unflushedBytes >= $Limit.flushThreshold) {
-          _unflushedBytes = 0;
-          _unflushedResponses = 0;
-          await socket.flush();
-          if (_isDestroyed || _clientClosed) return;
-        }
-        _responseWriting = false;
-        if (!_readyForNextRequest.isCompleted) {
-          _readyForNextRequest.complete();
-          _startHeaderTimer();
-        }
-      } else {
-        // close() flushes any queued bytes before shutting down.
-        await socket.close();
-        _destroy();
+      if (!keepAlive) {
+        await _closeAndDestroy();
+        return;
+      }
+      if (!bodyDone.isCompleted) await bodyDone.future;
+      if (_forceClose) {
+        await _closeAndDestroy();
+        return;
+      }
+      // Skip the per-response flush (it would gate the next pipelined
+      // request on the OS write draining) until enough pipelined responses
+      // and bytes have queued that a slow client's buffer would grow
+      // unbounded otherwise.
+      if (_unflushedResponses >= 16 &&
+          _unflushedBytes >= $Limit.flushThreshold) {
+        _unflushedBytes = 0;
+        _unflushedResponses = 0;
+        await socket.flush();
+        if (_isDestroyed || _clientClosed) return;
+      }
+      _responseWriting = false;
+      if (!_readyForNextRequest.isCompleted) {
+        _readyForNextRequest.complete();
+        _startHeaderTimer();
       }
     } on HijackException {
       await Future.microtask(() {});
       if (!_isHijacked) {
-        if (!_responseSent) {
-          socket.add(ErrorResponse.internalServerError.bytes);
-        }
-        unawaited(
-          socket.close().then(
-            (_) => _destroy(),
-            onError: (Object _) => _destroy(),
-          ),
-        );
+        _sendServerErrorIfUnsent();
+        _closeThenDestroy();
       }
     } catch (e, st) {
-      if (!_isHijacked && !_isDestroyed) {
-        if (e is SocketException) {
-          _destroy();
-          return;
-        }
-        if (!_responseSent) {
-          socket.add(ErrorResponse.internalServerError.bytes);
-        }
-        config.onConnectionError?.call(
-          'Error in handler',
-          e,
-          st,
-          remoteAddress: remoteAddress,
-          remotePort: remotePort,
-        );
-        unawaited(
-          socket.close().then(
-            (_) => _destroy(),
-            onError: (Object _) => _destroy(),
-          ),
-        );
-      }
+      _handleRequestError(e, st);
     }
+  }
+
+  void _handleRequestError(Object e, StackTrace st) {
+    if (_isHijacked || _isDestroyed) return;
+    if (e is SocketException) {
+      _destroy();
+      return;
+    }
+    _sendServerErrorIfUnsent();
+    _reportError('Error in handler', e, st);
+    _closeThenDestroy();
   }
 
   void _handleAsyncError(Object e, StackTrace st) {
@@ -610,50 +618,28 @@ final class _HttpConnection {
     final action = config.onAsyncError?.call(e, st);
     if (action == ErrorAction.ignore) {
       if (!_isDestroyed) {
-        config.onConnectionError?.call(
-          'Unhandled async error (ignored)',
-          e,
-          st,
-          remoteAddress: remoteAddress,
-          remotePort: remotePort,
-        );
+        _reportError('Unhandled async error (ignored)', e, st);
       }
-    } else if (action == ErrorAction.crash) {
-      config.onConnectionError?.call(
-        'Crashing server due to async error',
-        e,
-        st,
-        remoteAddress: remoteAddress,
-        remotePort: remotePort,
-      );
+      return;
+    }
+    if (action == ErrorAction.crash) {
+      _reportError('Crashing server due to async error', e, st);
       // ignore: only_throw_errors
       throw e;
-    } else {
-      if (!_isHijacked && !_isDestroyed) {
-        if (e is SocketException) {
-          _destroy();
-          return;
-        }
-        config.onConnectionError?.call(
-          'Error in handler',
-          e,
-          st,
-          remoteAddress: remoteAddress,
-          remotePort: remotePort,
-        );
-        if (_responseWriting && !_responseSent) {
-          _forceClose = true;
-          return;
-        }
-        if (!_responseSent) {
-          socket.add(ErrorResponse.internalServerError.bytes);
-        }
-        socket.close().then(
-          (_) => _destroy(),
-          onError: (Object _) => _destroy(),
-        );
-      }
     }
+    if (_isHijacked || _isDestroyed) return;
+    if (e is SocketException) {
+      _destroy();
+      return;
+    }
+    _reportError('Error in handler', e, st);
+    if (_responseWriting && !_responseSent) {
+      // Let the in-flight response finish, then close instead of keep-alive.
+      _forceClose = true;
+      return;
+    }
+    _sendServerErrorIfUnsent();
+    _closeThenDestroy();
   }
 }
 
