@@ -141,16 +141,18 @@ final class FixedLengthBodyController implements BodyController {
 /// A stream controller for a chunked HTTP request body.
 final class ChunkedBodyController implements BodyController {
   static const int _stateSize = 0;
-  static const int _stateExt = 1;
-  static const int _stateData = 2;
-  static const int _stateDataCR = 5;
+  static const int _stateData = 1;
+  static const int _stateDataCR = 2;
   static const int _stateDataCRLF = 3;
   static const int _stateTrailers = 4;
 
   int _state = _stateSize;
   int _chunkSize = 0;
   int _chunkBytesRead = 0;
-  int _trailerState = 0;
+
+  /// Whether the current trailer line has any content yet; the blank line
+  /// that ends the trailers is an LF seen while this is `false`.
+  bool _inTrailerLine = false;
 
   bool _isDone = false;
 
@@ -224,107 +226,89 @@ final class ChunkedBodyController implements BodyController {
 
     var pos = 0;
     while (pos < data.length) {
-      if (_isDone) {
-        return Uint8List.sublistView(data, pos);
-      }
-
       switch (_state) {
         case _stateSize:
-          final byte = data[pos];
-          if (byte == $Chars.cr) {
-            // CR, ignore
-            pos++;
-          } else if (byte == $Chars.lf) {
-            // LF, end of size
-            pos++;
-            if (_chunkSize == 0) {
-              _state = _stateTrailers;
-            } else {
-              _chunkBytesRead = 0;
-              _state = _stateData;
-            }
-          } else if (byte == $Chars.semicolon) {
-            // TODO: Support chunk extensions?
-            throw BadRequestException.fromResponse(
-              ErrorResponse.notImplemented,
-            );
-          } else {
-            // hex digit
-            final hex = parseHex(byte);
-            if (hex < 0) {
-              throw const BadRequestException('Invalid chunk size');
-            }
-            if (_chunkSize > $Limit.maxChunkSizeBeforeShift) {
-              throw const BadRequestException('Chunk size too large');
-            }
-            _chunkSize = (_chunkSize << 4) + hex;
-            pos++;
-          }
-        case _stateExt:
-          final byte = data[pos];
-          if (byte == $Chars.lf) {
-            // LF, end of ext
-            pos++;
-            if (_chunkSize == 0) {
-              _state = _stateTrailers;
-            } else {
-              _chunkBytesRead = 0;
-              _state = _stateData;
-            }
-          } else {
-            pos++;
-          }
+          _onSizeByte(data[pos++]);
         case _stateData:
-          final remainingInChunk = _chunkSize - _chunkBytesRead;
-          final remainingInData = data.length - pos;
-          final take = remainingInChunk < remainingInData
-              ? remainingInChunk
-              : remainingInData;
-
-          _addChunk(Uint8List.sublistView(data, pos, pos + take));
-
-          _chunkBytesRead += take;
-          pos += take;
-
-          if (_chunkBytesRead == _chunkSize) {
-            _state = _stateDataCR;
-          }
+          pos = _takeChunkData(data, pos);
         case _stateDataCR:
-          final byte = data[pos];
-          if (byte != $Chars.cr) {
-            throw const BadRequestException('CRLF expected after chunk data');
-          }
-          pos++;
+          _expectAfterChunkData(data[pos++], $Chars.cr);
           _state = _stateDataCRLF;
         case _stateDataCRLF:
-          final byte = data[pos];
-          if (byte != $Chars.lf) {
-            throw const BadRequestException('CRLF expected after chunk data');
-          }
-          pos++;
+          _expectAfterChunkData(data[pos++], $Chars.lf);
           _chunkSize = 0;
           _state = _stateSize;
         case _stateTrailers:
-          final byte = data[pos];
-          pos++;
-          if (byte == $Chars.cr) {
-            // ignore
-          } else if (byte == $Chars.lf) {
-            if (_trailerState == 0) {
-              // empty line
-              _isDone = true;
-              _close();
-              return Uint8List.sublistView(data, pos);
-            } else {
-              // end of a trailer line
-              _trailerState = 0;
-            }
-          } else {
-            _trailerState = 1; // not empty
+          if (_onTrailerByte(data[pos++])) {
+            _isDone = true;
+            _close();
+            return Uint8List.sublistView(data, pos);
           }
       }
     }
     return Uint8List(0);
+  }
+
+  /// Accumulates the hex chunk-size line; LF ends it.
+  void _onSizeByte(int byte) {
+    if (byte == $Chars.cr) return;
+    if (byte == $Chars.lf) {
+      if (_chunkSize == 0) {
+        _state = _stateTrailers;
+      } else {
+        _chunkBytesRead = 0;
+        _state = _stateData;
+      }
+      return;
+    }
+    if (byte == $Chars.semicolon) {
+      // TODO: Support chunk extensions?
+      throw BadRequestException.fromResponse(ErrorResponse.notImplemented);
+    }
+    final hex = parseHex(byte);
+    if (hex < 0) {
+      throw const BadRequestException('Invalid chunk size');
+    }
+    if (_chunkSize > $Limit.maxChunkSizeBeforeShift) {
+      throw const BadRequestException('Chunk size too large');
+    }
+    _chunkSize = (_chunkSize << 4) + hex;
+  }
+
+  /// Forwards as much of the current chunk as [data] holds from [pos] and
+  /// returns the position after it.
+  int _takeChunkData(Uint8List data, int pos) {
+    final remainingInChunk = _chunkSize - _chunkBytesRead;
+    final remainingInData = data.length - pos;
+    final take = remainingInChunk < remainingInData
+        ? remainingInChunk
+        : remainingInData;
+
+    _addChunk(Uint8List.sublistView(data, pos, pos + take));
+    _chunkBytesRead += take;
+    if (_chunkBytesRead == _chunkSize) {
+      _state = _stateDataCR;
+    }
+    return pos + take;
+  }
+
+  static void _expectAfterChunkData(int byte, int expected) {
+    if (byte != expected) {
+      throw const BadRequestException('CRLF expected after chunk data');
+    }
+  }
+
+  /// Consumes one byte of the trailer section. Returns `true` on the blank
+  /// line that ends the body.
+  bool _onTrailerByte(int byte) {
+    if (byte == $Chars.cr) return false;
+    if (byte == $Chars.lf) {
+      if (!_inTrailerLine) return true;
+      _inTrailerLine = false;
+      return false;
+    }
+    _inTrailerLine = true;
+    return false;
   }
 
   void _close() {
