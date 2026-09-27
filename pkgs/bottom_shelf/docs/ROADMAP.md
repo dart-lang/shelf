@@ -93,29 +93,27 @@ fixed (see Phase 6).
     disconnect is non-fatal by default.
 
 ## Phase 6: Measured performance work
-*Baseline (2026-07-06, see `docs/BENCHMARKS.md`): ~53k RPS vs shelf_io's
-~15.6k (3.4x) and raw dart:io's ~18k (2.9x). RE-RANKED 2026-07-07 by the
-profiling investigation (`docs/PROFILE_2026_07.md`): ~60% of CPU is socket
-syscalls (irreducible); the addressable wins are async/stream machinery and
-string/map churn, NOT the parser (1.9% self time). Prototype patches with
-measured deltas live in `docs/prototypes/`.*
+*See `docs/BENCHMARKS.md` (§1–§3) for the current W1–W8 bare-metal matrix,
+2-VM real-NIC numbers, and per-feature CPU/GC/syscall attribution (~60% of
+single-isolate loopback CPU is inside socket syscalls; `RawHttpParser.process`
+is ~1.9% self time, so the addressable wins are write coalescing, sync body
+extraction, and zero-copy header/request handling).*
 
-- [x] **Byte-oriented serializer rewrite — measured +7.3% as prototype**:
+- [x] **Byte-oriented serializer rewrite — measured +7.3% isolated**:
       const status-line bytes, ASCII scratch buffer instead of
       StringBuffer→toString→utf8.encode, content-length captured during the
       existing `headersAll` iteration instead of `response.contentLength`
       (which hydrates shelf's entire `singleValues` map per response), Date
       header cached as bytes. Landed WITH header validation (Phase 5
-      item 2). Re-measure with validation included.
-- [x] **Drop the per-response `await socket.flush()` — measured +6%**:
+      item 2) and capped `isFirst` coalescing (`<= 16 KB`) for large responses
+      (`W7a`/`W7b`).
+- [x] **Drop the per-response `await socket.flush()` — measured +5.6% on small
+      responses, 11.3x lower p99 on `1 MB`**:
       the flush added an event-loop round trip before the next pipelined
-      request was accepted. Backpressure decision resolved with a byte-count
-      guard: `writeResponse` returns bytes written, the connection
-      accumulates them, and flushes only once `$Limit.flushThreshold`
-      (256 KB) has queued — bounding a fast-handler/slow-client buffer to
-      ~threshold + one response. Unflushed bytes are still delivered by the
-      event loop (dart:io drains `socket.add` asynchronously); the guard
-      only bounds memory. Landed.
+      request was accepted. Backpressure decision resolved with a pipelined
+      depth and byte-count guard: `writeResponse` returns bytes written, and
+      the connection flushes only once `_unflushedResponses >= 16` and
+      `$Limit.flushThreshold` (256 KB) has queued. Landed.
 - [x] **Fuse the ~8 per-request header scans into one pass — measured
       +2.9%**: single scan in the TypedHeaders constructor replaces
       separate walks + the per-request `_cache` map, using zero-allocation
@@ -179,40 +177,21 @@ measured deltas live in `docs/prototypes/`.*
       expect silent socket closure on timeout).
 
 ## Phase 8: `pkg:shelf` fast-path track (upstream)
-*Changes to `pkgs/shelf` that remove the remaining adapter tax. All four ship
-in a minor release (additive or semantics-only). Sequencing: prototype here
-first (shelf is already a path dependency), measure with the BENCHMARKS.md
-harness, then PR the internal fixes directly and open ONE design issue for
-the additive API — with numbers, not estimates.*
+*Changes to `pkgs/shelf` that remove the remaining adapter tax. See
+`docs/BENCHMARKS.md` §3 for the measured attribution (`+14.6%` on bare `GET /`,
+`+32.1%` / `1.32x` on `W4` `Request.change` middleware, and `3.34x` in-process
+context-only `Request.change`).*
 
-*2026-07-07: THE NUMBERS EXIST — see `docs/PROFILE_2026_07.md`. Measured on
-this branch: request-side changes (lazy url/handlerPath, no constructor
-validation, no context copy; `docs/prototypes/p4_shelf_request.patch`)
-**+4.4%**; `Body.bufferedBytes` sync path
-(`docs/prototypes/p5_syncbody.patch`) **+10.2%**; combined **+14.6%** on
-top of bottom_shelf's own wins. Key design lesson from the P4 prototype's
-one failing test: shelf's constructor validation is load-bearing for
-malformed percent-encoding (the dart-lang/shelf#369 class) — a trusted
-`Request.adapter` requires the adapter to own that rejection, e.g. by
-mapping `FormatException` to 400 at dispatch (free on the happy path).*
-
-- [ ] **Internal fixes, PR-able without an issue**: `contentLength`/`mimeType`
-      via `headersAll` instead of hydrating `singleValues`
-      (`headers.dart:15-19`); `change()` as a real field copy instead of
-      re-validating through `Request._` (regression-test against
-      dart-lang/shelf#142 and #12 edge cases); lazy `Request.url`;
-      sync-preserving combinators (drop `Future.sync` wrapping in
-      `createMiddleware`/`Pipeline`/`Cascade`; sync-throwing handlers then
-      throw synchronously — combinators and adapters need try/catch, cf.
-      dart-lang/shelf#33).
-- [ ] **Additive adapter API (one design issue, after prototype)**:
-      `Request.adapter(...)` trusted constructor (skips the
-      `handlerPath + url == requestedUri.path` validation — but note
-      dart-lang/shelf#369/#414: that check fires on CONNECT garbage, so
-      shelf_io must sanitize request targets before adopting);
-      `Body.bufferedBytes` for synchronous single-write responses; export
-      `Headers` so `lazy_byte_header_map.dart` can drop its
-      `package:shelf/src/` imports.
+- [x] **Internal `Request.change()` & `findHeader()` fast-paths (`pkgs/shelf`)**:
+      `findHeader` uses `headers[name]` when `headers is Headers`, and
+      `Request.change()` uses `Request._fastChange` + `Headers.adopt` when
+      `path == null`, avoiding redundant URI re-validation and extra
+      `CaseInsensitiveMap` copies.
+- [x] **Additive adapter API (`pkgs/shelf` `1.4.3-wip`)**:
+      `Body.takeBufferedBytes()` / `readBufferedBodyBytes(Message)` for
+      synchronous buffered-body extraction; exported `Headers` from
+      `package:shelf/shelf.dart` so `LazyByteHeaderMap` implements `Headers`
+      without `package:shelf/src/` implementation imports.
 - [ ] **Deferred to a shelf major** (smallest wins, real breakage): context
       map retained by reference; `Stream<Uint8List>` as `read()`'s static
       type (runtime already emits `Uint8List` since shelf 1.1.1, cf.
