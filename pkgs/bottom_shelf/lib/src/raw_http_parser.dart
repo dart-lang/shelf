@@ -141,6 +141,7 @@ final class RawHttpParser {
   }
 
   /// The byte just appended is LF; the one before it must be CR.
+  @pragma('vm:prefer-inline')
   void _requireCrlf() {
     if (_bufferPos < 2 || _buffer[_bufferPos - 2] != $Chars.cr) {
       throw const BadRequestException('Bare line feed not allowed');
@@ -149,6 +150,7 @@ final class RawHttpParser {
 
   /// Marks the byte just appended as the end of the current field and
   /// advances to [next].
+  @pragma('vm:prefer-inline')
   void _startField(_$State next) {
     _currentFieldStart = _bufferPos;
     _state = next;
@@ -203,6 +205,7 @@ final class RawHttpParser {
     };
   }
 
+  @pragma('vm:prefer-inline')
   void _finishHeaderKey() {
     final start = _currentFieldStart;
     final end = _bufferPos - 1;
@@ -236,6 +239,7 @@ final class RawHttpParser {
     );
   }
 
+  @pragma('vm:prefer-inline')
   void _finishHeaderValue() {
     _requireCrlf();
     var start = _currentFieldStart;
@@ -252,6 +256,7 @@ final class RawHttpParser {
     _startField(_$State.headerKey);
   }
 
+  @pragma('vm:prefer-inline')
   static bool _isBlank(int byte) => byte == $Chars.sp || byte == $Chars.htab;
 
   /// The method always starts at index 0 of [_buffer] and ends at [end].

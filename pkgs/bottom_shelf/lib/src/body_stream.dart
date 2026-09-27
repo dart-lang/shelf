@@ -250,6 +250,7 @@ final class ChunkedBodyController implements BodyController {
   }
 
   /// Accumulates the hex chunk-size line; LF ends it.
+  @pragma('vm:prefer-inline')
   void _onSizeByte(int byte) {
     if (byte == $Chars.cr) return;
     if (byte == $Chars.lf) {
@@ -277,6 +278,7 @@ final class ChunkedBodyController implements BodyController {
 
   /// Forwards as much of the current chunk as [data] holds from [pos] and
   /// returns the position after it.
+  @pragma('vm:prefer-inline')
   int _takeChunkData(Uint8List data, int pos) {
     final remainingInChunk = _chunkSize - _chunkBytesRead;
     final remainingInData = data.length - pos;
@@ -292,6 +294,7 @@ final class ChunkedBodyController implements BodyController {
     return pos + take;
   }
 
+  @pragma('vm:prefer-inline')
   static void _expectAfterChunkData(int byte, int expected) {
     if (byte != expected) {
       throw const BadRequestException('CRLF expected after chunk data');
@@ -300,6 +303,7 @@ final class ChunkedBodyController implements BodyController {
 
   /// Consumes one byte of the trailer section. Returns `true` on the blank
   /// line that ends the body.
+  @pragma('vm:prefer-inline')
   bool _onTrailerByte(int byte) {
     if (byte == $Chars.cr) return false;
     if (byte == $Chars.lf) {
