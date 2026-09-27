@@ -19,10 +19,11 @@ abstract interface class BodyController {
   Uint8List takeBufferedData();
 }
 
-/// A stream controller for a fixed-length HTTP request body.
-final class FixedLengthBodyController implements BodyController {
-  final int _contentLength;
-  int _consumed = 0;
+/// Shared buffering for body controllers.
+///
+/// Chunks added before the handler listens are held and replayed on listen;
+/// a close that happens before listen is deferred to listen as well.
+abstract base class _BufferingBodyController implements BodyController {
   late final StreamController<Uint8List> _controller;
   final void Function() _onDone;
 
@@ -30,36 +31,34 @@ final class FixedLengthBodyController implements BodyController {
   bool _hasListener = false;
   bool _isClosed = false;
 
-  FixedLengthBodyController(
-    this._contentLength,
+  _BufferingBodyController(
     this._onDone, {
     void Function()? onPause,
     void Function()? onResume,
   }) {
     _controller = StreamController<Uint8List>(
       sync: true,
-      onListen: () {
-        _hasListener = true;
-        for (var chunk in _bufferedChunks) {
-          if (!_controller.isClosed) {
-            _controller.add(chunk);
-          }
-        }
-        _bufferedChunks.clear();
-        if (_isClosed && !_controller.isClosed) {
-          _controller.close();
-        }
-      },
+      onListen: _onListen,
       onPause: onPause,
       onResume: onResume,
     );
   }
 
-  @override
-  Stream<Uint8List> get stream => _controller.stream;
+  void _onListen() {
+    _hasListener = true;
+    for (var chunk in _bufferedChunks) {
+      if (!_controller.isClosed) {
+        _controller.add(chunk);
+      }
+    }
+    _bufferedChunks.clear();
+    if (_isClosed && !_controller.isClosed) {
+      _controller.close();
+    }
+  }
 
   @override
-  bool get isDone => _consumed >= _contentLength;
+  Stream<Uint8List> get stream => _controller.stream;
 
   @override
   Uint8List takeBufferedData() {
@@ -77,6 +76,51 @@ final class FixedLengthBodyController implements BodyController {
     _bufferedChunks.clear();
     return result;
   }
+
+  void _addChunk(Uint8List chunk) {
+    if (_hasListener) {
+      if (!_controller.isClosed) {
+        _controller.add(chunk);
+      }
+    } else {
+      _bufferedChunks.add(chunk);
+    }
+  }
+
+  /// The body has been fully received: close the stream (once someone is
+  /// listening) and report completion.
+  void _close() {
+    if (!_isClosed) {
+      _isClosed = true;
+      if (_hasListener && !_controller.isClosed) {
+        _controller.close();
+      }
+      _onDone();
+    }
+  }
+
+  @override
+  void addError(Object error) {
+    if (!_controller.isClosed) {
+      _controller.addError(error);
+    }
+  }
+}
+
+/// A stream controller for a fixed-length HTTP request body.
+final class FixedLengthBodyController extends _BufferingBodyController {
+  final int _contentLength;
+  int _consumed = 0;
+
+  FixedLengthBodyController(
+    this._contentLength,
+    super.onDone, {
+    super.onPause,
+    super.onResume,
+  });
+
+  @override
+  bool get isDone => _consumed >= _contentLength;
 
   /// Adds [data] to the body stream.
   ///
@@ -99,26 +143,6 @@ final class FixedLengthBodyController implements BodyController {
     }
   }
 
-  void _addChunk(Uint8List chunk) {
-    if (_hasListener) {
-      if (!_controller.isClosed) {
-        _controller.add(chunk);
-      }
-    } else {
-      _bufferedChunks.add(chunk);
-    }
-  }
-
-  void _close() {
-    if (!_isClosed) {
-      _isClosed = true;
-      if (_hasListener && !_controller.isClosed) {
-        _controller.close();
-      }
-      _onDone();
-    }
-  }
-
   /// Closes the stream and stops sending data to listeners.
   /// The controller will still track consumption for draining purposes.
   @override
@@ -129,17 +153,10 @@ final class FixedLengthBodyController implements BodyController {
       // the actual bytes to be 'add'ed from the socket.
     }
   }
-
-  @override
-  void addError(Object error) {
-    if (!_controller.isClosed) {
-      _controller.addError(error);
-    }
-  }
 }
 
 /// A stream controller for a chunked HTTP request body.
-final class ChunkedBodyController implements BodyController {
+final class ChunkedBodyController extends _BufferingBodyController {
   static const int _stateSize = 0;
   static const int _stateData = 1;
   static const int _stateDataCR = 2;
@@ -156,69 +173,10 @@ final class ChunkedBodyController implements BodyController {
 
   bool _isDone = false;
 
-  late final StreamController<Uint8List> _controller;
-  final void Function() _onDone;
-
-  final _bufferedChunks = <Uint8List>[];
-  bool _hasListener = false;
-  bool _isClosed = false;
-
-  ChunkedBodyController(
-    this._onDone, {
-    void Function()? onPause,
-    void Function()? onResume,
-  }) {
-    _controller = StreamController<Uint8List>(
-      sync: true,
-      onListen: () {
-        _hasListener = true;
-        for (var chunk in _bufferedChunks) {
-          if (!_controller.isClosed) {
-            _controller.add(chunk);
-          }
-        }
-        _bufferedChunks.clear();
-        if (_isClosed && !_controller.isClosed) {
-          _controller.close();
-        }
-      },
-      onPause: onPause,
-      onResume: onResume,
-    );
-  }
-
-  @override
-  Stream<Uint8List> get stream => _controller.stream;
+  ChunkedBodyController(super.onDone, {super.onPause, super.onResume});
 
   @override
   bool get isDone => _isDone;
-
-  @override
-  Uint8List takeBufferedData() {
-    if (_bufferedChunks.isEmpty) return Uint8List(0);
-    var totalLength = 0;
-    for (final chunk in _bufferedChunks) {
-      totalLength += chunk.length;
-    }
-    final result = Uint8List(totalLength);
-    var offset = 0;
-    for (var chunk in _bufferedChunks) {
-      result.setAll(offset, chunk);
-      offset += chunk.length;
-    }
-    _bufferedChunks.clear();
-    return result;
-  }
-
-  void _addChunk(Uint8List chunk) {
-    if (_hasListener) {
-      if (!_controller.isClosed) {
-        _controller.add(chunk);
-      }
-    } else {
-      _bufferedChunks.add(chunk);
-    }
-  }
 
   @override
   Uint8List add(Uint8List data) {
@@ -315,16 +273,6 @@ final class ChunkedBodyController implements BodyController {
     return false;
   }
 
-  void _close() {
-    if (!_isClosed) {
-      _isClosed = true;
-      if (_hasListener && !_controller.isClosed) {
-        _controller.close();
-      }
-      _onDone();
-    }
-  }
-
   @override
   void close() {
     if (!_isDone && !_controller.isClosed) {
@@ -334,13 +282,6 @@ final class ChunkedBodyController implements BodyController {
     }
     if (!_controller.isClosed) {
       _controller.close();
-    }
-  }
-
-  @override
-  void addError(Object error) {
-    if (!_controller.isClosed) {
-      _controller.addError(error);
     }
   }
 }
