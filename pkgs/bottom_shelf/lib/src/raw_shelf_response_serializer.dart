@@ -149,13 +149,69 @@ final class RawShelfResponseSerializer {
     String? poweredBy,
     void Function()? onHeadersSent,
   }) {
+    final statusCode = response.statusCode;
     final isBodylessStatus =
-        (response.statusCode >= 100 && response.statusCode < 200) ||
-        response.statusCode == 204 ||
-        response.statusCode == 304;
+        (statusCode >= 100 && statusCode < 200) ||
+        statusCode == 204 ||
+        statusCode == 304;
+
+    _scratchPos = 0;
+    _addBytes(_statusLine(statusCode));
+    final (:contentLength, :isChunked) = _addHeaders(
+      response,
+      isBodylessStatus: isBodylessStatus,
+      keepAlive: keepAlive,
+      poweredBy: poweredBy,
+    );
+    _addCrlf();
+
+    final bufferedBytes = response.runtimeType == Response
+        ? extractBody(response).takeBufferedBytes()
+        : null;
+
+    if (bufferedBytes != null) {
+      return _writeBufferedBody(
+        socket,
+        bufferedBytes,
+        requestMethod: requestMethod,
+        contentLength: contentLength,
+        isBodylessStatus: isBodylessStatus,
+        isChunked: isChunked,
+        onHeadersSent: onHeadersSent,
+      );
+    }
+
+    // Materialize before any await: the static scratch buffer is shared
+    // across all connections in this isolate and interleaving writeResponse
+    // calls resume at await boundaries.
+    final headerBytes = _takeScratch();
+
+    return _writeStreamResponse(
+      response,
+      socket,
+      headerBytes: headerBytes,
+      requestMethod: requestMethod,
+      contentLength: contentLength,
+      isBodylessStatus: isBodylessStatus,
+      isChunked: isChunked,
+      onHeadersSent: onHeadersSent,
+    );
+  }
+
+  /// Appends the response headers to the scratch buffer, adding the framing
+  /// headers the handler did not set.
+  ///
+  /// Returns the declared `Content-Length` (`null` when absent or unparsable)
+  /// and whether the body will be sent chunked.
+  static ({int? contentLength, bool isChunked}) _addHeaders(
+    Response response, {
+    required bool isBodylessStatus,
+    required bool keepAlive,
+    required String? poweredBy,
+  }) {
+    final statusCode = response.statusCode;
     final forbidContentLength =
-        (response.statusCode >= 100 && response.statusCode < 200) ||
-        response.statusCode == 204;
+        (statusCode >= 100 && statusCode < 200) || statusCode == 204;
 
     var hasContentLength = false;
     var hasTransferEncoding = false;
@@ -163,9 +219,6 @@ final class RawShelfResponseSerializer {
     var hasDate = false;
     var hasPoweredBy = false;
     int? contentLength;
-
-    _scratchPos = 0;
-    _addBytes(_statusLine(response.statusCode));
 
     response.headersAll.forEach((key, values) {
       if (values.isEmpty) return;
@@ -180,33 +233,14 @@ final class RawShelfResponseSerializer {
         case 10 when _equalsIgnoreAsciiCase(key, 'connection'):
           hasConnection = true;
         case 10 when _equalsIgnoreAsciiCase(key, 'set-cookie'):
-          for (var i = 0; i < values.length; i++) {
-            if (i == 0) {
-              _addHeaderName(key);
-            } else {
-              _addString(key);
-            }
-            _ensure(2);
-            _scratch[_scratchPos++] = $Chars.colon;
-            _scratch[_scratchPos++] = $Chars.sp;
-            _addHeaderValue(values[i]);
-            _addCrlf();
-          }
+          _addSetCookieHeaders(key, values);
           return;
         case 4 when _equalsIgnoreAsciiCase(key, 'date'):
           hasDate = true;
         case 12 when _equalsIgnoreAsciiCase(key, 'x-powered-by'):
           hasPoweredBy = true;
       }
-      _addHeaderName(key);
-      _ensure(2);
-      _scratch[_scratchPos++] = $Chars.colon;
-      _scratch[_scratchPos++] = $Chars.sp;
-      for (var i = 0; i < values.length; i++) {
-        if (i > 0) _addString(', ');
-        _addHeaderValue(values[i]);
-      }
-      _addCrlf();
+      _addHeader(key, values);
     });
 
     // `Message.contentLength` derives from the `content-length` header, so
@@ -217,108 +251,124 @@ final class RawShelfResponseSerializer {
     if (isChunked && !hasTransferEncoding) {
       _addBytes(_transferEncodingChunked);
     }
-
     if (!hasConnection) {
       _addBytes(keepAlive ? _connectionKeepAlive : _connectionClose);
     }
-
     if (poweredBy != null && !hasPoweredBy) {
       _addString('X-Powered-By: ');
       _addHeaderValue(poweredBy);
       _addCrlf();
     }
-
     if (!hasDate) {
       _addBytes(_dateHeaderBytes());
     }
+    return (contentLength: contentLength, isChunked: isChunked);
+  }
 
+  static void _addColonSpace() {
+    _ensure(2);
+    _scratch[_scratchPos++] = $Chars.colon;
+    _scratch[_scratchPos++] = $Chars.sp;
+  }
+
+  /// `key: v1, v2\r\n`
+  static void _addHeader(String key, List<String> values) {
+    _addHeaderName(key);
+    _addColonSpace();
+    for (var i = 0; i < values.length; i++) {
+      if (i > 0) _addString(', ');
+      _addHeaderValue(values[i]);
+    }
     _addCrlf();
+  }
 
-    final bufferedBytes = response.runtimeType == Response
-        ? extractBody(response).takeBufferedBytes()
-        : null;
-
-    if (bufferedBytes != null) {
-      if (requestMethod == 'HEAD' || contentLength == 0 || isBodylessStatus) {
-        final headerBytes = Uint8List(_scratchPos)
-          ..setRange(0, _scratchPos, _scratch);
-        socket.add(headerBytes);
-        onHeadersSent?.call();
-        return headerBytes.length;
-      }
-
-      if (!isChunked &&
-          contentLength != null &&
-          bufferedBytes.length != contentLength) {
-        throw StateError(
-          'Response body length (${bufferedBytes.length}) does not match '
-          'Content-Length ($contentLength)',
-        );
-      }
-
-      if (bufferedBytes.isEmpty) {
-        if (isChunked) {
-          _addBytes(_chunkedEnd);
-        }
-        final packet = Uint8List(_scratchPos)
-          ..setRange(0, _scratchPos, _scratch);
-        socket.add(packet);
-        onHeadersSent?.call();
-        return packet.length;
-      }
-
-      if (bufferedBytes.length <= $Limit.maxCoalesceChunkSize) {
-        if (isChunked) {
-          _addString('${bufferedBytes.length.toRadixString(16)}\r\n');
-          _addBytes(bufferedBytes);
-          _addBytes(_crlfChunkedEnd);
-        } else {
-          _addBytes(bufferedBytes);
-        }
-        final packet = Uint8List(_scratchPos)
-          ..setRange(0, _scratchPos, _scratch);
-        socket.add(packet);
-        onHeadersSent?.call();
-        return packet.length;
-      }
-
-      if (isChunked) {
-        _addString('${bufferedBytes.length.toRadixString(16)}\r\n');
-        final headerAndSize = Uint8List(_scratchPos)
-          ..setRange(0, _scratchPos, _scratch);
-        socket.add(headerAndSize);
-        onHeadersSent?.call();
-        socket.add(bufferedBytes);
-        socket.add(_crlfChunkedEnd);
-        return headerAndSize.length +
-            bufferedBytes.length +
-            _crlfChunkedEnd.length;
+  /// `Set-Cookie` must not be comma-joined: one line per value. The name is
+  /// validated once and written as a trusted literal after that.
+  static void _addSetCookieHeaders(String key, List<String> values) {
+    for (var i = 0; i < values.length; i++) {
+      if (i == 0) {
+        _addHeaderName(key);
       } else {
-        final headerBytes = Uint8List(_scratchPos)
-          ..setRange(0, _scratchPos, _scratch);
-        socket.add(headerBytes);
-        onHeadersSent?.call();
-        socket.add(bufferedBytes);
-        return headerBytes.length + bufferedBytes.length;
+        _addString(key);
       }
+      _addColonSpace();
+      _addHeaderValue(values[i]);
+      _addCrlf();
+    }
+  }
+
+  static Uint8List _takeScratch() =>
+      Uint8List(_scratchPos)..setRange(0, _scratchPos, _scratch);
+
+  /// Writes the scratch buffer to [socket] as one packet and reports the
+  /// headers as sent. Returns the packet length.
+  static int _sendScratch(Socket socket, void Function()? onHeadersSent) {
+    final packet = _takeScratch();
+    socket.add(packet);
+    onHeadersSent?.call();
+    return packet.length;
+  }
+
+  static StateError _contentLengthMismatch(int actual, int declared) =>
+      StateError(
+        'Response body length ($actual) does not match '
+        'Content-Length ($declared)',
+      );
+
+  static Uint8List _chunkSizeLine(int length) =>
+      ascii.encode('${length.toRadixString(16)}\r\n');
+
+  /// Writes a response whose body is already in memory. The headers are in
+  /// the scratch buffer; small bodies are coalesced into the same packet.
+  static int _writeBufferedBody(
+    Socket socket,
+    Uint8List bufferedBytes, {
+    required String requestMethod,
+    required int? contentLength,
+    required bool isBodylessStatus,
+    required bool isChunked,
+    required void Function()? onHeadersSent,
+  }) {
+    if (requestMethod == 'HEAD' || contentLength == 0 || isBodylessStatus) {
+      return _sendScratch(socket, onHeadersSent);
     }
 
-    // Materialize before any await: the static scratch buffer is shared
-    // across all connections in this isolate and interleaving writeResponse
-    // calls resume at await boundaries.
-    final headerBytes = Uint8List(_scratchPos)
-      ..setRange(0, _scratchPos, _scratch);
+    if (!isChunked &&
+        contentLength != null &&
+        bufferedBytes.length != contentLength) {
+      throw _contentLengthMismatch(bufferedBytes.length, contentLength);
+    }
 
-    return _writeStreamResponse(
-      response,
-      socket,
-      headerBytes: headerBytes,
-      requestMethod: requestMethod,
-      contentLength: contentLength,
-      isBodylessStatus: isBodylessStatus,
-      isChunked: isChunked,
-      onHeadersSent: onHeadersSent,
-    );
+    if (bufferedBytes.isEmpty) {
+      if (isChunked) {
+        _addBytes(_chunkedEnd);
+      }
+      return _sendScratch(socket, onHeadersSent);
+    }
+
+    if (bufferedBytes.length <= $Limit.maxCoalesceChunkSize) {
+      if (isChunked) {
+        _addString('${bufferedBytes.length.toRadixString(16)}\r\n');
+        _addBytes(bufferedBytes);
+        _addBytes(_crlfChunkedEnd);
+      } else {
+        _addBytes(bufferedBytes);
+      }
+      return _sendScratch(socket, onHeadersSent);
+    }
+
+    // Large body: send it as its own buffer rather than copying it.
+    if (isChunked) {
+      _addString('${bufferedBytes.length.toRadixString(16)}\r\n');
+    }
+    var written = _sendScratch(socket, onHeadersSent);
+    socket.add(bufferedBytes);
+    written += bufferedBytes.length;
+    if (isChunked) {
+      socket.add(_crlfChunkedEnd);
+      written += _crlfChunkedEnd.length;
+    }
+    return written;
   }
 
   static Future<int> _writeStreamResponse(
@@ -331,121 +381,128 @@ final class RawShelfResponseSerializer {
     required bool isChunked,
     required void Function()? onHeadersSent,
   }) async {
-    var written = 0;
     if (requestMethod == 'HEAD' || contentLength == 0 || isBodylessStatus) {
       socket.add(headerBytes);
       onHeadersSent?.call();
-      written += headerBytes.length;
       if (requestMethod == 'HEAD') {
         await response.read().listen((_) {}).asFuture<void>();
       } else {
         unawaited(response.read().listen(null).cancel());
       }
-    } else {
-      var isFirst = true;
-      var bodyBytesWritten = 0;
-      await for (final chunk in response.read()) {
-        if (chunk.isEmpty) continue;
-        bodyBytesWritten += chunk.length;
-        if (!isChunked &&
-            contentLength != null &&
-            bodyBytesWritten > contentLength) {
-          throw StateError(
-            'Response body length ($bodyBytesWritten) does not match '
-            'Content-Length ($contentLength)',
-          );
-        }
-        if (isFirst) {
-          isFirst = false;
-          if (isChunked) {
-            final sizeLine = ascii.encode(
-              '${chunk.length.toRadixString(16)}\r\n',
-            );
-            if (chunk.length <= $Limit.maxCoalesceChunkSize) {
-              final coalesced = Uint8List(
-                headerBytes.length + sizeLine.length + chunk.length + 2,
-              );
-              var pos = 0;
-              coalesced.setRange(pos, pos += headerBytes.length, headerBytes);
-              coalesced.setRange(pos, pos += sizeLine.length, sizeLine);
-              coalesced.setRange(pos, pos += chunk.length, chunk);
-              coalesced[pos] = $Chars.cr;
-              coalesced[pos + 1] = $Chars.lf;
-              socket.add(coalesced);
-              onHeadersSent?.call();
-              written += coalesced.length;
-            } else {
-              socket.add(headerBytes);
-              onHeadersSent?.call();
-              socket.add(sizeLine);
-              socket.add(chunk);
-              socket.add(_crlf);
-              written +=
-                  headerBytes.length + sizeLine.length + chunk.length + 2;
-            }
-          } else {
-            if (chunk.length <= $Limit.maxCoalesceChunkSize) {
-              final coalesced = Uint8List(headerBytes.length + chunk.length);
-              coalesced.setRange(0, headerBytes.length, headerBytes);
-              coalesced.setRange(headerBytes.length, coalesced.length, chunk);
-              socket.add(coalesced);
-              onHeadersSent?.call();
-              written += coalesced.length;
-            } else {
-              socket.add(headerBytes);
-              onHeadersSent?.call();
-              socket.add(chunk);
-              written += headerBytes.length + chunk.length;
-            }
-          }
-        } else {
-          if (isChunked) {
-            final sizeLine = ascii.encode(
-              '${chunk.length.toRadixString(16)}\r\n',
-            );
-            if (chunk.length <= $Limit.maxCoalesceChunkSize) {
-              final builder = BytesBuilder(copy: false);
-              builder.add(sizeLine);
-              builder.add(chunk);
-              builder.add(_crlf);
-              final bytes = builder.takeBytes();
-              socket.add(bytes);
-              written += bytes.length;
-            } else {
-              socket.add(sizeLine);
-              socket.add(chunk);
-              socket.add(_crlf);
-              written += sizeLine.length + chunk.length + 2;
-            }
-          } else {
-            socket.add(chunk);
-            written += chunk.length;
-          }
-        }
-      }
+      return headerBytes.length;
+    }
 
+    var written = 0;
+    var bodyBytesWritten = 0;
+    var headersSent = false;
+    await for (final chunk in response.read()) {
+      if (chunk.isEmpty) continue;
+      bodyBytesWritten += chunk.length;
       if (!isChunked &&
           contentLength != null &&
-          bodyBytesWritten != contentLength) {
-        throw StateError(
-          'Response body length ($bodyBytesWritten) does not match '
-          'Content-Length ($contentLength)',
+          bodyBytesWritten > contentLength) {
+        throw _contentLengthMismatch(bodyBytesWritten, contentLength);
+      }
+      if (headersSent) {
+        written += _writeChunk(socket, chunk, isChunked: isChunked);
+      } else {
+        headersSent = true;
+        written += _writeHeadersWithFirstChunk(
+          socket,
+          headerBytes,
+          chunk,
+          isChunked: isChunked,
         );
-      }
-
-      if (isFirst) {
-        socket.add(headerBytes);
         onHeadersSent?.call();
-        written += headerBytes.length;
-      }
-
-      if (isChunked) {
-        socket.add(_chunkedEnd);
-        written += _chunkedEnd.length;
       }
     }
 
+    if (!isChunked &&
+        contentLength != null &&
+        bodyBytesWritten != contentLength) {
+      throw _contentLengthMismatch(bodyBytesWritten, contentLength);
+    }
+
+    if (!headersSent) {
+      socket.add(headerBytes);
+      onHeadersSent?.call();
+      written += headerBytes.length;
+    }
+
+    if (isChunked) {
+      socket.add(_chunkedEnd);
+      written += _chunkedEnd.length;
+    }
     return written;
+  }
+
+  /// Sends the headers together with the first body chunk, in one packet when
+  /// the chunk is small enough to be worth copying. Returns bytes written.
+  static int _writeHeadersWithFirstChunk(
+    Socket socket,
+    Uint8List headerBytes,
+    List<int> chunk, {
+    required bool isChunked,
+  }) {
+    if (!isChunked) {
+      if (chunk.length <= $Limit.maxCoalesceChunkSize) {
+        final coalesced = Uint8List(headerBytes.length + chunk.length);
+        coalesced.setRange(0, headerBytes.length, headerBytes);
+        coalesced.setRange(headerBytes.length, coalesced.length, chunk);
+        socket.add(coalesced);
+        return coalesced.length;
+      }
+      socket.add(headerBytes);
+      socket.add(chunk);
+      return headerBytes.length + chunk.length;
+    }
+
+    final sizeLine = _chunkSizeLine(chunk.length);
+    if (chunk.length <= $Limit.maxCoalesceChunkSize) {
+      final coalesced = Uint8List(
+        headerBytes.length + sizeLine.length + chunk.length + 2,
+      );
+      var pos = 0;
+      coalesced.setRange(pos, pos += headerBytes.length, headerBytes);
+      coalesced.setRange(pos, pos += sizeLine.length, sizeLine);
+      coalesced.setRange(pos, pos += chunk.length, chunk);
+      coalesced[pos] = $Chars.cr;
+      coalesced[pos + 1] = $Chars.lf;
+      socket.add(coalesced);
+      return coalesced.length;
+    }
+    socket.add(headerBytes);
+    socket.add(sizeLine);
+    socket.add(chunk);
+    socket.add(_crlf);
+    return headerBytes.length + sizeLine.length + chunk.length + 2;
+  }
+
+  /// Sends a body chunk after the headers have gone out. Returns bytes
+  /// written.
+  static int _writeChunk(
+    Socket socket,
+    List<int> chunk, {
+    required bool isChunked,
+  }) {
+    if (!isChunked) {
+      socket.add(chunk);
+      return chunk.length;
+    }
+    final sizeLine = _chunkSizeLine(chunk.length);
+    if (chunk.length <= $Limit.maxCoalesceChunkSize) {
+      final builder = BytesBuilder(copy: false);
+      builder.add(sizeLine);
+      builder.add(chunk);
+      builder.add(_crlf);
+      final bytes = builder.takeBytes();
+      socket.add(bytes);
+      return bytes.length;
+    }
+    socket.add(sizeLine);
+    socket.add(chunk);
+    socket.add(_crlf);
+    return sizeLine.length + chunk.length + 2;
   }
 
   static String _getStatusPhrase(int statusCode) => switch (statusCode) {

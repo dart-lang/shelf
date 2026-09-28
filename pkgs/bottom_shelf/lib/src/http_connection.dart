@@ -76,34 +76,70 @@ final class _HttpConnection {
     _startHeaderTimer();
     _subscription = socket.listen(
       _processData,
-      onError: (Object e) {
-        if (_isHijacked) {
-          _hijackController?.addError(e);
-        } else {
-          _destroy();
-        }
-      },
-      onDone: () {
-        if (_isHijacked) {
-          _hijackController?.close();
-        } else {
-          _clientClosed = true;
-          if (_bodyController != null && !_bodyController!.isDone) {
-            _bodyController!.addError(
-              const BadRequestException('Incomplete body'),
-            );
-            _bodyController!.close();
-            _forceClose = true;
-            if (_currentBodyDone != null && !_currentBodyDone!.isCompleted) {
-              _currentBodyDone!.complete();
-            }
-          } else {
-            _bodyController?.close();
-          }
-        }
-      },
+      onError: _onSocketError,
+      onDone: _onSocketDone,
       cancelOnError: true,
     );
+  }
+
+  void _onSocketError(Object e) {
+    if (_isHijacked) {
+      _hijackController?.addError(e);
+    } else {
+      _destroy();
+    }
+  }
+
+  void _onSocketDone() {
+    if (_isHijacked) {
+      _hijackController?.close();
+      return;
+    }
+    _clientClosed = true;
+    final bodyController = _bodyController;
+    if (bodyController == null || bodyController.isDone) {
+      bodyController?.close();
+      return;
+    }
+    // The client hung up mid-body.
+    bodyController.addError(const BadRequestException('Incomplete body'));
+    bodyController.close();
+    _forceClose = true;
+    if (_currentBodyDone != null && !_currentBodyDone!.isCompleted) {
+      _currentBodyDone!.complete();
+    }
+  }
+
+  void _reportError(String message, Object e, StackTrace st) {
+    config.onConnectionError?.call(
+      message,
+      e,
+      st,
+      remoteAddress: remoteAddress,
+      remotePort: remotePort,
+    );
+  }
+
+  void _markResponseSent() {
+    _responseSent = true;
+  }
+
+  /// Queues a 500 unless the response headers have already gone out.
+  void _sendServerErrorIfUnsent() {
+    if (!_responseSent) {
+      socket.add(ErrorResponse.internalServerError.bytes);
+    }
+  }
+
+  /// Fire-and-forget close; `close()` flushes queued bytes first.
+  void _closeThenDestroy() {
+    socket.close().then((_) => _destroy(), onError: (Object _) => _destroy());
+  }
+
+  Future<void> _closeAndDestroy() async {
+    // close() flushes any queued bytes before shutting down.
+    await socket.close();
+    _destroy();
   }
 
   void _destroy() {
@@ -173,256 +209,315 @@ final class _HttpConnection {
           return;
         }
 
-        if (_parser.process(currentData) case final requestHead?) {
-          _cancelHeaderTimer();
-          _readyForNextRequest = Completer<void>();
-          final bodyDone = Completer<void>();
+        final requestHead = _parser.process(currentData);
+        if (requestHead == null) break;
 
-          final typedHeaders = TypedHeaders(requestHead.headerSlices);
+        final rest = _handleRequestHead(requestHead, currentData);
+        if (rest == null) return;
+        currentData = rest;
 
-          if (typedHeaders.hasConflictingBodyHeaders) {
-            socket.add(ErrorResponse.badRequest.bytes);
-            _destroy();
-            return;
-          }
-
-          if (typedHeaders.hasDuplicateHost) {
-            socket.add(ErrorResponse.badRequest.bytes);
-            _destroy();
-            return;
-          }
-
-          if (typedHeaders.contentLengthHeaderCount > 1 ||
-              !typedHeaders.contentLengthDigitsValid ||
-              (typedHeaders.contentLengthHeaderCount == 1 &&
-                  typedHeaders.contentLength == null)) {
-            socket.add(ErrorResponse.badRequest.bytes);
-            _destroy();
-            return;
-          }
-
-          if (typedHeaders.hasTransferEncoding && !typedHeaders.isChunked) {
-            socket.add(ErrorResponse.notImplemented.bytes);
-            _flushCloseDestroy();
-            return;
-          }
-          if (requestHead.method == 'CONNECT' ||
-              requestHead.method == 'TRACE') {
-            socket.add(ErrorResponse.methodNotAllowed.bytes);
-            _flushCloseDestroy();
-            return;
-          }
-
-          final host = typedHeaders.host;
-          if (host != null && (host.contains('@') || host.contains('/'))) {
-            socket.add(ErrorResponse.badRequest.bytes);
-            _flushCloseDestroy();
-            return;
-          }
-
-          if ((host == null || host.trim().isEmpty) &&
-              requestHead.version == '1.1') {
-            socket.add(ErrorResponse.badRequest.bytes);
-            _flushCloseDestroy();
-            return;
-          }
-          final effectiveHost = host ?? 'localhost';
-
-          Uri uri;
-          try {
-            final rawUrl = requestHead.url;
-            if (rawUrl.startsWith('/')) {
-              // Origin-form (the common case): can never have a scheme, so
-              // skip straight to the single absolute-URL parse.
-              uri = Uri.parse('http://$effectiveHost$rawUrl');
-            } else {
-              uri = Uri.parse(rawUrl);
-              if (!uri.hasScheme) {
-                uri = Uri.parse('http://$effectiveHost/$rawUrl');
-              }
-            }
-          } on FormatException catch (e, st) {
-            throw BadRequestException(
-              'Invalid requested URL: ${e.message}',
-              innerException: e,
-              innerStack: st,
-            );
-          }
-
-          final consumedInHeaders = requestHead.consumedInLastChunk;
-          final remainingInChunk = consumedInHeaders == currentData.length
-              ? _emptyBytes
-              : Uint8List.sublistView(currentData, consumedInHeaders);
-
-          final contentLength = typedHeaders.contentLength ?? 0;
-
-          if (config.maxAllowedContentLength != null &&
-              contentLength > config.maxAllowedContentLength!) {
-            socket.add(ErrorResponse.contentTooLarge.bytes);
-            _flushCloseDestroy();
-            return;
-          }
-
-          typedHeaders.validateTransferEncoding();
-
-          if (requestHead.method == 'OPTIONS' &&
-              (contentLength > 0 || typedHeaders.isChunked)) {
-            socket.add(ErrorResponse.badRequest.bytes);
-            _flushCloseDestroy();
-            return;
-          }
-
-          Object? requestBody;
-          if (typedHeaders.isChunked) {
-            _bodyController = ChunkedBodyController(
-              () {
-                if (!bodyDone.isCompleted) bodyDone.complete();
-              },
-              onPause: () => _subscription?.pause(),
-              onResume: () => _subscription?.resume(),
-            );
-            requestBody = _bodyController!.stream;
-            currentData = _bodyController!.add(remainingInChunk);
-          } else if (contentLength > 0) {
-            if (remainingInChunk.length >= contentLength) {
-              requestBody = Uint8List.sublistView(
-                remainingInChunk,
-                0,
-                contentLength,
-              );
-              currentData = remainingInChunk.length == contentLength
-                  ? _emptyBytes
-                  : Uint8List.sublistView(remainingInChunk, contentLength);
-              bodyDone.complete();
-            } else {
-              _bodyController = FixedLengthBodyController(
-                contentLength,
-                () {
-                  if (!bodyDone.isCompleted) bodyDone.complete();
-                },
-                onPause: () => _subscription?.pause(),
-                onResume: () => _subscription?.resume(),
-              );
-              requestBody = _bodyController!.stream;
-              currentData = _bodyController!.add(remainingInChunk);
-            }
-          } else {
-            requestBody = const Stream<Uint8List>.empty();
-            currentData = remainingInChunk;
-            bodyDone.complete();
-          }
-
-          if (config.bodyTimeout != null &&
-              !bodyDone.isCompleted &&
-              !_isDestroyed &&
-              !_clientClosed) {
-            _bodyTimer = Timer(config.bodyTimeout!, _destroy);
-            bodyDone.future.then((_) {
-              _bodyTimer?.cancel();
-              _bodyTimer = null;
-            });
-          }
-
-          final thisRequestBodyController = _bodyController;
-          final capturedDataAtHijack = currentData;
-
-          if (_bodyController?.isDone ?? false) {
-            _bodyController = null;
-          }
-
-          var finalHeaderSlices = requestHead.headerSlices;
-          if (typedHeaders.isChunked) {
-            finalHeaderSlices = finalHeaderSlices
-                .where((s) => !s.key.matches($Header.transferEncoding))
-                .toList();
-          }
-
-          late final Request request;
-          void theHijackCallback(
-            void Function(StreamChannel<List<int>>) callback,
-          ) {
-            _isHijacked = true;
-            _hijackController = StreamController<Uint8List>(sync: true);
-
-            if (thisRequestBodyController != null) {
-              final buffered = thisRequestBodyController.takeBufferedData();
-              if (buffered.isNotEmpty) {
-                _hijackController!.add(buffered);
-              }
-            } else if (requestBody is Uint8List) {
-              final body = extractBody(request);
-              if (!body.isRead) {
-                final unread = body.takeBufferedBytes();
-                if (unread != null && unread.isNotEmpty) {
-                  _hijackController!.add(unread);
-                }
-              }
-            }
-
-            if (capturedDataAtHijack.isNotEmpty) {
-              _hijackController!.add(capturedDataAtHijack);
-            }
-            callback(StreamChannel(_hijackController!.stream, socket));
-          }
-
-          final originalMethod = requestHead.method;
-          final effectiveMethod =
-              (originalMethod == 'HEAD' && config.automaticHeadMethodSupport)
-              ? 'GET'
-              : originalMethod;
-
-          try {
-            request = Request(
-              effectiveMethod,
-              uri,
-              protocolVersion: requestHead.version,
-              headers: LazyByteHeaderMap(finalHeaderSlices),
-              body: requestBody,
-              context: {
-                $Context.rawHeaders: typedHeaders,
-                $Context.connectionInfo: _connectionInfo,
-              },
-              onHijack: theHijackCallback,
-            );
-          }
-          // ignore: avoid_catching_errors
-          on ArgumentError catch (e, st) {
-            throw BadRequestException(
-              'Invalid request parameters',
-              innerException: e,
-              innerStack: st,
-            );
-          }
-
-          _dispatchRequest(request, typedHeaders, bodyDone, originalMethod);
-
-          if (_bodyController != null || _isHijacked) {
-            break;
-          }
-        } else {
-          break;
-        }
+        if (_bodyController != null || _isHijacked) break;
       }
     } catch (e, st) {
-      if (!_isHijacked && !_isDestroyed) {
-        config.onConnectionError?.call(
-          'Error in handler',
-          e,
-          st,
-          remoteAddress: remoteAddress,
-          remotePort: remotePort,
+      _handleProcessingError(e, st);
+    }
+  }
+
+  /// Validates [requestHead], builds the [Request] and dispatches it to the
+  /// handler.
+  ///
+  /// Returns the bytes of [currentData] that follow the request head and any
+  /// body consumed synchronously, or `null` if the request was rejected and
+  /// the connection is being torn down.
+  Uint8List? _handleRequestHead(
+    HttpRequestHead requestHead,
+    Uint8List currentData,
+  ) {
+    _cancelHeaderTimer();
+    _readyForNextRequest = Completer<void>();
+    final bodyDone = Completer<void>();
+
+    final typedHeaders = TypedHeaders(requestHead.headerSlices);
+    final host = typedHeaders.host;
+    if (_rejectMalformedHead(requestHead, typedHeaders, host)) return null;
+
+    final uri = _parseRequestUri(requestHead.url, host ?? 'localhost');
+
+    final consumedInHeaders = requestHead.consumedInLastChunk;
+    final remainingInChunk = consumedInHeaders == currentData.length
+        ? _emptyBytes
+        : Uint8List.sublistView(currentData, consumedInHeaders);
+    final contentLength = typedHeaders.contentLength ?? 0;
+
+    if (_rejectUnsupportedBody(requestHead, typedHeaders, contentLength)) {
+      return null;
+    }
+
+    final (:body, :rest) = _attachBody(
+      typedHeaders,
+      contentLength,
+      remainingInChunk,
+      bodyDone,
+    );
+    _startBodyTimer(bodyDone);
+
+    final thisRequestBodyController = _bodyController;
+    if (_bodyController?.isDone ?? false) {
+      _bodyController = null;
+    }
+
+    late final Request request;
+    request = _buildRequest(
+      requestHead,
+      uri,
+      typedHeaders,
+      body,
+      onHijack: (callback) => _hijack(
+        callback,
+        request: request,
+        bodyController: thisRequestBodyController,
+        requestBody: body,
+        pendingData: rest,
+      ),
+    );
+
+    _dispatchRequest(request, typedHeaders, bodyDone, requestHead.method);
+    return rest;
+  }
+
+  /// Sends [error] and tears the connection down. Returns `true` so callers
+  /// can `return _reject(...)` from a validation check.
+  ///
+  /// With [flush] the queued error bytes are flushed before the socket is
+  /// destroyed; without it the socket is destroyed immediately.
+  bool _reject(ErrorResponse error, {bool flush = true}) {
+    socket.add(error.bytes);
+    if (flush) {
+      _flushCloseDestroy();
+    } else {
+      _destroy();
+    }
+    return true;
+  }
+
+  /// Rejects request heads that are malformed at the framing level.
+  bool _rejectMalformedHead(
+    HttpRequestHead requestHead,
+    TypedHeaders typedHeaders,
+    String? host,
+  ) {
+    if (typedHeaders.hasConflictingBodyHeaders ||
+        typedHeaders.hasDuplicateHost ||
+        typedHeaders.contentLengthHeaderCount > 1 ||
+        !typedHeaders.contentLengthDigitsValid ||
+        (typedHeaders.contentLengthHeaderCount == 1 &&
+            typedHeaders.contentLength == null)) {
+      return _reject(ErrorResponse.badRequest, flush: false);
+    }
+    if (typedHeaders.hasTransferEncoding && !typedHeaders.isChunked) {
+      return _reject(ErrorResponse.notImplemented);
+    }
+    if (requestHead.method == 'CONNECT' || requestHead.method == 'TRACE') {
+      return _reject(ErrorResponse.methodNotAllowed);
+    }
+    if (host != null && (host.contains('@') || host.contains('/'))) {
+      return _reject(ErrorResponse.badRequest);
+    }
+    if ((host == null || host.trim().isEmpty) && requestHead.version == '1.1') {
+      return _reject(ErrorResponse.badRequest);
+    }
+    return false;
+  }
+
+  /// Rejects bodies this server will not accept for the request.
+  bool _rejectUnsupportedBody(
+    HttpRequestHead requestHead,
+    TypedHeaders typedHeaders,
+    int contentLength,
+  ) {
+    if (config.maxAllowedContentLength != null &&
+        contentLength > config.maxAllowedContentLength!) {
+      return _reject(ErrorResponse.contentTooLarge);
+    }
+
+    typedHeaders.validateTransferEncoding();
+
+    if (requestHead.method == 'OPTIONS' &&
+        (contentLength > 0 || typedHeaders.isChunked)) {
+      return _reject(ErrorResponse.badRequest);
+    }
+    return false;
+  }
+
+  static Uri _parseRequestUri(String rawUrl, String effectiveHost) {
+    try {
+      if (rawUrl.startsWith('/')) {
+        // Origin-form (the common case): can never have a scheme, so skip
+        // straight to the single absolute-URL parse.
+        return Uri.parse('http://$effectiveHost$rawUrl');
+      }
+      final uri = Uri.parse(rawUrl);
+      return uri.hasScheme ? uri : Uri.parse('http://$effectiveHost/$rawUrl');
+    } on FormatException catch (e, st) {
+      throw BadRequestException(
+        'Invalid requested URL: ${e.message}',
+        innerException: e,
+        innerStack: st,
+      );
+    }
+  }
+
+  void _pauseReads() => _subscription?.pause();
+  void _resumeReads() => _subscription?.resume();
+
+  /// Chooses how the request body is delivered to the handler and consumes
+  /// whatever part of it is already in [remainingInChunk].
+  ///
+  /// Sets [_bodyController] when the body will keep arriving on later reads.
+  /// Returns the body to hand to [Request] and the bytes of [remainingInChunk]
+  /// that belong to the next request.
+  ({Object body, Uint8List rest}) _attachBody(
+    TypedHeaders typedHeaders,
+    int contentLength,
+    Uint8List remainingInChunk,
+    Completer<void> bodyDone,
+  ) {
+    void completeBody() {
+      if (!bodyDone.isCompleted) bodyDone.complete();
+    }
+
+    if (typedHeaders.isChunked) {
+      final controller = _bodyController = ChunkedBodyController(
+        completeBody,
+        onPause: _pauseReads,
+        onResume: _resumeReads,
+      );
+      return (body: controller.stream, rest: controller.add(remainingInChunk));
+    }
+
+    if (contentLength > 0) {
+      if (remainingInChunk.length >= contentLength) {
+        bodyDone.complete();
+        return (
+          body: Uint8List.sublistView(remainingInChunk, 0, contentLength),
+          rest: remainingInChunk.length == contentLength
+              ? _emptyBytes
+              : Uint8List.sublistView(remainingInChunk, contentLength),
         );
-        if (e is BadRequestException) {
-          if (!_responseWriting) {
-            socket.add(e.errorResponse.bytes);
-            _flushCloseDestroy();
-          } else {
-            _destroy();
-          }
-        } else {
-          _destroy();
+      }
+      final controller = _bodyController = FixedLengthBodyController(
+        contentLength,
+        completeBody,
+        onPause: _pauseReads,
+        onResume: _resumeReads,
+      );
+      return (body: controller.stream, rest: controller.add(remainingInChunk));
+    }
+
+    bodyDone.complete();
+    return (body: const Stream<Uint8List>.empty(), rest: remainingInChunk);
+  }
+
+  void _startBodyTimer(Completer<void> bodyDone) {
+    if (config.bodyTimeout != null &&
+        !bodyDone.isCompleted &&
+        !_isDestroyed &&
+        !_clientClosed) {
+      _bodyTimer = Timer(config.bodyTimeout!, _destroy);
+      bodyDone.future.then((_) {
+        _bodyTimer?.cancel();
+        _bodyTimer = null;
+      });
+    }
+  }
+
+  Request _buildRequest(
+    HttpRequestHead requestHead,
+    Uri uri,
+    TypedHeaders typedHeaders,
+    Object body, {
+    required void Function(void Function(StreamChannel<List<int>>)) onHijack,
+  }) {
+    var headerSlices = requestHead.headerSlices;
+    if (typedHeaders.isChunked) {
+      headerSlices = headerSlices
+          .where((s) => !s.key.matches($Header.transferEncoding))
+          .toList();
+    }
+
+    final method = requestHead.method;
+    final effectiveMethod =
+        (method == 'HEAD' && config.automaticHeadMethodSupport)
+        ? 'GET'
+        : method;
+
+    try {
+      return Request(
+        effectiveMethod,
+        uri,
+        protocolVersion: requestHead.version,
+        headers: LazyByteHeaderMap(headerSlices),
+        body: body,
+        context: {
+          $Context.rawHeaders: typedHeaders,
+          $Context.connectionInfo: _connectionInfo,
+        },
+        onHijack: onHijack,
+      );
+    }
+    // ignore: avoid_catching_errors
+    on ArgumentError catch (e, st) {
+      throw BadRequestException(
+        'Invalid request parameters',
+        innerException: e,
+        innerStack: st,
+      );
+    }
+  }
+
+  /// Hands the socket to [callback], replaying any request bytes already read
+  /// but not yet consumed by the handler.
+  void _hijack(
+    void Function(StreamChannel<List<int>>) callback, {
+    required Request request,
+    required BodyController? bodyController,
+    required Object requestBody,
+    required Uint8List pendingData,
+  }) {
+    _isHijacked = true;
+    final controller = _hijackController = StreamController<Uint8List>(
+      sync: true,
+    );
+
+    if (bodyController != null) {
+      final buffered = bodyController.takeBufferedData();
+      if (buffered.isNotEmpty) {
+        controller.add(buffered);
+      }
+    } else if (requestBody is Uint8List) {
+      final body = extractBody(request);
+      if (!body.isRead) {
+        final unread = body.takeBufferedBytes();
+        if (unread != null && unread.isNotEmpty) {
+          controller.add(unread);
         }
       }
+    }
+
+    if (pendingData.isNotEmpty) {
+      controller.add(pendingData);
+    }
+    callback(StreamChannel(controller.stream, socket));
+  }
+
+  void _handleProcessingError(Object e, StackTrace st) {
+    if (_isHijacked || _isDestroyed) return;
+    _reportError('Error in handler', e, st);
+    if (e is BadRequestException && !_responseWriting) {
+      socket.add(e.errorResponse.bytes);
+      _flushCloseDestroy();
+    } else {
+      _destroy();
     }
   }
 
@@ -460,9 +555,7 @@ final class _HttpConnection {
         keepAlive: keepAlive,
         requestMethod: originalMethod,
         poweredBy: config.poweredBy,
-        onHeadersSent: () {
-          _responseSent = true;
-        },
+        onHeadersSent: _markResponseSent,
       );
       final written = writeResult is int ? writeResult : await writeResult;
       _responseSent = true;
@@ -471,71 +564,51 @@ final class _HttpConnection {
 
       _parser.reset();
 
-      if (keepAlive) {
-        if (!bodyDone.isCompleted) await bodyDone.future;
-        if (_forceClose) {
-          await socket.close();
-          _destroy();
-          return;
-        }
-        // Skip the per-response flush (it would gate the next pipelined
-        // request on the OS write draining) until enough pipelined responses
-        // and bytes have queued that a slow client's buffer would grow
-        // unbounded otherwise.
-        if (_unflushedResponses >= 16 &&
-            _unflushedBytes >= $Limit.flushThreshold) {
-          _unflushedBytes = 0;
-          _unflushedResponses = 0;
-          await socket.flush();
-          if (_isDestroyed || _clientClosed) return;
-        }
-        _responseWriting = false;
-        if (!_readyForNextRequest.isCompleted) {
-          _readyForNextRequest.complete();
-          _startHeaderTimer();
-        }
-      } else {
-        // close() flushes any queued bytes before shutting down.
-        await socket.close();
-        _destroy();
+      if (!keepAlive) {
+        await _closeAndDestroy();
+        return;
+      }
+      if (!bodyDone.isCompleted) await bodyDone.future;
+      if (_forceClose) {
+        await _closeAndDestroy();
+        return;
+      }
+      // Skip the per-response flush (it would gate the next pipelined
+      // request on the OS write draining) until enough pipelined responses
+      // and bytes have queued that a slow client's buffer would grow
+      // unbounded otherwise.
+      if (_unflushedResponses >= 16 &&
+          _unflushedBytes >= $Limit.flushThreshold) {
+        _unflushedBytes = 0;
+        _unflushedResponses = 0;
+        await socket.flush();
+        if (_isDestroyed || _clientClosed) return;
+      }
+      _responseWriting = false;
+      if (!_readyForNextRequest.isCompleted) {
+        _readyForNextRequest.complete();
+        _startHeaderTimer();
       }
     } on HijackException {
       await Future.microtask(() {});
       if (!_isHijacked) {
-        if (!_responseSent) {
-          socket.add(ErrorResponse.internalServerError.bytes);
-        }
-        unawaited(
-          socket.close().then(
-            (_) => _destroy(),
-            onError: (Object _) => _destroy(),
-          ),
-        );
+        _sendServerErrorIfUnsent();
+        _closeThenDestroy();
       }
     } catch (e, st) {
-      if (!_isHijacked && !_isDestroyed) {
-        if (e is SocketException) {
-          _destroy();
-          return;
-        }
-        if (!_responseSent) {
-          socket.add(ErrorResponse.internalServerError.bytes);
-        }
-        config.onConnectionError?.call(
-          'Error in handler',
-          e,
-          st,
-          remoteAddress: remoteAddress,
-          remotePort: remotePort,
-        );
-        unawaited(
-          socket.close().then(
-            (_) => _destroy(),
-            onError: (Object _) => _destroy(),
-          ),
-        );
-      }
+      _handleRequestError(e, st);
     }
+  }
+
+  void _handleRequestError(Object e, StackTrace st) {
+    if (_isHijacked || _isDestroyed) return;
+    if (e is SocketException) {
+      _destroy();
+      return;
+    }
+    _sendServerErrorIfUnsent();
+    _reportError('Error in handler', e, st);
+    _closeThenDestroy();
   }
 
   void _handleAsyncError(Object e, StackTrace st) {
@@ -545,50 +618,28 @@ final class _HttpConnection {
     final action = config.onAsyncError?.call(e, st);
     if (action == ErrorAction.ignore) {
       if (!_isDestroyed) {
-        config.onConnectionError?.call(
-          'Unhandled async error (ignored)',
-          e,
-          st,
-          remoteAddress: remoteAddress,
-          remotePort: remotePort,
-        );
+        _reportError('Unhandled async error (ignored)', e, st);
       }
-    } else if (action == ErrorAction.crash) {
-      config.onConnectionError?.call(
-        'Crashing server due to async error',
-        e,
-        st,
-        remoteAddress: remoteAddress,
-        remotePort: remotePort,
-      );
+      return;
+    }
+    if (action == ErrorAction.crash) {
+      _reportError('Crashing server due to async error', e, st);
       // ignore: only_throw_errors
       throw e;
-    } else {
-      if (!_isHijacked && !_isDestroyed) {
-        if (e is SocketException) {
-          _destroy();
-          return;
-        }
-        config.onConnectionError?.call(
-          'Error in handler',
-          e,
-          st,
-          remoteAddress: remoteAddress,
-          remotePort: remotePort,
-        );
-        if (_responseWriting && !_responseSent) {
-          _forceClose = true;
-          return;
-        }
-        if (!_responseSent) {
-          socket.add(ErrorResponse.internalServerError.bytes);
-        }
-        socket.close().then(
-          (_) => _destroy(),
-          onError: (Object _) => _destroy(),
-        );
-      }
     }
+    if (_isHijacked || _isDestroyed) return;
+    if (e is SocketException) {
+      _destroy();
+      return;
+    }
+    _reportError('Error in handler', e, st);
+    if (_responseWriting && !_responseSent) {
+      // Let the in-flight response finish, then close instead of keep-alive.
+      _forceClose = true;
+      return;
+    }
+    _sendServerErrorIfUnsent();
+    _closeThenDestroy();
   }
 }
 
