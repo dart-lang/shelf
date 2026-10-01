@@ -17,6 +17,7 @@ import 'shelf_unmodifiable_map.dart';
 import 'util.dart';
 
 Body extractBody(Message message) => message._body;
+Headers extractHeaders(Message message) => message._headers;
 
 /// The default set of headers for a message created with no body and no
 /// explicit headers.
@@ -85,19 +86,19 @@ abstract class Message {
     Encoding? encoding,
     Map<String, /* String | List<String> */ Object>? headers,
     Map<String, Object>? context,
-  }) : this._withBody(Body(body, encoding), headers, context);
+  }) : this.withBody(Body(body, encoding), headers, context);
 
-  Message._withBody(
+  Message.withBody(
     Body body,
     Map<String, Object>? headers,
     Map<String, Object>? context,
-  ) : this._withHeadersAll(
+  ) : this.withHeadersAll(
         body,
         Headers.from(_adjustHeaders(expandToHeadersAll(headers), body)),
         context,
       );
 
-  Message._withHeadersAll(
+  Message.withHeadersAll(
     Body body,
     Headers headers,
     Map<String, Object>? context,
@@ -169,6 +170,16 @@ abstract class Message {
   /// This calls [read] internally, which can only be called once.
   Future<String> readAsString([Encoding? encoding]) {
     encoding ??= this.encoding ?? utf8;
+    if (runtimeType == Request || runtimeType == Response) {
+      final bytes = _body.takeBufferedBytes();
+      if (bytes != null) {
+        try {
+          return Future.value(encoding.decode(bytes));
+        } on Object catch (e, s) {
+          return Future.error(e, s);
+        }
+      }
+    }
     return encoding.decodeStream(read());
   }
 
@@ -190,12 +201,27 @@ Map<String, List<String>> _adjustHeaders(
 ) {
   var sameEncoding = _sameEncoding(headers, body);
   if (sameEncoding) {
-    if (body.contentLength == null ||
-        findHeader(headers, 'content-length') == '${body.contentLength}') {
+    if (body.contentLength == null) {
       return headers ?? Headers.empty();
-    } else if (body.contentLength == 0 &&
-        (headers == null || headers.isEmpty)) {
-      return _defaultHeaders;
+    } else if (body.contentLength == 0) {
+      if (headers == null || headers.isEmpty) {
+        return _defaultHeaders;
+      }
+      if (findHeader(headers, 'content-length') != null) {
+        return headers;
+      }
+    } else if (findHeader(headers, 'content-length') ==
+        '${body.contentLength}') {
+      return headers!;
+    }
+    if (headers is Headers) {
+      final coding = findHeader(headers, 'transfer-encoding');
+      if (coding == null || equalsIgnoreAsciiCase(coding, 'identity')) {
+        return headers.updateHeaders({
+          'content-length': [body.contentLength.toString()],
+        });
+      }
+      return headers;
     }
   }
 

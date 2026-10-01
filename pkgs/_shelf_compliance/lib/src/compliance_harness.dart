@@ -16,7 +16,10 @@ String canonicalize(String content, int port) {
     '"durationMs": 0.0',
   );
   // Replace dates in raw headers (e.g., date: Tue, 21 Apr 2026 19:01:21 GMT)
-  result = result.replaceAll(RegExp(r'date: [^\r\n\\"]+'), 'date: <DATE>');
+  result = result.replaceAllMapped(
+    RegExp(r'(date): [^\r\n\\"]+', caseSensitive: false),
+    (m) => '${m[1]}: <DATE>',
+  );
   return result;
 }
 
