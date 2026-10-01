@@ -620,6 +620,60 @@ void main() {
     expect(response.statusCode, HttpStatus.ok);
   });
 
+  test(
+    'resolves connection info lazily, consistently, and through change()',
+    () async {
+      await _scheduleServer((request) {
+        var info =
+            request.context['shelf.io.connection_info'] as HttpConnectionInfo;
+
+        // All three fields resolve, including remotePort, which is only
+        // available from the socket.
+        expect(info.remoteAddress, equals(_server!.address));
+        expect(info.localPort, equals(_server!.port));
+        expect(info.remotePort, greaterThan(0));
+
+        // Reading again is served from the cache, so the values cannot drift.
+        expect(info.remoteAddress, equals(info.remoteAddress));
+        expect(info.remotePort, equals(info.remotePort));
+        expect(info.localPort, equals(info.localPort));
+
+        // Middleware copies context, so the same instance has to keep working
+        // after the request is rebuilt.
+        var changed = request.change(headers: {'x-marker': 'set'});
+        var copied =
+            changed.context['shelf.io.connection_info'] as HttpConnectionInfo;
+        expect(copied, same(info));
+        expect(copied.remotePort, equals(info.remotePort));
+
+        return syncHandler(request);
+      });
+
+      var response = await _get();
+      expect(response.statusCode, HttpStatus.ok);
+    },
+  );
+
+  test('throws StateError when connection info is first read after connection '
+      'closes', () async {
+    late HttpConnectionInfo capturedInfo;
+    await _scheduleServer((request) {
+      capturedInfo =
+          request.context['shelf.io.connection_info'] as HttpConnectionInfo;
+      return Response.ok(
+        'ok',
+        headers: {HttpHeaders.connectionHeader: 'close'},
+      );
+    });
+
+    var response = await _get();
+    expect(response.statusCode, HttpStatus.ok);
+
+    expect(() => capturedInfo.remoteAddress, throwsStateError);
+    expect(() => capturedInfo.remotePort, throwsStateError);
+    expect(() => capturedInfo.localPort, throwsStateError);
+  });
+
   group('ssl tests', () {
     var securityContext = SecurityContext()
       ..setTrustedCertificatesBytes(certChainBytes)
