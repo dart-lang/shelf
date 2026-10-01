@@ -11,13 +11,8 @@
 /// This adapter supports request hijacking; see [Request.hijack].
 ///
 /// [Request]s passed to a [Handler] will contain the [Request.context] key
-/// `"shelf.io.connection_info"` containing an [HttpConnectionInfo] for the
-/// underlying [HttpRequest]. Its fields are read from the socket on first
-/// access rather than up front, so a handler that never looks at them does not
-/// pay for them. Middleware or handlers that need these fields after an
-/// asynchronous gap (such as access loggers running after `await innerHandler`)
-/// should read a field before awaiting or handle [StateError] in case the
-/// connection closes while the request is in flight.
+/// `"shelf.io.connection_info"` containing the [HttpConnectionInfo] object from
+/// the underlying [HttpRequest].
 ///
 /// When creating [Response] instances for this adapter, you can set the
 /// `"shelf.io.buffer_output"` key in [Response.context]. If `true`,
