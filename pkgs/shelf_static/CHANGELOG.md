@@ -9,6 +9,8 @@
 * Add `generateETag` and `maxAge` parameters to `createStaticHandler` and
   `createFileHandler` to support `ETag` and `Cache-Control` headers. 
   Default ETags are generated based on file size and modified time.
+* Redesign the `listDirectory` HTML output to use a modern, responsive table
+  layout with inline SVG icons, file sizes, and last modified dates.
 * Require Dart `^3.9.0`.
 
 ## 1.1.3
