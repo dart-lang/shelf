@@ -1,4 +1,4 @@
-## 1.1.5-wip
+## 1.1.5
 
 * Match parameterless routes by string comparison instead of executing their
   compiled pattern. A route with no `<param>` segments compiles to `^` plus an
