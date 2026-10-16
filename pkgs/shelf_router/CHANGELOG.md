@@ -1,9 +1,10 @@
-## 1.1.5-wip
+## 1.1.5
 
 * Match parameterless routes by string comparison instead of executing their
   compiled pattern. A route with no `<param>` segments compiles to `^` plus an
   escaped literal plus `$`, which matches exactly one string, so the regex
   execution on every request to a static route was redundant.
+* Optimize `Router` matching with a prefix Trie filter for static path segments.
 * Fixed automatic `HEAD` request handling to not modify content-length.
 * Require Dart `^3.9.0`.
 

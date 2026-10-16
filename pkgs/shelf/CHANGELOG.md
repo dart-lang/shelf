@@ -1,4 +1,4 @@
-## 1.4.3-wip
+## 1.4.3
 
 * `shelf_io` now resolves the `shelf.io.connection_info` context value
   lazily. `dart:io` does not cache `HttpRequest.connectionInfo`, so building it
