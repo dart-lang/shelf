@@ -330,17 +330,16 @@ void testAll(
   test('passes asynchronous exceptions to the parent error zone', () async {
     await runZonedGuarded(
       () async {
-        var server = await serve((request) {
+        await scheduleServer((request) {
           Future(() => throw StateError('oh no'));
           return _syncHandler(request);
-        }, const ServeOptions());
+        });
 
         var response = await http.get(
-          Uri.http('localhost:${server.port}', '/'),
+          Uri.http('localhost:${serverPort()}', '/'),
         );
         expect(response.statusCode, HttpStatus.ok);
         expect(response.body, 'Hello from /');
-        await server.close();
       },
       expectAsync2((error, stack) {
         expect(error, _isOhNoStateError);
@@ -350,16 +349,12 @@ void testAll(
 
   test("doesn't pass asynchronous exceptions to the root error zone", () async {
     var response = await Zone.root.run(() async {
-      var server = await serve((request) {
+      await scheduleServer((request) {
         Future(() => throw StateError('oh no'));
         return _syncHandler(request);
-      }, const ServeOptions());
+      });
 
-      try {
-        return await http.get(Uri.http('localhost:${server.port}', '/'));
-      } finally {
-        await server.close();
-      }
+      return http.get(Uri.http('localhost:${serverPort()}', '/'));
     });
 
     expect(response.statusCode, HttpStatus.ok);
