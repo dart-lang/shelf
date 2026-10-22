@@ -2,80 +2,122 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn('vm')
-library;
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:async/async.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as parser;
 import 'package:shelf/shelf.dart';
-import 'package:shelf/shelf_io.dart' as shelf_io;
-import 'package:shelf/src/util.dart';
 import 'package:test/test.dart';
 
+import 'conformance_server.dart';
 import 'ssl_certs.dart';
-import 'test_util.dart';
 
-void main() {
+/// Runs the shelf adapter conformance tests against the adapter that [serve]
+/// starts.
+///
+/// [defaultPoweredByHeader] is the `X-Powered-By` value the adapter sends when
+/// [ServeOptions.overridesPoweredByHeader] is `false`.
+///
+/// Set [supportsSecurityContext] to `false` if the adapter can't serve HTTPS
+/// from a [ServeOptions.securityContext].
+void testAll(
+  ServeCallback serve, {
+  required String defaultPoweredByHeader,
+  bool supportsSecurityContext = true,
+}) {
+  ConformanceServer? server;
+
+  int serverPort() => server!.port;
+
+  Future<void> scheduleServer(
+    Handler handler, {
+    ServeOptions options = const ServeOptions(),
+  }) async {
+    assert(server == null);
+    server = await serve(handler, options);
+  }
+
   tearDown(() async {
-    if (_server != null) {
-      await _server!.close(force: true);
-      _server = null;
+    if (server != null) {
+      await server!.close();
+      server = null;
     }
   });
 
-  test('sync handler returns a value to the client', () async {
-    await _scheduleServer(syncHandler);
+  Future<http.Response> get({
+    Map<String, /* String | List<String> */ Object>? headers,
+    String path = '',
+  }) => _request(
+    serverPort(),
+    (client, url) => client.getUrl(url),
+    headers: headers,
+    path: path,
+  );
 
-    var response = await _get();
+  Future<http.Response> head() =>
+      _request(serverPort(), (client, url) => client.headUrl(url));
+
+  Future<http.StreamedResponse> post({String? body}) {
+    var request = http.Request(
+      'POST',
+      Uri.http('localhost:${serverPort()}', ''),
+    );
+
+    if (body != null) request.body = body;
+
+    return request.send();
+  }
+
+  test('sync handler returns a value to the client', () async {
+    await scheduleServer(_syncHandler);
+
+    var response = await get();
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
   test('async handler returns a value to the client', () async {
-    await _scheduleServer(asyncHandler);
+    await scheduleServer(_asyncHandler);
 
-    var response = await _get();
+    var response = await get();
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
   test('thrown error leads to a 500', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       throw UnsupportedError('test');
     });
 
-    var response = await _get();
+    var response = await get();
     expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
   test('async error leads to a 500', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       return Future.error('test');
     });
 
-    var response = await _get();
+    var response = await get();
     expect(response.statusCode, HttpStatus.internalServerError);
     expect(response.body, 'Internal Server Error');
   });
 
   test('supports HEAD requests', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       return Response(200, headers: {'content-length': '1'});
     });
-    var response = await _head();
+    var response = await head();
     expect(response.headers['content-length'], '1');
   });
 
   test('Request is populated correctly', () async {
     late Uri uri;
 
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       expect(request.method, 'GET');
 
       expect(request.requestedUri, uri);
@@ -86,10 +128,10 @@ void main() {
       expect(request.url.query, 'qs=value');
       expect(request.handlerPath, '/');
 
-      return syncHandler(request);
+      return _syncHandler(request);
     });
 
-    uri = Uri.http('localhost:$_serverPort', '/foo/bar', {'qs': 'value'});
+    uri = Uri.http('localhost:${serverPort()}', '/foo/bar', {'qs': 'value'});
     var response = await http.get(uri);
 
     expect(response.statusCode, HttpStatus.ok);
@@ -97,15 +139,15 @@ void main() {
   });
 
   test('Request can handle colon in first path segment', () async {
-    await _scheduleServer(syncHandler);
+    await scheduleServer(_syncHandler);
 
-    var response = await _get(path: 'user:42');
+    var response = await get(path: 'user:42');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /user:42');
   });
 
   test('chunked requests are un-chunked', () async {
-    await _scheduleServer(
+    await scheduleServer(
       expectAsync1((request) {
         expect(request.contentLength, isNull);
         expect(request.method, 'POST');
@@ -127,7 +169,7 @@ void main() {
 
     var request = http.StreamedRequest(
       'POST',
-      Uri.http('localhost:$_serverPort', ''),
+      Uri.http('localhost:${serverPort()}', ''),
     );
     request.sink.add([1, 2, 3, 4]);
     // ignore: unawaited_futures
@@ -138,21 +180,21 @@ void main() {
   });
 
   test('custom response headers are received by the client', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       return Response.ok(
         'Hello from /',
         headers: {'test-header': 'test-value', 'test-list': 'a, b, c'},
       );
     });
 
-    var response = await _get();
+    var response = await get();
     expect(response.statusCode, HttpStatus.ok);
     expect(response.headers['test-header'], 'test-value');
     expect(response.body, 'Hello from /');
   });
 
   test('multiple headers are received from the client', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       return Response.ok(
         'Hello from /',
         headers: {
@@ -168,7 +210,7 @@ void main() {
       );
     });
 
-    final response = await _get(
+    final response = await get(
       headers: {
         'request-values': ['a', 'b'],
         'set-cookie': ['c', 'd'],
@@ -182,23 +224,23 @@ void main() {
   });
 
   test('custom status code is received by the client', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       return Response(299, body: 'Hello from /');
     });
 
-    var response = await _get();
+    var response = await get();
     expect(response.statusCode, 299);
     expect(response.body, 'Hello from /');
   });
 
   test('custom request headers are received by the handler', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       expect(request.headers, containsPair('custom-header', 'client value'));
 
       // dart:io HttpServer splits multi-value headers into an array
       // validate that they are combined correctly
       expect(request.headers, containsPair('multi-header', 'foo,bar,baz'));
-      return syncHandler(request);
+      return _syncHandler(request);
     });
 
     var headers = {
@@ -206,13 +248,13 @@ void main() {
       'multi-header': 'foo,bar,baz',
     };
 
-    var response = await _get(headers: headers);
+    var response = await get(headers: headers);
     expect(response.statusCode, HttpStatus.ok);
     expect(response.body, 'Hello from /');
   });
 
   test('post with empty content', () async {
-    await _scheduleServer((request) async {
+    await scheduleServer((request) async {
       expect(request.mimeType, isNull);
       expect(request.encoding, isNull);
       expect(request.method, 'POST');
@@ -220,16 +262,16 @@ void main() {
 
       var body = await request.readAsString();
       expect(body, '');
-      return syncHandler(request);
+      return _syncHandler(request);
     });
 
-    var response = await _post();
+    var response = await post();
     expect(response.statusCode, HttpStatus.ok);
     expect(response.stream.bytesToString(), completion('Hello from /'));
   });
 
   test('post with request content', () async {
-    await _scheduleServer((request) async {
+    await scheduleServer((request) async {
       expect(request.mimeType, 'text/plain');
       expect(request.encoding, utf8);
       expect(request.method, 'POST');
@@ -237,16 +279,16 @@ void main() {
 
       var body = await request.readAsString();
       expect(body, 'test body');
-      return syncHandler(request);
+      return _syncHandler(request);
     });
 
-    var response = await _post(body: 'test body');
+    var response = await post(body: 'test body');
     expect(response.statusCode, HttpStatus.ok);
     expect(response.stream.bytesToString(), completion('Hello from /'));
   });
 
   test('supports request hijacking', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       expect(request.method, 'POST');
 
       request.hijack(
@@ -266,7 +308,7 @@ void main() {
       );
     });
 
-    var response = await _post(body: 'Hello');
+    var response = await post(body: 'Hello');
     expect(response.statusCode, HttpStatus.notFound);
     expect(response.headers['date'], 'Mon, 23 May 2005 22:38:34 GMT');
     expect(
@@ -278,9 +320,9 @@ void main() {
   test(
     'reports an error if a HijackException is thrown without hijacking',
     () async {
-      await _scheduleServer((request) => throw const HijackException());
+      await scheduleServer((request) => throw const HijackException());
 
-      var response = await _get();
+      var response = await get();
       expect(response.statusCode, HttpStatus.internalServerError);
     },
   );
@@ -288,14 +330,10 @@ void main() {
   test('passes asynchronous exceptions to the parent error zone', () async {
     await runZonedGuarded(
       () async {
-        var server = await shelf_io.serve(
-          (request) {
-            Future(() => throw StateError('oh no'));
-            return syncHandler(request);
-          },
-          'localhost',
-          0,
-        );
+        var server = await serve((request) {
+          Future(() => throw StateError('oh no'));
+          return _syncHandler(request);
+        }, const ServeOptions());
 
         var response = await http.get(
           Uri.http('localhost:${server.port}', '/'),
@@ -305,21 +343,17 @@ void main() {
         await server.close();
       },
       expectAsync2((error, stack) {
-        expect(error, isOhNoStateError);
+        expect(error, _isOhNoStateError);
       }),
     );
   });
 
   test("doesn't pass asynchronous exceptions to the root error zone", () async {
     var response = await Zone.root.run(() async {
-      var server = await shelf_io.serve(
-        (request) {
-          Future(() => throw StateError('oh no'));
-          return syncHandler(request);
-        },
-        'localhost',
-        0,
-      );
+      var server = await serve((request) {
+        Future(() => throw StateError('oh no'));
+        return _syncHandler(request);
+      }, const ServeOptions());
 
       try {
         return await http.get(Uri.http('localhost:${server.port}', '/'));
@@ -333,9 +367,9 @@ void main() {
   });
 
   test('a bad HTTP host request results in a 500 response', () async {
-    await _scheduleServer(syncHandler);
+    await scheduleServer(_syncHandler);
 
-    var socket = await Socket.connect('localhost', _serverPort);
+    var socket = await Socket.connect('localhost', serverPort());
 
     try {
       socket.write('GET / HTTP/1.1\r\n');
@@ -352,8 +386,8 @@ void main() {
   });
 
   test('a bad HTTP URL request results in a 400 response', () async {
-    await _scheduleServer(syncHandler);
-    final socket = await Socket.connect('localhost', _serverPort);
+    await scheduleServer(_syncHandler);
+    final socket = await Socket.connect('localhost', serverPort());
 
     try {
       socket.write('GET /#/ HTTP/1.1\r\n');
@@ -368,14 +402,14 @@ void main() {
 
   group('date header', () {
     test('is sent by default', () async {
-      await _scheduleServer(syncHandler);
+      await scheduleServer(_syncHandler);
 
       // Update beforeRequest to be one second earlier. HTTP dates only have
       // second-level granularity and the request will likely take less than a
       // second.
       var beforeRequest = DateTime.now().subtract(const Duration(seconds: 1));
 
-      var response = await _get();
+      var response = await get();
       expect(response.headers, contains('date'));
       var responseDate = parser.parseHttpDate(response.headers['date']!);
 
@@ -385,14 +419,14 @@ void main() {
 
     test('defers to header in response', () async {
       var date = DateTime.utc(1981, 6, 5);
-      await _scheduleServer((request) {
+      await scheduleServer((request) {
         return Response.ok(
           'test',
           headers: {HttpHeaders.dateHeader: parser.formatHttpDate(date)},
         );
       });
 
-      var response = await _get();
+      var response = await get();
       expect(response.headers, contains('date'));
       var responseDate = parser.parseHttpDate(response.headers['date']!);
       expect(responseDate, date);
@@ -401,59 +435,47 @@ void main() {
 
   group('X-Powered-By header', () {
     const poweredBy = 'x-powered-by';
-    test('defaults to "Dart with package:shelf"', () async {
-      await _scheduleServer(syncHandler);
+    test('defaults to "$defaultPoweredByHeader"', () async {
+      await scheduleServer(_syncHandler);
 
-      var response = await _get();
-      expect(
-        response.headers,
-        containsPair(poweredBy, 'Dart with package:shelf'),
-      );
+      var response = await get();
+      expect(response.headers, containsPair(poweredBy, defaultPoweredByHeader));
     });
 
     test('defers to header in response when default', () async {
-      await _scheduleServer((request) {
+      await scheduleServer((request) {
         return Response.ok('test', headers: {poweredBy: 'myServer'});
       });
 
-      var response = await _get();
+      var response = await get();
       expect(response.headers, containsPair(poweredBy, 'myServer'));
     });
 
     test('can be set at the server level', () async {
-      _server = await shelf_io.serve(
-        syncHandler,
-        'localhost',
-        0,
-        poweredByHeader: 'ourServer',
+      await scheduleServer(
+        _syncHandler,
+        options: const ServeOptions.poweredBy('ourServer'),
       );
-      var response = await _get();
+      var response = await get();
       expect(response.headers, containsPair(poweredBy, 'ourServer'));
     });
 
     test('defers to header in response when set at the server level', () async {
-      _server = await shelf_io.serve(
-        (request) {
-          return Response.ok('test', headers: {poweredBy: 'myServer'});
-        },
-        'localhost',
-        0,
-        poweredByHeader: 'ourServer',
-      );
+      await scheduleServer((request) {
+        return Response.ok('test', headers: {poweredBy: 'myServer'});
+      }, options: const ServeOptions.poweredBy('ourServer'));
 
-      var response = await _get();
+      var response = await get();
       expect(response.headers, containsPair(poweredBy, 'myServer'));
     });
 
     test('is omitted when set to null', () async {
-      _server = await shelf_io.serve(
-        syncHandler,
-        'localhost',
-        0,
-        poweredByHeader: null,
+      await scheduleServer(
+        _syncHandler,
+        options: const ServeOptions.poweredBy(null),
       );
 
-      var response = await _get();
+      var response = await get();
       expect(response.headers, isNot(contains(poweredBy)));
     });
   });
@@ -461,7 +483,7 @@ void main() {
   group('chunked coding', () {
     group('is added when the transfer-encoding header is', () {
       test('unset', () async {
-        await _scheduleServer((request) {
+        await scheduleServer((request) {
           return Response.ok(
             Stream.fromIterable([
               [1, 2, 3, 4],
@@ -469,7 +491,7 @@ void main() {
           );
         });
 
-        var response = await _get();
+        var response = await get();
         expect(
           response.headers,
           containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
@@ -478,7 +500,7 @@ void main() {
       });
 
       test('"identity"', () async {
-        await _scheduleServer((request) {
+        await scheduleServer((request) {
           return Response.ok(
             Stream.fromIterable([
               [1, 2, 3, 4],
@@ -487,7 +509,7 @@ void main() {
           );
         });
 
-        var response = await _get();
+        var response = await get();
         expect(
           response.headers,
           containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
@@ -499,14 +521,14 @@ void main() {
     test(
       'is preserved when the transfer-encoding header is "chunked"',
       () async {
-        await _scheduleServer((request) {
+        await scheduleServer((request) {
           return Response.ok(
             Stream.fromIterable(['2\r\nhi\r\n0\r\n\r\n'.codeUnits]),
             headers: {HttpHeaders.transferEncodingHeader: 'chunked'},
           );
         });
 
-        var response = await _get();
+        var response = await get();
         expect(
           response.headers,
           containsPair(HttpHeaders.transferEncodingHeader, 'chunked'),
@@ -517,7 +539,7 @@ void main() {
 
     group('is not added when', () {
       test('content-length is set', () async {
-        await _scheduleServer((request) {
+        await scheduleServer((request) {
           return Response.ok(
             Stream.fromIterable([
               [1, 2, 3, 4],
@@ -526,7 +548,7 @@ void main() {
           );
         });
 
-        var response = await _get();
+        var response = await get();
         expect(
           response.headers,
           isNot(contains(HttpHeaders.transferEncodingHeader)),
@@ -535,11 +557,11 @@ void main() {
       });
 
       test('status code is 1xx', () async {
-        await _scheduleServer((request) {
+        await scheduleServer((request) {
           return Response(123, body: const Stream<List<int>>.empty());
         });
 
-        var response = await _get();
+        var response = await get();
         expect(
           response.headers,
           isNot(contains(HttpHeaders.transferEncodingHeader)),
@@ -548,11 +570,11 @@ void main() {
       });
 
       test('status code is 204', () async {
-        await _scheduleServer((request) {
+        await scheduleServer((request) {
           return Response(204, body: const Stream<List<int>>.empty());
         });
 
-        var response = await _get();
+        var response = await get();
         expect(
           response.headers,
           isNot(contains(HttpHeaders.transferEncodingHeader)),
@@ -561,11 +583,11 @@ void main() {
       });
 
       test('status code is 304', () async {
-        await _scheduleServer((request) {
+        await scheduleServer((request) {
           return Response(304, body: const Stream<List<int>>.empty());
         });
 
-        var response = await _get();
+        var response = await get();
         expect(
           response.headers,
           isNot(contains(HttpHeaders.transferEncodingHeader)),
@@ -575,34 +597,8 @@ void main() {
     });
   });
 
-  test('respects the "shelf.io.buffer_output" context parameter', () async {
-    var controller = StreamController<String>();
-    await _scheduleServer((request) {
-      controller.add('Hello, ');
-
-      return Response.ok(
-        utf8.encoder.bind(controller.stream),
-        context: {'shelf.io.buffer_output': false},
-      );
-    });
-
-    var request = http.Request('GET', Uri.http('localhost:$_serverPort', ''));
-
-    var response = await request.send();
-    var stream = StreamQueue(utf8.decoder.bind(response.stream));
-
-    var data = await stream.next;
-    expect(data, equals('Hello, '));
-    controller.add('world!');
-
-    data = await stream.next;
-    expect(data, equals('world!'));
-    await controller.close();
-    expect(stream.hasNext, completion(isFalse));
-  });
-
   test('includes the dart:io HttpConnectionInfo in request context', () async {
-    await _scheduleServer((request) {
+    await scheduleServer((request) {
       expect(
         request.context,
         containsPair('shelf.io.connection_info', isA<HttpConnectionInfo>()),
@@ -610,27 +606,27 @@ void main() {
 
       var connectionInfo =
           request.context['shelf.io.connection_info'] as HttpConnectionInfo;
-      expect(connectionInfo.remoteAddress, equals(_server!.address));
-      expect(connectionInfo.localPort, equals(_server!.port));
+      expect(connectionInfo.remoteAddress, equals(server!.address));
+      expect(connectionInfo.localPort, equals(server!.port));
 
-      return syncHandler(request);
+      return _syncHandler(request);
     });
 
-    var response = await _get();
+    var response = await get();
     expect(response.statusCode, HttpStatus.ok);
   });
 
   test(
     'resolves connection info lazily, consistently, and through change()',
     () async {
-      await _scheduleServer((request) {
+      await scheduleServer((request) {
         var info =
             request.context['shelf.io.connection_info'] as HttpConnectionInfo;
 
         // All three fields resolve, including remotePort, which is only
         // available from the socket.
-        expect(info.remoteAddress, equals(_server!.address));
-        expect(info.localPort, equals(_server!.port));
+        expect(info.remoteAddress, equals(server!.address));
+        expect(info.localPort, equals(server!.port));
         expect(info.remotePort, greaterThan(0));
 
         // Reading again is served from the cache, so the values cannot drift.
@@ -646,33 +642,13 @@ void main() {
         expect(copied, same(info));
         expect(copied.remotePort, equals(info.remotePort));
 
-        return syncHandler(request);
+        return _syncHandler(request);
       });
 
-      var response = await _get();
+      var response = await get();
       expect(response.statusCode, HttpStatus.ok);
     },
   );
-
-  test('throws StateError when connection info is first read after connection '
-      'closes', () async {
-    late HttpConnectionInfo capturedInfo;
-    await _scheduleServer((request) {
-      capturedInfo =
-          request.context['shelf.io.connection_info'] as HttpConnectionInfo;
-      return Response.ok(
-        'ok',
-        headers: {HttpHeaders.connectionHeader: 'close'},
-      );
-    });
-
-    var response = await _get();
-    expect(response.statusCode, HttpStatus.ok);
-
-    expect(() => capturedInfo.remoteAddress, throwsStateError);
-    expect(() => capturedInfo.remotePort, throwsStateError);
-    expect(() => capturedInfo.localPort, throwsStateError);
-  });
 
   group('ssl tests', () {
     var securityContext = SecurityContext()
@@ -684,10 +660,13 @@ void main() {
       ..badCertificateCallback = (cert, host, port) => true;
 
     Future<HttpClientRequest> scheduleSecureGet() =>
-        sslClient.getUrl(Uri.https('localhost:${_server!.port}', ''));
+        sslClient.getUrl(Uri.https('localhost:${server!.port}', ''));
 
     test('secure sync handler returns a value to the client', () async {
-      await _scheduleServer(syncHandler, securityContext: securityContext);
+      await scheduleServer(
+        _syncHandler,
+        options: ServeOptions(securityContext: securityContext),
+      );
 
       var req = await scheduleSecureGet();
 
@@ -700,7 +679,10 @@ void main() {
     });
 
     test('secure async handler returns a value to the client', () async {
-      await _scheduleServer(asyncHandler, securityContext: securityContext);
+      await scheduleServer(
+        _asyncHandler,
+        options: ServeOptions(securityContext: securityContext),
+      );
 
       var req = await scheduleSecureGet();
       var response = await req.close();
@@ -710,42 +692,25 @@ void main() {
         'Hello from /',
       );
     });
-  });
+  }, skip: supportsSecurityContext ? false : 'HTTPS is not supported');
 }
 
-int get _serverPort => _server!.port;
+/// Replies with a status code 200 and `Hello from ${request.url.path}`.
+Response _syncHandler(Request request) =>
+    Response.ok('Hello from ${request.requestedUri.path}');
 
-HttpServer? _server;
+/// Calls [_syncHandler] and wraps the response in a [Future].
+Future<Response> _asyncHandler(Request request) =>
+    Future(() => _syncHandler(request));
 
-Future<void> _scheduleServer(
-  Handler handler, {
-  SecurityContext? securityContext,
-}) async {
-  assert(_server == null);
-  _server = await shelf_io.serve(
-    handler,
-    'localhost',
-    0,
-    securityContext: securityContext,
-  );
-}
-
-Future<http.Response> _get({
-  Map<String, /* String | List<String> */ Object>? headers,
-  String path = '',
-}) =>
-    _request((client, url) => client.getUrl(url), headers: headers, path: path);
-
-Future<http.Response> _head({
-  Map<String, /* String | List<String> */ Object>? headers,
-  String path = '',
-}) => _request(
-  (client, url) => client.headUrl(url),
-  headers: headers,
-  path: path,
+final _isOhNoStateError = isA<StateError>().having(
+  (p0) => p0.message,
+  'message',
+  'oh no',
 );
 
 Future<http.Response> _request(
+  int port,
   Future<HttpClientRequest> Function(HttpClient, Uri) request, {
   Map<String, /* String | List<String> */ Object>? headers,
   String path = '',
@@ -753,14 +718,14 @@ Future<http.Response> _request(
   // TODO: use http.Client once it supports sending/receiving multiple headers.
   final client = HttpClient();
   try {
-    final rq = await request(client, Uri.http('localhost:$_serverPort', path));
+    final rq = await request(client, Uri.http('localhost:$port', path));
     headers?.forEach((key, value) {
       rq.headers.add(key, value);
     });
     final rs = await rq.close();
     final rsHeaders = <String, String>{};
     rs.headers.forEach((name, values) {
-      rsHeaders[name] = joinHeaderValues(values)!;
+      rsHeaders[name] = values.join(',');
     });
     return await http.Response.fromStream(
       http.StreamedResponse(rs, rs.statusCode, headers: rsHeaders),
@@ -768,16 +733,4 @@ Future<http.Response> _request(
   } finally {
     client.close(force: true);
   }
-}
-
-Future<http.StreamedResponse> _post({
-  Map<String, String>? headers,
-  String? body,
-}) {
-  var request = http.Request('POST', Uri.http('localhost:$_serverPort', ''));
-
-  if (headers != null) request.headers.addAll(headers);
-  if (body != null) request.body = body;
-
-  return request.send();
 }
