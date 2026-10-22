@@ -6,6 +6,7 @@
 | Passed | 109 |
 | Failed | 49 |
 | Warnings | 55 |
+| Accepted | 0 |
 | Errors | 0 |
 
 ## Failed or Warning Results
