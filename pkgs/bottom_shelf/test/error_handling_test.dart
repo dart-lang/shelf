@@ -15,6 +15,35 @@ import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('handler error 500', () {
+    Future<String> rawRequest(String method) async {
+      final server = await RawShelfServer.serve(
+        (request) => throw StateError('handler error'),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      socket.write('$method / HTTP/1.1\r\nHost: localhost\r\n\r\n');
+      return utf8.decodeStream(socket);
+    }
+
+    test('has a length-framed explanation body', () async {
+      final response = await rawRequest('GET');
+      expect(response, startsWith('HTTP/1.1 500 Internal Server Error\r\n'));
+      expect(response.toLowerCase(), contains('content-length: 21\r\n'));
+      expect(response, endsWith('\r\n\r\nInternal Server Error'));
+    });
+
+    test('omits the body for HEAD', () async {
+      final response = await rawRequest('HEAD');
+      expect(response, startsWith('HTTP/1.1 500 Internal Server Error\r\n'));
+      expect(response.toLowerCase(), contains('content-length: 21\r\n'));
+      expect(response, endsWith('\r\n\r\n'));
+    });
+  });
+
   test(
     'default behavior (null) destroys socket on async error after response',
     () async {

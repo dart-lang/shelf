@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -44,6 +45,10 @@ final class _HttpConnection {
   var _readyForNextRequest = Completer<void>()..complete();
   StreamSubscription<Uint8List>? _subscription;
   Completer<void>? _currentBodyDone;
+
+  /// The method of the request currently being handled, so error responses
+  /// can omit the body for HEAD.
+  String? _currentMethod;
   StreamController<Uint8List>? _hijackController;
   Timer? _headerTimer;
   Timer? _bodyTimer;
@@ -125,11 +130,29 @@ final class _HttpConnection {
   }
 
   /// Queues a 500 unless the response headers have already gone out.
+  ///
+  /// RFC 9110 section 15.6: except for HEAD, a 5xx SHOULD carry an
+  /// explanation. This matches shelf_io's `Internal Server Error` body.
   void _sendServerErrorIfUnsent() {
     if (!_responseSent) {
-      socket.add(ErrorResponse.internalServerError.bytes);
+      socket.add(
+        _currentMethod == 'HEAD' ? _serverErrorHead : _serverErrorWithBody,
+      );
     }
   }
+
+  static final _serverErrorHead = ascii.encode(
+    'HTTP/1.1 500 Internal Server Error\r\n'
+    'Content-Type: text/plain\r\n'
+    'Content-Length: 21\r\n'
+    'Connection: close\r\n'
+    '\r\n',
+  );
+
+  static final _serverErrorWithBody = Uint8List.fromList([
+    ..._serverErrorHead,
+    ...ascii.encode('Internal Server Error'),
+  ]);
 
   /// Fire-and-forget close; `close()` flushes queued bytes first.
   void _closeThenDestroy() {
@@ -528,6 +551,7 @@ final class _HttpConnection {
     String originalMethod,
   ) {
     _currentBodyDone = bodyDone;
+    _currentMethod = originalMethod;
     _responseWriting = false;
     _responseSent = false;
     unawaited(_executeRequest(request, typedHeaders, bodyDone, originalMethod));
