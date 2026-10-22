@@ -163,6 +163,34 @@ void main() {
       expect(response, contains('0\r\n\r\n'));
     });
 
+    test('addChunkedEncoding middleware body is not chunked twice', () async {
+      final server = await RawShelfServer.serve(
+        const Pipeline()
+            .addMiddleware(addChunkedEncoding)
+            .addHandler(
+              (request) => Response.ok(
+                Stream.fromIterable(['chunk1']).map((s) => utf8.encode(s)),
+              ),
+            ),
+        'localhost',
+        0,
+      );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      addTearDown(socket.close);
+      socket.add(
+        utf8.encode(
+          'GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n',
+        ),
+      );
+
+      final response = await utf8.decodeStream(socket);
+      final body = response.substring(response.indexOf('\r\n\r\n') + 4);
+      expect(response.toLowerCase(), contains('transfer-encoding: chunked'));
+      expect(body, '6\r\nchunk1\r\n0\r\n\r\n');
+    });
+
     test('Fixed-length response encoding', () async {
       final server = await RawShelfServer.serve(
         (request) => Response.ok('fixed', headers: {'Content-Length': '5'}),
