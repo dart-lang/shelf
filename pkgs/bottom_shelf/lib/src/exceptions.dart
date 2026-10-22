@@ -63,6 +63,11 @@ final class BadRequestException implements Exception {
 }
 
 /// Directives for handling out-of-band asynchronous errors.
+///
+/// Returned by `onAsyncError`. If no `onAsyncError` is set, an asynchronous
+/// handler error goes to the error zone `RawShelfServer.serve` was called in,
+/// if it has one (like `shelf_io`), and is otherwise reported to
+/// `onConnectionError` or printed. Either way the connection is destroyed.
 enum ErrorAction {
   /// Ignore the error and attempt to keep the connection alive.
   ignore,

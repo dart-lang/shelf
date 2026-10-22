@@ -45,20 +45,21 @@ void main() {
   });
 
   test(
-    'default behavior (null) destroys socket on async error after response',
+    'default behavior (null) forwards the async error to the caller zone and '
+    'destroys the socket',
     () async {
-      final errorCompleter = Completer<void>();
-      final server = await RawShelfServer.serve(
-        (request) {
-          Future(() {
-            errorCompleter.complete();
-            throw StateError('async error');
-          });
-          return Response.ok('hello');
-        },
-        'localhost',
-        0,
-      );
+      final forwarded = Completer<Object>();
+      final server = await runZonedGuarded(
+        () => RawShelfServer.serve(
+          (request) {
+            Future(() => throw StateError('async error'));
+            return Response.ok('hello');
+          },
+          'localhost',
+          0,
+        ),
+        (error, _) => forwarded.complete(error),
+      )!;
       addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
@@ -70,7 +71,10 @@ void main() {
       final doneCompleter = Completer<void>();
       socket.listen(responseBytes.addAll, onDone: doneCompleter.complete);
 
-      await errorCompleter.future; // Wait for async error
+      expect(
+        await forwarded.future,
+        isA<StateError>().having((e) => e.message, 'message', 'async error'),
+      );
 
       // Socket should be destroyed, so doneCompleter should complete!
       await expectLater(doneCompleter.future, completes);
@@ -79,6 +83,38 @@ void main() {
       expect(str, contains('hello'));
     },
   );
+
+  test('default behavior (null) in the root zone prints the async error '
+      'instead of swallowing it', () async {
+    final fakeStderr = _FakeStdout();
+    final asyncErrorThrown = Completer<void>();
+    final server = await Zone.root.run(
+      () => IOOverrides.runZoned(
+        () => RawShelfServer.serve(
+          (request) {
+            Future(() {
+              asyncErrorThrown.complete();
+              throw StateError('root zone async error');
+            });
+            return Response.ok('hello');
+          },
+          'localhost',
+          0,
+        ),
+        stderr: () => fakeStderr,
+      ),
+    );
+    addTearDown(server.close);
+
+    final socket = await Socket.connect('localhost', server.port);
+    socket.write('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n');
+    final done = socket.drain<void>();
+
+    await asyncErrorThrown.future;
+    await done;
+    await pumpEventQueue();
+    expect(fakeStderr.buffer.toString(), contains('root zone async error'));
+  });
 
   test(
     'ErrorAction.ignore keeps socket alive on async error after response',
@@ -161,6 +197,38 @@ void main() {
       expect(str, contains('hello'));
     },
   );
+
+  test('default behavior (null) in the root zone prints the async error '
+      'instead of swallowing it', () async {
+    final fakeStderr = _FakeStdout();
+    final asyncErrorThrown = Completer<void>();
+    final server = await Zone.root.run(
+      () => IOOverrides.runZoned(
+        () => RawShelfServer.serve(
+          (request) {
+            Future(() {
+              asyncErrorThrown.complete();
+              throw StateError('root zone async error');
+            });
+            return Response.ok('hello');
+          },
+          'localhost',
+          0,
+        ),
+        stderr: () => fakeStderr,
+      ),
+    );
+    addTearDown(server.close);
+
+    final socket = await Socket.connect('localhost', server.port);
+    socket.write('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n');
+    final done = socket.drain<void>();
+
+    await asyncErrorThrown.future;
+    await done;
+    await pumpEventQueue();
+    expect(fakeStderr.buffer.toString(), contains('root zone async error'));
+  });
 
   test('socket is destroyed on error during body streaming', () async {
     final server = await RawShelfServer.serve(
@@ -476,4 +544,14 @@ void main() {
       'Inner exception: FormatException: bad scheme',
     );
   });
+}
+
+final class _FakeStdout implements Stdout {
+  final buffer = StringBuffer();
+
+  @override
+  void writeln([Object? object = '']) => buffer.writeln(object);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
