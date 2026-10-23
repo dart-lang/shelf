@@ -1,6 +1,9 @@
-// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+
+@TestOn('vm')
+library;
 
 import 'dart:convert';
 import 'dart:io';
@@ -79,7 +82,11 @@ void main() {
   _defineComplianceTests('shelf', 'bin/shelf_echo.dart');
 }
 
-void _defineComplianceTests(String name, String serverPath) {
+void _defineComplianceTests(
+  String name,
+  String serverPath, [
+  String? exceptionsPath,
+]) {
   group(name, () {
     final tempDir = Directory.systemTemp.createTempSync('compliance_${name}_');
     var hasRegressions = false;
@@ -123,6 +130,7 @@ void _defineComplianceTests(String name, String serverPath) {
         name: name,
         tempDir: tempDir,
         hasRegressions: hasRegressions,
+        exceptionsPath: exceptionsPath,
       );
     });
   });
@@ -132,10 +140,14 @@ void _verifySummary({
   required String name,
   required Directory tempDir,
   required bool hasRegressions,
+  String? exceptionsPath,
 }) {
   print('Generating combined summary for $name...');
   final reportsDir = Directory(p.join(tempDir.path, 'reports', name));
-  final summary = generateSummary(reportsDir);
+  final summary = generateSummary(
+    reportsDir,
+    acceptedIds: loadAcceptedIds(exceptionsPath),
+  );
 
   final goldenSummary = File('${name}_summary.md');
 

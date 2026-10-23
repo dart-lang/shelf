@@ -22,10 +22,15 @@ import 'ssl_certs.dart';
 ///
 /// Set [supportsSecurityContext] to `false` if the adapter can't serve HTTPS
 /// from a [ServeOptions.securityContext].
+///
+/// [badHostStatusCode] is the status the adapter returns for a request with
+/// an invalid `Host` header. RFC 9112 section 3.2 requires 400; `shelf_io`
+/// returns 500 because `dart:io` does.
 void testAll(
   ServeCallback serve, {
   required String defaultPoweredByHeader,
   bool supportsSecurityContext = true,
+  int badHostStatusCode = 500,
 }) {
   ConformanceServer? server;
 
@@ -361,24 +366,27 @@ void testAll(
     expect(response.body, 'Hello from /');
   });
 
-  test('a bad HTTP host request results in a 500 response', () async {
-    await scheduleServer(_syncHandler);
+  test(
+    'a bad HTTP host request results in a $badHostStatusCode response',
+    () async {
+      await scheduleServer(_syncHandler);
 
-    var socket = await Socket.connect('localhost', serverPort());
+      var socket = await Socket.connect('localhost', serverPort());
 
-    try {
-      socket.write('GET / HTTP/1.1\r\n');
-      socket.write('Host: ^^super bad !@#host\r\n');
-      socket.write('\r\n');
-    } finally {
-      await socket.close();
-    }
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host: ^^super bad !@#host\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
 
-    expect(
-      await utf8.decodeStream(socket),
-      contains('500 Internal Server Error'),
-    );
-  });
+      expect(
+        await utf8.decodeStream(socket),
+        startsWith('HTTP/1.1 $badHostStatusCode '),
+      );
+    },
+  );
 
   test('a bad HTTP URL request results in a 400 response', () async {
     await scheduleServer(_syncHandler);
