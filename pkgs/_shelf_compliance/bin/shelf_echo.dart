@@ -1,4 +1,4 @@
-// Copyright (c) 2026, the Shelf project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -6,7 +6,7 @@ import 'package:_shelf_compliance/echo_handler.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 
 void main(List<String> args) async {
-  // Bind to 127.0.0.1 to avoid resolution issues
+  // Bind to 127.0.0.1 to avoid resolution issues.
   final server = await shelf_io.serve(handler, '127.0.0.1', 0);
   print('Serving at port: ${server.port}');
 }

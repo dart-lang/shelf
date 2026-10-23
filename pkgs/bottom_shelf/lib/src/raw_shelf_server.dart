@@ -12,21 +12,13 @@ import 'http_connection.dart';
 import 'server_config.dart';
 
 /// A high-performance Shelf server that uses raw [ServerSocket]s.
-final class RawShelfServer extends ServerConfig {
-  RawShelfServer._(
-    super.handler,
-    super.serverSocket,
-    super.headerTimeout,
-    super.bodyTimeout,
-    super.maxAllowedContentLength,
-    super.onConnectionError,
-    super.onAsyncError,
-    super.automaticHeadMethodSupport,
-    super.poweredBy,
-  );
+final class RawShelfServer {
+  final ServerConfig _config;
 
-  int get port => serverSocket.port;
-  InternetAddress get address => serverSocket.address;
+  RawShelfServer._(this._config);
+
+  int get port => _config.serverSocket.port;
+  InternetAddress get address => _config.serverSocket.address;
 
   static Future<RawShelfServer> serve(
     Handler handler,
@@ -48,7 +40,7 @@ final class RawShelfServer extends ServerConfig {
       backlog: backlog,
       shared: shared,
     );
-    final server = RawShelfServer._(
+    final config = ServerConfig(
       handler,
       serverSocket,
       headerTimeout,
@@ -59,10 +51,11 @@ final class RawShelfServer extends ServerConfig {
       automaticHeadMethodSupport,
       poweredBy,
     );
+    final server = RawShelfServer._(config);
     serverSocket.listen(
       server._handleConnection,
       onError: (Object e, StackTrace st) {
-        server.onConnectionError?.call(
+        config.onConnectionError?.call(
           'Error accepting connection',
           e,
           st,
@@ -81,22 +74,20 @@ final class RawShelfServer extends ServerConfig {
       remoteAddress = socket.remoteAddress;
       remotePort = socket.remotePort;
       socket.setOption(SocketOption.tcpNoDelay, true);
-      handleHttpConnection(socket: socket, config: this);
+      handleHttpConnection(socket: socket, config: _config);
     } catch (e, st) {
-      if (onConnectionError != null) {
-        onConnectionError!.call(
-          'Error handling connection accept',
-          e,
-          st,
-          remoteAddress: remoteAddress ?? InternetAddress.anyIPv4,
-          remotePort: remotePort ?? 0,
-        );
-      }
+      _config.onConnectionError?.call(
+        'Error handling connection accept',
+        e,
+        st,
+        remoteAddress: remoteAddress ?? InternetAddress.anyIPv4,
+        remotePort: remotePort ?? 0,
+      );
       try {
         socket.destroy();
       } catch (_) {}
     }
   }
 
-  Future<void> close() => serverSocket.close();
+  Future<void> close() => _config.serverSocket.close();
 }

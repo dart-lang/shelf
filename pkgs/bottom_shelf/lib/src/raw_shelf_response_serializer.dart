@@ -229,6 +229,12 @@ final class RawShelfResponseSerializer {
           contentLength = int.tryParse(values.first);
         case 17 when _equalsIgnoreAsciiCase(key, 'transfer-encoding'):
           if (isBodylessStatus) return;
+          // `identity` is not a transfer coding (RFC 9112 removed it); treat
+          // it as unset and frame the body ourselves, like shelf_io does.
+          if (values.length == 1 &&
+              _equalsIgnoreAsciiCase(values.single.trim(), 'identity')) {
+            return;
+          }
           hasTransferEncoding = true;
         case 10 when _equalsIgnoreAsciiCase(key, 'connection'):
           hasConnection = true;
@@ -243,12 +249,18 @@ final class RawShelfResponseSerializer {
       _addHeader(key, values);
     });
 
+    // A handler-supplied `Transfer-Encoding` means the body is already encoded
+    // (for example by shelf's `addChunkedEncoding`), so it is written as-is.
+    // It also overrides any `Content-Length` (RFC 9112 section 6.3).
+    if (hasTransferEncoding) contentLength = null;
+
     // `Message.contentLength` derives from the `content-length` header, so
     // when the header is absent (and the status allows a body) the body length
     // is unknown: chunk it.
-    final isChunked = !hasContentLength && !isBodylessStatus;
+    final isChunked =
+        !hasContentLength && !hasTransferEncoding && !isBodylessStatus;
 
-    if (isChunked && !hasTransferEncoding) {
+    if (isChunked) {
       _addBytes(_transferEncodingChunked);
     }
     if (!hasConnection) {

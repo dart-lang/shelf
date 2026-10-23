@@ -5,6 +5,7 @@
 /// A high-performance Shelf adapter that interfaces directly with raw sockets.
 library;
 
+export 'src/exceptions.dart' show ErrorAction;
 export 'src/raw_shelf_server.dart' show RawShelfServer;
-export 'src/raw_shelf_server.dart';
-export 'src/typed_headers.dart' show TypedHeaders;
+export 'src/server_config.dart'
+    show AsyncErrorCallback, ConnectionErrorCallback;

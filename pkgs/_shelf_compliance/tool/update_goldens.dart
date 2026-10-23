@@ -1,4 +1,4 @@
-// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -8,8 +8,6 @@ import 'dart:io';
 import 'package:_shelf_compliance/src/compliance_harness.dart';
 import 'package:_shelf_compliance/src/generate_summary.dart';
 import 'package:path/path.dart' as p;
-
-import 'package:yaml/yaml.dart';
 
 const _categories = [
   'Capabilities',
@@ -23,11 +21,11 @@ const _categories = [
   'WebSockets',
 ];
 
-const _targets = [
+const _targets = <({String name, String serverPath, String? exceptionsPath})>[
   (name: 'shelf', serverPath: 'bin/shelf_echo.dart', exceptionsPath: null),
   (
     name: 'bottom_shelf',
-    serverPath: 'bin/shelf_serve_echo.dart',
+    serverPath: 'tool/bottom_shelf_echo.dart',
     exceptionsPath: '../bottom_shelf/docs/compliance_exceptions.yaml',
   ),
 ];
@@ -56,12 +54,11 @@ Future<void> _updateTarget({
   try {
     print('Temp directory for $name: ${tempDir.path}');
 
-    // Create reports directory
     Directory(
       p.join(tempDir.path, 'reports', name),
     ).createSync(recursive: true);
 
-    for (var category in _categories) {
+    for (final category in _categories) {
       print('Running compliance harness for $name / $category...');
       final reportFile = p.join(
         tempDir.path,
@@ -70,7 +67,6 @@ Future<void> _updateTarget({
         '$category.json',
       );
 
-      // Create directory for report file if it doesn't exist
       Directory(p.dirname(reportFile)).createSync(recursive: true);
 
       final filteredResults = await runComplianceHarness(
@@ -79,7 +75,6 @@ Future<void> _updateTarget({
         reportFile: reportFile,
       );
 
-      // Overwrite the report file in temp dir with pruned results
       final encoder = const JsonEncoder.withIndent('  ');
       File(
         reportFile,
@@ -95,27 +90,12 @@ Future<void> _updateTarget({
 
     print('Generating combined summary for $name...');
     final reportsDir = Directory(p.join(tempDir.path, 'reports', name));
-
-    final acceptedIds = <String>{};
-    if (exceptionsPath != null) {
-      final file = File(exceptionsPath);
-      if (file.existsSync()) {
-        final content = file.readAsStringSync();
-        final yaml = loadYaml(content) as List;
-        for (var item in yaml) {
-          final map = item as Map;
-          final tests = map['tests'] as List;
-          for (var test in tests) {
-            acceptedIds.add(test as String);
-          }
-        }
-      }
-    }
-
-    final summary = generateSummary(reportsDir, acceptedIds: acceptedIds);
+    final summary = generateSummary(
+      reportsDir,
+      acceptedIds: loadAcceptedIds(exceptionsPath),
+    );
 
     final goldenSummary = File('${name}_summary.md');
-
     final sanitizedSummary = canonicalize(summary, 0);
 
     print('Updating golden summary for $name...');

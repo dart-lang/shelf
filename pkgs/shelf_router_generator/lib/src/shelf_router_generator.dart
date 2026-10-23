@@ -22,7 +22,7 @@ import 'package:code_builder/code_builder.dart' as code;
 import 'package:http_methods/http_methods.dart' show isHttpMethod;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf_router/shelf_router.dart' as shelf_router;
-// ignore: implementation_imports
+// ignore: implementation_imports, invalid_use_of_internal_member
 import 'package:shelf_router/src/router_entry.dart' show RouterEntry;
 import 'package:source_gen/source_gen.dart' as g;
 

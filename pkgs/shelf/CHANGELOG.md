@@ -1,9 +1,5 @@
-## 1.4.3-wip
+## 1.5.0-wip
 
-* Require `sdk: ^3.9.0`.
-* Join multiple `Cookie` request-header values with `'; '` instead of `','`
-  in the single-value `headers` map, following the cookie-string grammar of
-  [RFC 6265 section 5.4](https://datatracker.ietf.org/doc/html/rfc6265#section-5.4).
 * Export `Headers`, `Body`, and `extractBody` from `package:shelf/shelf.dart`
   for HTTP server adapters.
 * Add `Body.takeBufferedBytes()` to allow HTTP adapters and `readAsString()`
@@ -13,6 +9,20 @@
   `findHeader()`, and `Headers.singleValues` to preserve lazy header maps and
   avoid redundant map copies and URI re-validation.
 
+## 1.4.3
+
+* `shelf_io` now resolves the `shelf.io.connection_info` context value
+  lazily. `dart:io` does not cache `HttpRequest.connectionInfo`, so building it
+  for every request spent two `getpeername` calls on a value most handlers
+  never read. The fields are now read from the socket on
+  first access and cached, so handlers that use it pay exactly what they did
+  before and handlers that do not pay nothing. If the connection is already
+  gone, a `StateError` is now thrown when a field is read, rather than a null
+  check failing while the `Request` was being built.
+* Require `sdk: ^3.9.0`.
+* Join multiple `Cookie` request-header values with `'; '` instead of `','`
+  in the single-value `headers` map, following the cookie-string grammar of
+  [RFC 6265 section 5.4](https://datatracker.ietf.org/doc/html/rfc6265#section-5.4).
 ## 1.4.2
 
 * `Headers`: added the `fromEntries`  constructor.

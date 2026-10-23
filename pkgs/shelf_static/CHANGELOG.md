@@ -1,7 +1,9 @@
-## 1.2.0-wip
+## 1.2.0
 
 * Fix unhandled `FormatException` / HTTP 500 error when parsing oversized integer
   values in HTTP `Range` headers, and ignore suffix ranges that select zero bytes.
+* Truncate microseconds in addition to milliseconds when comparing file
+  modification times against `If-Modified-Since` headers.
 * Replace static, blocking `dart:io` operations (such as `statSync()` and
   `File.existsSync()`) with their asynchronous equivalents. This prevents
   `createStaticHandler` from blocking the Dart isolate event loop, dramatically
@@ -9,6 +11,8 @@
 * Add `generateETag` and `maxAge` parameters to `createStaticHandler` and
   `createFileHandler` to support `ETag` and `Cache-Control` headers. 
   Default ETags are generated based on file size and modified time.
+* Redesign the `listDirectory` HTML output to use a modern, responsive table
+  layout with inline SVG icons, file sizes, and last modified dates.
 * Require Dart `^3.9.0`.
 
 ## 1.1.3

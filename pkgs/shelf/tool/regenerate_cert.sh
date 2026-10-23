@@ -4,7 +4,7 @@ openssl genpkey -algorithm RSA -out localhost.key \
                 -aes256 -pass pass:dartdart 2>/dev/null
 
 openssl req -new -x509 -key localhost.key -days 36500 -out localhost.crt \
-            -config tools/openssl.cfg -extensions v3_req -passin \
+            -config tool/openssl.cfg -extensions v3_req -passin \
             pass:dartdart 2>/dev/null
 
 KEY_CONTENT=$(cat localhost.key)

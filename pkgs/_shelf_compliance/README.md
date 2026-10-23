@@ -1,6 +1,28 @@
 This package contains HTTP/1.1 compliance and hardening tests for `package:shelf` and future implementations.
 
-It uses the [Http11Probe](https://github.com/MDA2AV/Http11Probe) tool (vendored as a git submodule) to validate the server's behavior against RFC requirements and common edge cases.
+## Adapter conformance tests
+
+`package:_shelf_compliance/adapter_conformance.dart` exposes `testAll`, a
+shared suite of behavior tests for shelf server adapters. An adapter's tests
+call it with a callback that starts the adapter:
+
+```dart
+import 'package:_shelf_compliance/adapter_conformance.dart';
+import 'package:test/test.dart';
+
+void main() {
+  testAll(myServe, defaultPoweredByHeader: 'Dart with package:my_adapter');
+}
+```
+
+`pkgs/shelf/test/shelf_io_test.dart` runs it against `shelf_io`. Adapters
+depend on this package with a `path` dev dependency.
+
+## Http11Probe compliance tests
+
+The Http11Probe tests use the [Http11Probe](https://github.com/MDA2AV/Http11Probe)
+tool (vendored as a git submodule) to validate the server's behavior against
+RFC requirements and common edge cases.
 
 ## Current Baseline
 

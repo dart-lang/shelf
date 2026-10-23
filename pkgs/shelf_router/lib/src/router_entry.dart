@@ -109,6 +109,12 @@ final class RouterEntry {
   /// Returns a map from parameter name to value, if the path matches the
   /// route pattern. Otherwise returns null.
   Map<String, String>? match(String path) {
+    // A route with no parameters compiles to `^` + escaped literal + `$`, which
+    // matches exactly one string: the route itself. Comparing directly skips a
+    // regex execution on every request to a static route.
+    if (_params.isEmpty) {
+      return path == route ? const <String, String>{} : null;
+    }
     // Check if path matches the route pattern
     var m = _routePattern.firstMatch(path);
     if (m == null) {

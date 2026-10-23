@@ -1,0 +1,21 @@
+name: Comment on the pull request
+
+permissions:
+  contents: read
+
+on:
+  # Trigger this workflow after the Health workflow completes. This workflow
+  # will have permissions to do things like create comments on the PR, even if
+  # the original workflow couldn't.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows:
+      - Health
+      - Publish
+    types:
+      - completed
+
+jobs:
+  upload:
+    uses: dart-lang/ecosystem/.github/workflows/post_summaries.yaml@16dca7ae5d3ff896a4db47e1ed6cd50f7ebbf115 # main
+    permissions:
+      pull-requests: write

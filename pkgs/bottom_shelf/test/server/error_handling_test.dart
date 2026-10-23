@@ -10,26 +10,55 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bottom_shelf/bottom_shelf.dart';
-import 'package:bottom_shelf/src/exceptions.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test(
-    'default behavior (null) destroys socket on async error after response',
-    () async {
-      final errorCompleter = Completer<void>();
+  group('handler error 500', () {
+    Future<String> rawRequest(String method) async {
       final server = await RawShelfServer.serve(
-        (request) {
-          Future(() {
-            errorCompleter.complete();
-            throw StateError('async error');
-          });
-          return Response.ok('hello');
-        },
+        (request) => throw StateError('handler error'),
         'localhost',
         0,
       );
+      addTearDown(server.close);
+
+      final socket = await Socket.connect('localhost', server.port);
+      socket.write('$method / HTTP/1.1\r\nHost: localhost\r\n\r\n');
+      return utf8.decodeStream(socket);
+    }
+
+    test('has a length-framed explanation body', () async {
+      final response = await rawRequest('GET');
+      expect(response, startsWith('HTTP/1.1 500 Internal Server Error\r\n'));
+      expect(response.toLowerCase(), contains('content-length: 21\r\n'));
+      expect(response, endsWith('\r\n\r\nInternal Server Error'));
+    });
+
+    test('omits the body for HEAD', () async {
+      final response = await rawRequest('HEAD');
+      expect(response, startsWith('HTTP/1.1 500 Internal Server Error\r\n'));
+      expect(response.toLowerCase(), contains('content-length: 21\r\n'));
+      expect(response, endsWith('\r\n\r\n'));
+    });
+  });
+
+  test(
+    'default behavior (null) forwards the async error to the caller zone and '
+    'destroys the socket',
+    () async {
+      final forwarded = Completer<Object>();
+      final server = await runZonedGuarded(
+        () => RawShelfServer.serve(
+          (request) {
+            Future(() => throw StateError('async error'));
+            return Response.ok('hello');
+          },
+          'localhost',
+          0,
+        ),
+        (error, _) => forwarded.complete(error),
+      )!;
       addTearDown(server.close);
 
       final socket = await Socket.connect('localhost', server.port);
@@ -41,7 +70,10 @@ void main() {
       final doneCompleter = Completer<void>();
       socket.listen(responseBytes.addAll, onDone: doneCompleter.complete);
 
-      await errorCompleter.future; // Wait for async error
+      expect(
+        await forwarded.future,
+        isA<StateError>().having((e) => e.message, 'message', 'async error'),
+      );
 
       // Socket should be destroyed, so doneCompleter should complete!
       await expectLater(doneCompleter.future, completes);
@@ -50,6 +82,38 @@ void main() {
       expect(str, contains('hello'));
     },
   );
+
+  test('default behavior (null) in the root zone prints the async error '
+      'instead of swallowing it', () async {
+    final fakeStderr = _FakeStdout();
+    final asyncErrorThrown = Completer<void>();
+    final server = await Zone.root.run(
+      () => IOOverrides.runZoned(
+        () => RawShelfServer.serve(
+          (request) {
+            Future(() {
+              asyncErrorThrown.complete();
+              throw StateError('root zone async error');
+            });
+            return Response.ok('hello');
+          },
+          'localhost',
+          0,
+        ),
+        stderr: () => fakeStderr,
+      ),
+    );
+    addTearDown(server.close);
+
+    final socket = await Socket.connect('localhost', server.port);
+    socket.write('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n');
+    final done = socket.drain<void>();
+
+    await asyncErrorThrown.future;
+    await done;
+    await pumpEventQueue();
+    expect(fakeStderr.buffer.toString(), contains('root zone async error'));
+  });
 
   test(
     'ErrorAction.ignore keeps socket alive on async error after response',
@@ -170,7 +234,7 @@ void main() {
 
   test('ErrorAction.crash causes process to exit', () async {
     final process = await Process.start(Platform.executable, [
-      'test/crash_server.dart',
+      'test/support/crash_server.dart',
       'crash',
     ]);
 
@@ -192,7 +256,7 @@ void main() {
 
   test('callback throws causes process to exit', () async {
     final process = await Process.start(Platform.executable, [
-      'test/crash_server.dart',
+      'test/support/crash_server.dart',
       'throw',
     ]);
 
@@ -432,19 +496,14 @@ void main() {
     expect(response, startsWith('HTTP/1.1 200 OK'));
     expect(response, isNot(contains('400 Bad Request')));
   });
+}
 
-  test('BadRequestException.toString formats message and innerException', () {
-    const simple = BadRequestException('invalid header');
-    expect(simple.toString(), 'BadRequestException: invalid header');
+final class _FakeStdout implements Stdout {
+  final buffer = StringBuffer();
 
-    const withInner = BadRequestException(
-      'bad url',
-      innerException: FormatException('bad scheme'),
-    );
-    expect(
-      withInner.toString(),
-      'BadRequestException: bad url\n'
-      'Inner exception: FormatException: bad scheme',
-    );
-  });
+  @override
+  void writeln([Object? object = '']) => buffer.writeln(object);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

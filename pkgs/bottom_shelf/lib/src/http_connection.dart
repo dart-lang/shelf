@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -21,17 +22,28 @@ import 'typed_headers.dart';
 final _emptyBytes = Uint8List(0);
 
 /// Starts handling a single HTTP connection for `RawShelfServer`.
+///
+/// Must be called in the zone `RawShelfServer.serve` was called in: that is
+/// where asynchronous handler errors go when `onAsyncError` is `null`.
 void handleHttpConnection({
   required Socket socket,
   required ServerConfig config,
 }) {
-  final connection = _HttpConnection(socket: socket, config: config);
+  final connection = _HttpConnection(
+    socket: socket,
+    config: config,
+    callerZone: Zone.current,
+  );
   runZonedGuarded(connection.start, connection._handleAsyncError);
 }
 
 final class _HttpConnection {
   final Socket socket;
   final ServerConfig config;
+
+  /// The zone the server was started in. If it has its own error handler,
+  /// asynchronous handler errors are forwarded to it, like shelf_io does.
+  final Zone _callerZone;
 
   /// These values are copied from [socket] at the time of creation so that
   /// that we have them after the [socket] is destroyed.
@@ -44,6 +56,10 @@ final class _HttpConnection {
   var _readyForNextRequest = Completer<void>()..complete();
   StreamSubscription<Uint8List>? _subscription;
   Completer<void>? _currentBodyDone;
+
+  /// The method of the request currently being handled, so error responses
+  /// can omit the body for HEAD.
+  String? _currentMethod;
   StreamController<Uint8List>? _hijackController;
   Timer? _headerTimer;
   Timer? _bodyTimer;
@@ -59,9 +75,13 @@ final class _HttpConnection {
   var _unflushedBytes = 0;
   var _unflushedResponses = 0;
 
-  _HttpConnection({required this.socket, required this.config})
-    : remoteAddress = socket.remoteAddress,
-      remotePort = socket.remotePort {
+  _HttpConnection({
+    required this.socket,
+    required this.config,
+    required Zone callerZone,
+  }) : _callerZone = callerZone,
+       remoteAddress = socket.remoteAddress,
+       remotePort = socket.remotePort {
     socket.done.catchError((Object _) {});
   }
 
@@ -110,8 +130,18 @@ final class _HttpConnection {
     }
   }
 
+  /// Reports to `onConnectionError`, or prints to stderr like shelf_io does
+  /// when no callback is set, so errors are never swallowed silently.
   void _reportError(String message, Object e, StackTrace st) {
-    config.onConnectionError?.call(
+    final onConnectionError = config.onConnectionError;
+    if (onConnectionError == null) {
+      stderr
+        ..writeln('ERROR - ${DateTime.now()}')
+        ..writeln('$message\n$e')
+        ..writeln(st);
+      return;
+    }
+    onConnectionError(
       message,
       e,
       st,
@@ -125,11 +155,29 @@ final class _HttpConnection {
   }
 
   /// Queues a 500 unless the response headers have already gone out.
+  ///
+  /// RFC 9110 section 15.6: except for HEAD, a 5xx SHOULD carry an
+  /// explanation. This matches shelf_io's `Internal Server Error` body.
   void _sendServerErrorIfUnsent() {
     if (!_responseSent) {
-      socket.add(ErrorResponse.internalServerError.bytes);
+      socket.add(
+        _currentMethod == 'HEAD' ? _serverErrorHead : _serverErrorWithBody,
+      );
     }
   }
+
+  static final _serverErrorHead = ascii.encode(
+    'HTTP/1.1 500 Internal Server Error\r\n'
+    'Content-Type: text/plain\r\n'
+    'Content-Length: 21\r\n'
+    'Connection: close\r\n'
+    '\r\n',
+  );
+
+  static final _serverErrorWithBody = Uint8List.fromList([
+    ..._serverErrorHead,
+    ...ascii.encode('Internal Server Error'),
+  ]);
 
   /// Fire-and-forget close; `close()` flushes queued bytes first.
   void _closeThenDestroy() {
@@ -528,6 +576,7 @@ final class _HttpConnection {
     String originalMethod,
   ) {
     _currentBodyDone = bodyDone;
+    _currentMethod = originalMethod;
     _responseWriting = false;
     _responseSent = false;
     unawaited(_executeRequest(request, typedHeaders, bodyDone, originalMethod));
@@ -615,7 +664,8 @@ final class _HttpConnection {
     if (e is HijackException) {
       return;
     }
-    final action = config.onAsyncError?.call(e, st);
+    final onAsyncError = config.onAsyncError;
+    final action = onAsyncError?.call(e, st);
     if (action == ErrorAction.ignore) {
       if (!_isDestroyed) {
         _reportError('Unhandled async error (ignored)', e, st);
@@ -627,12 +677,19 @@ final class _HttpConnection {
       // ignore: only_throw_errors
       throw e;
     }
+    if (onAsyncError == null && !_callerZone.inSameErrorZone(Zone.root)) {
+      // Like shelf_io: with no `onAsyncError`, a caller that started the
+      // server inside its own error zone gets the error. The connection is
+      // still torn down below.
+      _callerZone.handleUncaughtError(e, st);
+    } else if (!_isHijacked && !_isDestroyed && e is! SocketException) {
+      _reportError('Error in handler', e, st);
+    }
     if (_isHijacked || _isDestroyed) return;
     if (e is SocketException) {
       _destroy();
       return;
     }
-    _reportError('Error in handler', e, st);
     if (_responseWriting && !_responseSent) {
       // Let the in-flight response finish, then close instead of keep-alive.
       _forceClose = true;

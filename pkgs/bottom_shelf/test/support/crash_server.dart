@@ -4,7 +4,6 @@
 
 import 'dart:async';
 import 'package:bottom_shelf/bottom_shelf.dart';
-import 'package:bottom_shelf/src/exceptions.dart';
 import 'package:shelf/shelf.dart';
 
 void main(List<String> args) async {
