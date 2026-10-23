@@ -18,7 +18,12 @@ import 'package:test/test.dart';
 
 void main() {
   group('adapter conformance', () {
-    testAll(_serve, defaultPoweredByHeader: 'Dart with package:shelf');
+    testAll(
+      _serve,
+      defaultPoweredByHeader: 'Dart with package:shelf',
+      // `dart:io` responds 500 to a malformed Host header.
+      rejectsMalformedHost: false,
+    );
   });
 
   tearDown(() async {

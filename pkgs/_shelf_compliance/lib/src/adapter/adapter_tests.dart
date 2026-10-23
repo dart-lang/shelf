@@ -22,10 +22,16 @@ import 'ssl_certs.dart';
 ///
 /// Set [supportsSecurityContext] to `false` if the adapter can't serve HTTPS
 /// from a [ServeOptions.securityContext].
+///
+/// Set [rejectsMalformedHost] to `false` if the adapter does not respond
+/// `400` to a request with a malformed `Host` header as required by
+/// RFC 9112 section 3.2. The corresponding test is skipped. `shelf_io`
+/// responds `500` because `dart:io` does.
 void testAll(
   ServeCallback serve, {
   required String defaultPoweredByHeader,
   bool supportsSecurityContext = true,
+  bool rejectsMalformedHost = true,
 }) {
   ConformanceServer? server;
 
@@ -361,24 +367,28 @@ void testAll(
     expect(response.body, 'Hello from /');
   });
 
-  test('a bad HTTP host request results in a 500 response', () async {
-    await scheduleServer(_syncHandler);
+  test(
+    'a malformed HTTP host request results in a 400 response',
+    () async {
+      await scheduleServer(_syncHandler);
 
-    var socket = await Socket.connect('localhost', serverPort());
+      var socket = await Socket.connect('localhost', serverPort());
 
-    try {
-      socket.write('GET / HTTP/1.1\r\n');
-      socket.write('Host: ^^super bad !@#host\r\n');
-      socket.write('\r\n');
-    } finally {
-      await socket.close();
-    }
+      try {
+        socket.write('GET / HTTP/1.1\r\n');
+        socket.write('Host: ^^super bad !@#host\r\n');
+        socket.write('\r\n');
+      } finally {
+        await socket.close();
+      }
 
-    expect(
-      await utf8.decodeStream(socket),
-      contains('500 Internal Server Error'),
-    );
-  });
+      expect(await utf8.decodeStream(socket), startsWith('HTTP/1.1 400 '));
+    },
+    skip: rejectsMalformedHost
+        ? false
+        : 'adapter does not respond 400 to a malformed Host header '
+              '(RFC 9112 section 3.2)',
+  );
 
   test('a bad HTTP URL request results in a 400 response', () async {
     await scheduleServer(_syncHandler);
