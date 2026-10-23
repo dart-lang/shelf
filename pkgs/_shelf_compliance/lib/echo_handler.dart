@@ -1,13 +1,16 @@
-// Copyright (c) 2026, the Shelf project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// inspired by https://github.com/MDA2AV/Http11Probe/blob/main/src/Servers/EffinitiveServer/Program.cs
+/// Shared echo and cookie inspection handler for `Http11Probe` server targets,
+/// inspired by
+/// https://github.com/MDA2AV/Http11Probe/blob/main/src/Servers/EffinitiveServer/Program.cs.
 library;
 
 import 'package:shelf/shelf.dart';
 
-final handler = const Pipeline()
+/// Standard [Handler] used by compliance probe echo servers.
+final Handler handler = const Pipeline()
     .addMiddleware(logRequests())
     .addHandler(
       (Request request) =>
@@ -33,15 +36,16 @@ Response _handleCookie(Request request) {
   if (cookieHeader == null) {
     return Response.ok('');
   }
-  final cookies = cookieHeader.split(';').map((e) => e.trim()).toList();
   final sb = StringBuffer();
-  for (var cookie in cookies) {
-    final parts = cookie.split('=');
-    if (parts.length >= 2) {
-      final key = parts[0];
-      final value = parts.sublist(1).join('=');
+  for (final rawCookie in cookieHeader.split(';')) {
+    final cookie = rawCookie.trim();
+    if (cookie.isEmpty) continue;
+    final equalsIndex = cookie.indexOf('=');
+    if (equalsIndex >= 0) {
+      final key = cookie.substring(0, equalsIndex);
+      final value = cookie.substring(equalsIndex + 1);
       sb.write('$key=$value\r\n');
-    } else if (cookie.isNotEmpty) {
+    } else {
       sb.write('$cookie=\r\n');
     }
   }

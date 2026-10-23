@@ -1,6 +1,9 @@
-// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2026, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+
+@TestOn('vm')
+library;
 
 import 'dart:convert';
 import 'dart:io';
@@ -11,7 +14,6 @@ import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
-import 'package:yaml/yaml.dart';
 
 const _categories = [
   'Capabilities',
@@ -147,24 +149,10 @@ void _verifySummary({
 }) {
   print('Generating combined summary for $name...');
   final reportsDir = Directory(p.join(tempDir.path, 'reports', name));
-
-  final acceptedIds = <String>{};
-  if (exceptionsPath != null) {
-    final file = File(exceptionsPath);
-    if (file.existsSync()) {
-      final content = file.readAsStringSync();
-      final yaml = loadYaml(content) as List;
-      for (var item in yaml) {
-        final map = item as Map;
-        final tests = map['tests'] as List;
-        for (var test in tests) {
-          acceptedIds.add(test as String);
-        }
-      }
-    }
-  }
-
-  final summary = generateSummary(reportsDir, acceptedIds: acceptedIds);
+  final summary = generateSummary(
+    reportsDir,
+    acceptedIds: loadAcceptedIds(exceptionsPath),
+  );
 
   final goldenSummary = File('${name}_summary.md');
 

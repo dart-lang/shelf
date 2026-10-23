@@ -23,14 +23,15 @@ import 'ssl_certs.dart';
 /// Set [supportsSecurityContext] to `false` if the adapter can't serve HTTPS
 /// from a [ServeOptions.securityContext].
 ///
-/// [badHostStatusCode] is the status the adapter returns for a request with
-/// an invalid `Host` header. RFC 9112 section 3.2 requires 400; `shelf_io`
-/// returns 500 because `dart:io` does.
+/// Set [rejectsMalformedHost] to `false` if the adapter does not respond
+/// `400` to a request with a malformed `Host` header as required by
+/// RFC 9112 section 3.2. The corresponding test is skipped. `shelf_io`
+/// responds `500` because `dart:io` does.
 void testAll(
   ServeCallback serve, {
   required String defaultPoweredByHeader,
   bool supportsSecurityContext = true,
-  int badHostStatusCode = 500,
+  bool rejectsMalformedHost = true,
 }) {
   ConformanceServer? server;
 
@@ -367,7 +368,7 @@ void testAll(
   });
 
   test(
-    'a bad HTTP host request results in a $badHostStatusCode response',
+    'a malformed HTTP host request results in a 400 response',
     () async {
       await scheduleServer(_syncHandler);
 
@@ -381,11 +382,12 @@ void testAll(
         await socket.close();
       }
 
-      expect(
-        await utf8.decodeStream(socket),
-        startsWith('HTTP/1.1 $badHostStatusCode '),
-      );
+      expect(await utf8.decodeStream(socket), startsWith('HTTP/1.1 400 '));
     },
+    skip: rejectsMalformedHost
+        ? false
+        : 'adapter does not respond 400 to a malformed Host header '
+              '(RFC 9112 section 3.2)',
   );
 
   test('a bad HTTP URL request results in a 400 response', () async {

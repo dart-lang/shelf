@@ -17,7 +17,6 @@ void main() {
     _serve,
     defaultPoweredByHeader: 'Dart with package:bottom_shelf',
     supportsSecurityContext: false,
-    badHostStatusCode: 400,
   );
 }
 
