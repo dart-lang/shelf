@@ -10,7 +10,7 @@ import 'package:bottom_shelf/bottom_shelf.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
-import 'test_shared.dart';
+import '../support/test_shared.dart';
 
 void main() {
   group('Robustness', () {

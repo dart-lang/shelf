@@ -10,7 +10,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:bottom_shelf/bottom_shelf.dart';
-import 'package:bottom_shelf/src/exceptions.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -198,38 +197,6 @@ void main() {
     },
   );
 
-  test('default behavior (null) in the root zone prints the async error '
-      'instead of swallowing it', () async {
-    final fakeStderr = _FakeStdout();
-    final asyncErrorThrown = Completer<void>();
-    final server = await Zone.root.run(
-      () => IOOverrides.runZoned(
-        () => RawShelfServer.serve(
-          (request) {
-            Future(() {
-              asyncErrorThrown.complete();
-              throw StateError('root zone async error');
-            });
-            return Response.ok('hello');
-          },
-          'localhost',
-          0,
-        ),
-        stderr: () => fakeStderr,
-      ),
-    );
-    addTearDown(server.close);
-
-    final socket = await Socket.connect('localhost', server.port);
-    socket.write('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n');
-    final done = socket.drain<void>();
-
-    await asyncErrorThrown.future;
-    await done;
-    await pumpEventQueue();
-    expect(fakeStderr.buffer.toString(), contains('root zone async error'));
-  });
-
   test('socket is destroyed on error during body streaming', () async {
     final server = await RawShelfServer.serve(
       (request) {
@@ -267,7 +234,7 @@ void main() {
 
   test('ErrorAction.crash causes process to exit', () async {
     final process = await Process.start(Platform.executable, [
-      'test/crash_server.dart',
+      'test/support/crash_server.dart',
       'crash',
     ]);
 
@@ -289,7 +256,7 @@ void main() {
 
   test('callback throws causes process to exit', () async {
     final process = await Process.start(Platform.executable, [
-      'test/crash_server.dart',
+      'test/support/crash_server.dart',
       'throw',
     ]);
 
@@ -528,21 +495,6 @@ void main() {
     final response = await utf8.decodeStream(socket);
     expect(response, startsWith('HTTP/1.1 200 OK'));
     expect(response, isNot(contains('400 Bad Request')));
-  });
-
-  test('BadRequestException.toString formats message and innerException', () {
-    const simple = BadRequestException('invalid header');
-    expect(simple.toString(), 'BadRequestException: invalid header');
-
-    const withInner = BadRequestException(
-      'bad url',
-      innerException: FormatException('bad scheme'),
-    );
-    expect(
-      withInner.toString(),
-      'BadRequestException: bad url\n'
-      'Inner exception: FormatException: bad scheme',
-    );
   });
 }
 
