@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:bottom_shelf/bottom_shelf.dart';
 import 'package:bottom_shelf/src/constants.dart';
+import 'package:bottom_shelf/src/typed_headers.dart';
 import 'package:shelf/shelf.dart';
 
 void main(List<String> args) async {

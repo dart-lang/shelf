@@ -14,7 +14,6 @@ import 'package:bottom_shelf/src/constants.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' as parser;
 import 'package:shelf/shelf.dart';
-import 'package:shelf/src/util.dart';
 import 'package:test/test.dart';
 
 import 'test_shared.dart';
@@ -1342,7 +1341,7 @@ Future<http.Response> _request(
     final rs = await rq.close();
     final rsHeaders = <String, String>{};
     rs.headers.forEach((name, values) {
-      rsHeaders[name] = joinHeaderValues(values)!;
+      rsHeaders[name] = values.join(',');
     });
     return await http.Response.fromStream(
       http.StreamedResponse(rs, rs.statusCode, headers: rsHeaders),

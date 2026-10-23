@@ -1,4 +1,5 @@
 name: bottom_shelf
+publish_to: none
 version: 0.1.0-wip
 description: A high-performance, direct-to-socket Shelf adapter.
 repository: https://github.com/dart-lang/shelf/tree/master/pkgs/bottom_shelf

@@ -7,8 +7,6 @@ import 'dart:collection';
 import 'package:collection/collection.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:shelf/shelf.dart';
-// ignore: implementation_imports
-import 'package:shelf/src/util.dart';
 
 import 'header_slices.dart';
 
@@ -36,7 +34,7 @@ final class LazyByteHeaderMap extends UnmodifiableMapBase<String, List<String>>
         if (val == null) {
           map.remove(entry.key);
         } else {
-          final expanded = expandHeaderValue(val);
+          final expanded = _expandHeaderValue(val);
           if (expanded.isEmpty) {
             map.remove(entry.key);
           } else {
@@ -55,7 +53,7 @@ final class LazyByteHeaderMap extends UnmodifiableMapBase<String, List<String>>
       if (val == null) {
         overrides[entry.key] = null;
       } else {
-        final expanded = expandHeaderValue(val);
+        final expanded = _expandHeaderValue(val);
         if (expanded.isEmpty) {
           overrides[entry.key] = null;
         } else {
@@ -155,7 +153,7 @@ final class _LazySingleHeaderMap extends UnmodifiableMapBase<String, String> {
       final map = _inner = CaseInsensitiveMap<String>();
       if (_parent._inner != null) {
         _parent._inner!.forEach((key, values) {
-          map[key] = joinHeaderValues(values, name: key)!;
+          map[key] = _joinHeaderValues(values, name: key);
         });
       } else {
         for (var slice in _parent._slices) {
@@ -175,7 +173,7 @@ final class _LazySingleHeaderMap extends UnmodifiableMapBase<String, String> {
             if (values == null) {
               map.remove(key);
             } else {
-              map[key] = joinHeaderValues(values, name: key)!;
+              map[key] = _joinHeaderValues(values, name: key);
             }
           });
         }
@@ -190,7 +188,7 @@ final class _LazySingleHeaderMap extends UnmodifiableMapBase<String, String> {
     if (_inner != null) return _inner![key];
     final values = _parent[key];
     if (values == null) return null;
-    return joinHeaderValues(values, name: key);
+    return _joinHeaderValues(values, name: key);
   }
 
   @override
@@ -201,4 +199,19 @@ final class _LazySingleHeaderMap extends UnmodifiableMapBase<String, String> {
 
   @override
   int get length => _map.length;
+}
+
+List<String> _expandHeaderValue(Object value) {
+  if (value is String) return [value];
+  if (value is List<String>) return value;
+  throw ArgumentError('Expected String or List<String>, got: `$value`.');
+}
+
+/// Joins multiple header [values] per RFC 9110 Section 5.3, using `; ` for
+/// `Cookie` per RFC 6265 / RFC 9113 Section 8.2.3.
+String _joinHeaderValues(List<String> values, {required String name}) {
+  if (values.isEmpty) return '';
+  if (values.length == 1) return values.single;
+  final separator = equalsIgnoreAsciiCase(name, 'cookie') ? '; ' : ',';
+  return values.join(separator);
 }
