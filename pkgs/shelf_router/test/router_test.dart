@@ -25,6 +25,33 @@ import 'package:shelf_router/shelf_router.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('add accepts valid HTTP method tokens', () {
+    final router = Router();
+
+    router.add('CUSTOM', '/', (Request request) => Response.ok('custom'));
+
+    expect(
+      () => router.add(
+        'INVALID METHOD',
+        '/',
+        (Request request) => Response.ok('invalid'),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => router.add('', '/', (Request request) => Response.ok('empty')),
+      throwsArgumentError,
+    );
+    expect(
+      () => router.add(
+        'CUSTOM\n',
+        '/',
+        (Request request) => Response.ok('invalid'),
+      ),
+      throwsArgumentError,
+    );
+  });
+
   // Create a server that listens on localhost for testing
   late io.IOServer server;
 
