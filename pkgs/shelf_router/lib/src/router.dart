@@ -15,7 +15,6 @@
 import 'dart:collection' show UnmodifiableMapView;
 import 'dart:convert';
 
-import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
@@ -130,7 +129,7 @@ class Router {
   /// `HEAD` is always wrong. To explicitely implement a `HEAD` handler it must
   /// be registered before the `GET` handler.
   void add(String verb, String route, Function handler) {
-    if (!isHttpMethod(verb)) {
+    if (!_isHttpMethod(verb)) {
       throw ArgumentError.value(verb, 'verb', 'expected a valid HTTP method');
     }
     verb = verb.toUpperCase();
@@ -304,4 +303,9 @@ class _RouteNotFoundResponse extends Response {
       body: body ?? _message,
     );
   }
+}
+
+bool _isHttpMethod(String method) {
+  return {'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'TRACE', 'PATCH'}
+      .contains(method.toUpperCase());
 }
