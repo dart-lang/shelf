@@ -23,6 +23,11 @@ const _categories = [
 
 const _targets = <({String name, String serverPath, String? exceptionsPath})>[
   (name: 'shelf', serverPath: 'bin/shelf_echo.dart', exceptionsPath: null),
+  (
+    name: 'bottom_shelf',
+    serverPath: 'tool/bottom_shelf_echo.dart',
+    exceptionsPath: '../bottom_shelf/docs/compliance_exceptions.yaml',
+  ),
 ];
 
 void main(List<String> args) async {
