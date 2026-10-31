@@ -1,20 +1,41 @@
 # A CI configuration to auto-publish pub packages.
+#
+# Pushing a tag PACKAGE-vVERSION publishes the package in pkgs/PACKAGE.
+# Publish checks on pull requests run in the Health workflow.
 
 name: Publish
+permissions:
+  contents: read
 
 on:
-  pull_request:
-    branches: [ master ]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     tags: [ '[A-z]+-v[0-9]+.[0-9]+.[0-9]+*' ]
 
 jobs:
-  publish:
+  package:
     if: ${{ github.repository_owner == 'dart-lang' }}
-    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@16dca7ae5d3ff896a4db47e1ed6cd50f7ebbf115 # main
-    with:
-      write-comments: false
+    permissions: {}
+    runs-on: ubuntu-latest
+    outputs:
+      directory: ${{ steps.directory.outputs.directory }}
+    steps:
+      - id: directory
+        name: Find the package directory from the tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          package="${TAG%%-v*}"
+          if [[ ! "$package" =~ ^[a-z0-9_]+$ ]]; then
+            echo "No package directory in tag $TAG."
+            exit 1
+          fi
+          echo "directory=pkgs/$package" >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: package
     permissions:
       id-token: write
-      pull-requests: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@a5bff6576dfc51b47eb77d4b7084bba6a4daf8d2 # main
+    with:
+      working-directory: ${{ needs.package.outputs.directory }}
+      use-flutter: false
