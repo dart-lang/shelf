@@ -4,8 +4,11 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'message.dart';
+
+final _emptyUint8List = Uint8List(0);
 
 /// The body of a request or response.
 ///
@@ -13,10 +16,22 @@ import 'message.dart';
 /// because the message may be changed with [Message.change], but each instance
 /// should share a notion of whether the body was read.
 class Body {
-  /// The contents of the message body.
-  ///
-  /// This will be `null` after [read] is called.
+  /// The streaming contents of the message body, if backed by a [Stream].
   Stream<List<int>>? _stream;
+
+  /// The in-memory buffered bytes of the message body, if constructed from
+  /// `null`, a [String], or a `List<int>`.
+  List<int>? _bufferedBytes;
+
+  /// Whether this body was constructed from `null`.
+  final bool _isEmptyBody;
+
+  /// Whether [read] or [takeBufferedBytes] has already been called.
+  bool _isRead = false;
+
+  /// Whether this body has already been consumed via [read] or
+  /// [takeBufferedBytes].
+  bool get isRead => _isRead;
 
   /// The encoding used to encode the stream returned by [read], or `null` if no
   /// encoding was used.
@@ -26,7 +41,13 @@ class Body {
   /// determined efficiently.
   final int? contentLength;
 
-  Body._(this._stream, this.encoding, this.contentLength);
+  Body._(
+    this._stream,
+    this._bufferedBytes,
+    this.encoding,
+    this.contentLength, {
+    bool isEmptyBody = false,
+  }) : _isEmptyBody = isEmptyBody;
 
   /// Converts [body] to a byte stream and wraps it in a [Body].
   ///
@@ -36,44 +57,38 @@ class Body {
   factory Body(Object? body, [Encoding? encoding]) {
     if (body is Body) return body;
 
-    Stream<List<int>> stream;
-    int? contentLength;
     if (body == null) {
-      contentLength = 0;
-      stream = Stream.fromIterable([]);
+      return Body._(null, _emptyUint8List, encoding, 0, isEmptyBody: true);
     } else if (body is String) {
+      Uint8List encoded;
       if (encoding == null) {
-        var encoded = utf8.encode(body);
+        encoded = utf8.encode(body);
         // If the text is plain ASCII, don't modify the encoding. This means
         // that an encoding of "text/plain" will stay put.
         if (!_isPlainAscii(encoded, body.length)) encoding = utf8;
-        contentLength = encoded.length;
-        stream = Stream.fromIterable([encoded]);
       } else {
-        var encoded = encoding.encode(body);
-        contentLength = encoded.length;
-        stream = Stream.fromIterable([encoded]);
+        final list = encoding.encode(body);
+        encoded = list is Uint8List ? list : Uint8List.fromList(list);
       }
+      return Body._(null, encoded, encoding, encoded.length);
     } else if (body is List<int>) {
-      // Avoid performance overhead from an unnecessary cast.
-      contentLength = body.length;
-      stream = Stream.value(body);
+      // Preserve the exact List<int> instance for `read().single` while
+      // avoiding allocating a Stream unless `read()` is actually called.
+      return Body._(null, body, encoding, body.length);
     } else if (body is List) {
-      contentLength = body.length;
-      stream = Stream.value(body.cast());
+      final castList = body.cast<int>();
+      return Body._(null, castList, encoding, body.length);
     } else if (body is Stream<List<int>>) {
       // Avoid performance overhead from an unnecessary cast.
-      stream = body;
+      return Body._(body, null, encoding, null);
     } else if (body is Stream) {
-      stream = body.cast();
+      return Body._(body.cast(), null, encoding, null);
     } else {
       throw ArgumentError(
         'Response body "$body" must be a String or a '
         'Stream.',
       );
     }
-
-    return Body._(stream, encoding, contentLength);
   }
 
   /// Returns whether [bytes] is plain ASCII.
@@ -89,17 +104,47 @@ class Body {
     return bytes.every((byte) => byte & 0x80 == 0);
   }
 
-  /// Returns a [Stream] representing the body.
+  /// If this body is buffered in memory (`null`, [String], or `List<int>`),
+  /// marks the body as read and returns the bytes as a [Uint8List] without
+  /// allocating a [Stream].
   ///
-  /// Can only be called once.
-  Stream<List<int>> read() {
-    if (_stream == null) {
+  /// Returns `null` if this body is backed by a [Stream].
+  /// Throws a [StateError] if the body has already been read.
+  Uint8List? takeBufferedBytes() {
+    if (_isRead) {
       throw StateError(
         "The 'read' method can only be called once on a "
         'shelf.Request/shelf.Response object.',
       );
     }
-    var stream = _stream!;
+    final bytes = _bufferedBytes;
+    if (bytes == null) return null;
+    _isRead = true;
+    _bufferedBytes = null;
+    return bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+  }
+
+  /// Returns a [Stream] representing the body.
+  ///
+  /// Can only be called once.
+  Stream<List<int>> read() {
+    if (_isRead) {
+      throw StateError(
+        "The 'read' method can only be called once on a "
+        'shelf.Request/shelf.Response object.',
+      );
+    }
+    _isRead = true;
+    if (_isEmptyBody) {
+      _bufferedBytes = null;
+      return const Stream<List<int>>.empty();
+    }
+    final bytes = _bufferedBytes;
+    if (bytes != null) {
+      _bufferedBytes = null;
+      return Stream<List<int>>.value(bytes);
+    }
+    final stream = _stream!;
     _stream = null;
     return stream;
   }
