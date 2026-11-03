@@ -15,11 +15,14 @@
 import 'dart:collection' show UnmodifiableMapView;
 import 'dart:convert';
 
-import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
 import 'trie.dart';
+
+final _httpMethodPattern = RegExp(r"^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$");
+
+bool _isHttpMethod(String method) => _httpMethodPattern.hasMatch(method);
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
@@ -130,7 +133,7 @@ class Router {
   /// `HEAD` is always wrong. To explicitely implement a `HEAD` handler it must
   /// be registered before the `GET` handler.
   void add(String verb, String route, Function handler) {
-    if (!isHttpMethod(verb)) {
+    if (!_isHttpMethod(verb)) {
       throw ArgumentError.value(verb, 'verb', 'expected a valid HTTP method');
     }
     verb = verb.toUpperCase();
