@@ -1,5 +1,6 @@
-name: Comment on the pull request
+# A CI configuration to write comments on PRs.
 
+name: Comment on the pull request
 permissions:
   contents: read
 
@@ -10,7 +11,6 @@ on:
   workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows:
       - Health
-      - Publish
     types:
       - completed
 
