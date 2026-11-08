@@ -73,8 +73,12 @@ Map<String, Object> addHeader(
 /// case-insensitive map.
 Object? findHeaderValue(Map<String, Object>? headers, String name) {
   if (headers == null) return null;
-  for (final entry in headers.entries) {
-    if (equalsIgnoreAsciiCase(entry.key, name)) return entry.value;
+  // The callers pass a lowercase literal, which is the spelling most callers
+  // use too, so try a direct hit before comparing every key.
+  final exactMatch = headers[name];
+  if (exactMatch != null) return exactMatch;
+  for (final key in headers.keys) {
+    if (equalsIgnoreAsciiCase(key, name)) return headers[key];
   }
   return null;
 }
