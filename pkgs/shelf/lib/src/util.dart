@@ -79,7 +79,7 @@ Object? findHeaderValue(Map<String, Object>? headers, String name) {
   return null;
 }
 
-/// Removed the header with case-insensitive name [name].
+/// Removes the header with case-insensitive name [name].
 ///
 /// Returns a new map without modifying [headers].
 Map<String, Object> removeHeader(Map<String, Object>? headers, String name) {
