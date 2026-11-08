@@ -144,6 +144,29 @@ void main() {
       var response = Response.found(Uri(path: '/foo'));
       expect(response.headers, containsPair('location', '/foo'));
     });
+
+    test('does not leave a capitalized location header behind', () {
+      var response = Response.found('/foo', headers: {'Location': '/bar'});
+      expect(response.headers, containsPair('location', '/foo'));
+      expect(response.headersAll['location'], hasLength(1));
+    });
+  });
+
+  group('Response.notModified', () {
+    test('does not leave a capitalized date header behind', () {
+      var response = Response.notModified(
+        headers: {'Date': 'Mon, 01 Jan 2024 00:00:00 GMT'},
+      );
+      expect(response.headersAll['date'], hasLength(1));
+    });
+
+    test('removes a capitalized content-length header', () {
+      var response = Response.notModified(headers: {'Content-Length': '42'});
+      // The supplied length is dropped; what remains is the length shelf
+      // derives from the empty body.
+      expect(response.headers, containsPair('content-length', '0'));
+      expect(response.headersAll['content-length'], hasLength(1));
+    });
   });
 
   group('expires', () {
