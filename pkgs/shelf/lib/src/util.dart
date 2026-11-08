@@ -49,6 +49,10 @@ Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V?>? updates) {
 
 /// Adds a header with [name] and [value] to [headers], which may be null.
 ///
+/// Any header already present under a case-insensitively equal name is
+/// replaced, so the result never carries the same header twice under two
+/// spellings.
+///
 /// Returns a new map without modifying [headers].
 Map<String, Object> addHeader(
   Map<String, Object>? headers,
@@ -56,6 +60,7 @@ Map<String, Object> addHeader(
   String value,
 ) {
   headers = headers == null ? {} : Map.from(headers);
+  headers.removeWhere((header, _) => equalsIgnoreAsciiCase(header, name));
   headers[name] = value;
   return headers;
 }
