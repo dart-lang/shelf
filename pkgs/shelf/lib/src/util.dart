@@ -65,6 +65,20 @@ Map<String, Object> addHeader(
   return headers;
 }
 
+/// Returns the value of the header with case-insensitive name [name] in
+/// [headers], or `null` if [headers] is `null` or has no such header.
+///
+/// Unlike [findHeader], this works on the `String | List<String>` maps the
+/// message constructors accept, before they have been normalized into a
+/// case-insensitive map.
+Object? findHeaderValue(Map<String, Object>? headers, String name) {
+  if (headers == null) return null;
+  for (final entry in headers.entries) {
+    if (equalsIgnoreAsciiCase(entry.key, name)) return entry.value;
+  }
+  return null;
+}
+
 /// Removed the header with case-insensitive name [name].
 ///
 /// Returns a new map without modifying [headers].
