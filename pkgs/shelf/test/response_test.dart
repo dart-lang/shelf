@@ -98,6 +98,17 @@ void main() {
         containsPair('content-type', 'text/plain; param=whatever'),
       );
     });
+
+    test('preserves content-type parameters of a capitalized header', () {
+      var response = Response.internalServerError(
+        headers: {'Content-Type': 'application/octet-stream; param=whatever'},
+      );
+      expect(
+        response.headers,
+        containsPair('content-type', 'text/plain; param=whatever'),
+      );
+      expect(response.headersAll['content-type'], hasLength(1));
+    });
   });
 
   group('Response.badRequest:', () {
