@@ -235,7 +235,7 @@ Future<Response> _handleFile(
   FileStat? fileStat,
 }) async {
   final stat = fileStat ?? await file.stat();
-  final ifModifiedSince = request.ifModifiedSince;
+  final ifModifiedSince = _ifModifiedSince(request);
   final ifNoneMatch = request.headers[HttpHeaders.ifNoneMatchHeader];
 
   generateETag ??= _defaultGenerateETag;
@@ -277,6 +277,18 @@ Future<Response> _handleFile(
         request.method == 'HEAD' ? null : file.openRead(),
         headers: headers..[HttpHeaders.contentLengthHeader] = '${stat.size}',
       );
+}
+
+/// Returns the parsed `If-Modified-Since` header of [request], or `null` if
+/// it is absent or not a valid HTTP date.
+///
+/// Per RFC 9110 § 13.1.3, an invalid `If-Modified-Since` value must be ignored.
+DateTime? _ifModifiedSince(Request request) {
+  try {
+    return request.ifModifiedSince;
+  } on FormatException {
+    return null;
+  }
 }
 
 String _defaultGenerateETag(File file, FileStat stat) =>
