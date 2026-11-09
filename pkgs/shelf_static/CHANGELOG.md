@@ -7,6 +7,10 @@
 * Add `generateETag` and `maxAge` parameters to `createStaticHandler` and
   `createFileHandler` to support `ETag` and `Cache-Control` headers. 
   Default ETags are generated based on file size and modified time.
+* Fix `If-Modified-Since` requests against files whose modification time has
+  sub-second precision always being answered with a full `200`. The comparison
+  now truncates the modification time to whole seconds, the resolution an HTTP
+  date can express.
 
 ## 1.1.3
 
