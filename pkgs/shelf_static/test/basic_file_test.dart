@@ -182,9 +182,12 @@ void main() {
 
       // A modification time an HTTP date cannot express: sub-second precision
       // is not part of `Last-Modified`, so it must not decide the comparison.
-      final target = DateTime.utc(2024, 1, 2, 3, 4, 5, 678, 901);
-      await File(rootPath).setLastModified(target);
-      expect(File(rootPath).statSync().modified.toUtc(), target);
+      // Note: FileStat.modified only gained sub-second precision in Dart 3.13,
+      // so we cannot assert that `statSync().modified` retained sub-second
+      // precision on older SDKs (e.g., Dart 3.9.0).
+      await File(
+        rootPath,
+      ).setLastModified(DateTime.utc(2024, 1, 2, 3, 4, 5, 678, 901));
 
       final response1 = await makeRequest(handler, '/root.txt');
       final headers = {
