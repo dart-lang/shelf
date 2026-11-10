@@ -163,6 +163,18 @@ void main() {
       expect(response.contentLength, 0);
     });
 
+    test('invalid date is ignored', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final response = await makeRequest(
+        handler,
+        '/root.txt',
+        headers: {HttpHeaders.ifModifiedSinceHeader: 'not a date'},
+      );
+      expect(response.statusCode, HttpStatus.ok);
+      expect(await response.readAsString(), 'root txt');
+    });
+
     test('after file modification', () async {
       // This test updates a file on disk to ensure the file stamp is updated
       // which was previously not the case on Windows due to the files "changed"
