@@ -1,3 +1,8 @@
+## 1.2.1-wip
+
+* Ignore invalid `If-Modified-Since` headers instead of failing the request
+  with a `FormatException`.
+
 ## 1.2.0
 
 * Fix unhandled `FormatException` / HTTP 500 error when parsing oversized integer

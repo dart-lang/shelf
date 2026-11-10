@@ -163,6 +163,18 @@ void main() {
       expect(response.contentLength, 0);
     });
 
+    test('invalid date is ignored', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final response = await makeRequest(
+        handler,
+        '/root.txt',
+        headers: {HttpHeaders.ifModifiedSinceHeader: 'not a date'},
+      );
+      expect(response.statusCode, HttpStatus.ok);
+      expect(await response.readAsString(), 'root txt');
+    });
+
     test('same as last modified with sub-second precision', () async {
       final handler = createStaticHandler(d.sandbox);
 
@@ -170,9 +182,9 @@ void main() {
 
       // A modification time an HTTP date cannot express: sub-second precision
       // is not part of `Last-Modified`, so it must not decide the comparison.
-      await File(
-        rootPath,
-      ).setLastModified(DateTime.utc(2024, 1, 2, 3, 4, 5, 678, 901));
+      final target = DateTime.utc(2024, 1, 2, 3, 4, 5, 678, 901);
+      await File(rootPath).setLastModified(target);
+      expect(File(rootPath).statSync().modified.toUtc(), target);
 
       final response1 = await makeRequest(handler, '/root.txt');
       final headers = {
