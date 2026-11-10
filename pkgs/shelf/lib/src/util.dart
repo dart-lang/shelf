@@ -49,6 +49,10 @@ Map<K, V> updateMap<K, V>(Map<K, V> original, Map<K, V?>? updates) {
 
 /// Adds a header with [name] and [value] to [headers], which may be null.
 ///
+/// Any header already present under a case-insensitively equal name is
+/// replaced, so the result never carries the same header twice under two
+/// spellings.
+///
 /// Returns a new map without modifying [headers].
 Map<String, Object> addHeader(
   Map<String, Object>? headers,
@@ -56,11 +60,30 @@ Map<String, Object> addHeader(
   String value,
 ) {
   headers = headers == null ? {} : Map.from(headers);
+  headers.removeWhere((header, _) => equalsIgnoreAsciiCase(header, name));
   headers[name] = value;
   return headers;
 }
 
-/// Removed the header with case-insensitive name [name].
+/// Returns the value of the header with case-insensitive name [name] in
+/// [headers], or `null` if [headers] is `null` or has no such header.
+///
+/// Unlike [findHeader], this works on the `String | List<String>` maps the
+/// message constructors accept, before they have been normalized into a
+/// case-insensitive map.
+Object? findHeaderValue(Map<String, Object>? headers, String name) {
+  if (headers == null) return null;
+  // The callers pass a lowercase literal, which is the spelling most callers
+  // use too, so try a direct hit before comparing every key.
+  final exactMatch = headers[name];
+  if (exactMatch != null) return exactMatch;
+  for (final key in headers.keys) {
+    if (equalsIgnoreAsciiCase(key, name)) return headers[key];
+  }
+  return null;
+}
+
+/// Removes the header with case-insensitive name [name].
 ///
 /// Returns a new map without modifying [headers].
 Map<String, Object> removeHeader(Map<String, Object>? headers, String name) {
