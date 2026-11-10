@@ -163,6 +163,32 @@ void main() {
       expect(response.contentLength, 0);
     });
 
+    test('same as last modified with sub-second precision', () async {
+      final handler = createStaticHandler(d.sandbox);
+
+      final rootPath = p.join(d.sandbox, 'root.txt');
+
+      // A modification time an HTTP date cannot express: sub-second precision
+      // is not part of `Last-Modified`, so it must not decide the comparison.
+      await File(
+        rootPath,
+      ).setLastModified(DateTime.utc(2024, 1, 2, 3, 4, 5, 678, 901));
+
+      final response1 = await makeRequest(handler, '/root.txt');
+      final headers = {
+        HttpHeaders.ifModifiedSinceHeader:
+            response1.headers[HttpHeaders.lastModifiedHeader]!,
+      };
+
+      final response2 = await makeRequest(
+        handler,
+        '/root.txt',
+        headers: headers,
+      );
+      expect(response2.statusCode, HttpStatus.notModified);
+      expect(response2.contentLength, 0);
+    });
+
     test('after file modification', () async {
       // This test updates a file on disk to ensure the file stamp is updated
       // which was previously not the case on Windows due to the files "changed"
