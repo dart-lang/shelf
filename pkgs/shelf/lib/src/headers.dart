@@ -12,11 +12,7 @@ final _emptyHeaders = Headers._empty();
 
 /// Unmodifiable, key-insensitive header map.
 class Headers extends UnmodifiableMapView<String, List<String>> {
-  late final Map<String, String> singleValues = UnmodifiableMapView(
-    CaseInsensitiveMap.from(
-      map((key, value) => MapEntry(key, joinHeaderValues(value, name: key)!)),
-    ),
-  );
+  late final Map<String, String> singleValues = _HeadersSingleValuesView(this);
 
   factory Headers.from(Map<String, List<String>>? values) {
     if (values == null || values.isEmpty) {
@@ -38,6 +34,13 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
     }
   }
 
+  /// Wraps an already-constructed [CaseInsensitiveMap] of unmodifiable header
+  /// value lists without copying entries a second time.
+  factory Headers.adopt(CaseInsensitiveMap<List<String>> map) =>
+      map.isEmpty ? _emptyHeaders : Headers._adopt(map);
+
+  Headers._adopt(super.map);
+
   Headers._(Iterable<MapEntry<String, List<String>>> entries)
     : super(
         CaseInsensitiveMap.fromEntries(
@@ -50,4 +53,54 @@ class Headers extends UnmodifiableMapView<String, List<String>> {
   Headers._empty() : super(const {});
 
   factory Headers.empty() => _emptyHeaders;
+
+  /// Returns a new [Headers] with [changeHeaders] applied on top of `this`.
+  Headers updateHeaders(Map<String, Object?> changeHeaders) {
+    if (changeHeaders.isEmpty) return this;
+    final map = CaseInsensitiveMap<List<String>>.from(this);
+    for (final entry in changeHeaders.entries) {
+      final val = entry.value;
+      if (val == null) {
+        map.remove(entry.key);
+      } else {
+        final expanded = expandHeaderValue(val);
+        if (expanded.isEmpty) {
+          map.remove(entry.key);
+        } else {
+          map[entry.key] = List.unmodifiable(expanded);
+        }
+      }
+    }
+    return Headers.adopt(map);
+  }
+}
+
+final class _HeadersSingleValuesView
+    extends UnmodifiableMapBase<String, String> {
+  final Headers _headers;
+
+  _HeadersSingleValuesView(this._headers);
+
+  @override
+  String? operator [](Object? key) {
+    if (key is! String) return null;
+    final values = _headers[key];
+    if (values == null) return null;
+    return joinHeaderValues(values, name: key);
+  }
+
+  @override
+  bool containsKey(Object? key) => _headers.containsKey(key);
+
+  @override
+  Iterable<String> get keys => _headers.keys;
+
+  @override
+  int get length => _headers.length;
+
+  @override
+  bool get isEmpty => _headers.isEmpty;
+
+  @override
+  bool get isNotEmpty => _headers.isNotEmpty;
 }

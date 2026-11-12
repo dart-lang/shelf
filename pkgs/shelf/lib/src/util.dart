@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 
+import 'headers.dart';
 import 'shelf_unmodifiable_map.dart';
 
 /// Run [callback] and capture any errors that would otherwise be top-leveled.
@@ -75,7 +76,7 @@ Map<String, Object> removeHeader(Map<String, Object>? headers, String name) {
 /// case-insensitive map.
 String? findHeader(Map<String, List<String>?>? headers, String name) {
   if (headers == null) return null;
-  if (headers is ShelfUnmodifiableMap) {
+  if (headers is Headers || headers is ShelfUnmodifiableMap) {
     return joinHeaderValues(headers[name], name: name);
   }
 
@@ -91,6 +92,12 @@ Map<String, List<String>> updateHeaders(
   Map<String, List<String>> initialHeaders,
   Map<String, Object?>? changeHeaders,
 ) {
+  if (changeHeaders == null || changeHeaders.isEmpty) {
+    return initialHeaders;
+  }
+  if (initialHeaders is Headers) {
+    return initialHeaders.updateHeaders(changeHeaders);
+  }
   return updateMap<String, List<String>>(
     initialHeaders,
     _expandToHeadersAll(changeHeaders),

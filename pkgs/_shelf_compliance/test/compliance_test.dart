@@ -80,6 +80,11 @@ void main() {
   });
 
   _defineComplianceTests('shelf', 'bin/shelf_echo.dart');
+  _defineComplianceTests(
+    'bottom_shelf',
+    'tool/bottom_shelf_echo.dart',
+    '../bottom_shelf/docs/compliance_exceptions.yaml',
+  );
 }
 
 void _defineComplianceTests(
@@ -304,6 +309,10 @@ void _testCompliance({
     File(reportFile).writeAsStringSync('${encoder.convert(filteredResults)}\n');
 
     // Compare with Goldens
+    final reportsDir = Directory('reports/$name');
+    if (!reportsDir.existsSync()) {
+      reportsDir.createSync(recursive: true);
+    }
     final goldenReport = File('reports/$name/$category.json');
 
     if (!goldenReport.existsSync()) {
