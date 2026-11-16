@@ -75,6 +75,8 @@ Object? findHeaderValue(Map<String, Object>? headers, String name) {
   if (headers == null) return null;
   // The callers pass a lowercase literal, which is the spelling most callers
   // use too, so try a direct hit before comparing every key.
+Object? findHeaderValue(Map<String, Object>? headers, String name) {
+  if (headers == null) return null;
   final exactMatch = headers[name];
   if (exactMatch != null) return exactMatch;
   for (final key in headers.keys) {
