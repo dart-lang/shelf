@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'package:http_parser/http_parser.dart';
 import 'package:stream_channel/stream_channel.dart';
 
+import 'body.dart';
+import 'headers.dart';
 import 'hijack_exception.dart';
 import 'message.dart';
 import 'util.dart';
@@ -223,6 +225,37 @@ class Request extends Message {
     }
   }
 
+  /// Internal constructor for [change] when `path == null` and neither
+  /// `headers` nor `body` changed, reusing already-validated [url],
+  /// [handlerPath], [requestedUri], [Body], and [Headers].
+  Request._fastChangeUnchangedHeaders(
+    this.method,
+    this.requestedUri, {
+    required this.protocolVersion,
+    required this.url,
+    required this.handlerPath,
+    required Body body,
+    required Headers headers,
+    required Map<String, Object> context,
+    required _OnHijack? onHijack,
+  }) : _onHijack = onHijack,
+       super.withHeadersAll(body, headers, context);
+
+  /// Internal constructor for [change] when `path == null`, reusing
+  /// already-validated [url], [handlerPath], and [requestedUri].
+  Request._fastChange(
+    this.method,
+    this.requestedUri, {
+    required this.protocolVersion,
+    required this.url,
+    required this.handlerPath,
+    required Body body,
+    required Map<String, List<String>> headers,
+    required Map<String, Object> context,
+    required _OnHijack? onHijack,
+  }) : _onHijack = onHijack,
+       super.withBody(body, headers, context);
+
   /// Creates a new [Request] by copying existing values and applying specified
   /// changes.
   ///
@@ -260,20 +293,47 @@ class Request extends Message {
     String? path,
     Object? body,
   }) {
-    final headersAll = updateHeaders(this.headersAll, headers);
     final newContext = updateMap<String, Object>(this.context, context);
 
+    if (path == null) {
+      if (body == null && (headers == null || headers.isEmpty)) {
+        return Request._fastChangeUnchangedHeaders(
+          method,
+          requestedUri,
+          protocolVersion: protocolVersion,
+          url: url,
+          handlerPath: handlerPath,
+          body: extractBody(this),
+          headers: extractHeaders(this),
+          context: newContext,
+          onHijack: _onHijack,
+        );
+      }
+      final headersAll = updateHeaders(this.headersAll, headers);
+      return Request._fastChange(
+        method,
+        requestedUri,
+        protocolVersion: protocolVersion,
+        url: url,
+        handlerPath: handlerPath,
+        body: Body(body ?? extractBody(this)),
+        headers: headersAll,
+        context: newContext,
+        onHijack: _onHijack,
+      );
+    }
+
+    final headersAll = updateHeaders(this.headersAll, headers);
     body ??= extractBody(this);
 
-    var handlerPath = this.handlerPath;
-    if (path != null) handlerPath += path;
+    final updatedHandlerPath = handlerPath + path;
 
     return Request._(
       method,
       requestedUri,
       protocolVersion: protocolVersion,
       headers: headersAll,
-      handlerPath: handlerPath,
+      handlerPath: updatedHandlerPath,
       body: body,
       context: newContext,
       onHijack: _onHijack,

@@ -1,11 +1,43 @@
-# Created with package:mono_repo v6.7.2
+# Created with package:mono_repo v6.8.2
 name: Shelf Compliance CI
 on:
   push:
     branches:
       - main
       - master
+    paths:
+      - .github/workflows/compliance.yml
+      - mono_repo.yaml
+      - analysis_options.yaml
+      - "**/mono_pkg.yaml"
+      - "pkgs/_shelf_compliance/**"
+      - "pkgs/bottom_shelf/**"
+      - "pkgs/shelf/**"
+      - "pkgs/shelf_packages_handler/**"
+      - "pkgs/shelf_proxy/**"
+      - "pkgs/shelf_router/**"
+      - "pkgs/shelf_router_generator/**"
+      - "pkgs/shelf_static/**"
+      - "pkgs/shelf_test_handler/**"
+      - "pkgs/shelf_web_socket/**"
+      - "!**/*.md"
   pull_request:
+    paths:
+      - .github/workflows/compliance.yml
+      - mono_repo.yaml
+      - analysis_options.yaml
+      - "**/mono_pkg.yaml"
+      - "pkgs/_shelf_compliance/**"
+      - "pkgs/bottom_shelf/**"
+      - "pkgs/shelf/**"
+      - "pkgs/shelf_packages_handler/**"
+      - "pkgs/shelf_proxy/**"
+      - "pkgs/shelf_router/**"
+      - "pkgs/shelf_router_generator/**"
+      - "pkgs/shelf_static/**"
+      - "pkgs/shelf_test_handler/**"
+      - "pkgs/shelf_web_socket/**"
+      - "!**/*.md"
   schedule:
     - cron: "0 0 * * 0"
 defaults:
@@ -26,7 +58,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/_shelf_compliance;commands:command"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/_shelf_compliance
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted

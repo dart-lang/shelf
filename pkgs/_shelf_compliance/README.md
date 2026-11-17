@@ -1,5 +1,4 @@
-This package contains HTTP/1.1 compliance and hardening tests for
-`package:shelf` and future implementations.
+This package contains HTTP/1.1 compliance and hardening tests for `package:shelf` and future implementations.
 
 ## Adapter conformance tests
 
