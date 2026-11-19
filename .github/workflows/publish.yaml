@@ -1,0 +1,18 @@
+# A CI configuration to publish packages to pub.dev.
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - '*-v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  publish:
+    if: ${{ github.repository_owner == 'dart-lang' }}
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@40657d0d0732d6fd3809f5841380e7519e355b50 # main
+    with:
+      working-directory: pkgs/{package}
+      use-flutter: false
