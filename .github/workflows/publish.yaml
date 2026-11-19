@@ -1,20 +1,18 @@
-# A CI configuration to auto-publish pub packages.
+# A CI configuration to publish packages to pub.dev.
 
 name: Publish
 
 on:
-  pull_request:
-    branches: [ master ]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
-    tags: [ '[A-z]+-v[0-9]+.[0-9]+.[0-9]+*' ]
+    tags:
+      - '*-v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   publish:
     if: ${{ github.repository_owner == 'dart-lang' }}
-    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@27c2fc841818cce349e1f424af51cca9ea381f47 # main
-    with:
-      write-comments: false
     permissions:
       id-token: write
-      pull-requests: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@40657d0d0732d6fd3809f5841380e7519e355b50 # main
+    with:
+      working-directory: pkgs/{package}
+      use-flutter: false
