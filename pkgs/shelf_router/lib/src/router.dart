@@ -15,11 +15,28 @@
 import 'dart:collection' show UnmodifiableMapView;
 import 'dart:convert';
 
-import 'package:http_methods/http_methods.dart';
 import 'package:meta/meta.dart' show sealed;
 import 'package:shelf/shelf.dart';
 
 import 'trie.dart';
+
+/// Returns true if [method] is a valid HTTP method.
+bool isHttpMethod(String method) {
+  switch (method.toUpperCase()) {
+    case 'GET':
+    case 'HEAD':
+    case 'POST':
+    case 'PUT':
+    case 'DELETE':
+    case 'CONNECT':
+    case 'OPTIONS':
+    case 'TRACE':
+    case 'PATCH':
+      return true;
+    default:
+      return false;
+  }
+}
 
 /// Get a URL parameter captured by the [Router].
 @Deprecated('Use Request.params instead')
