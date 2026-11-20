@@ -1,5 +1,13 @@
 ## 1.4.4-wip
 
+* `Response.internalServerError` now finds an existing `content-type` header
+  case-insensitively when it supplies its default body. A `Content-Type` passed
+  with any other capitalization used to take the "no content-type" branch, so
+  its parameters were dropped and the response came back as a bare
+  `text/plain` instead of `text/plain; charset=utf-8`.
+* Adding a header internally now replaces any case variant of that name, so a
+  header is never left in the map twice under two spellings.
+
 ## 1.4.3
 
 * `shelf_io` now resolves the `shelf.io.connection_info` context value

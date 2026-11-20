@@ -318,13 +318,12 @@ class Response extends Message {
 Map<String, Object> _adjustErrorHeaders(
   Map<String, /* String | List<String> */ Object>? headers,
 ) {
-  if (headers == null || headers['content-type'] == null) {
+  final existingContentType = findHeaderValue(headers, 'content-type');
+  if (existingContentType == null) {
     return addHeader(headers, 'content-type', 'text/plain');
   }
 
-  final contentTypeValue = expandHeaderValue(
-    headers['content-type']!,
-  ).join(',');
+  final contentTypeValue = expandHeaderValue(existingContentType).join(',');
   var contentType = MediaType.parse(
     contentTypeValue,
   ).change(mimeType: 'text/plain');
