@@ -1,5 +1,13 @@
-## 1.2.1-wip
+## 1.2.1
 
+* Reject request path segments containing encoded path separators (`%2F`, and
+  `%5C` on Windows), `:` on Windows, NUL bytes, `.`, or `..` with
+  `404 Not Found`, even when `serveFilesOutsidePath` is `true` (note: this also
+  changes in-root encoded slashes such as `/dir%2Fb.txt` from `200` to `404`).
+  `serveFilesOutsidePath: true` continues to follow symbolic links inside
+  `fileSystemPath` that point outside it.
+* Check symlink containment before issuing trailing-slash redirects when
+  `listDirectories` is `true` and `serveFilesOutsidePath` is `false`.
 * Ignore invalid `If-Modified-Since` headers instead of failing the request
   with a `FormatException`.
 

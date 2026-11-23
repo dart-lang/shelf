@@ -169,17 +169,17 @@ Future<Response> listDirectory(
   String dirPath, {
   bool serveFilesOutsidePath = false,
 }) async {
-  if (!serveFilesOutsidePath) {
-    if (!path.isWithin(fileSystemPath, dirPath) &&
-        !path.equals(fileSystemPath, dirPath)) {
-      return Response.notFound('Not Found');
-    }
+  if (!path.isWithin(fileSystemPath, dirPath) &&
+      !path.equals(fileSystemPath, dirPath)) {
+    return Response.notFound('Not Found');
+  }
 
-    var resolvedPath = dirPath;
+  if (!serveFilesOutsidePath) {
+    final String resolvedPath;
     try {
       resolvedPath = await Directory(dirPath).resolveSymbolicLinks();
     } catch (_) {
-      // Ignore errors resolving symlinks
+      return Response.notFound('Not Found');
     }
 
     if (!path.isWithin(fileSystemPath, resolvedPath) &&
