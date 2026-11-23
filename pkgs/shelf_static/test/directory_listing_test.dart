@@ -121,14 +121,96 @@ void main() {
     expect(response.statusCode, HttpStatus.notFound);
   });
 
-  test('allows directory traversal if serveFilesOutsidePath is true', () async {
+  test(
+    'blocks directory traversal even if serveFilesOutsidePath is true',
+    () async {
+      final response = await listDirectory(
+        d.sandbox,
+        p.join(d.sandbox, '..'),
+        serveFilesOutsidePath: true,
+      );
+      expect(response.statusCode, HttpStatus.notFound);
+    },
+  );
+
+  test(
+    'blocks listing symlinked directory outside of root by default',
+    () async {
+      await d.dir('outside', [d.file('outside.txt', 'contents')]).create();
+      final filesDir = p.join(d.sandbox, 'files');
+      final linkPath = p.join(filesDir, 'symlink_out');
+      Link(linkPath).createSync(p.join(d.sandbox, 'outside'));
+
+      final response = await listDirectory(filesDir, linkPath);
+      expect(response.statusCode, HttpStatus.notFound);
+    },
+    testOn: '!windows',
+  );
+
+  test('allows listing symlinked directory outside of root if '
+      'serveFilesOutsidePath is true', () async {
+    await d.dir('outside', [d.file('outside.txt', 'contents')]).create();
+    final filesDir = p.join(d.sandbox, 'files');
+    final linkPath = p.join(filesDir, 'symlink_out');
+    Link(linkPath).createSync(p.join(d.sandbox, 'outside'));
+
     final response = await listDirectory(
-      d.sandbox,
-      p.join(d.sandbox, '..'),
+      filesDir,
+      linkPath,
       serveFilesOutsidePath: true,
     );
     expect(response.statusCode, HttpStatus.ok);
+    expect(await response.readAsString(), contains('outside.txt'));
+  }, testOn: '!windows');
+
+  test('blocks encoded path traversal in directory listing handler '
+      '(with and without trailing slash)', () async {
+    await d.dir('outside', [d.file('secret.txt', 'secret')]).create();
+    final outsideDir = p.join(d.sandbox, 'outside');
+
+    for (final serveOutside in [false, true]) {
+      final handler = createStaticHandler(
+        p.join(d.sandbox, 'files'),
+        listDirectories: true,
+        serveFilesOutsidePath: serveOutside,
+      );
+
+      for (final path in [
+        '/${Uri.encodeComponent(outsideDir)}/',
+        '/${Uri.encodeComponent(outsideDir)}',
+        '/..%2Foutside/',
+        '/..%2Foutside',
+      ]) {
+        final response = await makeRequest(handler, path);
+        expect(
+          response.statusCode,
+          HttpStatus.notFound,
+          reason: 'serveFilesOutsidePath=$serveOutside path=$path',
+        );
+      }
+    }
   });
+
+  test('does not redirect symlinked directory outside root when '
+      'serveFilesOutsidePath is false', () async {
+    await d.dir('outside', [d.file('outside.txt', 'contents')]).create();
+    final filesDir = p.join(d.sandbox, 'files');
+    Link(
+      p.join(filesDir, 'symlink_out'),
+    ).createSync(p.join(d.sandbox, 'outside'));
+
+    final blockedHandler = createStaticHandler(filesDir, listDirectories: true);
+    final blockedResponse = await makeRequest(blockedHandler, '/symlink_out');
+    expect(blockedResponse.statusCode, HttpStatus.notFound);
+
+    final allowedHandler = createStaticHandler(
+      filesDir,
+      listDirectories: true,
+      serveFilesOutsidePath: true,
+    );
+    final allowedResponse = await makeRequest(allowedHandler, '/symlink_out');
+    expect(allowedResponse.statusCode, HttpStatus.movedPermanently);
+  }, testOn: '!windows');
 
   test(
     'blocks directory traversal via symlinks in directory listings',

@@ -24,8 +24,11 @@ final _defaultMimeTypeResolver = MimeTypeResolver();
 /// [fileSystemPath].
 ///
 /// Accessing a path containing symbolic links will succeed only if the resolved
-/// path is within [fileSystemPath]. To allow access to paths outside of
-/// [fileSystemPath], set [serveFilesOutsidePath] to `true`.
+/// path is within [fileSystemPath]. To allow following symbolic links that
+/// resolve to paths outside of [fileSystemPath], set [serveFilesOutsidePath] to
+/// `true`. Request path segments containing `.`, `..`, NUL bytes, encoded path
+/// separators (`%2F`, and `%5C` on Windows), or `:` on Windows are always
+/// rejected with a `404 Not Found` response.
 ///
 /// When a existing directory is requested and a [defaultDocument] is specified
 /// the directory is checked for a file with that name. If it exists, it is
@@ -79,9 +82,19 @@ Handler createStaticHandler(
   final mimeResolver = contentTypeResolver ?? _defaultMimeTypeResolver;
 
   return (Request request) async {
-    final segs = [fileSystemPath, ...request.url.pathSegments];
+    final pathSegments = request.url.pathSegments;
+    if (!pathSegments.every(_isValidPathSegment)) {
+      return Response.notFound('Not Found');
+    }
+
+    final segs = [fileSystemPath, ...pathSegments];
 
     final fsPath = p.joinAll(segs);
+
+    if (!p.isWithin(fileSystemPath, fsPath) &&
+        !p.equals(fileSystemPath, fsPath)) {
+      return Response.notFound('Not Found');
+    }
 
     final stat = await FileStat.stat(fsPath);
     final entityType = stat.type;
@@ -102,6 +115,18 @@ Handler createStaticHandler(
         }
       }
       if (fileFound == null && listDirectories) {
+        if (!serveFilesOutsidePath) {
+          final String resolvedPath;
+          try {
+            resolvedPath = await Directory(fsPath).resolveSymbolicLinks();
+          } catch (_) {
+            return Response.notFound('Not Found');
+          }
+          if (!p.isWithin(fileSystemPath, resolvedPath) &&
+              !p.equals(fileSystemPath, resolvedPath)) {
+            return Response.notFound('Not Found');
+          }
+        }
         final uri = request.requestedUri;
         if (!uri.path.endsWith('/')) return _redirectToAddTrailingSlash(uri);
         return listDirectory(
@@ -158,6 +183,17 @@ Handler createStaticHandler(
       fileStat: fileStat,
     );
   };
+}
+
+bool _isValidPathSegment(String segment) {
+  if (segment.isEmpty) return true;
+  if (segment == '.' || segment == '..') return false;
+  if (segment.contains('/') || segment.contains('\x00')) return false;
+  if (p.style == p.Style.windows &&
+      (segment.contains('\\') || segment.contains(':'))) {
+    return false;
+  }
+  return true;
 }
 
 Response _redirectToAddTrailingSlash(Uri uri) {

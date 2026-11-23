@@ -1,5 +1,12 @@
-## 3.0.3-wip
+## 3.0.3
 
+* Reject request path segments containing encoded path separators (`%2F`, and
+  `%5C` on Windows), `:` on Windows, NUL bytes, `.`, or `..` (and invalid
+  package names) with `404 Not Found`, while continuing to follow symbolic links
+  inside package directories (note: this also changes in-package encoded slashes
+  such as `/packages/foo/dir%2Fb.dart` from `200` to `404`).
+* Return `404 Not Found` instead of throwing a `StateError` for empty package
+  paths, and avoid caching handlers for nonexistent packages.
 * Require Dart `^3.9.0`.
 
 ## 3.0.2
